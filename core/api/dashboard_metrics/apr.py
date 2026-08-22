@@ -33,6 +33,14 @@ DATE_APPROVED = "date_approved_denorm"
 DATE_FIRST_DISBURSEMENT = "date_first_disbursement"
 DATE_ACTUAL_COMPLETION = "date_actual_completion"
 
+# The page shows two phase-out figures side by side, and they are different
+# measurements rather than two views of one. What a project was approved to
+# remove is set at approval and lives on Project; what an agency reported
+# removing is per reporting cycle and lives here. Consumption and production
+# count towards both.
+ODP_PHASED_OUT_FIELDS = ("consumption_phased_out_odp", "production_phased_out_odp")
+CO2_PHASED_OUT_FIELDS = ("consumption_phased_out_co2", "production_phased_out_co2")
+
 
 class AprMetrics(APRSummaryTablesExportWriter):
     """The export's aggregations over a set of records we choose."""
@@ -92,6 +100,12 @@ class AprMetrics(APRSummaryTablesExportWriter):
             "active_cycle": round(sum(apr.funds_disbursed or 0 for apr in active), 2),
         }
 
+    def phased_out(self, fields: Sequence[str]) -> float:
+        """Phase-out reported over the cycle, summed across the named columns."""
+        return round(
+            sum(getattr(apr, field) or 0 for apr in self.records for field in fields), 2
+        )
+
     def disbursed_by_sector_code(self) -> dict[str, float]:
         """``{sector code: funds disbursed}``, through the export's own grouping."""
         grouped = self._compute_grouped_data(
@@ -101,16 +115,6 @@ class AprMetrics(APRSummaryTablesExportWriter):
             sheet_type="cumulative",
         )
         return {code: data["total_funds_disbursed"] for code, data in grouped}
-
-
-def avg_months_between(objects: Sequence[object], start: str, end: str) -> float | None:
-    """Average whole months between two date fields on anything.
-
-    The export's month arithmetic is not specific to project reports - it reads
-    named fields off whatever it is handed - so the one non-APR duration on the
-    page is measured with the same rule rather than a second one.
-    """
-    return AprMetrics([]).avg_months(objects, start, end)
 
 
 def apr_years_available() -> list[int]:

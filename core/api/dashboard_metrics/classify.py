@@ -12,6 +12,7 @@ from typing import Any, Iterable, NamedTuple, Sequence
 
 from core.api.dashboard_metrics.primitives import grouped
 from core.models.agency import Agency
+from core.models.country import Country
 from core.models.funding_window import FundingWindow
 from core.models.project import Project
 
@@ -19,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 HFC = "HFC"
 ODS = "ODS"
+HCFC = "HCFC"
+OTHER_ODS = "OTHER_ODS"
 
 # The clusters that decide a project's substance family. Cluster is the primary
 # signal, not a fallback: it is curated, it covers the whole portfolio, and it
@@ -27,11 +30,8 @@ ODS = "ODS"
 HFC_CLUSTER_CODES = frozenset(
     {"HFCIND", "KIP1", "KIP2", "KIP3", "KPP1", "KPP2", "KPP3", "EC 1"}
 )
-ODS_CLUSTER_CODES = frozenset(
+HCFC_CLUSTER_CODES = frozenset(
     {
-        "CFCIND",
-        "CPOP",
-        "CPPOP",
         "HCFCIND",
         "HPMP1",
         "HPMP2",
@@ -40,16 +40,25 @@ ODS_CLUSTER_CODES = frozenset(
         "HPPMP1",
         "HPPMP2",
         "HPPMP3",
-        "OOI",
-        "OOSP",
-        "OOPPP",
     }
 )
+OTHER_ODS_CLUSTER_CODES = frozenset({"CFCIND", "CPOP", "CPPOP", "OOI", "OOSP", "OOPPP"})
+# ODS means every substance with an ozone-depletion potential. It is the union
+# of the two above and must stay the union: the fund-wide phase-out figure is
+# quoted over all of it.
+ODS_CLUSTER_CODES = HCFC_CLUSTER_CODES | OTHER_ODS_CLUSTER_CODES
+
+FAMILY_BY_CLUSTER_CODE = {
+    **{code: HFC for code in HFC_CLUSTER_CODES},
+    **{code: HCFC for code in HCFC_CLUSTER_CODES},
+    **{code: OTHER_ODS for code in OTHER_ODS_CLUSTER_CODES},
+}
 
 # Read only when the cluster says nothing. Annex F is the HFC annex; A, B, C and
-# E are the ozone-depleting ones.
+# E are the ozone-depleting ones, and Annex C Group I is the HCFCs within them.
 HFC_ANNEXES = frozenset({"F"})
 ODS_ANNEXES = frozenset({"A", "B", "C", "E"})
+HCFC_GROUP_IDS = frozenset({"CI"})
 
 PRODUCTION_SECTOR_CODES = frozenset({"PRO"})
 EE_CLUSTER_CODES = frozenset({"EE"})
@@ -106,6 +115,28 @@ SECTOR_ORDER = (
     SECTOR_SOLVENT,
 )
 
+# The per-country page charts a different set: five named sectors and a residual
+# that is a bucket in its own right rather than a drop. Solvent has no bar of its
+# own there and falls into the residual with everything else.
+SECTOR_OTHER = "Other sectors"
+COUNTRY_SECTOR_BUCKETS = frozenset(
+    {
+        SECTOR_AIR_CONDITIONING,
+        SECTOR_REFRIGERATION,
+        SECTOR_FOAM,
+        SECTOR_AEROSOL,
+        SECTOR_SERVICING,
+    }
+)
+COUNTRY_SECTOR_ORDER = (
+    SECTOR_AIR_CONDITIONING,
+    SECTOR_REFRIGERATION,
+    SECTOR_FOAM,
+    SECTOR_AEROSOL,
+    SECTOR_SERVICING,
+    SECTOR_OTHER,
+)
+
 # Each of these gets its own row; everything else sums into one. WMO is an
 # implementer-in-waiting and is simply absent until it has projects.
 IMPLEMENTING_AGENCY_NAMES = ("UNDP", "UNEP", "UNIDO", "World Bank", "WMO")
@@ -117,6 +148,7 @@ class ClassifiedProject(NamedTuple):
 
     project: Project
     family: str | None
+    family_detail: str | None
     theme: str
     sector_bucket: str | None
     is_production: bool
@@ -169,6 +201,36 @@ def _decision_code(decision: Any) -> str | None:
     return f"{decision.meeting.number}/{number}"
 
 
+def substance_groups(project: Project) -> list[Any]:
+    """The annex groups of the substances a project addresses."""
+    return [
+        ods.ods_substance.group
+        for ods in project.ods_odp.all()
+        if ods.ods_substance and ods.ods_substance.group
+    ]
+
+
+def substance_family_detail(project: Project) -> str | None:
+    """``"HFC"``, ``"HCFC"``, ``"OTHER_ODS"``, or ``None`` for none of them.
+
+    The per-country page charts HCFCs separately from the pre-HCFC-era
+    substances, so the family is resolved three ways here and folded back to two
+    by :func:`substance_family`.
+    """
+    code = project.cluster.code if project.cluster else None
+    from_cluster = FAMILY_BY_CLUSTER_CODE.get(code)
+    if from_cluster:
+        return from_cluster
+
+    groups = substance_groups(project)
+    annexes = {group.annex for group in groups}
+    if annexes & HFC_ANNEXES:
+        return HFC
+    if {group.group_id for group in groups} & HCFC_GROUP_IDS:
+        return HCFC
+    return OTHER_ODS if annexes & ODS_ANNEXES else None
+
+
 def substance_family(project: Project) -> str | None:
     """``"ODS"``, ``"HFC"``, or ``None`` for a project that is neither.
 
@@ -176,22 +238,10 @@ def substance_family(project: Project) -> str | None:
     included - the fund-wide figures split two ways because their two headline
     numbers are in different units, ODP tonnes against CO2-eq tonnes.
     """
-    code = project.cluster.code if project.cluster else None
-    if code in HFC_CLUSTER_CODES:
-        return HFC
-    if code in ODS_CLUSTER_CODES:
+    detail = substance_family_detail(project)
+    if detail in (HCFC, OTHER_ODS):
         return ODS
-
-    annexes = {
-        ods.ods_substance.group.annex
-        for ods in project.ods_odp.all()
-        if ods.ods_substance and ods.ods_substance.group
-    }
-    if annexes & HFC_ANNEXES:
-        return HFC
-    if annexes & ODS_ANNEXES:
-        return ODS
-    return None
+    return detail
 
 
 def is_production(project: Project) -> bool:
@@ -240,6 +290,31 @@ def sector_bucket(project: Project) -> str | None:
     return SECTOR_BUCKET_BY_CODE.get(project.sector.code)
 
 
+def country_sector_bucket(project: Project) -> str:
+    """One of the six the per-country page charts, residual included.
+
+    Every project lands somewhere: this chart has no drop, and Solvent is part
+    of the residual rather than a bar of its own.
+    """
+    bucket = sector_bucket(project)
+    return bucket if bucket in COUNTRY_SECTOR_BUCKETS else SECTOR_OTHER
+
+
+def region_of(country: Country | None) -> str | None:
+    """The region a country sits in, or ``None`` if it is not under one.
+
+    Countries hang off regions through a self-referential parent chain, with a
+    subregion sometimes in between, so this walks up rather than reading the
+    immediate parent. A region entry has no region of its own.
+    """
+    node = country.parent if country else None
+    while node:
+        if node.location_type == Country.LocationType.REGION:
+            return node.name
+        node = node.parent
+    return None
+
+
 def disbursed_by_bucket(by_sector_code: dict[str, float]) -> dict[str, float]:
     """Fold per-sector-code disbursement into the six charted buckets."""
     folded: dict[str, float] = {}
@@ -251,32 +326,40 @@ def disbursed_by_bucket(by_sector_code: dict[str, float]) -> dict[str, float]:
 
 
 def classify(projects: Iterable[Project]) -> list[ClassifiedProject]:
-    """Bucket every project once, and report the sectors that fall outside.
-
-    An unbucketed sector is dropped from the sector chart, which is a real
-    omission - so it is logged for the operator. It is not disclosed in the
-    payload, which is headed for a public page.
-    """
-    classified = []
-    dropped: dict[str, float] = {}
+    """Bucket every project once."""
     window_codes = funding_window_codes()
+    classified = []
 
     for project in projects:
         production = is_production(project)
-        bucket = sector_bucket(project)
-        if bucket is None and project.sector:
-            dropped[project.sector.code or project.sector.name] = dropped.get(
-                project.sector.code or project.sector.name, 0.0
-            ) + (project.total_fund or 0)
+        detail = substance_family_detail(project)
         classified.append(
             ClassifiedProject(
                 project=project,
-                family=substance_family(project),
+                family=ODS if detail in (HCFC, OTHER_ODS) else detail,
+                family_detail=detail,
                 theme=project_theme(project, production, window_codes),
-                sector_bucket=bucket,
+                sector_bucket=sector_bucket(project),
                 is_production=production,
             )
         )
+    return classified
+
+
+def log_unbucketed_sectors(rows: Sequence[ClassifiedProject]) -> None:
+    """Report the sectors the fund-wide chart leaves out.
+
+    An unbucketed sector is dropped from that chart, which is a real omission -
+    so it is logged for the operator. It is not disclosed in the payload, which
+    is headed for a public page.
+    """
+    dropped: dict[str, float] = {}
+    for row in rows:
+        sector = row.project.sector
+        if row.sector_bucket is not None or sector is None:
+            continue
+        name = sector.code or sector.name
+        dropped[name] = dropped.get(name, 0.0) + (row.project.total_fund or 0)
 
     if dropped:
         logger.info(
@@ -285,7 +368,6 @@ def classify(projects: Iterable[Project]) -> list[ClassifiedProject]:
             len(dropped),
             {code: round(amount, 2) for code, amount in sorted(dropped.items())},
         )
-    return classified
 
 
 def implementing_agency_ids() -> dict[int, str]:

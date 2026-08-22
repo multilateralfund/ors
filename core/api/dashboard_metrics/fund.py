@@ -12,13 +12,13 @@ from typing import Any
 from constance import config
 
 from core.api.dashboard_metrics import classify
-from core.api.dashboard_metrics.apr import avg_months_between
 from core.api.dashboard_metrics.classify import HFC, ODS
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
     count_project_grains,
     funds_pair,
     grouped,
+    phase_out,
     totals,
 )
 from core.api.dashboard_metrics.registry import (
@@ -31,7 +31,6 @@ from core.api.dashboard_metrics.registry import (
 
 COMPLETED_STATUS_CODES = ("COM", "FIN")
 ONGOING_STATUS_CODES = ("ONG",)
-INVESTMENT_TYPE_CODE = "INV"
 
 # The ODS funding figure is about phase-out, so the money spent working out what
 # to phase out and the money keeping an ozone unit open are left out of it.
@@ -61,18 +60,14 @@ def _project_type_code(row) -> str | None:
     return project_type.code if project_type else None
 
 
-def _phase_out(rows, field: str) -> float:
-    return round(float(sum(getattr(row.project, field) or 0 for row in rows)), 2)
-
-
 def ods_phased_out(context: MetricContext) -> float:
     """Ozone-depleting substances removed, consumption and production together."""
-    return _phase_out(context.with_family(ODS), "total_phase_out_odp_tonnes")
+    return phase_out(context.with_family(ODS), "total_phase_out_odp_tonnes")
 
 
 def hfc_phased_out(context: MetricContext) -> float:
     """Hydrofluorocarbons removed, in CO2 tonnes"""
-    return _phase_out(context.with_family(HFC), "total_phase_out_co2_tonnes")
+    return phase_out(context.with_family(HFC), "total_phase_out_co2_tonnes")
 
 
 def ods_funding_approved(context: MetricContext) -> float:
@@ -128,15 +123,9 @@ def by_agency(context: MetricContext) -> list[dict[str, Any]]:
 
 def by_region(context: MetricContext) -> list[dict[str, Any]]:
     """Delivery split across the regions of the countries assisted."""
-    # projects_dashboard_dump imports core.api.views, which imports it straight
-    # back, so it can only be imported once the views package is loaded - which
-    # is why this is here and not at module scope.
-    import core.api.views  # pylint: disable=C0415,W0611  # noqa: F401
-    from core.api.export.projects_dashboard_dump import (  # pylint: disable=C0415
-        get_region,
+    return grouped(
+        context.projects, lambda row: classify.region_of(row.project.country)
     )
-
-    return grouped(context.projects, lambda row: get_region(row.project, None))
 
 
 def theme(context: MetricContext, name: str) -> dict[str, Any]:
@@ -213,16 +202,10 @@ def noninv_first_disbursement_scope(context: MetricContext) -> float | None:
 
 
 def noninv_months_completion(context: MetricContext) -> float | None:
-    """How long a non-investment project runs, start to end.
-
-    The one duration on the page that the project record answers directly.
-    """
-    projects = [
-        row.project
-        for row in context.projects
-        if _project_type_code(row) != INVESTMENT_TYPE_CODE
-    ]
-    return avg_months_between(projects, "project_start_date", "project_end_date")
+    """Months from approving a non-investment project to completing it."""
+    if context.apr is None:
+        return None
+    return context.apr.months_to_completion(context.apr.non_investment())
 
 
 FUND_METRICS: tuple[Metric, ...] = (
@@ -664,9 +647,11 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=Unit.MONTHS,
         disposition=Disposition.COMPUTE,
-        formula="avg(end date - start date) non-Investment",
-        db_source="DB-COMPUTABLE-SPARSE",
-        src_model_field="Project.project_start_date / project_end_date",
+        formula="avg completion duration from inventory non-Investment",
+        db_source="NEEDS-APR",
+        src_model_field=(
+            "AnnualProjectReport.date_actual_completion / date_approved_denorm"
+        ),
         compute=noninv_months_completion,
     ),
     Metric(

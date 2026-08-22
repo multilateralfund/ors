@@ -101,11 +101,13 @@ def get_country_index() -> dict[str, Any]:
 
 def get_country_metrics(key: str, apr_year: int | None = None) -> dict[str, Any] | None:
     """One entry's payload, or ``None`` if the key addresses nothing."""
-    entry = resolve_entry(key)
-    if entry is None:
+    resolved = resolve_entry(key)
+    if resolved is None:
         return None
+    country, entry = resolved
     payload = _envelope(
-        COUNTRY_METRICS, MetricContext(apr_year=resolve_apr_year(apr_year))
+        COUNTRY_METRICS,
+        MetricContext(apr_year=resolve_apr_year(apr_year), country=country),
     )
     payload["entry"] = entry
     return payload

@@ -13,8 +13,16 @@ from functools import cached_property
 from typing import Callable
 
 from core.api.dashboard_metrics.apr import AprMetrics, apr_records
-from core.api.dashboard_metrics.classify import ClassifiedProject, classify
-from core.api.dashboard_metrics.primitives import dashboard_project_rows
+from core.api.dashboard_metrics.classify import (
+    ClassifiedProject,
+    classify,
+    log_unbucketed_sectors,
+)
+from core.api.dashboard_metrics.cp import CountryProgrammeTrends, load_trends
+from core.api.dashboard_metrics.primitives import (
+    dashboard_project_rows,
+    excluded_project_rows,
+)
 from core.api.dashboard_metrics.replenishment import pledged_total
 from core.models.country import Country
 
@@ -33,7 +41,19 @@ class MetricContext:
     @cached_property
     def projects(self) -> list[ClassifiedProject]:
         """The in-scope projects, each already bucketed by theme and sector."""
-        return classify(dashboard_project_rows(self.country))
+        rows = classify(dashboard_project_rows(self.country))
+        log_unbucketed_sectors(rows)
+        return rows
+
+    @cached_property
+    def excluded(self) -> list[ClassifiedProject]:
+        """What the Transferred/Closed rule takes out, so it can be reported."""
+        return classify(excluded_project_rows(self.country))
+
+    @cached_property
+    def cp(self) -> CountryProgrammeTrends:
+        """Reported consumption and production, for the whole portfolio at once."""
+        return load_trends()
 
     @cached_property
     def apr(self) -> AprMetrics | None:

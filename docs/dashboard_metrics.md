@@ -8,7 +8,7 @@ GET /api/dashboard-metrics/countries/{key}/   ?apr_year=2024
 
 The Multilateral Fund's headline figures - the fund-wide "Our Work" page (48 datapoints) and the per-country profile page (42) - served from the ORS database.
 
-The fund-wide figures are computed. The per-country ones are declared but not yet computed, so `/countries/{key}/` currently returns `available: false` for every metric.
+Both pages are computed. Thirteen of the 42 per-country rows are declared but blocked: nine on an unsettled question of where a country attribute should live, four on impact columns that are too sparsely reported to publish. They return `available: false`, and `manage.py dashboard_metrics_spec` says why.
 
 ---
 
@@ -80,16 +80,47 @@ A metric that cannot be produced returns `available: false` and `value: null` - 
 | Money, as a pair | `{"funds_approved": 3918209498.64, "funds_plus_psc": 4381659171.24}` |
 | Project counts (`projects_approved_total`) | `{"projects_by_code": …, "projects_by_metacode": …, "mya_by_metacode": …, "individual_by_code": …}` |
 | A group table (`by_agency`, `by_region`) | `[{"group": "UNDP", "projects_by_code": …, "projects_by_metacode": …, "funds_approved": …, "funds_plus_psc": …}, …]` |
-| One theme (`theme_*`) | the same fields without `"group"` |
-| One sector (`sector_*`) | the same again, plus `"funds_disbursed"`, which is `null` when the cycle reports nothing for that sector |
+| One fund theme (`theme_consumption` …) | the same fields without `"group"` |
+| One fund sector (`sector_ac` …) | the same again, plus `"funds_disbursed"`, which is `null` when the cycle reports nothing for that sector |
 | `funds_disbursed` | `{"all_time": …, "active_cycle": …}` |
 | `investment_timeline` | `{"months_to_first_disbursement": …, "months_to_completion": …}` |
+| Country funding by theme (`theme_funding`) | a group table, one row per theme, in chart order |
+| Country tonnage by sector (`sector_hfc`, `sector_hcfc`, `sector_other_ods`, `sector_unclassified`) | a group table row per sector bucket, plus `"tonnage"` - what that bucket phases out |
+| `scope_excluded_status` | the same four totals fields, over the projects the status rule removed |
+| `scope_rollup_mismatch` | `{"projects_affected": …, "odp_project_rollup": …, "odp_substance_rows": …, "co2_project_rollup": …, "co2_substance_rows": …}` |
+| A trend (`trend_*`) | `[[1995, 11667.57], …, [2025, 490.35]]` |
+
+The fund page and the country page both have metrics whose ids begin `theme_` and `sector_`, and they are not the same shape: the fund's are one breakdown per theme or sector, the country's are one table covering all of them.
 
 A project is counted at two grains because the page quotes both: `code` counts components, `metacode` counts agreements. A multi-year agreement is many of the first and one of the second.
 
 Two values are numbers the client is expected to dress up: `portfolio_projects_rounded` is the portfolio total rounded down to the nearest thousand and should be rendered with a trailing `+`, and `completed_end_year` is a year and should be rendered without a thousands separator.
 
-A theme or sector with no projects returns zeros rather than `null` - none is a real measurement, and it keeps the chart's bars stable.
+A theme or sector with no projects returns zeros rather than `null` - none is a real measurement, and it keeps the chart's bars stable. A whole chart that does not apply is a different thing, and is `null`: a country with no production projects has no production chart, and a substance family that phases nothing out has no pie.
+
+---
+
+## The two pages classify differently
+
+They are different pages with different charts, and three of the classifications genuinely disagree. They are kept apart on purpose; merging any pair would silently move a published figure.
+
+| | Fund-wide | Per country |
+|---|---|---|
+| Substance family | `ODS` and `HFC`. `ODS` is everything with an ozone-depletion potential, HCFCs included, because the two headline figures are in different units | `HFC`, `HCFC`, `OTHER_ODS` and unresolved. The country page charts HCFCs apart from the pre-HCFC-era substances |
+| Sectors | Air-conditioning, Refrigeration, Servicing, Foam, Aerosol, Solvent. Anything else is left out of the sector figures and logged | Air-conditioning, Refrigeration, Foam, Aerosol, Servicing and **Other sectors**. Solvent has no bar of its own and falls in the residual, which is a real bucket rather than a drop |
+| Themes | Six, from cluster, sector, funding window and project type, first match wins (`classify.py`) | Nine, from the cluster alone (`taxonomy.py`) |
+
+The country's three families fold back to the fund's two: `ODS` is exactly `HCFC` plus `OTHER_ODS`, and `classify.substance_family` is defined by folding `substance_family_detail`, so the two cannot drift apart.
+
+---
+
+## Consumption and production trends
+
+`trend_ods_consumption`, `trend_hfc_consumption` and `trend_ods_production` come from the Country Programme reports, and the arithmetic is `CPDataExtractionAllExport`'s (`core/api/views/cp_records_export.py`) rather than this package's. It already applies the three consumption rules, the methyl-bromide exemption, and both unit conversions - ODP for section A, CO2-eq via GWP for Annex F. `cp.py` reshapes its output into series and does nothing else. `trend_ods_production` is the exception: it has no counterpart there and reads the standalone `production` column directly.
+
+A year appears because a report exists for it, which is what `get_existent_reports` settles. So a year of zero consumption is kept and rendered - a country reaching zero is the result the programme exists to produce. Production is the opposite case: a country that produces nothing would be a column of zeros, so it returns `null` and the page draws no chart.
+
+Records reach all of this through `get_final_records_for_years` (`core/api/views/utils.py`), which takes the FINAL report for each country-year and the highest-versioned archived one only where no FINAL exists. That rests on `cp_report` holding at most one FINAL row per country and year, which nothing in the schema enforces.
 
 ---
 
@@ -137,17 +168,23 @@ Both conditions are hard assertions in `core/api/tests/test_dashboard_metrics.py
 
 Each datapoint is declared once, as a `Metric` in `core/api/dashboard_metrics/fund.py` (fund-wide metrics) or `country.py` (per-country metrics), carrying its label, section, kind, unit and a `compute` callable. Adding a datapoint is one entry.
 
-A `compute` takes the request's `MetricContext` (`context.py`) and returns a value, or `None` if it has none. The context fetches each source once and hands the same result to every metric, so a payload of forty-eight figures costs a couple of dozen queries rather than forty-eight sweeps:
+A `compute` takes the request's `MetricContext` (`context.py`) and returns a value, or `None` if it has none. The context fetches each source once and hands the same result to every metric, so the fund page's forty-eight figures cost a couple of dozen queries rather than forty-eight sweeps:
 
 | Source | What it holds |
 |---|---|
 | `context.projects` | the in-scope projects, each already bucketed by theme, sector and substance family (`classify.py`) |
+| `context.excluded` | the projects the Transferred/Closed rule removes, so the removal can be reported |
 | `context.apr` | the selected reporting cycle's project reports |
+| `context.cp` | every country's reported consumption and production, computed for the whole portfolio at once |
 | `context.pledged` | cumulative pledged contributions |
+
+`context.country` is what makes a per-country payload: set it and every source above narrows to that country, so the same `compute` functions serve both pages. It is `None` for the fund-wide payload.
 
 Where ORS already computes something, this package inherits it rather than restating it: `AprMetrics` (`apr.py`) subclasses `APRSummaryTablesExportWriter` and replaces only its constructor, so the disbursement, month-averaging and grouping arithmetic is the export's own. Months are therefore whole months, truncated - the export's convention - and an average over a set where nothing is measurable is `null`, not `0`.
 
 Classification reads `ProjectCluster.code`, `ProjectSector.code` and `ProjectType.code`, never a display name, and takes the production test from `ProjectCluster.production` alongside `Project.production` and the production sector. It does not read `Project.substance_type`, which is deprecated and mostly null.
+
+The one place this package restates rather than inherits is `classify.region_of`, which walks a country's parent chain to find its region. The dashboard export answers the same question, but importing it needs a function-body import to break a cycle, which is more machinery than the four lines it saves.
 
 Alongside those, each `Metric` carries documentation - formula, source, model field - that is **not served**. To render a table of all metrics with full fields:
 
@@ -159,4 +196,8 @@ Alongside those, each `Metric` carries documentation - formula, source, model fi
 
 ## Storage
 
-Computed per request; no caching yet. The fund payload is around two dozen queries and a few seconds against a portfolio of ten thousand projects, nearly all of it in Python rather than in the database. `get_fund_metrics()` is the seam a cache would wrap.
+Computed per request; no caching yet. The fund payload is around two dozen queries and a few seconds against a portfolio of ten thousand projects, nearly all of it in Python rather than in the database.
+
+A country payload is much slower - around a minute - and effectively all of it is `context.cp`; the other 41 metrics together cost about a tenth of a second. Most of that minute is not the trends computation itself but `get_archive_reports_final_for_years` (`core/api/views/utils.py`), which builds one `exclude()` clause per country programme report on record. It takes around eleven seconds on the current data, `get_final_records_for_years` calls it once, and a country payload calls that four times. Making it a single subquery takes the payload to about eight seconds with every value unchanged, and would speed up the country programme exports too; it is left alone here because it is not this package's to change.
+
+`get_fund_metrics()` and `get_country_metrics()` are the seams a cache would wrap, if that is still wanted afterwards.

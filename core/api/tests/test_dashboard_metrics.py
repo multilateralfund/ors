@@ -12,7 +12,7 @@ from django.core.management import call_command
 from django.urls import reverse
 
 from core.api import dashboard_metrics
-from core.api.dashboard_metrics import classify, get_metric, registry, taxonomy
+from core.api.dashboard_metrics import classify, cp, get_metric, registry, taxonomy
 from core.api.dashboard_metrics.apr import AprMetrics
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.registry import Disposition
@@ -26,6 +26,9 @@ from core.api.tests.factories import (
     AnnualProgressReportFactory,
     AnnualProjectReportFactory,
     CountryFactory,
+    CPRecordFactory,
+    CPReportFactory,
+    CPUsageFactory,
     DecisionFactory,
     FundingWindowFactory,
     GroupFactory,
@@ -38,6 +41,7 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
     SubstanceFactory,
     TriennialContributionStatusFactory,
+    UsageFactory,
 )
 from core.models.country import Country
 from core.models.project import Project
@@ -288,7 +292,40 @@ class TestDashboardMetricsCountry(BaseTest):
         assert response.status_code == 200
         assert {m["metric_id"] for m in response.data["metrics"]} == COUNTRY_METRIC_IDS
         assert response.data["entry"]["entry_type"] == "country"
-        assert_envelope(response.data, all_unavailable=True)
+        assert_envelope(response.data)
+
+    def test_the_blocked_rows_are_the_only_unavailable_ones(self, user, brazil):
+        """Everything else is either a figure or a measured zero."""
+        self.client.force_authenticate(user=user)
+
+        metrics = metrics_by_id(self.client.get(self.url).data)
+        blocked = {
+            m.metric_id
+            for m in COUNTRY_METRICS
+            if m.disposition == Disposition.NOT_AVAILABLE
+        }
+        unavailable = {mid for mid, m in metrics.items() if not m["available"]}
+
+        assert blocked <= unavailable
+        # Everything the population alone can answer is answered, even for a
+        # country whose only project carries nothing but a status.
+        assert unavailable.isdisjoint(
+            {
+                "scope_entry_type",
+                "scope_excluded_status",
+                "scope_no_code",
+                "scope_rollup_mismatch",
+                "attr_country_name",
+                "attr_iso3",
+                "kf_projects_approved",
+                "kf_projects_ongoing",
+                "kf_funding_approved",
+                "kf_odp_approved",
+                "kf_co2_approved",
+                "theme_total",
+                "theme_unmapped",
+            }
+        )
 
     def test_region_resolves_on_the_same_route(self, user, africa):
         self.client.force_authenticate(user=user)
@@ -537,6 +574,22 @@ class TestFundValues(BaseTest):
         assert metrics["completed_count"]["value"] == 2
         assert metrics["completed_funding"]["value"] == 220
 
+    def test_ods_phased_out_covers_hcfc_and_older_ods_alike(self, user, ongoing_status):
+        """The per-country page splits ODS three ways; this figure stays the union."""
+        for code, tonnes in (
+            ("HPMP1", 100),
+            ("HCFCIND", 25),
+            ("CFCIND", 8),
+            ("OOI", 2),
+        ):
+            approved_project(
+                status=ongoing_status,
+                cluster=ProjectClusterFactory(code=code, name=code),
+                total_phase_out_odp_tonnes=tonnes,
+            )
+
+        assert self.fund(user)["ods_phased_out"]["value"] == 135
+
     def test_portfolio_headline_rounds_down_to_the_thousand(self, user, ongoing_status):
         approved_project(status=ongoing_status)
 
@@ -606,11 +659,48 @@ class TestFundValues(BaseTest):
             "funds_disbursed",
             "investment_timeline",
             "inv_months_first_disb",
+            "inv_months_completion",
             "noninv_first_disbursement_scope",
+            "noninv_months_first_disb",
+            "noninv_months_completion",
         ):
             assert metrics[metric_id]["available"] is False
         assert metrics["funds_approved"]["available"] is True
         assert metrics["sector_ac"]["value"]["funds_disbursed"] is None
+
+    def test_completion_timelines_are_the_investment_split_of_one_measurement(
+        self, user, ongoing_status
+    ):
+        """Both read approval to actual completion off the cycle, not the project.
+
+        The project record carries its own start and end dates, which measure
+        something else and are not what either figure means.
+        """
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=2024)
+        )
+        for type_code, completed in (
+            ("INV", date(2021, 1, 1)),
+            ("TAS", date(2022, 7, 1)),
+        ):
+            AnnualProjectReportFactory(
+                project=approved_project(
+                    status=ongoing_status,
+                    project_type=ProjectTypeFactory(code=type_code),
+                    project_start_date=date(1990, 1, 1),
+                    project_end_date=date(1990, 2, 1),
+                ),
+                report=agency_report,
+                date_approved_denorm=date(2020, 1, 1),
+                date_actual_completion=completed,
+                date_first_disbursement=None,
+            )
+
+        self.client.force_authenticate(user=user)
+        metrics = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)
+
+        assert metrics["inv_months_completion"]["value"] == 12
+        assert metrics["noninv_months_completion"]["value"] == 30
 
     def test_a_metric_that_breaks_costs_only_itself(self, caplog):
         """One bad figure must not take the page down, or say anything."""
@@ -754,6 +844,29 @@ class TestClassification:
             classify.THEME_CONSUMPTION
         )
 
+    def test_a_region_is_found_up_the_parent_chain(self):
+        """A subregion often sits between a country and its region."""
+        region = CountryFactory(
+            name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
+        )
+        subregion = CountryFactory(
+            name="West Africa",
+            parent=region,
+            location_type=Country.LocationType.SUBREGION,
+        )
+        ghana = CountryFactory(name="Ghana", iso3="GHA", parent=subregion)
+
+        assert classify.region_of(ghana) == "Africa"
+
+    def test_an_aggregate_entry_is_under_no_region(self):
+        region = CountryFactory(
+            name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
+        )
+
+        assert classify.region_of(region) is None
+        assert classify.region_of(CountryFactory(name="Nowhere")) is None
+        assert classify.region_of(None) is None
+
     def test_the_family_comes_from_the_cluster(self):
         project = self.project(
             cluster=ProjectClusterFactory(code="HFCIND", name="HFCIND")
@@ -781,8 +894,9 @@ class TestClassification:
     def test_a_sector_outside_the_six_is_dropped_and_reported(self, caplog):
         project = self.project(sector=ProjectSectorFactory(code="NOU"), total_fund=500)
 
+        classified = classify.classify([project])
         with caplog.at_level("INFO"):
-            classified = classify.classify([project])
+            classify.log_unbucketed_sectors(classified)
 
         assert classified[0].sector_bucket is None
         assert "NOU" in caplog.text
@@ -861,6 +975,523 @@ class TestInheritedAprAggregations:
         }
 
 
+class TestSubstanceFamilySplit:
+    """The per-country page splits ODS in two. The fund-wide page must not notice."""
+
+    def project(self, **kwargs):
+        return ProjectFactory(status=ProjectStatusFactory(code="ONG"), **kwargs)
+
+    def cluster_project(self, code):
+        return self.project(cluster=ProjectClusterFactory(code=code, name=code))
+
+    def test_ods_still_means_hcfc_and_older_ods_together(self):
+        """Splitting the country's three families must not shrink the fund's two."""
+        for code in ("HPMP1", "HCFCIND", "CFCIND", "OOI"):
+            assert classify.substance_family(self.cluster_project(code)) == classify.ODS
+
+    def test_the_ods_cluster_set_is_exactly_the_union(self):
+        """Pure declaration, but it is the invariant the fund figure rests on."""
+        assert classify.ODS_CLUSTER_CODES == (
+            classify.HCFC_CLUSTER_CODES | classify.OTHER_ODS_CLUSTER_CODES
+        )
+        assert not classify.HCFC_CLUSTER_CODES & classify.OTHER_ODS_CLUSTER_CODES
+        assert not classify.ODS_CLUSTER_CODES & classify.HFC_CLUSTER_CODES
+
+    def test_the_country_split_tells_the_two_apart(self):
+        assert classify.substance_family_detail(self.cluster_project("HPMP1")) == (
+            classify.HCFC
+        )
+        assert classify.substance_family_detail(self.cluster_project("CFCIND")) == (
+            classify.OTHER_ODS
+        )
+
+    def test_hfc_is_untouched_by_the_split(self):
+        project = self.cluster_project("HFCIND")
+
+        assert classify.substance_family_detail(project) == classify.HFC
+        assert classify.substance_family(project) == classify.HFC
+
+    def test_the_annex_fallback_finds_hcfcs_in_annex_c_group_one(self):
+        project = self.project(cluster=None)
+        ProjectOdsOdpFactory(
+            project=project,
+            ods_substance=SubstanceFactory(
+                group=GroupFactory(annex="C", group_id="CI")
+            ),
+        )
+
+        assert classify.substance_family_detail(project) == classify.HCFC
+        assert classify.substance_family(project) == classify.ODS
+
+    def test_an_older_annex_falls_back_to_the_other_ods_family(self):
+        project = self.project(cluster=None)
+        ProjectOdsOdpFactory(
+            project=project,
+            ods_substance=SubstanceFactory(
+                group=GroupFactory(annex="A", group_id="AI")
+            ),
+        )
+
+        assert classify.substance_family_detail(project) == classify.OTHER_ODS
+        assert classify.substance_family(project) == classify.ODS
+
+    def test_an_uncontrolled_substance_has_no_family(self):
+        project = self.project(cluster=None)
+        ProjectOdsOdpFactory(
+            project=project,
+            ods_substance=SubstanceFactory(
+                group=GroupFactory(annex="unknown", group_id="uncontrolled")
+            ),
+        )
+
+        assert classify.substance_family_detail(project) is None
+        assert classify.substance_family(project) is None
+
+
+class TestCountrySectorBuckets:
+    """A second bucketing, because the two pages chart different sectors."""
+
+    def project(self, code):
+        return ProjectFactory(
+            status=ProjectStatusFactory(code="ONG"),
+            sector=ProjectSectorFactory(code=code),
+        )
+
+    def test_solvent_has_no_bar_of_its_own_here(self):
+        """It does on the fund-wide page, which is why there are two functions."""
+        project = self.project("SOL")
+
+        assert classify.sector_bucket(project) == classify.SECTOR_SOLVENT
+        assert classify.country_sector_bucket(project) == classify.SECTOR_OTHER
+
+    def test_an_unbucketed_sector_is_a_bucket_here_rather_than_a_drop(self):
+        project = self.project("NOU")
+
+        assert classify.sector_bucket(project) is None
+        assert classify.country_sector_bucket(project) == classify.SECTOR_OTHER
+
+    def test_the_five_named_sectors_keep_their_names(self):
+        for code, bucket in (
+            ("AC", classify.SECTOR_AIR_CONDITIONING),
+            ("REF", classify.SECTOR_REFRIGERATION),
+            ("FOA", classify.SECTOR_FOAM),
+            ("ARS", classify.SECTOR_AEROSOL),
+            ("SRVEE", classify.SECTOR_SERVICING),
+        ):
+            assert classify.country_sector_bucket(self.project(code)) == bucket
+
+
+class TestCountryValues(BaseTest):
+    """One entry's figures, over a portfolio small enough to check by hand."""
+
+    url = reverse("dashboard-metrics-country", args=["BRA"])
+
+    def entry(self, user, key="BRA"):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(reverse("dashboard-metrics-country", args=[key]))
+        assert response.status_code == 200
+        return metrics_by_id(response.data)
+
+    def test_every_figure_covers_only_the_entry_named(self, user, ongoing_status):
+        """The narrowing the whole per-country payload rests on."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(
+            country=brazil, status=ongoing_status, total_fund=100, support_cost_psc=10
+        )
+        approved_project(
+            country=CountryFactory(name="Chad", iso3="TCD"),
+            status=ongoing_status,
+            total_fund=900,
+            support_cost_psc=90,
+        )
+
+        metrics = self.entry(user)
+        assert metrics["kf_funding_approved"]["value"] == {
+            "funds_approved": 100,
+            "funds_plus_psc": 110,
+        }
+        assert metrics["kf_projects_approved"]["value"] == 1
+        assert metrics["theme_total"]["value"] == 110
+
+    def test_a_region_carries_no_country_attributes(self, user, africa):
+        """They are somewhere projects are booked, not somewhere with an ozone unit."""
+        metrics = self.entry(user, "AFR")
+
+        assert metrics["scope_entry_type"]["value"] == "region"
+        assert metrics["attr_country_name"]["value"] == "Africa"
+        for metric_id in ("attr_iso3", "attr_hfc_group", "attr_hcfc_lvc"):
+            assert metrics[metric_id]["available"] is False
+
+    def test_country_attributes_are_read_off_the_country(self, user, ongoing_status):
+        brazil = CountryFactory(
+            name="Brazil",
+            iso3="BRA",
+            is_lvc=True,
+            consumption_group="I",
+            ozone_unit="Ministry of the Environment",
+        )
+        approved_project(country=brazil, status=ongoing_status)
+
+        metrics = self.entry(user)
+        assert metrics["scope_entry_type"]["value"] == "country"
+        assert metrics["attr_iso3"]["value"] == "BRA"
+        assert metrics["attr_hfc_group"]["value"] == "I"
+        assert metrics["attr_hcfc_lvc"]["value"] == "LVC"
+        assert metrics["attr_nou_ministry"]["value"] == "Ministry of the Environment"
+
+    def test_a_blank_ozone_unit_is_absent_rather_than_empty(self, user, ongoing_status):
+        brazil = CountryFactory(name="Brazil", iso3="BRA", ozone_unit="nan")
+        approved_project(country=brazil, status=ongoing_status)
+
+        assert self.entry(user)["attr_nou_ministry"]["available"] is False
+
+    def test_what_the_status_rule_removed_is_reported_not_hidden(
+        self, user, ongoing_status
+    ):
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(
+            country=brazil, status=ongoing_status, total_fund=100, support_cost_psc=0
+        )
+        approved_project(
+            country=brazil,
+            status=ProjectStatusFactory(code="TRF"),
+            total_fund=900,
+            support_cost_psc=50,
+        )
+
+        metrics = self.entry(user)
+        assert metrics["kf_funding_approved"]["value"]["funds_approved"] == 100
+        assert metrics["scope_excluded_status"]["value"] == {
+            "projects_by_code": 1,
+            "projects_by_metacode": 1,
+            "funds_approved": 900,
+            "funds_plus_psc": 950,
+        }
+
+    def test_projects_with_no_code_are_counted_where_the_count_cannot_see_them(
+        self, user, ongoing_status
+    ):
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(country=brazil, status=ongoing_status, total_fund=100)
+        ProjectFactory(country=brazil, status=ongoing_status, total_fund=25)
+
+        metrics = self.entry(user)
+        assert metrics["scope_no_code"]["value"] == 1
+        assert metrics["kf_projects_approved"]["value"] == 1
+        assert metrics["kf_funding_approved"]["value"]["funds_approved"] == 125
+
+    def test_a_stale_rollup_is_reported_never_substituted(self, user, ongoing_status):
+        """Swapping in the substance sum would put this page at odds with the rest."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        project = approved_project(
+            country=brazil,
+            status=ongoing_status,
+            total_phase_out_odp_tonnes=10,
+            total_phase_out_co2_tonnes=500,
+        )
+        ProjectOdsOdpFactory(project=project, odp=40, co2_mt=9000)
+
+        metrics = self.entry(user)
+        assert metrics["scope_rollup_mismatch"]["value"] == {
+            "projects_affected": 1,
+            "odp_project_rollup": 10.0,
+            "odp_substance_rows": 40.0,
+            "co2_project_rollup": 500.0,
+            "co2_substance_rows": 9000.0,
+        }
+        # The figure on the page is still the project's own column.
+        assert metrics["kf_odp_approved"]["value"] == 10.0
+
+    def test_a_rollup_that_agrees_reports_no_gap(self, user, ongoing_status):
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        project = approved_project(
+            country=brazil,
+            status=ongoing_status,
+            total_phase_out_odp_tonnes=40,
+            total_phase_out_co2_tonnes=9000,
+        )
+        ProjectOdsOdpFactory(project=project, odp=40, co2_mt=9000)
+
+        assert self.entry(user)["scope_rollup_mismatch"]["value"] == {
+            "projects_affected": 0,
+            "odp_project_rollup": 0.0,
+            "odp_substance_rows": 0.0,
+            "co2_project_rollup": 0.0,
+            "co2_substance_rows": 0.0,
+        }
+
+    def test_tonnage_by_sector_folds_solvent_into_the_residual(
+        self, user, ongoing_status
+    ):
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        hcfc = ProjectClusterFactory(code="HPMP1", name="HPMP1")
+        for code, tonnes in (("AC", 30), ("SOL", 5), ("NOU", 2)):
+            approved_project(
+                country=brazil,
+                status=ongoing_status,
+                cluster=hcfc,
+                sector=ProjectSectorFactory(code=code),
+                total_phase_out_odp_tonnes=tonnes,
+            )
+
+        table = self.entry(user)["sector_hcfc"]["value"]
+        assert [row["group"] for row in table] == list(classify.COUNTRY_SECTOR_ORDER)
+        by_bucket = {row["group"]: row["tonnage"] for row in table}
+        assert by_bucket[classify.SECTOR_AIR_CONDITIONING] == 30
+        assert by_bucket[classify.SECTOR_OTHER] == 7
+        assert by_bucket[classify.SECTOR_REFRIGERATION] == 0
+
+    def test_the_families_are_charted_apart(self, user, ongoing_status):
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        sector = ProjectSectorFactory(code="AC")
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            sector=sector,
+            cluster=ProjectClusterFactory(code="HPMP1", name="HPMP1"),
+            total_phase_out_odp_tonnes=30,
+        )
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            sector=sector,
+            cluster=ProjectClusterFactory(code="CFCIND", name="CFCIND"),
+            total_phase_out_odp_tonnes=8,
+        )
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            sector=sector,
+            cluster=ProjectClusterFactory(code="HFCIND", name="HFCIND"),
+            total_phase_out_co2_tonnes=4000,
+        )
+
+        metrics = self.entry(user)
+        assert self.tonnage(metrics["sector_hcfc"]) == 30
+        assert self.tonnage(metrics["sector_other_ods"]) == 8
+        assert self.tonnage(metrics["sector_hfc"]) == 4000
+        assert metrics["sector_unclassified"]["available"] is False
+
+    def tonnage(self, metric):
+        return sum(row["tonnage"] for row in metric["value"])
+
+    def test_a_production_project_is_left_off_the_sector_charts(
+        self, user, ongoing_status
+    ):
+        """They are charted on their own, in their own section."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            production=True,
+            cluster=ProjectClusterFactory(code="HPMP1", name="HPMP1"),
+            sector=ProjectSectorFactory(code="AC"),
+            total_phase_out_odp_tonnes=12,
+        )
+
+        metrics = self.entry(user)
+        assert metrics["sector_hcfc"]["available"] is False
+        assert metrics["prod_tonnage"]["value"] == 12
+
+    def test_no_production_project_means_no_production_chart(
+        self, user, ongoing_status
+    ):
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(
+            country=brazil, status=ongoing_status, total_phase_out_odp_tonnes=12
+        )
+
+        assert self.entry(user)["prod_tonnage"]["available"] is False
+
+    def test_funding_by_theme_follows_the_chart_order(self, user, ongoing_status):
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        for code, fund in (("DISP", 10), ("KIP1", 900), ("HPMP1", 500)):
+            approved_project(
+                country=brazil,
+                status=ongoing_status,
+                cluster=ProjectClusterFactory(code=code, name=code),
+                total_fund=fund,
+                support_cost_psc=0,
+            )
+
+        table = self.entry(user)["theme_funding"]["value"]
+        assert [row["group"] for row in table] == [
+            "HFCs consumption",
+            "HCFCs consumption",
+            "Disposal",
+        ]
+        assert table[0]["funds_plus_psc"] == 900
+
+    def test_funding_with_no_theme_is_reported_beside_the_total(
+        self, user, ongoing_status
+    ):
+        """The bars and the callout visibly do not add up, rather than quietly."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            cluster=ProjectClusterFactory(code="HPMP1", name="HPMP1"),
+            total_fund=500,
+            support_cost_psc=0,
+        )
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            cluster=ProjectClusterFactory(code="AGC", name="AGC"),
+            total_fund=200,
+            support_cost_psc=0,
+        )
+
+        metrics = self.entry(user)
+        assert metrics["theme_total"]["value"] == 700
+        assert metrics["theme_unmapped"]["value"] == 200
+        assert [row["group"] for row in metrics["theme_funding"]["value"]] == [
+            "HCFCs consumption"
+        ]
+
+    def test_the_reporting_cycle_supplies_the_actual_phase_out(
+        self, user, ongoing_status
+    ):
+        """Approved is what a project set out to do; this is what it reports doing."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=2024)
+        )
+        AnnualProjectReportFactory(
+            project=approved_project(
+                country=brazil, status=ongoing_status, total_phase_out_odp_tonnes=99
+            ),
+            report=agency_report,
+            consumption_phased_out_odp=4,
+            production_phased_out_odp=1.5,
+            consumption_phased_out_co2=300,
+            production_phased_out_co2=0,
+            funds_disbursed=250,
+        )
+
+        self.client.force_authenticate(user=user)
+        response = self.client.get(
+            reverse("dashboard-metrics-country", args=["BRA"]), {"apr_year": 2024}
+        )
+        metrics = metrics_by_id(response.data)
+
+        assert metrics["kf_odp_phased"]["value"] == 5.5
+        assert metrics["kf_co2_phased"]["value"] == 300
+        assert metrics["kf_funding_disbursed"]["value"] == 250
+        assert metrics["kf_odp_approved"]["value"] == 99
+
+
+class TestCountryProgrammeTrends:
+    """The consumption series - a reshaping of the export's own computation."""
+
+    def substance(self, name="HCFC-22", odp=1, gwp=0, annex="C", group_id="CI"):
+        return SubstanceFactory(
+            name=name,
+            odp=odp,
+            gwp=gwp,
+            group=GroupFactory(annex=annex, group_id=group_id),
+        )
+
+    def record(self, country, year, substance, section="A", **kwargs):
+        kwargs.setdefault("imports", 0)
+        kwargs.setdefault("exports", 0)
+        kwargs.setdefault("production", 0)
+        return CPRecordFactory(
+            country_programme_report=CPReportFactory(
+                country=country, year=year, name=f"{country.name} {year}"
+            ),
+            substance=substance,
+            blend=None,
+            section=section,
+            **kwargs,
+        )
+
+    def country(self):
+        return CountryFactory(name="Brazil", iso3="BRA")
+
+    def test_consumption_is_reshaped_into_an_ascending_series(self):
+        """imports - exports + production, converted to ODP - all of it inherited."""
+        country = self.country()
+        substance = self.substance(odp=2)
+        self.record(country, 2021, substance, imports=10, exports=4)
+        self.record(country, 2020, substance, imports=5)
+
+        assert cp.load_trends().consumption_odp("Brazil") == [
+            [2020, 10.0],
+            [2021, 12.0],
+        ]
+
+    def test_a_year_that_reached_zero_is_kept(self):
+        """A country reaching zero is the result the programme exists to produce."""
+        country = self.country()
+        substance = self.substance(odp=1)
+        self.record(country, 2020, substance, imports=5)
+        self.record(country, 2021, substance)
+
+        assert cp.load_trends().consumption_odp("Brazil") == [[2020, 5.0], [2021, 0.0]]
+
+    def test_a_country_that_never_reported_has_no_series(self):
+        self.record(self.country(), 2021, self.substance(), imports=5)
+        CountryFactory(name="Chad", iso3="TCD")
+
+        assert cp.load_trends().consumption_odp("Chad") is None
+
+    def test_methyl_bromide_counts_only_its_non_exempt_usage(self):
+        """QPS is exempt under the Protocol; the export already knows that."""
+        country = self.country()
+        record = self.record(
+            country,
+            2021,
+            self.substance(name="Methyl Bromide", odp=1, annex="E", group_id="EI"),
+            imports=50,
+        )
+        for name, quantity in (("QPS", 30), ("Non-QPS", 7)):
+            CPUsageFactory(
+                country_programme_record=record,
+                usage=UsageFactory(name=name, full_name=name),
+                quantity=quantity,
+            )
+
+        assert cp.load_trends().consumption_odp("Brazil") == [[2021, 7.0]]
+
+    def test_sector_usage_carries_a_year_that_reports_no_trade(self):
+        """5,000-odd records report usage and no trade; they used to count as zero."""
+        country = self.country()
+        record = self.record(country, 2021, self.substance(odp=1))
+        CPUsageFactory(
+            country_programme_record=record,
+            usage=UsageFactory(name="Foam", full_name="Foam"),
+            quantity=12,
+        )
+
+        assert cp.load_trends().consumption_odp("Brazil") == [[2021, 12.0]]
+
+    def test_hfc_consumption_arrives_converted_to_co2(self):
+        country = self.country()
+        substance = self.substance(
+            name="HFC-134a", odp=0, gwp=1430, annex="F", group_id="F"
+        )
+        self.record(country, 2021, substance, section="B", imports=10)
+
+        assert cp.load_trends().consumption_co2("Brazil") == [[2021, 14300.0]]
+
+    def test_production_is_converted_to_odp(self):
+        country = self.country()
+        self.record(country, 2021, self.substance(odp=3), production=4)
+
+        assert cp.load_trends().production_odp("Brazil") == [[2021, 12.0]]
+
+    def test_a_country_that_produces_nothing_has_no_production_chart(self):
+        """Unlike consumption, a column of zeros here is a chart the page skips."""
+        country = self.country()
+        self.record(country, 2021, self.substance(odp=1), imports=5)
+
+        assert cp.load_trends().production_odp("Brazil") is None
+
+    def test_no_reports_at_all_costs_nothing(self):
+        assert cp.load_trends().consumption_odp("Brazil") is None
+
+
 class TestSpecCommand:
     """The registry's documentation half, replacing the old /spec/ endpoint."""
 
@@ -869,7 +1500,7 @@ class TestSpecCommand:
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
 
-        assert "90 metrics, 46 implemented." in rendered
+        assert "90 metrics, 75 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 

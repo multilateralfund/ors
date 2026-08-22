@@ -1,7 +1,33 @@
 """
-The 42 per-country metric declarations.
+The 42 per-country metric declarations, and what each one is.
+
+Every ``compute`` takes the request's :class:`MetricContext` and returns a
+value, or ``None`` when there is nothing behind the figure. The context is
+narrowed to one country, so these read the same primitives the fund-wide
+figures do and get a country's worth of answer back.
 """
 
+from functools import partial
+from typing import Any
+
+from core.api.dashboard_metrics import classify, taxonomy
+from core.api.dashboard_metrics.apr import CO2_PHASED_OUT_FIELDS, ODP_PHASED_OUT_FIELDS
+from core.api.dashboard_metrics.classify import (
+    HCFC,
+    HFC,
+    OTHER_ODS,
+    ClassifiedProject,
+)
+from core.api.dashboard_metrics.context import MetricContext
+from core.api.dashboard_metrics.primitives import (
+    funds_pair,
+    grouped,
+    grouped_row,
+    is_country_entry,
+    phase_out,
+    project_counts,
+    totals,
+)
 from core.api.dashboard_metrics.registry import (
     Disposition,
     Kind,
@@ -9,6 +35,258 @@ from core.api.dashboard_metrics.registry import (
     Unit,
     index_metrics,
 )
+from core.models.project import Project
+
+ONGOING_STATUS_CODE = "ONG"
+
+TOTAL_PHASE_OUT_ODP = "total_phase_out_odp_tonnes"
+TOTAL_PHASE_OUT_CO2 = "total_phase_out_co2_tonnes"
+
+# A project's roll-up and its own substance rows are the same figure computed
+# twice; below this they are agreeing about a rounding difference.
+ROLLUP_TOLERANCE = 0.01
+
+# The API hands back the literal string on a few free-text rows.
+ABSENT_TEXT = ("", "nan", "none")
+
+
+def _entry(context: MetricContext) -> Any:
+    """The country or region this payload describes."""
+    return context.country
+
+
+def _country(context: MetricContext) -> Any:
+    """The country this payload describes, or ``None`` for an aggregate entry.
+
+    Country attributes do not apply to the five regional and global entries:
+    they are somewhere projects are booked, not somewhere with an ozone unit.
+    """
+    entry = _entry(context)
+    return entry if entry is not None and is_country_entry(entry) else None
+
+
+def _text(value: Any) -> str | None:
+    """Free text, or ``None`` when it holds nothing worth showing."""
+    if value is None or str(value).strip().lower() in ABSENT_TEXT:
+        return None
+    return str(value).strip()
+
+
+def _theme_of(row: ClassifiedProject) -> str | None:
+    """The country page's funding theme for one project, from its cluster."""
+    cluster = row.project.cluster
+    if cluster is None:
+        return None
+    return taxonomy.THEME_BY_CLUSTER_CODE.get(cluster.code)
+
+
+def _substance_row_sums(project: Project) -> tuple[float, float]:
+    """A project's phase-out as its own substance rows report it."""
+    rows = project.ods_odp.all()
+    return (
+        float(sum(row.odp or 0 for row in rows)),
+        float(sum(row.co2_mt or 0 for row in rows)),
+    )
+
+
+def scope_entry_type(context: MetricContext) -> str | None:
+    """Whether this entry is a country or one of the aggregate regions."""
+    entry = _entry(context)
+    if entry is None:
+        return None
+    return "country" if is_country_entry(entry) else "region"
+
+
+def scope_excluded_status(context: MetricContext) -> dict[str, Any]:
+    """What the Transferred/Closed rule removed from every figure on this page."""
+    return totals(context.excluded)
+
+
+def scope_no_code(context: MetricContext) -> int:
+    """Projects in scope carrying no project code.
+
+    They sit inside the funding totals and outside the project count, which
+    counts distinct codes and cannot see them.
+    """
+    return len([row for row in context.projects if not row.project.code])
+
+
+def scope_rollup_mismatch(context: MetricContext) -> dict[str, Any]:
+    """Phase-out a stale project roll-up hides, against the substance rows.
+
+    Reported, never substituted. Every phase-out figure on this page reads the
+    project-level column, and quietly swapping in the substance sum would put
+    this page at odds with every other consumer of the same data.
+    """
+    rollup_odp = rollup_co2 = rows_odp = rows_co2 = 0.0
+    affected = 0
+
+    for row in context.projects:
+        project = row.project
+        odp, co2 = _substance_row_sums(project)
+        project_odp = float(project.total_phase_out_odp_tonnes or 0)
+        project_co2 = float(project.total_phase_out_co2_tonnes or 0)
+        if (
+            abs(odp - project_odp) <= ROLLUP_TOLERANCE
+            and abs(co2 - project_co2) <= ROLLUP_TOLERANCE
+        ):
+            continue
+        affected += 1
+        rollup_odp += project_odp
+        rollup_co2 += project_co2
+        rows_odp += odp
+        rows_co2 += co2
+
+    return {
+        "projects_affected": affected,
+        "odp_project_rollup": round(rollup_odp, 2),
+        "odp_substance_rows": round(rows_odp, 2),
+        "co2_project_rollup": round(rollup_co2, 2),
+        "co2_substance_rows": round(rows_co2, 2),
+    }
+
+
+def attr_country_name(context: MetricContext) -> str | None:
+    """What this entry is called."""
+    entry = _entry(context)
+    return entry.name if entry else None
+
+
+def attr_iso3(context: MetricContext) -> str | None:
+    """The ISO3 code. Aggregate entries have none."""
+    country = _country(context)
+    return country.iso3 if country else None
+
+
+def attr_region(context: MetricContext) -> str | None:
+    """The region the country sits in. An aggregate entry is not under one."""
+    return _text(classify.region_of(_entry(context)))
+
+
+def attr_hfc_group(context: MetricContext) -> str | None:
+    """The country's Kigali consumption group."""
+    country = _country(context)
+    return _text(country.consumption_group) if country else None
+
+
+def attr_hcfc_lvc(context: MetricContext) -> str | None:
+    """Whether the country is low-volume-consuming, for HCFC purposes."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "LVC" if country.is_lvc else "NON-LVC"
+
+
+def attr_nou_ministry(context: MetricContext) -> str | None:
+    """The ministry or office the national ozone unit sits in."""
+    country = _country(context)
+    return _text(country.ozone_unit) if country else None
+
+
+def kf_projects_approved(context: MetricContext) -> int:
+    """How many projects the country has had approved."""
+    return project_counts(context.projects)["projects_by_code"]
+
+
+def kf_projects_ongoing(context: MetricContext) -> int:
+    """How many of them are still running."""
+    return project_counts(context.with_status(ONGOING_STATUS_CODE))["projects_by_code"]
+
+
+def kf_funding_disbursed(context: MetricContext) -> float | None:
+    """What has actually been paid out to the country."""
+    return context.apr.funds_disbursed()["all_time"] if context.apr else None
+
+
+def kf_phased_out(context: MetricContext, fields: tuple[str, ...]) -> float | None:
+    """What the reporting cycle says was removed, as against what was approved."""
+    return context.apr.phased_out(fields) if context.apr else None
+
+
+def trend_ods_consumption(context: MetricContext) -> list | None:
+    """Reported consumption of ozone-depleting substances, year by year."""
+    entry = _entry(context)
+    return context.cp.consumption_odp(entry.name) if entry else None
+
+
+def trend_hfc_consumption(context: MetricContext) -> list | None:
+    """Reported consumption of hydrofluorocarbons, year by year."""
+    entry = _entry(context)
+    return context.cp.consumption_co2(entry.name) if entry else None
+
+
+def trend_ods_production(context: MetricContext) -> list | None:
+    """Reported production of ozone-depleting substances, year by year."""
+    entry = _entry(context)
+    return context.cp.production_odp(entry.name) if entry else None
+
+
+def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
+    """Funding by theme, in the order the chart draws its bars.
+
+    A project whose cluster has no theme is left out of the table and reported
+    by :func:`theme_unmapped` instead, so the bars and the callout can be seen
+    not to add up rather than quietly disagreeing.
+    """
+    table = grouped(context.projects, _theme_of)
+    order = {theme: rank for rank, theme in enumerate(taxonomy.THEME_ORDER)}
+    table.sort(key=lambda row: order.get(row["group"], len(order)))
+    return table or None
+
+
+def theme_total(context: MetricContext) -> float:
+    """Everything approved for the country, which is the chart's callout figure."""
+    return funds_pair(context.projects)["funds_plus_psc"]
+
+
+def theme_unmapped(context: MetricContext) -> float:
+    """Funding on projects whose cluster has no theme.
+
+    It is inside the callout total and inside none of the bars.
+    """
+    return funds_pair([row for row in context.projects if not _theme_of(row)])[
+        "funds_plus_psc"
+    ]
+
+
+def sector_tonnage(
+    context: MetricContext, family: str | None, field: str
+) -> list[dict[str, Any]] | None:
+    """Phase-out by sector for one substance family, consumption projects only.
+
+    ``family=None`` is the residual: the projects whose family neither their
+    cluster nor their substances could settle. Every bucket is returned, zeros
+    included, so the chart's slices stay put between countries - but a family
+    that phases nothing out here has no chart at all.
+    """
+    rows = [
+        row
+        for row in context.projects
+        if row.family_detail == family and not row.is_production
+    ]
+    buckets: dict[str, list[ClassifiedProject]] = {}
+    for row in rows:
+        buckets.setdefault(classify.country_sector_bucket(row.project), []).append(row)
+
+    table = [
+        {
+            **grouped_row(bucket, buckets.get(bucket, [])),
+            "tonnage": phase_out(buckets.get(bucket, []), field),
+        }
+        for bucket in classify.COUNTRY_SECTOR_ORDER
+    ]
+    return table if any(row["tonnage"] for row in table) else None
+
+
+def prod_tonnage(context: MetricContext) -> float | None:
+    """What the country's production projects take out of circulation.
+
+    ``None`` where it has none: the page draws no production chart at all for
+    those countries.
+    """
+    rows = [row for row in context.projects if row.is_production]
+    return phase_out(rows, TOTAL_PHASE_OUT_ODP) if rows else None
+
 
 COUNTRY_METRICS: tuple[Metric, ...] = (
     Metric(
@@ -21,7 +299,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="country vs aggregate (Global / Europe / 'Region: …')",
         db_source="DB-COMPUTABLE",
         src_model_field="Country.location_type",
-        compute=None,
+        compute=scope_entry_type,
     ),
     Metric(
         metric_id="scope_excluded_status",
@@ -36,7 +314,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE",
         src_model_field="Project.status",
-        compute=None,
+        compute=scope_excluded_status,
     ),
     Metric(
         metric_id="scope_no_code",
@@ -48,7 +326,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="latest, non-excluded rows where code is null",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.code",
-        compute=None,
+        compute=scope_no_code,
     ),
     Metric(
         metric_id="scope_rollup_mismatch",
@@ -66,7 +344,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             "Project.total_phase_out_odp_tonnes / _co2_tonnes  vs  ProjectOdsOdp.odp "
             "/ .co2_mt"
         ),
-        compute=None,
+        compute=scope_rollup_mismatch,
     ),
     Metric(
         metric_id="attr_country_name",
@@ -78,7 +356,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="dashboard export 'Country' column",
         db_source="DB-COMPUTABLE",
         src_model_field="Country.name",
-        compute=None,
+        compute=attr_country_name,
     ),
     Metric(
         metric_id="attr_iso3",
@@ -90,7 +368,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="dashboard export 'country_iso' column",
         db_source="DB-COMPUTABLE",
         src_model_field="Country.iso3",
-        compute=None,
+        compute=attr_iso3,
     ),
     Metric(
         metric_id="attr_region",
@@ -102,7 +380,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="dashboard export 'Region' column (drives the dynamic footer)",
         db_source="DB-COMPUTABLE",
         src_model_field="Country.parent chain",
-        compute=None,
+        compute=attr_region,
     ),
     Metric(
         metric_id="attr_ods_licensing",
@@ -178,7 +456,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="Country.consumption_group (e.g. 'I' / 'II')",
         db_source="DB-COMPUTABLE",
         src_model_field="Country.consumption_group",
-        compute=None,
+        compute=attr_hfc_group,
     ),
     Metric(
         metric_id="attr_hcfc_lvc",
@@ -190,7 +468,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="Country.is_lvc (+ consumption_category label)",
         db_source="DB-COMPUTABLE",
         src_model_field="Country.is_lvc",
-        compute=None,
+        compute=attr_hcfc_lvc,
     ),
     Metric(
         metric_id="attr_nou_ministry",
@@ -202,7 +480,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="Country.ozone_unit (free text - holds the ministry/office name)",
         db_source="DB-COMPUTABLE-AMBIGUOUS",
         src_model_field="Country.ozone_unit",
-        compute=None,
+        compute=attr_nou_ministry,
     ),
     Metric(
         metric_id="attr_nou_name",
@@ -266,7 +544,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE",
         src_model_field="Project.code",
-        compute=None,
+        compute=kf_projects_approved,
     ),
     Metric(
         metric_id="kf_projects_ongoing",
@@ -278,7 +556,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="count(distinct code) where status == Ongoing",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.status",
-        compute=None,
+        compute=kf_projects_ongoing,
     ),
     Metric(
         metric_id="kf_funding_approved",
@@ -293,7 +571,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund + support_cost_psc",
-        compute=None,
+        compute=lambda context: funds_pair(context.projects),
     ),
     Metric(
         metric_id="kf_funding_disbursed",
@@ -305,7 +583,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="sum(Funds Disbursed (US$)) from the APR export for the country",
         db_source="NEEDS-APR",
         src_model_field="AnnualProjectReport.funds_disbursed",
-        compute=None,
+        compute=kf_funding_disbursed,
     ),
     Metric(
         metric_id="kf_odp_phased",
@@ -323,7 +601,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             "AnnualProjectReport.consumption_phased_out_odp + "
             "production_phased_out_odp"
         ),
-        compute=None,
+        compute=partial(kf_phased_out, fields=ODP_PHASED_OUT_FIELDS),
     ),
     Metric(
         metric_id="kf_odp_approved",
@@ -335,7 +613,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="sum(Total phase-out (ODP tonnes)) - the approved/planned total",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_phase_out_odp_tonnes",
-        compute=None,
+        compute=lambda context: phase_out(context.projects, TOTAL_PHASE_OUT_ODP),
     ),
     Metric(
         metric_id="kf_co2_phased",
@@ -353,7 +631,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             "AnnualProjectReport.consumption_phased_out_co2 + "
             "production_phased_out_co2"
         ),
-        compute=None,
+        compute=partial(kf_phased_out, fields=CO2_PHASED_OUT_FIELDS),
     ),
     Metric(
         metric_id="kf_co2_approved",
@@ -365,7 +643,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="sum(Total phase-out (CO2-eq tonnes)) - the approved/planned total",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_phase_out_co2_tonnes",
-        compute=None,
+        compute=lambda context: phase_out(context.projects, TOTAL_PHASE_OUT_CO2),
     ),
     Metric(
         metric_id="trend_ods_consumption",
@@ -377,7 +655,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="per year: backend get_consumption_value over section-A records (ODP)",
         db_source="DB-COMPUTABLE-CP",
         src_model_field="CPRecord.imports/exports/production (section A)",
-        compute=None,
+        compute=trend_ods_consumption,
     ),
     Metric(
         metric_id="trend_hfc_consumption",
@@ -392,7 +670,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE-CP",
         src_model_field="CPRecord (Annex F)",
-        compute=None,
+        compute=trend_hfc_consumption,
     ),
     Metric(
         metric_id="trend_ods_production",
@@ -406,7 +684,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE-CP",
         src_model_field="CPRecord.production",
-        compute=None,
+        compute=trend_ods_production,
     ),
     Metric(
         metric_id="theme_funding",
@@ -421,7 +699,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE-MAPPED",
         src_model_field="Project.cluster + Cluster list_ey copy.xlsx",
-        compute=None,
+        compute=theme_funding,
     ),
     Metric(
         metric_id="theme_total",
@@ -433,7 +711,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="sum(funding+PSC) over the country",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund + psc",
-        compute=None,
+        compute=theme_total,
     ),
     Metric(
         metric_id="theme_unmapped",
@@ -445,7 +723,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="funding whose Cluster has no Aggregation in Cluster list_ey copy.xlsx",
         db_source="DB-COMPUTABLE-MAPPED",
         src_model_field="Project.cluster + Cluster list_ey copy.xlsx",
-        compute=None,
+        compute=theme_unmapped,
     ),
     Metric(
         metric_id="sector_hfc",
@@ -463,7 +741,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             "Project.substance_type + Project.sector + "
             "Project.total_phase_out_co2_tonnes"
         ),
-        compute=None,
+        compute=partial(sector_tonnage, family=HFC, field=TOTAL_PHASE_OUT_CO2),
     ),
     Metric(
         metric_id="sector_hcfc",
@@ -481,7 +759,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             "Project.substance_type + Project.sector + "
             "Project.total_phase_out_odp_tonnes"
         ),
-        compute=None,
+        compute=partial(sector_tonnage, family=HCFC, field=TOTAL_PHASE_OUT_ODP),
     ),
     Metric(
         metric_id="sector_other_ods",
@@ -499,7 +777,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             "Project.substance_type + Project.sector + "
             "Project.total_phase_out_odp_tonnes"
         ),
-        compute=None,
+        compute=partial(sector_tonnage, family=OTHER_ODS, field=TOTAL_PHASE_OUT_ODP),
     ),
     Metric(
         metric_id="sector_unclassified",
@@ -514,7 +792,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE-AMBIGUOUS",
         src_model_field="Project.substance_type / Project.cluster",
-        compute=None,
+        compute=partial(sector_tonnage, family=None, field=TOTAL_PHASE_OUT_ODP),
     ),
     Metric(
         metric_id="prod_tonnage",
@@ -528,7 +806,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_phase_out_odp_tonnes (production)",
-        compute=None,
+        compute=prod_tonnage,
     ),
     Metric(
         metric_id="ee_kwh_saved",

@@ -50,7 +50,15 @@ def excluded_status_labels() -> list[str]:
 
 def dashboard_project_rows(country: Country | None = None) -> list[Project]:
     """The population as objects, in one query, ready to classify."""
-    projects = dashboard_projects()
+    return _rows(dashboard_projects(), country)
+
+
+def excluded_project_rows(country: Country | None = None) -> list[Project]:
+    """The complement as objects, for the metric that reports what was removed."""
+    return _rows(excluded_projects(), country)
+
+
+def _rows(projects: QuerySet[Project], country: Country | None) -> list[Project]:
     if country is not None:
         projects = projects.filter(country=country)
     return list(
@@ -80,6 +88,11 @@ def funds(row: Any) -> float:
 def funds_plus_psc(row: Any) -> float:
     """Approved funding plus programme support costs."""
     return funds(row) + (row.project.support_cost_psc or 0.0)
+
+
+def phase_out(rows: Sequence[Any], field: str) -> float:
+    """What a slice of the portfolio takes out of circulation, in its own unit."""
+    return round(float(sum(getattr(row.project, field) or 0 for row in rows)), 2)
 
 
 def funds_pair(rows: Sequence[Any]) -> dict[str, float]:
@@ -176,9 +189,14 @@ def entry_key(country: Country) -> str | None:
     return country.abbr
 
 
+def is_country_entry(country: Country) -> bool:
+    """Whether an entry is a country rather than one of the aggregate regions."""
+    return country.location_type == Country.LocationType.COUNTRY
+
+
 def entry_for(country: Country) -> dict[str, Any]:
     """The entry object embedded in a country payload and in the index."""
-    is_country = country.location_type == Country.LocationType.COUNTRY
+    is_country = is_country_entry(country)
     return {
         "key": entry_key(country),
         "name": country.name,
@@ -187,9 +205,14 @@ def entry_for(country: Country) -> dict[str, Any]:
     }
 
 
+def entry_pairs() -> list[tuple[Country, dict[str, Any]]]:
+    """Every entry row beside the row it came from, before any filtering."""
+    return [(country, entry_for(country)) for country in entry_countries()]
+
+
 def entry_candidates() -> list[dict[str, Any]]:
     """Every entry row, before addressability filtering."""
-    return [entry_for(country) for country in entry_countries()]
+    return [entry for _country, entry in entry_pairs()]
 
 
 def key_problems(
@@ -214,16 +237,16 @@ def key_problems(
     return sorted(unaddressable), collisions
 
 
-def dashboard_entries() -> list[dict[str, Any]]:
-    """Every entry this API can address unambiguously.
+def addressable_entries() -> list[tuple[Country, dict[str, Any]]]:
+    """Every entry this API can address unambiguously, with the row behind it.
 
     Bad data costs one entry, not the endpoint. An entry with no key is
     dropped; a key claimed twice is served for neither side, since picking one
     would publish its figures under the other's name. Both are logged rather
     than disclosed - the payload is headed for a public page.
     """
-    candidates = entry_candidates()
-    unaddressable, collisions = key_problems(candidates)
+    pairs = entry_pairs()
+    unaddressable, collisions = key_problems([entry for _country, entry in pairs])
 
     if unaddressable:
         logger.warning(
@@ -240,18 +263,27 @@ def dashboard_entries() -> list[dict[str, Any]]:
         )
 
     return [
-        entry
-        for entry in candidates
+        (country, entry)
+        for country, entry in pairs
         if entry["key"] and entry["key"].upper() not in collisions
     ]
 
 
-def resolve_entry(key: str) -> dict[str, Any] | None:
-    """Look up one addressable entry by its URL key, case-insensitively."""
+def dashboard_entries() -> list[dict[str, Any]]:
+    """The index: every addressable entry, as the client sees it."""
+    return [entry for _country, entry in addressable_entries()]
+
+
+def resolve_entry(key: str) -> tuple[Country, dict[str, Any]] | None:
+    """One addressable entry by its URL key, case-insensitively.
+
+    Returns the ``Country`` alongside the entry: the payload needs the row to
+    narrow every figure to it, and the entry itself carries no id.
+    """
     wanted = (key or "").strip().upper()
     if not wanted:
         return None
-    for entry in dashboard_entries():
+    for country, entry in addressable_entries():
         if entry["key"].upper() == wanted:
-            return entry
+            return country, entry
     return None
