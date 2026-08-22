@@ -6,7 +6,7 @@ See ``docs/dashboard_metrics.md``.
 
 import logging
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Callable
 
 from django.db.models import QuerySet
 
@@ -19,6 +19,10 @@ logger = logging.getLogger(__name__)
 # Transferred and Closed; what it removes is reported by scope_excluded_status
 # rather than vanishing.
 EXCLUDED_STATUS_CODES = ("TRF", "CLO")
+
+# A multi-year agreement is one project spread over several tranches, so it is
+# counted at a different grain from an individual project.
+MYA_CATEGORY_MARKER = "multi-"
 
 
 def dashboard_projects() -> QuerySet[Project]:
@@ -42,6 +46,116 @@ def excluded_status_labels() -> list[str]:
         .order_by("name")
         .values_list("name", flat=True)
     )
+
+
+def dashboard_project_rows(country: Country | None = None) -> list[Project]:
+    """The population as objects, in one query, ready to classify."""
+    projects = dashboard_projects()
+    if country is not None:
+        projects = projects.filter(country=country)
+    return list(
+        projects.select_related(
+            "agency",
+            "cluster",
+            "country__parent__parent",
+            "funding_window__decision__meeting",
+            "project_type",
+            "sector",
+            "status",
+        )
+        .prefetch_related("ods_odp__ods_substance__group")
+        .order_by("id")
+    )
+
+
+def funds(row: Any) -> float:
+    """Approved funding for one project.
+
+    The raw field: the published figures carry no ``fund_transferred``
+    adjustment, so neither does this.
+    """
+    return row.project.total_fund or 0.0
+
+
+def funds_plus_psc(row: Any) -> float:
+    """Approved funding plus programme support costs."""
+    return funds(row) + (row.project.support_cost_psc or 0.0)
+
+
+def funds_pair(rows: Sequence[Any]) -> dict[str, float]:
+    """The two money totals that appear side by side all over both pages."""
+    return {
+        "funds_approved": round(sum(funds(row) for row in rows), 2),
+        "funds_plus_psc": round(sum(funds_plus_psc(row) for row in rows), 2),
+    }
+
+
+def _is_mya(row: Any) -> bool:
+    return MYA_CATEGORY_MARKER in (row.project.category or "").lower()
+
+
+def _distinct(rows: Sequence[Any], attribute: str) -> int:
+    """How many distinct non-empty values of ``attribute`` the rows carry.
+
+    ``code`` and ``metacode`` are only assigned at approval, so a pre-approval
+    project is null on both and must not count as a value of its own.
+    """
+    return len(
+        {
+            getattr(row.project, attribute)
+            for row in rows
+            if getattr(row.project, attribute)
+        }
+    )
+
+
+def count_project_grains(rows: Sequence[Any]) -> dict[str, int]:
+    """One project count per grain, because the page quotes more than one.
+
+    A multi-year agreement is many components under one metacode; an individual
+    project is one of each. The first two grains are the same numbers
+    :func:`totals` reports, under the same names.
+    """
+    mya = [row for row in rows if _is_mya(row)]
+    individual = [row for row in rows if not _is_mya(row)]
+    return {
+        **project_counts(rows),
+        "mya_by_metacode": _distinct(mya, "metacode"),
+        "individual_by_code": _distinct(individual, "code"),
+    }
+
+
+def project_counts(rows: Sequence[Any]) -> dict[str, int]:
+    """How many projects, counted by component and by agreement."""
+    return {
+        "projects_by_code": _distinct(rows, "code"),
+        "projects_by_metacode": _distinct(rows, "metacode"),
+    }
+
+
+def totals(rows: Sequence[Any]) -> dict[str, Any]:
+    """What a slice of the portfolio amounts to: counts at both grains, and money."""
+    return {**project_counts(rows), **funds_pair(rows)}
+
+
+def grouped_row(group: str, rows: Sequence[Any]) -> dict[str, Any]:
+    """One row of a by-group table."""
+    return {"group": group, **totals(rows)}
+
+
+def grouped(rows: Sequence[Any], key: Callable[[Any], Any]) -> list[dict[str, Any]]:
+    """Split the rows by ``key`` and total each group, largest group first.
+
+    Rows the key cannot place are dropped: a group with no name has nothing to
+    render against.
+    """
+    buckets: dict[str, list[Any]] = {}
+    for row in rows:
+        group = key(row)
+        if group:
+            buckets.setdefault(str(group), []).append(row)
+    table = [grouped_row(group, members) for group, members in buckets.items()]
+    return sorted(table, key=lambda entry: -entry["projects_by_code"])
 
 
 def entry_countries() -> QuerySet[Country]:
