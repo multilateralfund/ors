@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,too-many-return-statements
 from functools import partial
 from itertools import pairwise
 from operator import attrgetter
@@ -552,14 +552,20 @@ class ProjectsInventoryReportWriter(BaseWriter):
         project_end_date = tz_naive(final_version.project_end_date)
 
         mya_completion_date = tz_naive(meta_project.end_date)
-        computed_mya_completion_date = self.mya_completion_dates.get(project.meta_project_id)
+        computed_mya_completion_date = self.mya_completion_dates.get(
+            project.meta_project_id
+        )
         mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
 
         is_transferred = final_version.status and final_version.status.code == "TRF"
         is_closed = final_version.status and final_version.status.code == "CLO"
         is_ongoing = final_version.status and final_version.status.code == "ONG"
 
-        if (agreement_date and mya_completion_date) and is_same_month(agreement_date, mya_completion_date) and not is_ongoing:
+        if (
+            (agreement_date and mya_completion_date)
+            and is_same_month(agreement_date, mya_completion_date)
+            and not is_ongoing
+        ):
             return agreement_date
 
         if is_same_month(mya_extended_date, mya_completion_date):
@@ -607,7 +613,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
             agreement_date = tz_naive(final_version.date_per_agreement)
             meta_end_date = tz_naive(meta_project.end_date)
 
-            computed_mya_completion_date = self.mya_completion_dates.get(project.meta_project_id)
+            computed_mya_completion_date = self.mya_completion_dates.get(
+                project.meta_project_id
+            )
             mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
 
             is_ongoing = final_version.status and final_version.status.code == "ONG"
