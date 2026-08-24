@@ -581,14 +581,12 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         inv_row = get_inventory_project_row(sheet, inv_project.id)
 
         assert inv_row is not None
-        assert sheet[f"{headers['Extended date']}{inv_row}"].value.date() == date(
-            2025, 12, 1
-        )
+        assert sheet[f"{headers['Extended date']}{inv_row}"].value is None
         assert sheet[
             f"{headers['Approved Date Completion']}{inv_row}"
         ].value.date() == date(2021, 12, 1)
 
-    def test_modern_extended_date_uses_final_project_end_without_post_excom(self):
+    def test_modern_extended_date_requires_mya_extended_date(self):
         meta_project = MetaProjectFactory.create(
             type=MetaProject.MetaProjectType.MYA,
             end_date=datetime(2030, 12, 1, tzinfo=timezone.utc),
@@ -601,10 +599,13 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             post_excom_meeting=None,
         )
 
-        # pylint: disable-next=protected-access
-        value = ProjectsInventoryReportWriter._get_modern_extended_date(project)
+        writer = ProjectsInventoryReportWriter.__new__(ProjectsInventoryReportWriter)
+        writer.mya_completion_dates = writer.build_mya_completion_dates([project])
 
-        assert value.date() == date(2028, 6, 1)
+        # pylint: disable-next=protected-access
+        value = writer._get_modern_extended_date(project)
+
+        assert value is None
 
     def test_export_inventory_report_legacy_extended_date_uses_later_date(
         self, admin_user, project_approved_status
