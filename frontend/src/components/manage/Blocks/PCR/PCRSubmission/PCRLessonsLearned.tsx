@@ -11,8 +11,8 @@ import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
 import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
 import { ApiAgency } from '@ors/types/api_agencies'
 
+import { filter, find, map, omit, sumBy } from 'lodash'
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, find, map, omit } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import cx from 'classnames'
 
@@ -43,7 +43,7 @@ const PCRLessonsLearned = () => {
   const agencyErrors = map(pcErrors[crtAgencyId], 'errors')
   const formattedAgencyErrors = formatErrors(
     { [pcField]: agencyErrors },
-    'learned_lessons',
+    llField,
   )
   const learnedLessonsErrors = map(agencyErrors, (error) => map(error, llField))
 
@@ -71,7 +71,7 @@ const PCRLessonsLearned = () => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectComponentData = {
         project_component_option_id: null,
-        learned_lessons: [],
+        [llField]: [],
       }
 
       return {
@@ -88,7 +88,6 @@ const PCRLessonsLearned = () => {
     }, pcField)
   }
 
-  //TODO: take into account causes of delay are also included here
   const onRemoveProjectComponent = (pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
@@ -109,12 +108,22 @@ const PCRLessonsLearned = () => {
     }, pcField)
 
     setErrors((prevData: Record<string, any[]>) => {
-      const errorIndex = getErrorIndex(
+      const sectionErrorIndex = getErrorIndex(
         sectionData,
         pcField,
         crtAgencyId,
         pcIndex,
       )
+
+      const causesOfDelayErrors = map(PCRData.causes_of_delay, (data) => ({
+        [data.agency_id]: data[pcField].length,
+      }))
+      const causesOfDelayErrorsLength = sumBy(
+        causesOfDelayErrors,
+        (entry) => Object.values(entry)[0],
+      )
+
+      const errorIndex = sectionErrorIndex + causesOfDelayErrorsLength
 
       return {
         ...prevData,
@@ -152,7 +161,6 @@ const PCRLessonsLearned = () => {
     }, llField)
   }
 
-  //TODO: take into account causes of delay are also included here
   const onRemoveLessonLearned = (llIndex: number, pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
@@ -180,12 +188,22 @@ const PCRLessonsLearned = () => {
     }, llField)
 
     setErrors((prevData: Record<string, any[]>) => {
-      const errorIndex = getErrorIndex(
+      const sectionErrorIndex = getErrorIndex(
         sectionData,
         pcField,
         crtAgencyId,
         pcIndex,
       )
+
+      const causesOfDelayErrors = map(PCRData.causes_of_delay, (data) => ({
+        [data.agency_id]: data[pcField].length,
+      }))
+      const causesOfDelayErrorsLength = sumBy(
+        causesOfDelayErrors,
+        (entry) => Object.values(entry)[0],
+      )
+
+      const errorIndex = sectionErrorIndex + causesOfDelayErrorsLength
 
       return {
         ...prevData,

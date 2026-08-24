@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import {
@@ -16,12 +16,13 @@ import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
 import { formatErrors, hasSectionErrors } from '../utils'
 
+import { flatMap, map, omit } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
 
 const PCRForm = () => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { errors } = useContext(PCRDataContext)
+  const { PCRData, errors, setErrors } = useContext(PCRDataContext)
 
   const tabMapping = {
     overview: { title: 'Overview', errors: errors.overview },
@@ -98,6 +99,72 @@ const PCRForm = () => {
       component: <PCRDocumentation />,
     },
   ]
+
+  const requiredMessage = 'This field is required.'
+
+  const additionalCommentsField = 'additional_comments'
+
+  const overviewData = PCRData.overview || []
+  const additionalCommentsData = overviewData[additionalCommentsField] || []
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [additionalCommentsField]: map(
+        additionalCommentsData,
+        (comment, index) => {
+          const existingErrors = prev[additionalCommentsField]?.[index] ?? {}
+
+          if (!comment.entity) {
+            return { ...existingErrors, entity: [requiredMessage] }
+          }
+
+          return existingErrors.entity?.includes(requiredMessage)
+            ? omit(existingErrors, ['entity'])
+            : existingErrors
+        },
+      ),
+    }))
+  }, [JSON.stringify(additionalCommentsData)])
+
+  const pcField = 'project_components'
+  const cdField = 'delay_causes'
+  const llField = 'learned_lessons'
+
+  const causesOfDelayData = PCRData.causes_of_delay || []
+  const cdProjectComponents = flatMap(
+    causesOfDelayData,
+    ({ project_components }) => project_components,
+  )
+  const lessonsLearnedData = PCRData.lessons_learned || []
+  const llProjectComponents = flatMap(
+    lessonsLearnedData,
+    ({ project_components }) => project_components,
+  )
+
+  useEffect(() => {
+    const projectComponents = [...cdProjectComponents, ...llProjectComponents]
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [pcField]: map(projectComponents, (pc, index) => {
+        const existingErrors = prev[pcField]?.[index] ?? {}
+
+        if (!pc.project_component_option_id) {
+          return {
+            ...existingErrors,
+            project_component_option_id: [requiredMessage],
+          }
+        }
+
+        return existingErrors.project_component_option_id?.includes(
+          requiredMessage,
+        )
+          ? omit(existingErrors, ['project_component_option_id'])
+          : existingErrors
+      }),
+    }))
+  }, [JSON.stringify(causesOfDelayData), JSON.stringify(lessonsLearnedData)])
 
   return (
     <>

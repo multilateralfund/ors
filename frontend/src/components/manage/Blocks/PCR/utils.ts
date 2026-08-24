@@ -116,23 +116,26 @@ export const formatAgencyData = <T extends { agency_id: number }>(
     [],
   )
 
+const checkHasErrors = (entry: Record<string, any>) =>
+  entry && Object.keys(entry).length > 0
+
 export const hasSectionErrors = (errors: Record<string, any>) =>
   Object.values(errors).some((error) => {
     if (!Array.isArray(error)) {
       return Object.values(error as Record<string, any>).some((nestedError) =>
         nestedError.some(
           (item: Record<string, any>) =>
-            item.errors && Object.keys(item.errors).length > 0,
+            item.errors && item.errors.some(checkHasErrors),
         ),
       )
     }
 
     return error.some((item) => {
       if (Array.isArray(item)) {
-        return item.some((entry) => entry && Object.keys(entry).length > 0)
+        return item.some(checkHasErrors)
       }
 
-      return typeof item === 'string' || (item && Object.keys(item).length > 0)
+      return typeof item === 'string' || checkHasErrors(item)
     })
   })
 

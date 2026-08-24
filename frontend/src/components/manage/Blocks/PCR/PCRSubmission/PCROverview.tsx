@@ -1,4 +1,4 @@
-import { Fragment, useContext, useEffect } from 'react'
+import { Fragment, useContext } from 'react'
 
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
@@ -9,7 +9,7 @@ import { getOtherOptionId } from '../utils'
 
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
-import { map, omit } from 'lodash'
+import { map } from 'lodash'
 
 const PCROverview = () => {
   const sectionIdentifier = 'overview'
@@ -19,7 +19,6 @@ const PCROverview = () => {
     PCRData,
     setPCRData,
     errors,
-    setErrors,
     ratingOptions,
     entityOptions,
     completionReportDoneByOptions,
@@ -67,27 +66,6 @@ const PCROverview = () => {
       }
     }, additionalCommentsField)
   }
-
-  useEffect(() => {
-    setErrors((prev: Record<string, any[]>) => ({
-      ...prev,
-      [additionalCommentsField]: map(
-        additionalCommentsData,
-        (comment, index) => {
-          const requiredMessage = 'This field is required.'
-          const existingErrors = prev[additionalCommentsField]?.[index] ?? {}
-
-          if (!comment.entity) {
-            return { ...existingErrors, entity: [requiredMessage] }
-          }
-
-          return existingErrors.entity?.includes(requiredMessage)
-            ? omit(existingErrors, ['entity'])
-            : existingErrors
-        },
-      ),
-    }))
-  }, [JSON.stringify(additionalCommentsData)])
 
   return (
     <>
