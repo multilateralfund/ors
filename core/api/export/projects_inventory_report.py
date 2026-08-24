@@ -552,35 +552,29 @@ class ProjectsInventoryReportWriter(BaseWriter):
         project_end_date = tz_naive(final_version.project_end_date)
 
         mya_completion_date = tz_naive(meta_project.end_date)
-        # computed_mya_completion_date = self.mya_completion_dates.get(project.meta_project_id)
+        computed_mya_completion_date = self.mya_completion_dates.get(project.meta_project_id)
         mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
 
         is_transferred = final_version.status and final_version.status.code == "TRF"
+        is_closed = final_version.status and final_version.status.code == "CLO"
+        is_ongoing = final_version.status and final_version.status.code == "ONG"
+
+        if (agreement_date and mya_completion_date) and is_same_month(agreement_date, mya_completion_date) and not is_ongoing:
+            return agreement_date
 
         if is_same_month(mya_extended_date, mya_completion_date):
             return None
 
-        if is_transferred and not agreement_date:
+        if is_same_month(mya_extended_date, computed_mya_completion_date):
+            return None
+
+        if (is_transferred or is_closed) and not agreement_date:
             return None
 
         if not agreement_date:
             return mya_extended_date if not project_end_date else None
 
-        # A legacy imported agreement date that is still the original MYA completion
-        # date is not, by itself, evidence that the project was extended.
-        if is_same_month(agreement_date, mya_completion_date) and not is_same_month(
-            mya_completion_date, mya_extended_date
-        ):
-            return mya_extended_date
-
-        # Preserve the repeated project/agreement/extension date when it is later
-        # than the original umbrella MYA completion date. If all four dates repeat
-        # the same month, there is no evidence of a separate extension.
-        if is_same_month(agreement_date, project_end_date) and is_same_month(
-            agreement_date, mya_extended_date
-        ):
-            if not is_same_month(agreement_date, mya_completion_date):
-                return agreement_date
+        if agreement_date > mya_extended_date and is_ongoing:
             return None
 
         if mya_extended_date:
