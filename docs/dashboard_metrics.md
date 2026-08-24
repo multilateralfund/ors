@@ -94,6 +94,8 @@ The fund page and the country page both have metrics whose ids begin `theme_` an
 
 A project is counted at two grains because the page quotes both: `code` counts components, `metacode` counts agreements. A multi-year agreement is many of the first and one of the second.
 
+`by_region` places every in-scope project in exactly one row, so the table totals to `funds_approved` and to `projects_approved_total`. A project names either a country or one of the aggregate region entries, and one that names a region is charted under that region - which is why `Global` is one of the rows.
+
 Two values are numbers the client is expected to dress up: `portfolio_projects_rounded` is the portfolio total rounded down to the nearest thousand and should be rendered with a trailing `+`, and `completed_end_year` is a year and should be rendered without a thousands separator.
 
 A theme or sector with no projects returns zeros rather than `null` - none is a real measurement, and it keeps the chart's bars stable. A whole chart that does not apply is a different thing, and is `null`: a country with no production projects has no production chart, and a substance family that phases nothing out has no pie.
@@ -184,7 +186,7 @@ Where ORS already computes something, this package inherits it rather than resta
 
 Classification reads `ProjectCluster.code`, `ProjectSector.code` and `ProjectType.code`, never a display name, and takes the production test from `ProjectCluster.production` alongside `Project.production` and the production sector. It does not read `Project.substance_type`, which is deprecated and mostly null.
 
-The one place this package restates rather than inherits is `classify.region_of`, which walks a country's parent chain to find its region. The dashboard export answers the same question, but importing it needs a function-body import to break a cycle, which is more machinery than the four lines it saves.
+The one place this package restates rather than inherits is `classify.region_of`, which walks a country's parent chain to find its region. The dashboard export answers the same question, but importing it needs a function-body import to break a cycle, which is more machinery than the four lines it saves. `region_bucket` sits beside it and answers the charting question rather than the geographic one, alongside `sector_bucket`: a region is under no region, but a project that names one still belongs in its bar.
 
 Alongside those, each `Metric` carries documentation - formula, source, model field - that is **not served**. To render a table of all metrics with full fields:
 

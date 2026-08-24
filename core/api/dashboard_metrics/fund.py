@@ -122,9 +122,14 @@ def by_agency(context: MetricContext) -> list[dict[str, Any]]:
 
 
 def by_region(context: MetricContext) -> list[dict[str, Any]]:
-    """Delivery split across the regions of the countries assisted."""
+    """Delivery split across the regions the portfolio is spread over.
+
+    Every in-scope project lands in exactly one row, so the table sums to the
+    fund. A project naming a region rather than one of its countries - Global
+    among them - is charted under that region.
+    """
     return grouped(
-        context.projects, lambda row: classify.region_of(row.project.country)
+        context.projects, lambda row: classify.region_bucket(row.project.country)
     )
 
 

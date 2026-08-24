@@ -535,6 +535,33 @@ class TestFundValues(BaseTest):
         assert metrics["funds_approved"]["value"]["funds_approved"] == 100
         assert metrics["projects_approved_total"]["value"]["projects_by_code"] == 1
 
+    def test_the_region_table_sums_to_the_fund(self, user, ongoing_status):
+        """A project naming a region belongs to that region's row."""
+        africa = CountryFactory(
+            name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
+        )
+        approved_project(
+            country=CountryFactory(name="Ghana", iso3="GHA", parent=africa),
+            status=ongoing_status,
+            total_fund=100,
+            support_cost_psc=0,
+        )
+        approved_project(
+            country=africa, status=ongoing_status, total_fund=900, support_cost_psc=0
+        )
+
+        metrics = self.fund(user)
+        assert metrics["by_region"]["value"] == [
+            {
+                "group": "Africa",
+                "funds_approved": 1000,
+                "funds_plus_psc": 1000,
+                "projects_by_code": 2,
+                "projects_by_metacode": 2,
+            }
+        ]
+        assert metrics["funds_approved"]["value"]["funds_approved"] == 1000
+
     def test_counts_separate_multi_year_agreements_from_individual_projects(
         self, user, ongoing_status
     ):
@@ -866,6 +893,18 @@ class TestClassification:
         assert classify.region_of(region) is None
         assert classify.region_of(CountryFactory(name="Nowhere")) is None
         assert classify.region_of(None) is None
+
+    def test_a_region_is_charted_under_itself(self):
+        """Where a country sits and where it is charted are two questions."""
+        region = CountryFactory(
+            name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
+        )
+        ghana = CountryFactory(name="Ghana", iso3="GHA", parent=region)
+
+        assert classify.region_bucket(region) == "Africa"
+        assert classify.region_bucket(ghana) == "Africa"
+        assert classify.region_bucket(CountryFactory(name="Nowhere")) is None
+        assert classify.region_bucket(None) is None
 
     def test_the_family_comes_from_the_cluster(self):
         project = self.project(

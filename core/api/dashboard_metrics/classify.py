@@ -315,6 +315,20 @@ def region_of(country: Country | None) -> str | None:
     return None
 
 
+def region_bucket(country: Country | None) -> str | None:
+    """The region a project is charted under, given the entry it is against.
+
+    ``region_of`` answers where a country sits, and a region sits under no
+    region. A project can name a region entry directly, though, and it belongs
+    in that region's bar rather than in none.
+    """
+    if country is None:
+        return None
+    if country.location_type == Country.LocationType.REGION:
+        return country.name
+    return region_of(country)
+
+
 def disbursed_by_bucket(by_sector_code: dict[str, float]) -> dict[str, float]:
     """Fold per-sector-code disbursement into the six charted buckets."""
     folded: dict[str, float] = {}

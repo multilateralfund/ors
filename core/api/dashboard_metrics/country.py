@@ -825,10 +825,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             '(kWh/year)"; planned twin: "Energy savings - planned (kWh/year)"]'
         ),
         compute=None,
-        unavailable_reason=(
-            "Too sparse to publish per country: the actual field is populated on 1 of "
-            "~11k latest projects and sums to 0."
-        ),
+        unavailable_reason="Per-country data unavailable.",
     ),
     Metric(
         metric_id="impact_technicians",
@@ -847,10 +844,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             '"Total number of technicians trained - actual"]'
         ),
         compute=None,
-        unavailable_reason=(
-            "Too sparse to publish per country: populated on 44 of ~11k latest "
-            "projects across 18 countries."
-        ),
+        unavailable_reason="Per-country data unavailable.",
     ),
     Metric(
         metric_id="impact_customs",
@@ -869,10 +863,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             '"Total number of customs officers trained - actual"]'
         ),
         compute=None,
-        unavailable_reason=(
-            "Too sparse to publish per country: populated on 41 of ~11k latest "
-            "projects across 18 countries."
-        ),
+        unavailable_reason="Per-country data unavailable.",
     ),
     Metric(
         metric_id="impact_enterprises",
@@ -895,10 +886,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             'project but not directly funded - actual"]'
         ),
         compute=None,
-        unavailable_reason=(
-            "Too sparse to publish per country: populated on 3 of ~11k latest "
-            "projects across 2 countries."
-        ),
+        unavailable_reason="Per-country data unavailable.",
     ),
     Metric(
         metric_id="impact_certification",
