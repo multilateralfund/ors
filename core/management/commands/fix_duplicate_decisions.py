@@ -53,6 +53,13 @@ def fix_decisions(dry_run=False):
     check_usages = {}
 
     for d in duplicates:
+        if len(d) > 2:
+            print(
+                f"Found {len(d)} duplicates instead of 2: {[(x.number, x.internal_api_id) for x in d]}."
+                " These require manual intervention."
+            )
+            continue
+
         stale, latest = sorted(d, key=attrgetter("pk"))
         if stale.api_changed and latest.api_changed:
             assert stale.api_changed <= latest.api_changed

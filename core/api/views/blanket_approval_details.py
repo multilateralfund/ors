@@ -171,7 +171,7 @@ class BlanketApprovalDetailsViewset(
 
     def get_queryset(self):
         queryset = (
-            Project.objects.really_all()
+            Project.objects.all()
             .filter(
                 submission_status__name__in=[
                     "Recommended",
