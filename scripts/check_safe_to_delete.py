@@ -3,6 +3,7 @@ The script will output what other model instances will be deleted by deleting th
 
 Edit to_delete and run via python manage.py shell < ./scripts/check_safe_to_delete.py
 """
+
 from collections import defaultdict
 
 from django.db import router
@@ -26,7 +27,6 @@ def check_side_effects(want_to_delete, target_model):
             other_deletes[queryset.model._meta.label].extend([x.pk for x in queryset])
 
     return dict(other_deletes)
-
 
 
 to_delete = [ProjectOdsOdp.objects.get(id=27744)]

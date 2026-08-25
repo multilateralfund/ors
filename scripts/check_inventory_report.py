@@ -8,6 +8,7 @@ Example:
         -o invalid_inventory_report.md
 
 """
+
 import argparse
 import os
 import sys
@@ -34,7 +35,9 @@ def compute_mya_completion_date(meta_project):
     if meta_project:
         result = tz_naive(meta_project.end_date)
 
-        projects = Project.objects.really_all().filter(version__gte=3, meta_project=meta_project, project_end_date__isnull=False)
+        projects = Project.objects.really_all().filter(
+            version__gte=3, meta_project=meta_project, project_end_date__isnull=False
+        )
 
         for project in projects:
             project_end_date = tz_naive(project.project_end_date)
@@ -58,7 +61,9 @@ def fetch_project_info(project_id):
     mya_end_date = tz_naive(meta_project.end_date) if meta_project else None
     mya_completion_date = compute_mya_completion_date(meta_project)
 
-    extended_date = tz_naive(meta_project.extended_date_of_completion) if meta_project else None
+    extended_date = (
+        tz_naive(meta_project.extended_date_of_completion) if meta_project else None
+    )
 
     return {
         "agreement_date": agreement_date,
@@ -146,7 +151,10 @@ def report_sums(inventory_data, comments_data):
 def check_value_differs(correct_value, current_value):
 
     if isinstance(correct_value, datetime) and isinstance(current_value, datetime):
-        return (correct_value.year, correct_value.month) != (current_value.year, current_value.month)
+        return (correct_value.year, correct_value.month) != (
+            current_value.year,
+            current_value.month,
+        )
 
     return current_value != correct_value
 
@@ -177,8 +185,16 @@ def validate_data(inventory_data, comments_data):
             if len(invalid_projects) == len(matched_projects):
                 count += 1
                 for p_id, project in invalid_projects:
-                    print(f"{count}. [{p_id}] {legacy_code} {header}: {current_value} => {correct_value}")
-                    result.setdefault(header, []).append({"current": current_value, "correct": correct_value, "project": project})
+                    print(
+                        f"{count}. [{p_id}] {legacy_code} {header}: {current_value} => {correct_value}"
+                    )
+                    result.setdefault(header, []).append(
+                        {
+                            "current": current_value,
+                            "correct": correct_value,
+                            "project": project,
+                        }
+                    )
 
     return result
 
