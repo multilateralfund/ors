@@ -5,6 +5,9 @@ concurrency: prod_deployment
 
 on:
   workflow_call:
+    branches:
+      only:
+        - main
 
 jobs:
   deploy:
