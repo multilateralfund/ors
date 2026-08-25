@@ -9,6 +9,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
 import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
+import { pcField, cdField } from '../constants'
 import { ApiAgency } from '@ors/types/api_agencies'
 
 import { Tabs, Tab, Divider } from '@mui/material'
@@ -18,8 +19,6 @@ import cx from 'classnames'
 
 const PCRCausesOfDelay = () => {
   const sectionIdentifier = 'causes_of_delay'
-  const pcField = 'project_components'
-  const cdField = 'delay_causes'
 
   const { agencies } = useContext(ProjectsDataContext)
   const {
@@ -43,7 +42,7 @@ const PCRCausesOfDelay = () => {
   const agencyErrors = map(pcErrors[crtAgencyId], 'errors')
   const formattedAgencyErrors = formatErrors(
     { [pcField]: agencyErrors },
-    'delay_causes',
+    cdField,
   )
   const delayCausesErrors = map(agencyErrors, (error) => map(error, cdField))
 
@@ -71,7 +70,7 @@ const PCRCausesOfDelay = () => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectComponentData = {
         project_component_option_id: null,
-        delay_causes: [],
+        [cdField]: [],
       }
 
       return {

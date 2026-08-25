@@ -126,3 +126,14 @@ export const initialOverviewData = {
   additional_comments: [],
   completed_by: null,
 }
+
+export const requiredMessage = 'This field is required.'
+export const validWordCountMessage =
+  'This field must be between 150 and 250 words.'
+
+export const pcField = 'project_components'
+export const pcIdField = 'project_component_option_id'
+export const cdField = 'delay_causes'
+export const cdIdField = 'delay_id'
+export const llField = 'learned_lessons'
+export const llIdField = 'lesson_id'

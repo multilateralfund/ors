@@ -5,6 +5,7 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { requiredMessage } from '../constants'
 import {
   PCRActionButtons,
   PCRResultsAssessmentData,
@@ -16,6 +17,7 @@ import {
   buildPCRProjectPayload,
   formatAgencyData,
   getOtherOptionId,
+  hasErrorMessage,
 } from '../utils'
 import { formatApiUrl } from '@ors/helpers'
 
@@ -51,9 +53,16 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
   const hasOverviewDefaultErrors = find(
     errors.overview?.additional_comments,
-    (error) => find(error.entity, (msg) => msg === 'This field is required.'),
+    (error) => find(error.entity, (msg) => msg === requiredMessage),
   )
-  const isSaveDisabled = !metaProjectId || hasOverviewDefaultErrors
+  const hasCausesOfDelayDefaultErrors = hasErrorMessage(errors.causes_of_delay)
+  const hasLessonsLearnedDefaultErrors = hasErrorMessage(errors.lessons_learned)
+
+  const isSaveDisabled =
+    !metaProjectId ||
+    hasOverviewDefaultErrors ||
+    hasCausesOfDelayDefaultErrors ||
+    hasLessonsLearnedDefaultErrors
 
   const createPCR = async () => {
     setIsLoading(true)

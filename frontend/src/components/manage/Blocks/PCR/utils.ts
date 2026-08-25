@@ -1,13 +1,29 @@
-import { pcrFieldsMapping, pcrFieldsErrorsMapping } from './constants'
+import {
+  pcrFieldsMapping,
+  pcrFieldsErrorsMapping,
+  requiredMessage,
+  validWordCountMessage,
+} from './constants'
 import {
   OptionsType,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
   PCRSummaryOfKeyDataType,
+  CauseOfDelayProjectComponent,
+  LessonLearnedProjectComponent,
 } from './interfaces'
 
-import { find, findIndex, forEach, lowerCase, map, reduce, sumBy } from 'lodash'
+import {
+  find,
+  findIndex,
+  forEach,
+  lowerCase,
+  map,
+  omit,
+  reduce,
+  sumBy,
+} from 'lodash'
 
 export type PCRSummaryProjectPayload = {
   project_id: number
@@ -231,4 +247,58 @@ export const getErrorIndex = (
       (entry) => Object.values(entry)[0],
     ) + index
   )
+}
+
+export const hasValidWordCount = (text: string) => {
+  const wordCount = text.trim().split(/\s+/).filter(Boolean).length
+
+  return wordCount >= 150 && wordCount <= 250
+}
+
+export const formatNestedPcErrors = (
+  pc: CauseOfDelayProjectComponent | LessonLearnedProjectComponent,
+  updatedErrors: Record<string, any>,
+  existingErrors: Record<string, any>,
+  field: string,
+  idField: string,
+) => {
+  const entries = (pc as Record<string, any>)[field]
+
+  if (field in pc) {
+    updatedErrors[field] = map(entries, (entry, index) => {
+      const existingEntryErrors = existingErrors[field]?.[index] ?? {}
+
+      let entryErrors = { ...existingEntryErrors }
+
+      if (!entry[idField]) {
+        entryErrors[idField] = [requiredMessage]
+      } else if (entryErrors[idField]?.includes(requiredMessage)) {
+        entryErrors = omit(entryErrors, [idField])
+      }
+
+      if (!hasValidWordCount(entry.description)) {
+        entryErrors.description = [validWordCountMessage]
+      } else if (entryErrors.description?.includes(validWordCountMessage)) {
+        entryErrors = omit(entryErrors, ['description'])
+      }
+
+      return entryErrors
+    })
+  }
+}
+
+export const hasErrorMessage = (errors: Record<string, any>): boolean => {
+  if (typeof errors === 'string') {
+    return errors === requiredMessage || errors === validWordCountMessage
+  }
+
+  if (Array.isArray(errors)) {
+    return errors.some((error) => hasErrorMessage(error))
+  }
+
+  if (errors && typeof errors === 'object') {
+    return Object.values(errors).some((error) => hasErrorMessage(error))
+  }
+
+  return false
 }

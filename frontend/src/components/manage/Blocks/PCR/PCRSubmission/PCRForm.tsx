@@ -14,9 +14,18 @@ import PCRCausesOfDelay from './PCRCausesOfDelay'
 import PCRDocumentation from './PCRDocumentation'
 import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
-import { formatErrors, hasSectionErrors } from '../utils'
+import { formatErrors, formatNestedPcErrors, hasSectionErrors } from '../utils'
+import {
+  pcField,
+  pcIdField,
+  cdField,
+  cdIdField,
+  llField,
+  llIdField,
+  requiredMessage,
+} from '../constants'
 
-import { flatMap, map, omit } from 'lodash'
+import { flatMap, map, omit, some } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
 
 const PCRForm = () => {
@@ -100,8 +109,6 @@ const PCRForm = () => {
     },
   ]
 
-  const requiredMessage = 'This field is required.'
-
   const additionalCommentsField = 'additional_comments'
 
   const overviewData = PCRData.overview || []
@@ -127,10 +134,6 @@ const PCRForm = () => {
     }))
   }, [JSON.stringify(additionalCommentsData)])
 
-  const pcField = 'project_components'
-  const cdField = 'delay_causes'
-  const llField = 'learned_lessons'
-
   const causesOfDelayData = PCRData.causes_of_delay || []
   const cdProjectComponents = flatMap(
     causesOfDelayData,
@@ -150,18 +153,39 @@ const PCRForm = () => {
       [pcField]: map(projectComponents, (pc, index) => {
         const existingErrors = prev[pcField]?.[index] ?? {}
 
-        if (!pc.project_component_option_id) {
-          return {
-            ...existingErrors,
-            project_component_option_id: [requiredMessage],
-          }
+        let updatedErrors = { ...existingErrors }
+
+        if (!pc[pcIdField]) {
+          updatedErrors[pcIdField] = [requiredMessage]
+        } else if (updatedErrors[pcIdField]?.includes(requiredMessage)) {
+          updatedErrors = omit(updatedErrors, ['project_component_option_id'])
         }
 
-        return existingErrors.project_component_option_id?.includes(
-          requiredMessage,
+        formatNestedPcErrors(
+          pc,
+          updatedErrors,
+          existingErrors,
+          cdField,
+          cdIdField,
         )
-          ? omit(existingErrors, ['project_component_option_id'])
-          : existingErrors
+        formatNestedPcErrors(
+          pc,
+          updatedErrors,
+          existingErrors,
+          llField,
+          llIdField,
+        )
+
+        const formattedErrors = Object.fromEntries(
+          Object.entries(updatedErrors).filter(([, value]) => {
+            if (!Array.isArray(value)) {
+              return true
+            }
+
+            return some(value, (item) => item && Object.keys(item).length > 0)
+          }),
+        )
+        return formattedErrors
       }),
     }))
   }, [JSON.stringify(causesOfDelayData), JSON.stringify(lessonsLearnedData)])

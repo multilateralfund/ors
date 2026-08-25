@@ -106,7 +106,7 @@ export interface PCRSummaryOfKeyDataType {
 
 type CauseOfDelay = { delay_id: number | null; description: string }
 
-type CauseOfDelayProjectComponent = {
+export type CauseOfDelayProjectComponent = {
   project_component_option_id: number | null
   delay_causes: CauseOfDelay[]
 }
@@ -118,7 +118,7 @@ export interface PCRCausesOfDelayData {
 
 type LessonLearned = { lesson_id: number | null; description: string }
 
-type LessonLearnedProjectComponent = {
+export type LessonLearnedProjectComponent = {
   project_component_option_id: number | null
   learned_lessons: LessonLearned[]
 }

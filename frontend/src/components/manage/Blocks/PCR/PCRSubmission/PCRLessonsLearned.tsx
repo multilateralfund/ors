@@ -9,6 +9,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
 import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
+import { pcField, llField } from '../constants'
 import { ApiAgency } from '@ors/types/api_agencies'
 
 import { filter, find, map, omit, sumBy } from 'lodash'
@@ -18,8 +19,6 @@ import cx from 'classnames'
 
 const PCRLessonsLearned = () => {
   const sectionIdentifier = 'lessons_learned'
-  const pcField = 'project_components'
-  const llField = 'learned_lessons'
 
   const { agencies } = useContext(ProjectsDataContext)
   const {
