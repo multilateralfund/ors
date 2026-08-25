@@ -64,7 +64,7 @@ export interface PCROverviewData {
   completed_by: number | null
 }
 
-type Activity = {
+export type Activity = {
   activity_title: string
   type_of_activity: string
   type_of_sector: string

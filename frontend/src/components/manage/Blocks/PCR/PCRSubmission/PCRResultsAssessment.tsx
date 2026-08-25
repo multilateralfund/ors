@@ -8,19 +8,19 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { formatErrors, hasSectionErrors } from '../utils'
+import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
 import { ApiAgency } from '@ors/types/api_agencies'
 
 import { Tabs, Tab, Divider } from '@mui/material'
+import { filter, find, keys, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
-import { find, keys, map } from 'lodash'
 import cx from 'classnames'
 
 const PCRResultsAssessment = () => {
   const sectionIdentifier = 'results_assessment'
   const activityField = 'activities'
 
-  const { PCRData, setPCRData, errors } = useContext(PCRDataContext)
+  const { PCRData, setPCRData, errors, setErrors } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
@@ -104,6 +104,23 @@ const PCRResultsAssessment = () => {
         ),
       }
     }, activityField)
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const errorIndex = getErrorIndex(
+        sectionData,
+        activityField,
+        crtAgencyId,
+        activityIndex,
+      )
+
+      return {
+        ...prevData,
+        [activityField]: filter(
+          prevData[activityField],
+          (_, index) => index !== errorIndex,
+        ),
+      }
+    })
   }
 
   return (

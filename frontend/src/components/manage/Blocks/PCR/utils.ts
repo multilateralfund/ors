@@ -132,16 +132,17 @@ export const formatAgencyData = <T extends { agency_id: number }>(
     [],
   )
 
-const checkHasErrors = (entry: Record<string, any>) =>
+export const checkHasErrors = (entry: Record<string, any>) =>
   entry && Object.keys(entry).length > 0
 
 export const hasSectionErrors = (errors: Record<string, any>) =>
   Object.values(errors).some((error) => {
     if (!Array.isArray(error)) {
       return Object.values(error as Record<string, any>).some((nestedError) =>
-        nestedError.some(
-          (item: Record<string, any>) =>
-            item.errors && item.errors.some(checkHasErrors),
+        nestedError.some((item: Record<string, any>) =>
+          Array.isArray(item.errors)
+            ? item.errors.some(checkHasErrors)
+            : checkHasErrors(item.errors),
         ),
       )
     }
@@ -255,6 +256,20 @@ export const hasValidWordCount = (text: string) => {
   return wordCount >= 150 && wordCount <= 250
 }
 
+export const validateWordCount = (
+  errors: Record<string, any>,
+  field: string,
+  value: string,
+) => {
+  if (!hasValidWordCount(value)) {
+    return { ...errors, [field]: [validWordCountMessage] }
+  }
+
+  return errors[field]?.includes(validWordCountMessage)
+    ? omit(errors, [field])
+    : errors
+}
+
 export const formatNestedPcErrors = (
   pc: CauseOfDelayProjectComponent | LessonLearnedProjectComponent,
   updatedErrors: Record<string, any>,
@@ -276,11 +291,11 @@ export const formatNestedPcErrors = (
         entryErrors = omit(entryErrors, [idField])
       }
 
-      if (!hasValidWordCount(entry.description)) {
-        entryErrors.description = [validWordCountMessage]
-      } else if (entryErrors.description?.includes(validWordCountMessage)) {
-        entryErrors = omit(entryErrors, ['description'])
-      }
+      entryErrors = validateWordCount(
+        entryErrors,
+        'description',
+        entry.description,
+      )
 
       return entryErrors
     })

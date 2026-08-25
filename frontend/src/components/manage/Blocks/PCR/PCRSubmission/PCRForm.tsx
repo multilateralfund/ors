@@ -14,7 +14,14 @@ import PCRCausesOfDelay from './PCRCausesOfDelay'
 import PCRDocumentation from './PCRDocumentation'
 import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
-import { formatErrors, formatNestedPcErrors, hasSectionErrors } from '../utils'
+import { Activity } from '../interfaces'
+import {
+  checkHasErrors,
+  formatErrors,
+  formatNestedPcErrors,
+  hasSectionErrors,
+  validateWordCount,
+} from '../utils'
 import {
   pcField,
   pcIdField,
@@ -134,6 +141,51 @@ const PCRForm = () => {
     }))
   }, [JSON.stringify(additionalCommentsData)])
 
+  const resultsAssessmentData = PCRData.results_assessment || []
+
+  useEffect(() => {
+    const activitiesData = flatMap(
+      resultsAssessmentData,
+      ({ activities }) => activities,
+    )
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      activities: map(activitiesData, (activity, index) => {
+        const existingErrors = prev.activities?.[index] ?? {}
+
+        let updatedErrors = { ...existingErrors }
+
+        const activitiesField = [
+          'actual_activity_output',
+          'additional_remarks',
+          'planned_output',
+          'type_of_activity',
+          'type_of_sector',
+        ]
+
+        activitiesField.forEach((field) => {
+          updatedErrors = validateWordCount(
+            updatedErrors,
+            field,
+            activity[field as keyof Activity],
+          )
+        })
+
+        const formattedErrors = Object.fromEntries(
+          Object.entries(updatedErrors).filter(([, value]) => {
+            if (!Array.isArray(value)) {
+              return true
+            }
+
+            return some(value, checkHasErrors)
+          }),
+        )
+        return formattedErrors
+      }),
+    }))
+  }, [JSON.stringify(resultsAssessmentData)])
+
   const causesOfDelayData = PCRData.causes_of_delay || []
   const cdProjectComponents = flatMap(
     causesOfDelayData,
@@ -182,7 +234,7 @@ const PCRForm = () => {
               return true
             }
 
-            return some(value, (item) => item && Object.keys(item).length > 0)
+            return some(value, checkHasErrors)
           }),
         )
         return formattedErrors

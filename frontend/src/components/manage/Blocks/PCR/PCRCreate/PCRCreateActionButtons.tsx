@@ -5,7 +5,6 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { requiredMessage } from '../constants'
 import {
   PCRActionButtons,
   PCRResultsAssessmentData,
@@ -21,7 +20,7 @@ import {
 } from '../utils'
 import { formatApiUrl } from '@ors/helpers'
 
-import { find, flatMap, map, omit, pick } from 'lodash'
+import { flatMap, map, omit, pick } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import Cookies from 'js-cookie'
@@ -51,9 +50,11 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
-  const hasOverviewDefaultErrors = find(
-    errors.overview?.additional_comments,
-    (error) => find(error.entity, (msg) => msg === requiredMessage),
+  const hasOverviewDefaultErrors = hasErrorMessage(
+    errors.overview.additional_comments,
+  )
+  const hasResultsAssessmentDefaultErrors = hasErrorMessage(
+    errors.results_assessment,
   )
   const hasCausesOfDelayDefaultErrors = hasErrorMessage(errors.causes_of_delay)
   const hasLessonsLearnedDefaultErrors = hasErrorMessage(errors.lessons_learned)
@@ -61,6 +62,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const isSaveDisabled =
     !metaProjectId ||
     hasOverviewDefaultErrors ||
+    hasResultsAssessmentDefaultErrors ||
     hasCausesOfDelayDefaultErrors ||
     hasLessonsLearnedDefaultErrors
 
