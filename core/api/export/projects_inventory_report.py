@@ -671,7 +671,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 return None
 
             if is_ongoing:
-                return max(agreement_date, meta_end_date)
+                return (
+                    max(agreement_date, meta_end_date)
+                    if meta_end_date
+                    else agreement_date
+                )
 
             return meta_end_date
 
