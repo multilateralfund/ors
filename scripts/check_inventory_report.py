@@ -1,4 +1,4 @@
-"""
+r"""
 Use this script to validate Inventory report output agains provided comments / errors.
 
 Example:
@@ -20,7 +20,7 @@ from datetime import datetime
 
 
 # Setup required to use ORM outside Django commands.
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.getcwd())
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "multilateralfund.settings")
 django.setup()
 
@@ -71,11 +71,8 @@ def fetch_project_info(project_id):
         "mya_end_date": mya_end_date,
         "mya_completion_date": mya_completion_date,
         "extended_date": extended_date,
-        "mya_code": project.mya_code,
-        "meeting": project.meeting.number,
         "status": project.status,
         "adjustment": project.adjustment,
-        "submission_status": project.submission_status,
         "project_type": project.project_type,
         "category": project.category,
         "metacode": project.metacode,
@@ -202,19 +199,16 @@ def validate_data(inventory_data, comments_data):
 def build_report(invalid_data):
     base_header = ["id", "code", "legacy code"]
     info_header = [
+        "metacode",
         "agreement_date",
         "project_end_date",
         "mya_end_date",
         "mya_completion_date",
         "extended_date",
-        "mya_code",
-        "meeting",
         "status",
         "adjustment",
-        "submission_status",
         "project_type",
         "category",
-        "metacode",
     ]
 
     tables = {}
@@ -258,8 +252,19 @@ def render_md(report):
 def main(inventory_path, comments_paths: list[Path], md_output=None):
     comments_data = {}
 
-    for comments_path in comments_paths:
-        comments_data.update(read_comments(comments_path))
+    for idx, comments_path in enumerate(comments_paths):
+        comment_data = read_comments(comments_path)
+        for comment_group, flagged_projects in comment_data.items():
+            existing_comment_data = comments_data.setdefault(comment_group, [])
+            existing_mapping = {c: correct for c, _, correct in existing_comment_data}
+
+            for code, _, correct in flagged_projects:
+                if code in existing_mapping and existing_mapping[code] != correct:
+                    print(
+                        f"Conflicting data for {code}: {comments_paths[idx - 1]} {existing_mapping[code]} != {correct} {comments_path}"
+                    )
+
+            existing_comment_data.extend(flagged_projects)
 
     inventory_data = read_inventory(inventory_path)
 

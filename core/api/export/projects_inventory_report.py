@@ -533,7 +533,12 @@ class ProjectsInventoryReportWriter(BaseWriter):
             "Individual": "IND",
             "Multi-year agreement": "MYA",
         }
-        return options.get(category, category)
+        result = options.get(category, category)
+
+        if result != "MYA" and project.cluster and project.cluster.category == "MYA":
+            result = "MYA"
+
+        return result
 
     def _get_approved_funds(self, project, version):
         return (
@@ -619,8 +624,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
     def _get_modern_extended_date(self, project):
         meta_project = project.meta_project
-        final_version = project.final_version
-        project_end_date = tz_naive(final_version.project_end_date)
 
         result = None
 
@@ -631,16 +634,18 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 project.meta_project_id
             )
 
+            result = mya_extended_date
+
             if mya_extended_date is None:
                 result = None
 
-            elif is_same_month(mya_extended_date, mya_completion_date) or is_same_month(
+            elif is_same_month(mya_extended_date, mya_completion_date):
+                result = None
+
+            elif not mya_completion_date and is_same_month(
                 mya_extended_date, computed_mya_completion_date
             ):
                 result = None
-
-            elif project_end_date and mya_extended_date:
-                result = max(mya_extended_date, project_end_date)
 
         return result
 
@@ -654,30 +659,20 @@ class ProjectsInventoryReportWriter(BaseWriter):
             agreement_date = tz_naive(final_version.date_per_agreement)
             meta_end_date = tz_naive(meta_project.end_date)
 
-            computed_mya_completion_date = self.mya_completion_dates.get(
-                project.meta_project_id
-            )
             mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
 
             is_ongoing = final_version.status and final_version.status.code == "ONG"
 
+            if is_same_month(agreement_date, mya_extended_date):
+                agreement_date = None
+
             if not agreement_date:
                 return None
 
-            if meta_end_date and agreement_date > meta_end_date:
-                return meta_end_date
+            if is_ongoing and meta_end_date:
+                return max(agreement_date, meta_end_date)
 
-            if is_same_month(computed_mya_completion_date, mya_extended_date):
-                return None
-
-            if is_ongoing:
-                return (
-                    max(agreement_date, meta_end_date)
-                    if meta_end_date
-                    else agreement_date
-                )
-
-            return meta_end_date
+            return agreement_date
 
         meta_end_date = tz_naive(meta_project.end_date)
         if meta_end_date:
@@ -691,13 +686,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         result = None
 
-        has_ods_odp_value = False
-
         for ods_odp in project.ods_odp.all():
             substance_type = self._substance_type_from_ods_odp(ods_odp)
-
-            if ods_odp.odp or ods_odp.phase_out_mt or ods_odp.co2_mt:
-                has_ods_odp_value = True
 
             if substance_type:
                 result = substance_type
@@ -706,12 +696,20 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if not result:
             result = self._substance_type_from_legacy_sector(project.sector_legacy)
 
-        if not result and has_ods_odp_value:
+        if not result:
             cluster = project.cluster
-            if cluster and "HCFC" in cluster.name:
-                result = "HCFC"
-            elif cluster and ("KIP" in cluster.code or "HFC" in cluster.code):
-                result = "HFC"
+            if cluster:
+                if "HCFC" in cluster.name:
+                    result = "HCFC"
+                elif (
+                    cluster.code
+                    and "KIP" in cluster.code
+                    or "HFC" in cluster.code
+                    or "EE" in cluster.code
+                ):
+                    result = "HFC"
+                elif cluster.group and "HFC" in cluster.group:
+                    result = "HFC"
 
         return result
 

@@ -790,21 +790,27 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         "date_per_agreement,stored_end_date,project_end_date,status_code,expected_end_date",
         [
             (None, None, date(2015, 12, 1), "COM", None),
-            (date(2018, 12, 1), None, date(2007, 12, 1), "COM", None),
+            (
+                date(2018, 12, 1),
+                None,
+                date(2007, 12, 1),
+                "COM",
+                date(2018, 12, 1),
+            ),
             (date(2031, 12, 1), None, None, "ONG", date(2031, 12, 1)),
             (
                 date(2026, 12, 1),
                 datetime(2021, 12, 1, tzinfo=timezone.utc),
                 None,
                 "COM",
-                date(2021, 12, 1),
+                date(2026, 12, 1),
             ),
             (
                 date(2026, 12, 1),
                 datetime(2021, 12, 1, tzinfo=timezone.utc),
                 None,
                 "ONG",
-                date(2021, 12, 1),
+                date(2026, 12, 1),
             ),
         ],
     )
