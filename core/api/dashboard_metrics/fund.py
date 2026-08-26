@@ -164,8 +164,7 @@ def funds_lvc_split(context: MetricContext) -> dict[str, Any]:
 
 
 def funds_disbursed_lvc_split(context: MetricContext) -> dict[str, Any] | None:
-    """Disbursement split by LVC classification.
-    """
+    """Disbursement split by LVC classification."""
     if context.apr is None:
         return None
     reported = context.apr.disbursed_grouped(
@@ -506,13 +505,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.BREAKDOWN,
         unit=Unit.USD,
         disposition=Disposition.COMPUTE,
-        formula=(
-            "Sum (funds+PSC) grouped by classify.lvc_status"
-        ),
+        formula=("Sum (funds+PSC) grouped by classify.lvc_status"),
         db_source="DB-COMPUTABLE",
-        src_model_field=(
-            "Country.is_lvc"
-        ),
+        src_model_field=("Country.is_lvc"),
         compute=funds_lvc_split,
     ),
     Metric(
@@ -522,9 +517,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.BREAKDOWN,
         unit=Unit.USD,
         disposition=Disposition.COMPUTE,
-        formula=(
-            "sum(Funds Disbursed (US$)) grouped by classify.lvc_status"
-        ),
+        formula=("sum(Funds Disbursed (US$)) grouped by classify.lvc_status"),
         db_source="NEEDS-APR",
         src_model_field="AnnualProjectReport.funds_disbursed by Country.is_lvc",
         compute=funds_disbursed_lvc_split,

@@ -52,8 +52,7 @@ def _value_of(metric: Metric, context: MetricContext) -> Any:
 
 
 def _placeholder_of(metric: Metric, context: MetricContext) -> Any:
-    """One metric's stand-in value, or ``None`` if it has none.
-    """
+    """One metric's stand-in value, or ``None`` if it has none."""
     try:
         return metric.placeholder(context)
     except Exception:  # pylint: disable=W0703
@@ -68,8 +67,7 @@ def _placeholder_of(metric: Metric, context: MetricContext) -> Any:
 def _render(
     metric: Metric, context: MetricContext, placeholders: bool = False
 ) -> dict[str, Any]:
-    """Render one metric as the client should see it.
-    """
+    """Render one metric as the client should see it."""
     value = _value_of(metric, context)
     rendered = {
         "metric_id": metric.metric_id,

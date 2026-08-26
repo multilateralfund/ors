@@ -40,8 +40,7 @@ class MetricContext:
 
     @property
     def seed_key(self) -> str:
-        """Names this entry stably, for anything that must not vary per request.
-        """
+        """Names this entry stably, for anything that must not vary per request."""
         if self.country is None:
             return "fund"
         return self.country.iso3 or self.country.abbr or self.country.name

@@ -169,8 +169,7 @@ HFC_GROUP_LABELS = {"I": "Group 1", "II": "Group 2"}
 
 
 def attr_hfc_group(context: MetricContext) -> str | None:
-    """The country's Kigali consumption group.
-    """
+    """The country's Kigali consumption group."""
     country = _country(context)
     if country is None:
         return None
@@ -522,9 +521,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         db_source="PENDING-COUNTRY-FIELD",
         src_model_field="Project.establishment_of_technician_certification",
         compute=None,
-        unavailable_reason=(
-            "The Country field is pending."
-        ),
+        unavailable_reason=("The Country field is pending."),
         placeholder=partial(
             placeholders.choice, slug="certification", labels=placeholders.YES_NO
         ),
