@@ -14,9 +14,8 @@ global RNG, which is neither reproducible per entry nor safe to share.
 """
 
 import random
-from typing import Any
+from typing import Any, Callable
 
-from core.api.dashboard_metrics.classify import HCFC, HFC, OTHER_ODS
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import is_country_entry
 
@@ -28,10 +27,6 @@ NOU_NAMES = (
     "Mr John Smith",
     "Ms Jane Doe",
 )
-
-# Article 5 countries have completely phased out the pre-HCFC substances, so
-# this row is a measurement rather than a stand-in and is served unflagged.
-OTHER_ODS_PCT_PHASED_OUT = 100.0
 
 # The share of its baseline a stand-in row reports as phased out.
 BASELINE_SHARE = (35.0, 80.0)
@@ -85,20 +80,25 @@ def count(
     return rng(context, slug).randrange(low, high, step)
 
 
-def baseline_by_substance(context: MetricContext) -> list[dict[str, Any]]:
-    """Percentage of baseline consumption phased out, per substance family.
+def fill_baseline(
+    context: MetricContext, rows: Callable[[], list[dict[str, Any]]]
+) -> list[dict[str, Any]]:
+    """The baseline table with its missing denominators invented.
 
-    The numerator is computable today, but we don't have the denominators (baselines)
-    yet, so the whole percentage is invented and flagged instead.
+    ``rows`` is the real table, passed in rather than imported so the
+    dependency runs one way. Only the rows it could not work out are filled, so
+    the real Other ODS row passes through untouched and carries no flag.
     """
     generator = rng(context, "baseline")
-    rows: list[dict[str, Any]] = [
-        {
-            "group": group,
-            "value": round(generator.uniform(*BASELINE_SHARE), 1),
-            "placeholder": True,
-        }
-        for group in (HFC, HCFC)
+    return [
+        (
+            row
+            if row["value"] is not None
+            else {
+                **row,
+                "value": round(generator.uniform(*BASELINE_SHARE), 1),
+                "placeholder": True,
+            }
+        )
+        for row in rows()
     ]
-    rows.append({"group": OTHER_ODS, "value": OTHER_ODS_PCT_PHASED_OUT})
-    return rows

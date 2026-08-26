@@ -87,6 +87,19 @@ def index_metrics(metrics: Iterable[Metric], registry_name: str) -> dict[str, Me
             raise ImproperlyConfigured(
                 f"Duplicate metric_id {metric.metric_id!r} in {registry_name}."
             )
+        # A stand-in overrides whatever compute produced, so a fully computed
+        # figure must not carry one. COMPUTE_PARTIAL is the exception, and says
+        # the metric has gaps a stand-in is meant to fill.
+        if (
+            metric.placeholder is not None
+            and metric.compute is not None
+            and metric.disposition is not Disposition.COMPUTE_PARTIAL
+        ):
+            raise ImproperlyConfigured(
+                f"{metric.metric_id!r} in {registry_name} declares a placeholder "
+                f"alongside a compute. A stand-in may only fill a metric that is "
+                f"unavailable, or one declared COMPUTE_PARTIAL."
+            )
         index[metric.metric_id] = metric
     return index
 

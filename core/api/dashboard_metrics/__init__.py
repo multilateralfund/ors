@@ -78,7 +78,7 @@ def _render(
         "available": value is not None,
         "value": value,
     }
-    if value is None and placeholders and metric.placeholder is not None:
+    if placeholders and metric.placeholder is not None:
         stand_in = _placeholder_of(metric, context)
         if stand_in is not None:
             rendered |= {"available": True, "value": stand_in, "placeholder": True}

@@ -33,9 +33,9 @@ def _cell(value: str) -> str:
 
 def _built(metric: Metric) -> str:
     """Whether the figure is real, absent, or has a stand-in behind the flag."""
-    if metric.compute is not None:
-        return "yes"
-    return "placeholder" if metric.placeholder is not None else "no"
+    if metric.compute is None:
+        return "placeholder" if metric.placeholder is not None else "no"
+    return "yes + placeholder" if metric.placeholder is not None else "yes"
 
 
 def _row(metric: Metric) -> str:
@@ -75,9 +75,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         metrics = FUND_METRICS + COUNTRY_METRICS
         built = sum(1 for m in metrics if m.compute is not None)
-        stand_ins = sum(
-            1 for m in metrics if m.compute is None and m.placeholder is not None
-        )
+        stand_ins = sum(1 for m in metrics if m.placeholder is not None)
         total = len(metrics)
 
         lines = [
@@ -85,8 +83,8 @@ class Command(BaseCommand):
             "",
             f"{total} metrics, {built} implemented.",
             "",
-            f"{stand_ins} more have a placeholder, served only to a caller that "
-            "asks for one and flagged when it is.",
+            f"{stand_ins} carry a placeholder, served only to a caller that asks "
+            "for one and flagged when it is.",
             "",
             *_table("Fund-wide", FUND_METRICS),
             *_table("Per-country", COUNTRY_METRICS),

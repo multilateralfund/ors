@@ -12,7 +12,7 @@ from typing import Any
 from constance import config
 
 from core.api.dashboard_metrics import classify, placeholders
-from core.api.dashboard_metrics.classify import HFC, ODS
+from core.api.dashboard_metrics.classify import HCFC, HFC, ODS, OTHER_ODS
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
     count_project_grains,
@@ -175,6 +175,29 @@ def funds_disbursed_lvc_split(context: MetricContext) -> dict[str, Any] | None:
         component: reported.get(component, empty)
         for component in LVC_COMPONENTS.values()
     }
+
+
+OTHER_ODS_PCT_PHASED_OUT = 100.0
+
+
+def baseline_rows() -> list[dict[str, Any]]:
+    """The baseline table's three rows, in chart order.
+
+    HFC and HCFC are ``null``: the Protocol sets a baseline per country per
+    substance group and ORS holds neither, so the percentage cannot be worked
+    out. The rows are still served, so the chart keeps its shape and says
+    "unknown" rather than disappearing - and ``null`` is not zero.
+    """
+    return [
+        {"group": HFC, "value": None},
+        {"group": HCFC, "value": None},
+        {"group": OTHER_ODS, "value": OTHER_ODS_PCT_PHASED_OUT},
+    ]
+
+
+def baseline_phased_out_by_substance(_context: MetricContext) -> list[dict[str, Any]]:
+    """Percentage of baseline consumption phased out, per substance family."""
+    return baseline_rows()
 
 
 def theme(context: MetricContext, name: str) -> dict[str, Any]:
@@ -434,19 +457,17 @@ FUND_METRICS: tuple[Metric, ...] = (
         section="Percentage of baseline consumption phased out by substance (%)",
         kind=Kind.TABLE,
         unit=Unit.PERCENT,
-        disposition=Disposition.NOT_AVAILABLE,
-        formula="phased_out / baseline; non HFC/HCFC families forced to 100%",
+        disposition=Disposition.COMPUTE_PARTIAL,
+        formula=(
+            "phased_out / baseline per family; Other ODS is a real 100%, HFC and "
+            "HCFC do not have baselines yet"
+        ),
         db_source="EXTERNAL",
         src_model_field=(
-            "numerator ProjectOdsOdp.odp by family; denominator "
-            "MetaProject.baseline_odp/baseline_co2_eq_t"
+            "numerator ProjectOdsOdp.odp by family; denominator not held"
         ),
-        compute=None,
-        unavailable_reason=(
-            "Numerator is computable from ProjectOdsOdp.odp, but the baseline "
-            "denominator is per-agreement and external to ORS."
-        ),
-        placeholder=placeholders.baseline_by_substance,
+        compute=baseline_phased_out_by_substance,
+        placeholder=partial(placeholders.fill_baseline, rows=baseline_rows),
     ),
     Metric(
         metric_id="pct_countries_met",

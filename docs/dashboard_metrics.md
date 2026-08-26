@@ -23,10 +23,10 @@ matched case-insensitively. One route serves both; `entry.entry_type` discrimina
 
 ### Query parameters
 
-| Parameter      | Default                   | Description                                                                    |
-|----------------|---------------------------|--------------------------------------------------------------------------------|
-| `apr_year`     | newest endorsed APR cycle | The reporting cycle the APR-derived metrics use.                               |
-| `placeholders` | `false`                   | Serve invented stand-ins for the datapoints that have no source yet. See below. |
+| Parameter      | Default                   | Description                                                                |
+|----------------|---------------------------|----------------------------------------------------------------------------|
+| `apr_year`     | newest endorsed APR cycle | The reporting cycle the APR-derived metrics use.                           |
+| `placeholders` | `false`                   | Serve stand-ins for the datapoints that have no source or incomplete data. |
 
 ---
 
@@ -62,7 +62,8 @@ Each value still carries its own `metric_id`, so iterating `.values()` loses not
 The country payload adds `"entry": {"key": "BRA", "name": "Brazil", "entry_type": "country", "iso3": "BRA"}`; 
 `/countries/` returns `{"entries": [...]}` of the same objects.
 
-`kind` and `unit` are **declared**. Clients should not sniff types from the value's shape, or infer currency from label text.
+`kind` and `unit` are **declared** so clients do not need to sniff types from the value's shape, or infer 
+currency from label text.
 
 | `kind`      | Value                                        |
 |-------------|----------------------------------------------|
@@ -177,13 +178,10 @@ To render a table of all metrics with full fields:
 
 ## Adding a metric
 
-Four steps. Nothing is registered by discovery or by naming convention, so a new figure appears on a page 
-only once it is declared.
-
-**1. Write the `compute`.** It takes the `MetricContext` and returns the value, or `None` when there is 
+**1. Write the `compute` function.** It takes the `MetricContext` and returns the value, or `None` when there is 
 nothing behind the figure. Read the sources in the table above rather than querying `Project` directly - that 
 is what keeps a payload to a couple of dozen queries. Put it in `fund.py` or `country.py` next to its 
-neighbours; the helpers in `primitives.py` (`totals`, `grouped`, `project_counts`, `phase_out`) cover most shapes.
+neighbors; the helpers in `primitives.py` (`totals`, `grouped`, `project_counts`, `phase_out`) cover most shapes.
 
 ```python
 def funds_by_sector(context: MetricContext) -> list[dict[str, Any]]:
@@ -216,8 +214,7 @@ Metric(
 `compute` actually returns.
 
 **3. Pin the id** in `FUND_METRIC_IDS` or `COUNTRY_METRIC_IDS` at the top of 
-`core/api/tests/test_dashboard_metrics.py`. That list is deliberately maintained by hand and compared against 
-the registry, so a rename or an accidental drop fails there rather than in a consumer.
+`core/api/tests/test_dashboard_metrics.py`.
 
 **4. Run the gates.**
 
@@ -239,22 +236,22 @@ endpoint down: the failure is logged with its traceback and that one metric goes
 
 ### Giving it a stand-in
 
-A blocked metric may also declare a `placeholder` callable, in `placeholders.py`. It runs only for a caller 
-that asked for one, and only where `compute` gave nothing, so it cannot change a real figure. `disposition` 
-gains no placeholder value: it describes the state of the source, which a stand-in does not change.
+A metric may also declare a `placeholder` callable, in `placeholders.py`. It runs only for a caller that asked 
+for one, and its result **replaces** whatever `compute` returned - so the registry refuses a placeholder on a 
+fully computed metric. Either `compute` is `None`, or the metric is declared `COMPUTE_PARTIAL` to say its value has 
+gaps a stand-in is meant to fill. `disposition` gains no placeholder value of its own: it describes the state of 
+the source, which a stand-in does not change.
 
-Seed anything random on `context.seed_key` so one entry gets the same answer on every request - a page whose 
-figures reshuffled between loads would be worse than a blank one - and never touch the global RNG. Two metrics 
+Seed anything random on `context.seed_key` so one entry gets the same answer on every request. Two metrics 
 that are the same fact seed on the same slug so they cannot disagree.
 
 ---
 
 ## Unavailable metrics, and `?placeholders=true`
 
-Thirteen of the 42 per-country rows and one of the 49 fund rows are declared but blocked: nine on country 
-attributes that have no field to live in yet, four on impact columns that are too sparsely reported to publish, 
-and one on substance baselines that ORS does not hold. They return `available: false`, and 
-`manage.py dashboard_metrics_spec` says why.
+Thirteen of the 42 per-country rows are declared but blocked: nine on country attributes that have no field to 
+live in yet, and four on impact columns that are too sparsely reported to publish. They return `available: false`, 
+and `manage.py dashboard_metrics_spec` says why. Every fund row is served.
 
 `?placeholders=true` fills them with invented values so a page can be built and demonstrated before its data 
 arrives. **It is off by default and nothing invented ever reaches a default payload.** Every invented value 
@@ -277,10 +274,21 @@ aggregate entries, exactly as the real attributes do - a region has no licensing
 own - while the four impact counts are served there, because people trained across a region is a figure the 
 page can meaningfully show.
 
-`baseline_phased_out_by_substance` is the one metric that is only *partly* invented: its Other ODS row is a real 
-100%, because Article 5 countries have completely phased those substances out. So it is flagged twice over - on 
-the rows that are invented, and on the metric, so a client can detect "contains invented data" without walking 
-rows:
+`baseline_phased_out_by_substance` is the one metric that is only *partly* invented. It always serves all three 
+rows, so the chart keeps its shape. Its Other ODS row is a real 100%, because Article 5 countries have completely 
+phased those substances out; the other two are `null` by default because the ORS does not yet have the baselines.
+
+```jsonc
+// default
+"value": [
+  {"group": "HFC",       "value": null},
+  {"group": "HCFC",      "value": null},
+  {"group": "OTHER_ODS", "value": 100.0}
+]
+```
+
+With `?placeholders=true` the two nulls are filled, and flagged twice over - on the rows that are invented, and on 
+the metric, so a client can detect "contains invented data" without walking rows:
 
 ```jsonc
 "baseline_phased_out_by_substance": {
@@ -294,5 +302,4 @@ rows:
 }
 ```
 
-With placeholders off it is unavailable in full rather than serving its one real row: a one-row chart would 
-imply the other two families are at zero.
+The metric is `available: true` either way. What changes is only whether the two unknown rows carry a number.

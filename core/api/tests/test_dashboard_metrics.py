@@ -468,6 +468,23 @@ class TestRegistryDeclarations:
         assert {m.metric_id for m in FUND_METRICS} == FUND_METRIC_IDS
         assert {m.metric_id for m in COUNTRY_METRICS} == COUNTRY_METRIC_IDS
 
+    def test_a_stand_in_cannot_shadow_a_computed_figure(self):
+        """A placeholder overrides compute, so a real metric must not carry one."""
+        real = replace(get_metric("funds_approved"), placeholder=lambda _c: "invented")
+
+        with pytest.raises(ImproperlyConfigured):
+            registry.index_metrics([real], "TEST_METRICS")
+
+    def test_a_partly_computed_figure_may_carry_one(self):
+        """COMPUTE_PARTIAL says the value has gaps a stand-in is meant to fill."""
+        partial = replace(
+            get_metric("funds_approved"),
+            disposition=Disposition.COMPUTE_PARTIAL,
+            placeholder=lambda _c: "invented",
+        )
+
+        assert registry.index_metrics([partial], "TEST_METRICS")
+
     def test_metric_ids_are_unique_across_both_registries(self):
         """get_metric() consults both, so an id must mean one thing."""
         ids = [m.metric_id for m in FUND_METRICS + COUNTRY_METRICS]
@@ -488,15 +505,10 @@ class TestRegistryDeclarations:
                 .replace("HFC-23", ""),
             ), f"{metric.metric_id}: {metric.label!r}"
 
-    def test_every_fund_metric_computes_unless_it_is_blocked(self):
-        """The one exception is declared blocked and says why."""
+    def test_every_fund_metric_computes(self):
+        """Nothing on the fund page is blocked; the country page carries them all."""
         uncomputed = {m.metric_id for m in FUND_METRICS if m.compute is None}
-        assert uncomputed == {"baseline_phased_out_by_substance"}
-        assert all(
-            m.disposition == Disposition.NOT_AVAILABLE
-            for m in FUND_METRICS
-            if m.metric_id in uncomputed
-        )
+        assert uncomputed == set()
 
     def test_blocked_metrics_say_why(self):
         """Not served, but the spec command needs a reason for every one."""
@@ -505,7 +517,7 @@ class TestRegistryDeclarations:
             for m in FUND_METRICS + COUNTRY_METRICS
             if m.disposition == Disposition.NOT_AVAILABLE
         ]
-        assert len(blocked) == 14
+        assert len(blocked) == 13
         assert all(m.unavailable_reason for m in blocked)
 
 
@@ -1820,12 +1832,18 @@ class TestFundPlaceholders(BaseTest):
         assert response.status_code == 200
         return metrics_by_id(response.data)
 
-    def test_the_baseline_table_is_wholly_absent_by_default(self, user, brazil):
-        """A one-row chart would imply the other two families are at zero."""
+    def test_the_baseline_table_keeps_its_shape_without_placeholders(
+        self, user, brazil
+    ):
+        """All three rows, with the two we cannot work out as null - not zero."""
         metric = self.fund(user)["baseline_phased_out_by_substance"]
+        rows = {row["group"]: row for row in metric["value"]}
 
-        assert metric["available"] is False
-        assert metric["value"] is None
+        assert metric["available"] is True
+        assert "placeholder" not in metric
+        assert rows["HFC"]["value"] is None
+        assert rows["HCFC"]["value"] is None
+        assert rows["OTHER_ODS"]["value"] == 100.0
 
     def test_asking_serves_all_three_families(self, user, brazil):
         metric = self.fund(user, placeholders="true")[
@@ -1860,7 +1878,7 @@ class TestSpecCommand:
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
 
-        assert "91 metrics, 77 implemented." in rendered
+        assert "91 metrics, 78 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 
