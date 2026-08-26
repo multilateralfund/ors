@@ -116,8 +116,15 @@ export const MetaProjectEdit = (props: {
     }
 
     try {
+      const formattedForm = Object.fromEntries(
+        Object.entries(form).map(([key, value]) => [
+          key,
+          valueIsComputed(key) ? mp.computed_field_data[key] : value,
+        ]),
+      )
+
       const result = await api(`api/meta-projects/${mp.id}/`, {
-        data: form,
+        data: formattedForm,
         method: 'PUT',
       })
       refreshMetaProjectDetails()
@@ -343,12 +350,12 @@ export const MetaProjectEdit = (props: {
             Close
           </Button>
           {!readOnly && (
-          <Button
-            className="bg-primary text-white hover:text-mlfs-hlYellow"
-            onClick={handleSave}
-          >
-            Save
-          </Button>
+            <Button
+              className="bg-primary text-white hover:text-mlfs-hlYellow"
+              onClick={handleSave}
+            >
+              Save
+            </Button>
           )}
         </DialogActions>
       </Dialog>
