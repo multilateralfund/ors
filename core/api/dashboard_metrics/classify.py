@@ -23,6 +23,9 @@ ODS = "ODS"
 HCFC = "HCFC"
 OTHER_ODS = "OTHER_ODS"
 
+LVC = "LVC"
+NON_LVC = "Non-LVC"
+
 # The clusters that decide a project's substance family. Cluster is the primary
 # signal, not a fallback: it is curated, it covers the whole portfolio, and it
 # reproduces the published figures. Project.substance_type is read nowhere -
@@ -327,6 +330,17 @@ def region_bucket(country: Country | None) -> str | None:
     if country.location_type == Country.LocationType.REGION:
         return country.name
     return region_of(country)
+
+
+def lvc_status(country: Country | None) -> str | None:
+    """Whether an entry is low-volume-consuming, or ``None`` if it has no status
+    (e.g. a region).
+
+    The single derivation of the LVC classification.
+    """
+    if country is None or country.location_type != Country.LocationType.COUNTRY:
+        return None
+    return LVC if country.is_lvc else NON_LVC
 
 
 def disbursed_by_bucket(by_sector_code: dict[str, float]) -> dict[str, float]:

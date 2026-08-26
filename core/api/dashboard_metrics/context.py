@@ -38,6 +38,14 @@ class MetricContext:
     # Set for a per-country payload; None means the whole fund.
     country: Country | None = None
 
+    @property
+    def seed_key(self) -> str:
+        """Names this entry stably, for anything that must not vary per request.
+        """
+        if self.country is None:
+            return "fund"
+        return self.country.iso3 or self.country.abbr or self.country.name
+
     @cached_property
     def projects(self) -> list[ClassifiedProject]:
         """The in-scope projects, each already bucketed by theme and sector."""

@@ -51,10 +51,27 @@ def _value_of(metric: Metric, context: MetricContext) -> Any:
         return None
 
 
-def _render(metric: Metric, context: MetricContext) -> dict[str, Any]:
-    """Render one metric as the client should see it."""
+def _placeholder_of(metric: Metric, context: MetricContext) -> Any:
+    """One metric's stand-in value, or ``None`` if it has none.
+    """
+    try:
+        return metric.placeholder(context)
+    except Exception:  # pylint: disable=W0703
+        logger.exception(
+            "Dashboard metrics: the placeholder for %s could not be produced "
+            "and is being served as unavailable.",
+            metric.metric_id,
+        )
+        return None
+
+
+def _render(
+    metric: Metric, context: MetricContext, placeholders: bool = False
+) -> dict[str, Any]:
+    """Render one metric as the client should see it.
+    """
     value = _value_of(metric, context)
-    return {
+    rendered = {
         "metric_id": metric.metric_id,
         "label": metric.label,
         "section": metric.section,
@@ -63,6 +80,11 @@ def _render(metric: Metric, context: MetricContext) -> dict[str, Any]:
         "available": value is not None,
         "value": value,
     }
+    if value is None and placeholders and metric.placeholder is not None:
+        stand_in = _placeholder_of(metric, context)
+        if stand_in is not None:
+            rendered |= {"available": True, "value": stand_in, "placeholder": True}
+    return rendered
 
 
 def _scope() -> dict[str, Any]:
@@ -74,7 +96,9 @@ def _scope() -> dict[str, Any]:
     }
 
 
-def _envelope(metrics: Sequence[Metric], context: MetricContext) -> dict[str, Any]:
+def _envelope(
+    metrics: Sequence[Metric], context: MetricContext, placeholders: bool = False
+) -> dict[str, Any]:
     """The payload wrapper.
 
     There is no scope parameter: an APR-derived metric carries both the
@@ -85,13 +109,22 @@ def _envelope(metrics: Sequence[Metric], context: MetricContext) -> dict[str, An
         "apr_year": context.apr_year,
         "apr_years_available": apr_years_available(),
         "scope": _scope(),
-        "metrics": [_render(metric, context) for metric in metrics],
+        "metrics": {
+            metric.metric_id: _render(metric, context, placeholders)
+            for metric in metrics
+        },
     }
 
 
-def get_fund_metrics(apr_year: int | None = None) -> dict[str, Any]:
+def get_fund_metrics(
+    apr_year: int | None = None, placeholders: bool = False
+) -> dict[str, Any]:
     """The fund-wide payload. Identical for every authenticated caller."""
-    return _envelope(FUND_METRICS, MetricContext(apr_year=resolve_apr_year(apr_year)))
+    return _envelope(
+        FUND_METRICS,
+        MetricContext(apr_year=resolve_apr_year(apr_year)),
+        placeholders,
+    )
 
 
 def get_country_index() -> dict[str, Any]:
@@ -99,7 +132,9 @@ def get_country_index() -> dict[str, Any]:
     return {"entries": dashboard_entries()}
 
 
-def get_country_metrics(key: str, apr_year: int | None = None) -> dict[str, Any] | None:
+def get_country_metrics(
+    key: str, apr_year: int | None = None, placeholders: bool = False
+) -> dict[str, Any] | None:
     """One entry's payload, or ``None`` if the key addresses nothing."""
     resolved = resolve_entry(key)
     if resolved is None:
@@ -108,6 +143,7 @@ def get_country_metrics(key: str, apr_year: int | None = None) -> dict[str, Any]
     payload = _envelope(
         COUNTRY_METRICS,
         MetricContext(apr_year=resolve_apr_year(apr_year), country=country),
+        placeholders,
     )
     payload["entry"] = entry
     return payload

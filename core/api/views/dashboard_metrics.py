@@ -31,6 +31,35 @@ APR_PARAMETERS = [
     ),
 ]
 
+PLACEHOLDER_PARAMETERS = [
+    OpenApiParameter(
+        name="placeholders",
+        type=bool,
+        description=(
+            "Serve invented stand-in values for the datapoints that have no "
+            "source yet, so a page can be rendered end to end before its data "
+            "exists. Defaults to false. Every invented value is marked with "
+            '"placeholder": true and must not be published.'
+        ),
+    ),
+]
+
+TRUTHY = {"true", "1", "yes"}
+FALSY = {"false", "0", "no"}
+
+
+def parse_placeholders(request: Request) -> bool:
+    """``?placeholders=<bool>``, defaulting to off, or a 400."""
+    raw = request.query_params.get("placeholders")
+    if raw in (None, ""):
+        return False
+    normalised = raw.strip().lower()
+    if normalised in TRUTHY:
+        return True
+    if normalised in FALSY:
+        return False
+    raise ValidationError({"placeholders": f"Expected true or false, got {raw!r}."})
+
 
 def parse_apr_year(request: Request) -> int | None:
     """``?apr_year=<int>``, or a 400."""
@@ -54,11 +83,16 @@ class DashboardMetricsFundView(views.APIView):
 
     @extend_schema(
         operation_id="dashboard_metrics_fund",
-        parameters=APR_PARAMETERS,
+        parameters=APR_PARAMETERS + PLACEHOLDER_PARAMETERS,
         responses=DashboardMetricsEnvelopeSerializer,
     )
     def get(self, request: Request, *args, **kwargs) -> Response:
-        return Response(get_fund_metrics(apr_year=parse_apr_year(request)))
+        return Response(
+            get_fund_metrics(
+                apr_year=parse_apr_year(request),
+                placeholders=parse_placeholders(request),
+            )
+        )
 
 
 class DashboardMetricsCountryIndexView(views.APIView):
@@ -86,11 +120,15 @@ class DashboardMetricsCountryView(views.APIView):
 
     @extend_schema(
         operation_id="dashboard_metrics_country",
-        parameters=APR_PARAMETERS,
+        parameters=APR_PARAMETERS + PLACEHOLDER_PARAMETERS,
         responses=DashboardCountryMetricsEnvelopeSerializer,
     )
     def get(self, request: Request, key: str, *args, **kwargs) -> Response:
-        payload = get_country_metrics(key, apr_year=parse_apr_year(request))
+        payload = get_country_metrics(
+            key,
+            apr_year=parse_apr_year(request),
+            placeholders=parse_placeholders(request),
+        )
         if payload is None:
             raise NotFound(
                 f"No dashboard entry with key {key!r}. Keys are iso3 for "

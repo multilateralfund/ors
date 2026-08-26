@@ -12,7 +12,8 @@ itself.
 See ``docs/dashboard_metrics.md``.
 """
 
-from typing import Sequence
+from functools import cached_property
+from typing import Any, Callable, Sequence
 
 from core.api.dashboard_metrics.primitives import dashboard_projects
 from core.api.export.annual_project_report import APRSummaryTablesExportWriter
@@ -83,22 +84,45 @@ class AprMetrics(APRSummaryTablesExportWriter):
         """Average months from approval to actual completion."""
         return self.avg_months(records, DATE_APPROVED, DATE_ACTUAL_COMPLETION)
 
+    @cached_property
+    def _active_status_names(self) -> set[str]:
+        """The statuses that count as inside the active cycle, by display name."""
+        return set(
+            ProjectStatus.objects.filter(
+                code__in=ACTIVE_CYCLE_STATUS_CODES
+            ).values_list("name", flat=True)
+        )
+
+    def _disbursed(self, records: Sequence[AnnualProjectReport]) -> dict[str, float]:
+        """The two disbursement figures over one set of records."""
+        active = [apr for apr in records if apr.status in self._active_status_names]
+        return {
+            "all_time": round(sum(apr.funds_disbursed or 0 for apr in records), 2),
+            "active_cycle": round(sum(apr.funds_disbursed or 0 for apr in active), 2),
+        }
+
     def funds_disbursed(self) -> dict[str, float]:
         """Disbursement to date, and the part of it inside the active cycle.
 
         ``funds_disbursed`` is cumulative per project, so the total over the
         cycle's records is the since-inception figure.
         """
-        active_names = set(
-            ProjectStatus.objects.filter(
-                code__in=ACTIVE_CYCLE_STATUS_CODES
-            ).values_list("name", flat=True)
-        )
-        active = [apr for apr in self.records if apr.status in active_names]
-        return {
-            "all_time": round(sum(apr.funds_disbursed or 0 for apr in self.records), 2),
-            "active_cycle": round(sum(apr.funds_disbursed or 0 for apr in active), 2),
-        }
+        return self._disbursed(self.records)
+
+    def disbursed_grouped(
+        self, key: Callable[[AnnualProjectReport], Any]
+    ) -> dict[Any, dict[str, float]]:
+        """The same two figures, split by whatever ``key`` says a record is.
+
+        The caller supplies the grouping, so this stays arithmetic and knows
+        nothing about what it is being grouped by. Groups the key does not
+        produce are absent; a caller wanting a fixed set of components fills
+        them in.
+        """
+        buckets: dict[Any, list[AnnualProjectReport]] = {}
+        for apr in self.records:
+            buckets.setdefault(key(apr), []).append(apr)
+        return {group: self._disbursed(records) for group, records in buckets.items()}
 
     def phased_out(self, fields: Sequence[str]) -> float:
         """Phase-out reported over the cycle, summed across the named columns."""
@@ -159,7 +183,7 @@ def apr_records(
     records = AnnualProjectReport.objects.filter(
         report__progress_report__year=year,
         project__in=dashboard_projects(),
-    ).select_related("project__project_type", "project__status")
+    ).select_related("project__project_type", "project__status", "project__country")
     if country is not None:
         records = records.filter(project__country=country)
     return list(records.order_by("id"))

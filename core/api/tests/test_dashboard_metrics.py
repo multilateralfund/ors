@@ -68,7 +68,7 @@ def approved_project(**kwargs):
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0613
 
-# The 90 metric ids, pinned independently of the registry so a silent rename or
+# The metric ids, pinned independently of the registry so a silent rename or
 # drop fails here rather than in a consumer.
 FUND_METRIC_IDS = frozenset(
     {
@@ -91,6 +91,7 @@ FUND_METRIC_IDS = frozenset(
         "funds_approved",
         "funds_lvc_split",
         "funds_disbursed",
+        "funds_disbursed_lvc_split",
         "projects_approved_total",
         "completed_count",
         "completed_funding",
@@ -202,7 +203,8 @@ def assert_envelope(payload, all_unavailable=False):
     assert payload["scope"]["population"] == "latest"
     assert sorted(payload["scope"]["excluded_statuses"]) == ["Closed", "Transferred"]
     assert payload["scope"]["production_included"] is True
-    for metric in payload["metrics"]:
+    for metric_id, metric in payload["metrics"].items():
+        assert metric["metric_id"] == metric_id
         assert metric["kind"] in ("scalar", "breakdown", "table", "series")
         assert metric["available"] is (metric["value"] is not None)
         if all_unavailable:
@@ -213,7 +215,7 @@ def assert_envelope(payload, all_unavailable=False):
 
 def metrics_by_id(payload):
     """The payload's metrics, addressable by id."""
-    return {metric["metric_id"]: metric for metric in payload["metrics"]}
+    return payload["metrics"]
 
 
 class TestDashboardMetricsFund(BaseTest):
@@ -224,8 +226,17 @@ class TestDashboardMetricsFund(BaseTest):
 
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert {m["metric_id"] for m in response.data["metrics"]} == FUND_METRIC_IDS
+        assert set(response.data["metrics"]) == FUND_METRIC_IDS
         assert_envelope(response.data)
+
+    def test_metrics_are_keyed_by_id(self, user, brazil):
+        """A mapping, so a client addresses a figure rather than scanning for it."""
+        self.client.force_authenticate(user=user)
+
+        metrics = self.client.get(self.url).data["metrics"]
+        assert isinstance(metrics, dict)
+        # Each value still names itself, so iterating .values() loses nothing.
+        assert metrics["funds_approved"]["metric_id"] == "funds_approved"
 
     def test_apr_year_overrides_the_cycle(self, user, brazil):
         self.client.force_authenticate(user=user)
@@ -290,7 +301,7 @@ class TestDashboardMetricsCountry(BaseTest):
 
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert {m["metric_id"] for m in response.data["metrics"]} == COUNTRY_METRIC_IDS
+        assert set(response.data["metrics"]) == COUNTRY_METRIC_IDS
         assert response.data["entry"]["entry_type"] == "country"
         assert_envelope(response.data)
 
@@ -478,9 +489,9 @@ class TestRegistryDeclarations:
             ), f"{metric.metric_id}: {metric.label!r}"
 
     def test_every_fund_metric_computes_unless_it_is_blocked(self):
-        """The two exceptions are declared blocked and say why."""
+        """The one exception is declared blocked and says why."""
         uncomputed = {m.metric_id for m in FUND_METRICS if m.compute is None}
-        assert uncomputed == {"baseline_phased_out_by_substance", "funds_lvc_split"}
+        assert uncomputed == {"baseline_phased_out_by_substance"}
         assert all(
             m.disposition == Disposition.NOT_AVAILABLE
             for m in FUND_METRICS
@@ -494,7 +505,7 @@ class TestRegistryDeclarations:
             for m in FUND_METRICS + COUNTRY_METRICS
             if m.disposition == Disposition.NOT_AVAILABLE
         ]
-        assert len(blocked) == 15
+        assert len(blocked) == 14
         assert all(m.unavailable_reason for m in blocked)
 
 
@@ -561,6 +572,141 @@ class TestFundValues(BaseTest):
             }
         ]
         assert metrics["funds_approved"]["value"]["funds_approved"] == 1000
+
+    def test_the_lvc_split_accounts_for_every_project(self, user, ongoing_status):
+        """The three components sum to the fund, so a pie of them is honest."""
+        africa = CountryFactory(
+            name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
+        )
+        approved_project(
+            country=CountryFactory(name="Ghana", iso3="GHA", is_lvc=True),
+            status=ongoing_status,
+            total_fund=100,
+            support_cost_psc=0,
+        )
+        approved_project(
+            country=CountryFactory(name="Brazil", iso3="BRA", is_lvc=False),
+            status=ongoing_status,
+            total_fund=200,
+            support_cost_psc=0,
+        )
+        approved_project(
+            country=africa, status=ongoing_status, total_fund=700, support_cost_psc=0
+        )
+
+        metrics = self.fund(user)
+        split = metrics["funds_lvc_split"]["value"]
+
+        assert split["lvc"]["funds_approved"] == 100
+        assert split["non_lvc"]["funds_approved"] == 200
+        assert split["not_classified"]["funds_approved"] == 700
+        assert (
+            sum(component["funds_plus_psc"] for component in split.values())
+            == metrics["funds_approved"]["value"]["funds_plus_psc"]
+        )
+
+    def test_the_lvc_split_and_the_country_page_share_one_derivation(
+        self, user, ongoing_status
+    ):
+        """The fund splits on the status the country page states."""
+        lvc_country = CountryFactory(name="Ghana", iso3="GHA", is_lvc=True)
+        approved_project(
+            country=lvc_country,
+            status=ongoing_status,
+            total_fund=100,
+            support_cost_psc=0,
+        )
+
+        self.client.force_authenticate(user=user)
+        stated = self.client.get(
+            reverse("dashboard-metrics-country", args=["GHA"])
+        ).data["metrics"]["attr_hcfc_lvc"]["value"]
+        split = self.fund(user)["funds_lvc_split"]["value"]
+
+        # The page says "LVC"; the money must be in the lvc component, not
+        # beside it in a second reading of Country.is_lvc.
+        assert stated == "LVC"
+        assert split["lvc"]["funds_approved"] == 100
+        assert split["non_lvc"]["funds_approved"] == 0
+
+    def test_disbursement_splits_on_the_same_classification_as_approvals(
+        self, user, ongoing_status
+    ):
+        """Two donuts side by side must divide the portfolio the same way."""
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=2024)
+        )
+        for country, disbursed in (
+            (CountryFactory(name="Ghana", iso3="GHA", is_lvc=True), 60),
+            (CountryFactory(name="Brazil", iso3="BRA", is_lvc=False), 40),
+        ):
+            AnnualProjectReportFactory(
+                project=approved_project(country=country, status=ongoing_status),
+                report=agency_report,
+                funds_disbursed=disbursed,
+            )
+
+        self.client.force_authenticate(user=user)
+        metrics = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)
+        disbursed = metrics["funds_disbursed_lvc_split"]["value"]
+
+        assert disbursed["lvc"]["all_time"] == 60
+        assert disbursed["non_lvc"]["all_time"] == 40
+        # Same components as the approved split, so the slices line up.
+        assert set(disbursed) == set(metrics["funds_lvc_split"]["value"])
+        # And they total what the undivided figure reports.
+        assert sum(c["all_time"] for c in disbursed.values()) == (
+            metrics["funds_disbursed"]["value"]["all_time"]
+        )
+
+    def test_a_component_with_no_reports_is_zero_rather_than_missing(
+        self, user, ongoing_status
+    ):
+        """A slice that vanished would read as a different split, not as silence."""
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=2024)
+        )
+        AnnualProjectReportFactory(
+            project=approved_project(
+                country=CountryFactory(name="Ghana", iso3="GHA", is_lvc=True),
+                status=ongoing_status,
+            ),
+            report=agency_report,
+            funds_disbursed=60,
+        )
+
+        self.client.force_authenticate(user=user)
+        disbursed = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)[
+            "funds_disbursed_lvc_split"
+        ]["value"]
+
+        assert disbursed["non_lvc"] == {"all_time": 0.0, "active_cycle": 0.0}
+        assert disbursed["not_classified"] == {"all_time": 0.0, "active_cycle": 0.0}
+
+    def test_the_disbursement_split_is_unavailable_without_a_cycle(
+        self, user, ongoing_status
+    ):
+        approved_project(status=ongoing_status)
+
+        assert self.fund(user)["funds_disbursed_lvc_split"]["available"] is False
+
+    def test_a_regionally_booked_project_is_not_filed_as_non_lvc(
+        self, user, ongoing_status
+    ):
+        """``is_lvc`` defaults to False on a region, which is not a statement."""
+        africa = CountryFactory(
+            name="Africa",
+            abbr="AFR",
+            location_type=Country.LocationType.REGION,
+            is_lvc=False,
+        )
+        approved_project(
+            country=africa, status=ongoing_status, total_fund=500, support_cost_psc=0
+        )
+
+        split = self.fund(user)["funds_lvc_split"]["value"]
+        assert split["non_lvc"]["funds_approved"] == 0
+        assert split["not_classified"]["funds_approved"] == 500
 
     def test_counts_separate_multi_year_agreements_from_individual_projects(
         self, user, ongoing_status
@@ -1174,7 +1320,7 @@ class TestCountryValues(BaseTest):
         metrics = self.entry(user)
         assert metrics["scope_entry_type"]["value"] == "country"
         assert metrics["attr_iso3"]["value"] == "BRA"
-        assert metrics["attr_hfc_group"]["value"] == "I"
+        assert metrics["attr_hfc_group"]["value"] == "Group 1"
         assert metrics["attr_hcfc_lvc"]["value"] == "LVC"
         assert metrics["attr_nou_ministry"]["value"] == "Ministry of the Environment"
 
@@ -1531,6 +1677,181 @@ class TestCountryProgrammeTrends:
         assert cp.load_trends().consumption_odp("Brazil") is None
 
 
+class TestPlaceholders(BaseTest):
+    """Invented stand-ins, served only when asked for and always flagged."""
+
+    url = reverse("dashboard-metrics-country", args=["BRA"])
+
+    # The rows with no source yet. Nine are country attributes; four are impact
+    # figures, which an aggregate entry can meaningfully carry.
+    ATTRIBUTES = frozenset(
+        {
+            "attr_ods_licensing",
+            "attr_ods_quota",
+            "attr_hfc_licensing",
+            "attr_hfc_quota",
+            "attr_nou_name",
+            "attr_certification",
+            "attr_meps",
+            "impact_certification",
+            "impact_meps",
+        }
+    )
+    IMPACT = frozenset(
+        {"impact_technicians", "impact_customs", "impact_enterprises", "ee_kwh_saved"}
+    )
+
+    def entry(self, user, key="BRA", **params):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(
+            reverse("dashboard-metrics-country", args=[key]), params
+        )
+        assert response.status_code == 200
+        return metrics_by_id(response.data)
+
+    @staticmethod
+    def flagged(metrics):
+        return {mid for mid, m in metrics.items() if m.get("placeholder")}
+
+    def test_nothing_is_invented_unless_it_is_asked_for(self, user, brazil):
+        """The default payload is the honest one."""
+        metrics = self.entry(user)
+
+        assert self.flagged(metrics) == set()
+        for metric_id in self.ATTRIBUTES | self.IMPACT:
+            assert metrics[metric_id]["available"] is False
+            assert metrics[metric_id]["value"] is None
+
+    def test_asking_fills_every_row_that_has_no_source(self, user, brazil):
+        metrics = self.entry(user, placeholders="true")
+
+        assert self.flagged(metrics) == self.ATTRIBUTES | self.IMPACT
+        for metric_id in self.ATTRIBUTES | self.IMPACT:
+            assert metrics[metric_id]["available"] is True
+            assert metrics[metric_id]["value"] is not None
+
+    def test_only_invented_values_carry_the_flag(self, user, brazil):
+        """A real figure must never be mistaken for a stand-in."""
+        metrics = self.entry(user, placeholders="true")
+
+        for metric_id, metric in metrics.items():
+            if metric.get("placeholder"):
+                assert metric_id in self.ATTRIBUTES | self.IMPACT
+            else:
+                assert "placeholder" not in metric
+
+    def test_the_same_entry_gives_the_same_answer_every_time(self, user, brazil):
+        """A page whose figures moved between loads would be worse than a blank one."""
+        first = self.entry(user, placeholders="true")
+        second = self.entry(user, placeholders="true")
+
+        assert {k: v["value"] for k, v in first.items()} == {
+            k: v["value"] for k, v in second.items()
+        }
+
+    def test_two_entries_do_not_get_the_same_answer(self, user, brazil, africa):
+        """Seeded per entry, so the pages do not all read alike."""
+        brazil_metrics = self.entry(user, placeholders="true")
+        africa_metrics = self.entry(user, key="AFR", placeholders="true")
+
+        assert any(
+            brazil_metrics[m]["value"] != africa_metrics[m]["value"]
+            for m in self.IMPACT
+        )
+
+    def test_a_fact_shown_twice_cannot_disagree_with_itself(self, user, brazil):
+        """These are one fact each, rendered in two sections of the page."""
+        metrics = self.entry(user, placeholders="true")
+
+        assert (
+            metrics["attr_certification"]["value"]
+            == metrics["impact_certification"]["value"]
+        )
+        assert metrics["attr_meps"]["value"] == metrics["impact_meps"]["value"]
+
+    def test_an_aggregate_entry_gets_impact_figures_but_no_attributes(
+        self, user, africa
+    ):
+        """A region has people trained across it, but no ozone unit of its own."""
+        metrics = self.entry(user, key="AFR", placeholders="true")
+
+        assert self.flagged(metrics) == self.IMPACT
+        for metric_id in self.ATTRIBUTES:
+            assert metrics[metric_id]["available"] is False
+
+    def test_a_placeholder_that_breaks_costs_only_itself(self, caplog):
+        """A demo aid must not be able to take the endpoint down."""
+        broken = replace(
+            get_metric("attr_nou_name"), compute=None, placeholder=_explode
+        )
+
+        # pylint: disable=W0212
+        rendered = dashboard_metrics._render(broken, MetricContext(), True)
+
+        assert rendered["available"] is False
+        assert "placeholder" not in rendered
+        assert "attr_nou_name" in caplog.text
+
+    def test_a_real_metric_never_gains_a_stand_in(self, user, brazil):
+        """``placeholder`` only fires where ``compute`` gave nothing."""
+        available = {m.metric_id for m in COUNTRY_METRICS if m.compute is not None}
+
+        metrics = self.entry(user, placeholders="true")
+        assert self.flagged(metrics) & available == set()
+
+    def test_a_nonsense_value_is_rejected(self, user, brazil):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"placeholders": "maybe"})
+        assert response.status_code == 400
+
+    def test_it_can_be_turned_off_explicitly(self, user, brazil):
+        assert self.flagged(self.entry(user, placeholders="false")) == set()
+
+
+class TestFundPlaceholders(BaseTest):
+    """The one fund row with no source, and its one real component."""
+
+    url = reverse("dashboard-metrics-fund")
+
+    def fund(self, user, **params):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, params)
+        assert response.status_code == 200
+        return metrics_by_id(response.data)
+
+    def test_the_baseline_table_is_wholly_absent_by_default(self, user, brazil):
+        """A one-row chart would imply the other two families are at zero."""
+        metric = self.fund(user)["baseline_phased_out_by_substance"]
+
+        assert metric["available"] is False
+        assert metric["value"] is None
+
+    def test_asking_serves_all_three_families(self, user, brazil):
+        metric = self.fund(user, placeholders="true")[
+            "baseline_phased_out_by_substance"
+        ]
+
+        assert metric["available"] is True
+        assert [row["group"] for row in metric["value"]] == ["HFC", "HCFC", "OTHER_ODS"]
+
+    def test_the_invented_rows_are_flagged_and_the_real_one_is_not(self, user, brazil):
+        """Partly invented, so the rows say which halves are which."""
+        metric = self.fund(user, placeholders="true")[
+            "baseline_phased_out_by_substance"
+        ]
+        rows = {row["group"]: row for row in metric["value"]}
+
+        # The metric-level flag says "contains invented data" without a walk.
+        assert metric["placeholder"] is True
+        assert rows["HFC"]["placeholder"] is True
+        assert rows["HCFC"]["placeholder"] is True
+
+        # Article 5 countries really have phased these out completely.
+        assert rows["OTHER_ODS"]["value"] == 100.0
+        assert "placeholder" not in rows["OTHER_ODS"]
+
+
 class TestSpecCommand:
     """The registry's documentation half, replacing the old /spec/ endpoint."""
 
@@ -1539,7 +1860,7 @@ class TestSpecCommand:
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
 
-        assert "90 metrics, 75 implemented." in rendered
+        assert "91 metrics, 77 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 

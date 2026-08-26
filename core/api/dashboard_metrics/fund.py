@@ -1,5 +1,5 @@
 """
-The 48 fund-wide metric declarations, and what each one is.
+The fund-wide metric declarations, and what each one is.
 
 Every ``compute`` takes the request's :class:`MetricContext` and returns a
 value, or ``None`` when there is nothing behind the figure.
@@ -11,7 +11,7 @@ from typing import Any
 
 from constance import config
 
-from core.api.dashboard_metrics import classify
+from core.api.dashboard_metrics import classify, placeholders
 from core.api.dashboard_metrics.classify import HFC, ODS
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
@@ -131,6 +131,51 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
     return grouped(
         context.projects, lambda row: classify.region_bucket(row.project.country)
     )
+
+
+NOT_CLASSIFIED = "not_classified"
+
+# The component each LVC status is reported under. Keyed on what
+# ``classify.lvc_status`` returns, so the fund split and the country page's
+# stated classification can never drift apart.
+LVC_COMPONENTS = {
+    classify.LVC: "lvc",
+    classify.NON_LVC: "non_lvc",
+    None: NOT_CLASSIFIED,
+}
+
+
+def _lvc_bucket(row) -> str:
+    """The component a project's funding is reported under."""
+    return LVC_COMPONENTS[classify.lvc_status(row.project.country)]
+
+
+def funds_lvc_split(context: MetricContext) -> dict[str, Any]:
+    """Funding split by LVC classification.
+
+    ``not_classified`` is a named component rather than a silent remainder.
+    """
+    return {
+        component: funds_pair(
+            context.where(lambda row, name=component: _lvc_bucket(row) == name)
+        )
+        for component in LVC_COMPONENTS.values()
+    }
+
+
+def funds_disbursed_lvc_split(context: MetricContext) -> dict[str, Any] | None:
+    """Disbursement split by LVC classification.
+    """
+    if context.apr is None:
+        return None
+    reported = context.apr.disbursed_grouped(
+        lambda record: LVC_COMPONENTS[classify.lvc_status(record.project.country)]
+    )
+    empty = {"all_time": 0.0, "active_cycle": 0.0}
+    return {
+        component: reported.get(component, empty)
+        for component in LVC_COMPONENTS.values()
+    }
 
 
 def theme(context: MetricContext, name: str) -> dict[str, Any]:
@@ -402,6 +447,7 @@ FUND_METRICS: tuple[Metric, ...] = (
             "Numerator is computable from ProjectOdsOdp.odp, but the baseline "
             "denominator is per-agreement and external to ORS."
         ),
+        placeholder=placeholders.baseline_by_substance,
     ),
     Metric(
         metric_id="pct_countries_met",
@@ -459,18 +505,29 @@ FUND_METRICS: tuple[Metric, ...] = (
         section="Targeted support for developing countries",
         kind=Kind.BREAKDOWN,
         unit=Unit.USD,
-        disposition=Disposition.NOT_AVAILABLE,
-        formula="Sum (funds+PSC) grouped by Consumption level status",
+        disposition=Disposition.COMPUTE,
+        formula=(
+            "Sum (funds+PSC) grouped by classify.lvc_status"
+        ),
         db_source="DB-COMPUTABLE",
         src_model_field=(
-            "Country.is_lvc (authoritative) NOT Project.consumption_level_status"
+            "Country.is_lvc"
         ),
-        compute=None,
-        unavailable_reason=(
-            "Pending a stakeholder decision on a second LVC status for HFCs. "
-            "Country.is_lvc itself is fully populated in the database - the ~99%-null "
-            "observation was an export artifact."
+        compute=funds_lvc_split,
+    ),
+    Metric(
+        metric_id="funds_disbursed_lvc_split",
+        label="Funds disbursed by LVC status",
+        section="Targeted support for developing countries",
+        kind=Kind.BREAKDOWN,
+        unit=Unit.USD,
+        disposition=Disposition.COMPUTE,
+        formula=(
+            "sum(Funds Disbursed (US$)) grouped by classify.lvc_status"
         ),
+        db_source="NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed by Country.is_lvc",
+        compute=funds_disbursed_lvc_split,
     ),
     Metric(
         metric_id="funds_disbursed",

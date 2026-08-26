@@ -10,7 +10,7 @@ figures do and get a country's worth of answer back.
 from functools import partial
 from typing import Any
 
-from core.api.dashboard_metrics import classify, taxonomy
+from core.api.dashboard_metrics import classify, placeholders, taxonomy
 from core.api.dashboard_metrics.apr import CO2_PHASED_OUT_FIELDS, ODP_PHASED_OUT_FIELDS
 from core.api.dashboard_metrics.classify import (
     HCFC,
@@ -163,18 +163,23 @@ def attr_region(context: MetricContext) -> str | None:
     return _text(classify.region_of(_entry(context)))
 
 
+# The database stores the Kigali group as a bare roman numeral. The page names
+# it in full, so it is spelled out here rather than in every client.
+HFC_GROUP_LABELS = {"I": "Group 1", "II": "Group 2"}
+
+
 def attr_hfc_group(context: MetricContext) -> str | None:
-    """The country's Kigali consumption group."""
+    """The country's Kigali consumption group.
+    """
     country = _country(context)
-    return _text(country.consumption_group) if country else None
+    if country is None:
+        return None
+    return HFC_GROUP_LABELS.get(_text(country.consumption_group))
 
 
 def attr_hcfc_lvc(context: MetricContext) -> str | None:
     """Whether the country is low-volume-consuming, for HCFC purposes."""
-    country = _country(context)
-    if country is None:
-        return None
-    return "LVC" if country.is_lvc else "NON-LVC"
+    return classify.lvc_status(_entry(context))
 
 
 def attr_nou_ministry(context: MetricContext) -> str | None:
@@ -390,13 +395,14 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country attribute - does an ODS import/export licensing system exist",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="Project.upgrade_of_imp_exp_licensing",
         compute=None,
         unavailable_reason=(
-            "No country-level licensing field. Project.upgrade_of_imp_exp_licensing "
-            "is per-project planned/actual reporting, not a country attribute. Source "
-            "undecided."
+            "No country-level licensing field, the Country field is pending."
+        ),
+        placeholder=partial(
+            placeholders.choice, slug="ods_licensing", labels=placeholders.YES_NO
         ),
     ),
     Metric(
@@ -407,12 +413,14 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country attribute - does an ODS quota system exist",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="Project.upgrade_of_quota_system",
         compute=None,
         unavailable_reason=(
-            "No country-level quota field. Project.upgrade_of_quota_system is per- "
-            "project, not a country flag. Source undecided."
+            "No country-level quota field, the Country field is pending."
+        ),
+        placeholder=partial(
+            placeholders.choice, slug="ods_quota", labels=placeholders.YES_NO
         ),
     ),
     Metric(
@@ -423,12 +431,14 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country attribute - HFC-specific licensing system",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="none",
         compute=None,
         unavailable_reason=(
-            "No HFC-specific licensing field exists: the model has no ODS/HFC split, "
-            "only a single generic licensing field. Source undecided."
+            "No HFC-specific licensing field exists, the Country field is pending."
+        ),
+        placeholder=partial(
+            placeholders.choice, slug="hfc_licensing", labels=placeholders.YES_NO
         ),
     ),
     Metric(
@@ -439,11 +449,14 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country attribute - HFC-specific quota system",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="none",
         compute=None,
         unavailable_reason=(
-            "No HFC-specific quota field exists (no ODS/HFC split). Source undecided."
+            "No HFC-specific quota field exists (no ODS/HFC split), the Country field is pending."
+        ),
+        placeholder=partial(
+            placeholders.choice, slug="hfc_quota", labels=placeholders.YES_NO
         ),
     ),
     Metric(
@@ -453,7 +466,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Country.consumption_group (e.g. 'I' / 'II')",
+        formula="Country.consumption_group, labelled 'Group 1' / 'Group 2'",
         db_source="DB-COMPUTABLE",
         src_model_field="Country.consumption_group",
         compute=attr_hfc_group,
@@ -465,7 +478,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Country.is_lvc (+ consumption_category label)",
+        formula="Country.is_lvc, labelled 'LVC' / 'Non-LVC'",
         db_source="DB-COMPUTABLE",
         src_model_field="Country.is_lvc",
         compute=attr_hcfc_lvc,
@@ -490,14 +503,13 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country attribute - NOU contact person name",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="none",
         compute=None,
         unavailable_reason=(
-            "No contact-person field on Country. Country.ozone_unit holds the "
-            "ministry/office name and feeds attr_nou_ministry instead. Source "
-            "undecided."
+            "No contact-person field on Country, the Country field is pending."
         ),
+        placeholder=placeholders.nou_name,
     ),
     Metric(
         metric_id="attr_certification",
@@ -507,12 +519,14 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country attribute - YES/NO",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="Project.establishment_of_technician_certification",
         compute=None,
         unavailable_reason=(
-            "Only per-project Project.establishment_of_technician_certification "
-            "exists; there is no country roll-up. Source undecided."
+            "The Country field is pending."
+        ),
+        placeholder=partial(
+            placeholders.choice, slug="certification", labels=placeholders.YES_NO
         ),
     ),
     Metric(
@@ -523,12 +537,14 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country attribute - YES/ESTABLISHED",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="Project.meps_developed_domestic_refrigeration",
         compute=None,
         unavailable_reason=(
-            "Only per-project Project.meps_developed_* (split by equipment type) "
-            "exists; there is no country roll-up. Source undecided."
+            "Settled as a country attribute; the Country field is pending."
+        ),
+        placeholder=partial(
+            placeholders.choice, slug="meps", labels=placeholders.MEPS_LABELS
         ),
     ),
     Metric(
@@ -826,6 +842,13 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         compute=None,
         unavailable_reason="Per-country data unavailable.",
+        placeholder=partial(
+            placeholders.count,
+            slug="kwh",
+            low=1_500_000,
+            high=45_000_000,
+            step=100_000,
+        ),
     ),
     Metric(
         metric_id="impact_technicians",
@@ -845,6 +868,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         compute=None,
         unavailable_reason="Per-country data unavailable.",
+        placeholder=partial(placeholders.count, slug="technicians", low=150, high=3500),
     ),
     Metric(
         metric_id="impact_customs",
@@ -864,6 +888,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         compute=None,
         unavailable_reason="Per-country data unavailable.",
+        placeholder=partial(placeholders.count, slug="customs", low=20, high=600),
     ),
     Metric(
         metric_id="impact_enterprises",
@@ -887,6 +912,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         compute=None,
         unavailable_reason="Per-country data unavailable.",
+        placeholder=partial(placeholders.count, slug="enterprises", low=8, high=90),
     ),
     Metric(
         metric_id="impact_certification",
@@ -896,13 +922,14 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country YES/NO",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="Project.establishment_of_technician_certification",
         compute=None,
         unavailable_reason=(
-            "Only per-project Project.establishment_of_technician_certification "
-            "exists; there is no country roll-up. Same blocker as attr_certification. "
-            "Source undecided."
+            "Settled as a country attribute; the Country field is pending."
+        ),
+        placeholder=partial(
+            placeholders.choice, slug="certification", labels=placeholders.YES_NO
         ),
     ),
     Metric(
@@ -913,12 +940,14 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=None,
         disposition=Disposition.NOT_AVAILABLE,
         formula="country ESTABLISHED",
-        db_source="SOURCE-UNDECIDED",
+        db_source="PENDING-COUNTRY-FIELD",
         src_model_field="Project.meps_developed_domestic_refrigeration",
         compute=None,
         unavailable_reason=(
-            "Only per-project Project.meps_developed_* exists; there is no country "
-            "roll-up. Same blocker as attr_meps. Source undecided."
+            "Settled as a country attribute; the Country field is pending."
+        ),
+        placeholder=partial(
+            placeholders.choice, slug="meps", labels=placeholders.MEPS_LABELS
         ),
     ),
 )

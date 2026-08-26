@@ -31,6 +31,13 @@ def _cell(value: str) -> str:
     return str(value).replace("|", "\\|").replace("\n", " ")
 
 
+def _built(metric: Metric) -> str:
+    """Whether the figure is real, absent, or has a stand-in behind the flag."""
+    if metric.compute is not None:
+        return "yes"
+    return "placeholder" if metric.placeholder is not None else "no"
+
+
 def _row(metric: Metric) -> str:
     return (
         "| "
@@ -46,7 +53,7 @@ def _row(metric: Metric) -> str:
                 metric.formula,
                 metric.db_source,
                 metric.src_model_field,
-                "yes" if metric.compute else "no",
+                _built(metric),
             )
         )
         + " |"
@@ -66,13 +73,20 @@ class Command(BaseCommand):
     help = "Render the dashboard metric registry as markdown."
 
     def handle(self, *args, **options):
-        built = sum(1 for m in FUND_METRICS + COUNTRY_METRICS if m.compute is not None)
-        total = len(FUND_METRICS) + len(COUNTRY_METRICS)
+        metrics = FUND_METRICS + COUNTRY_METRICS
+        built = sum(1 for m in metrics if m.compute is not None)
+        stand_ins = sum(
+            1 for m in metrics if m.compute is None and m.placeholder is not None
+        )
+        total = len(metrics)
 
         lines = [
             "# Dashboard metrics",
             "",
             f"{total} metrics, {built} implemented.",
+            "",
+            f"{stand_ins} more have a placeholder, served only to a caller that "
+            "asks for one and flagged when it is.",
             "",
             *_table("Fund-wide", FUND_METRICS),
             *_table("Per-country", COUNTRY_METRICS),

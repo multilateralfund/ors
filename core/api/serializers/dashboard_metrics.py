@@ -42,6 +42,9 @@ class DashboardMetricValueSerializer(serializers.Serializer):
     unit = serializers.ChoiceField(choices=UNIT_CHOICES, allow_null=True)
     available = serializers.BooleanField()
     value = serializers.JSONField(allow_null=True)
+    # Present, and always true, only on an invented value. Absent everywhere
+    # else rather than false, so a real figure cannot be mistaken for one.
+    placeholder = serializers.BooleanField(required=False)
 
 
 class DashboardMetricsEnvelopeSerializer(serializers.Serializer):
@@ -51,7 +54,9 @@ class DashboardMetricsEnvelopeSerializer(serializers.Serializer):
     apr_year = serializers.IntegerField(allow_null=True)
     apr_years_available = serializers.ListField(child=serializers.IntegerField())
     scope = DashboardScopeSerializer()
-    metrics = DashboardMetricValueSerializer(many=True)
+    # Keyed by metric_id. Each value still carries its own metric_id, so a
+    # client iterating .values() knows what it is holding.
+    metrics = serializers.DictField(child=DashboardMetricValueSerializer())
 
 
 class DashboardCountryMetricsEnvelopeSerializer(DashboardMetricsEnvelopeSerializer):

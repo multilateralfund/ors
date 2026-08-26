@@ -60,6 +60,9 @@ class Metric:
     ``compute`` is the only executable field, and ``compute=None`` surfaces as
     ``available: false``. The rest is documentation, served to no one; render
     it with ``manage.py dashboard_metrics_spec``.
+
+    ``placeholder`` is the exception: it runs, but only for a caller who asked
+    for ``?placeholders=true``, and only where ``compute`` has nothing to give.
     """
 
     metric_id: str
@@ -73,6 +76,7 @@ class Metric:
     src_model_field: str
     compute: Callable[..., Any] | None
     unavailable_reason: str | None = None
+    placeholder: Callable[..., Any] | None = None
 
 
 def index_metrics(metrics: Iterable[Metric], registry_name: str) -> dict[str, Metric]:
