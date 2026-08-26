@@ -20,7 +20,7 @@ import {
 } from '../utils'
 import { formatApiUrl } from '@ors/helpers'
 
-import { flatMap, map, omit, pick } from 'lodash'
+import { filter, flatMap, map, omit, pick } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import Cookies from 'js-cookie'
@@ -138,6 +138,11 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
           'project_phases',
         )
 
+      const sdgsContributionData = filter(
+        sdgs_contribution,
+        (sdg) => sdg.goals.length > 0,
+      )
+
       const formattedSupportingEvidence =
         formatAgencyData<PCRSupportingEvidencesData>(
           supporting_evidences,
@@ -156,7 +161,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
         activities: resultsAssessmentData,
         project_components: projectComponentsData,
         gender_mainstreamings: genderMainstreamingsData,
-        sustainable_development_goals: sdgs_contribution,
+        sustainable_development_goals: sdgsContributionData,
         supporting_evidences: supportingEvidencesData,
         pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
       }

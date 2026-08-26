@@ -14,6 +14,7 @@ import {
   PCRResultsAssessmentData,
   PCRCausesOfDelayData,
   PCRLessonsLearnedData,
+  PCRGenderMainstreamingData,
 } from '@ors/components/manage/Blocks/PCR/interfaces'
 import {
   formatAgencyData,
@@ -110,6 +111,21 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     }
   }
 
+  const formatGenderMainstreamingErrors = (errors: Record<string, any[]>) => {
+    const genderMainstreamingData =
+      formatAgencyData<PCRGenderMainstreamingData>(
+        PCRData.gender_mainstreaming || [],
+        'project_phases',
+      )
+
+    const agenciesErrors = map(genderMainstreamingData, (data, index) => ({
+      agency_id: data.agency_id,
+      errors: errors?.gender_mainstreamings?.[index] ?? {},
+    }))
+
+    return { gender_mainstreaming: groupBy(agenciesErrors, 'agency_id') }
+  }
+
   const groupErrors = (errors: Record<string, any[]>) => {
     const overviewFields = keys(initialOverviewData)
     const overviewErrors = pick(errors, overviewFields)
@@ -119,12 +135,16 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     const projectComponentsErrors = formatProjectComponentsErrors(
       pick(errors, 'project_components'),
     )
+    const genderMainstreamingErrors = formatGenderMainstreamingErrors(
+      pick(errors, 'gender_mainstreamings'),
+    )
 
     return {
       overview: overviewErrors,
       results_assessment: resultsAssessmentErrors,
       causes_of_delay: projectComponentsErrors.causes_of_delay,
       lessons_learned: projectComponentsErrors.lessons_learned,
+      gender_mainstreaming: genderMainstreamingErrors,
     }
   }
 

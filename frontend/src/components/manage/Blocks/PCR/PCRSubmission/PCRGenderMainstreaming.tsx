@@ -1,6 +1,10 @@
 import { Fragment, useContext, useState } from 'react'
 
-import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import {
+  ErrorsList,
+  SubmitButton,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
@@ -8,24 +12,25 @@ import {
   PCRTextAreaWidget,
   PCRBooleanWidget,
 } from './PCRWidgets'
-import { projectPhaseOptions } from '../constants'
+import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
+import { ppField, projectPhaseOptions } from '../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
+import { filter, find, map, omit } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
-import { find, map } from 'lodash'
 import cx from 'classnames'
 
 const PCRGenderMainstreaming = () => {
   const sectionIdentifier = 'gender_mainstreaming'
-  const ppField = 'project_phases'
 
   const { agencies } = useContext(ProjectsDataContext)
-  const { PCRData, setPCRData } = useContext(PCRDataContext)
+  const { PCRData, setPCRData, errors, setErrors } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
   const sectionData = PCRData[sectionIdentifier] || []
   const ppData = sectionData[crtTab][ppField] || []
+  const crtAgencyId = sectionData[crtTab].agency_id
 
   const crtAgencies = map(
     sectionData,
