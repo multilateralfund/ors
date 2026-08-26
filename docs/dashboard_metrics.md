@@ -220,8 +220,8 @@ Metric(
 
 ```
 docker exec -w /app mlf.app pytest -q core/api/tests/test_dashboard_metrics.py
-docker exec -w /app mlf.app black --check core/api/dashboard_metrics
-docker exec -w /app mlf.app pylint core/api/dashboard_metrics
+docker exec -w /app mlf.app black --check core
+docker exec -w /app mlf.app pylint core
 ```
 
 ### Declaring one that cannot be computed yet

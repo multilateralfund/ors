@@ -463,9 +463,7 @@ FUND_METRICS: tuple[Metric, ...] = (
             "HCFC do not have baselines yet"
         ),
         db_source="EXTERNAL",
-        src_model_field=(
-            "numerator ProjectOdsOdp.odp by family; denominator not held"
-        ),
+        src_model_field=("numerator ProjectOdsOdp.odp by family; denominator not held"),
         compute=baseline_phased_out_by_substance,
         placeholder=partial(placeholders.fill_baseline, rows=baseline_rows),
     ),

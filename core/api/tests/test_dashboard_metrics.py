@@ -66,7 +66,7 @@ def approved_project(**kwargs):
 
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0613
+# pylint: disable=C8008,W0613,C0302
 
 # The metric ids, pinned independently of the registry so a silent rename or
 # drop fails here rather than in a consumer.
@@ -585,141 +585,6 @@ class TestFundValues(BaseTest):
         ]
         assert metrics["funds_approved"]["value"]["funds_approved"] == 1000
 
-    def test_the_lvc_split_accounts_for_every_project(self, user, ongoing_status):
-        """The three components sum to the fund, so a pie of them is honest."""
-        africa = CountryFactory(
-            name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
-        )
-        approved_project(
-            country=CountryFactory(name="Ghana", iso3="GHA", is_lvc=True),
-            status=ongoing_status,
-            total_fund=100,
-            support_cost_psc=0,
-        )
-        approved_project(
-            country=CountryFactory(name="Brazil", iso3="BRA", is_lvc=False),
-            status=ongoing_status,
-            total_fund=200,
-            support_cost_psc=0,
-        )
-        approved_project(
-            country=africa, status=ongoing_status, total_fund=700, support_cost_psc=0
-        )
-
-        metrics = self.fund(user)
-        split = metrics["funds_lvc_split"]["value"]
-
-        assert split["lvc"]["funds_approved"] == 100
-        assert split["non_lvc"]["funds_approved"] == 200
-        assert split["not_classified"]["funds_approved"] == 700
-        assert (
-            sum(component["funds_plus_psc"] for component in split.values())
-            == metrics["funds_approved"]["value"]["funds_plus_psc"]
-        )
-
-    def test_the_lvc_split_and_the_country_page_share_one_derivation(
-        self, user, ongoing_status
-    ):
-        """The fund splits on the status the country page states."""
-        lvc_country = CountryFactory(name="Ghana", iso3="GHA", is_lvc=True)
-        approved_project(
-            country=lvc_country,
-            status=ongoing_status,
-            total_fund=100,
-            support_cost_psc=0,
-        )
-
-        self.client.force_authenticate(user=user)
-        stated = self.client.get(
-            reverse("dashboard-metrics-country", args=["GHA"])
-        ).data["metrics"]["attr_hcfc_lvc"]["value"]
-        split = self.fund(user)["funds_lvc_split"]["value"]
-
-        # The page says "LVC"; the money must be in the lvc component, not
-        # beside it in a second reading of Country.is_lvc.
-        assert stated == "LVC"
-        assert split["lvc"]["funds_approved"] == 100
-        assert split["non_lvc"]["funds_approved"] == 0
-
-    def test_disbursement_splits_on_the_same_classification_as_approvals(
-        self, user, ongoing_status
-    ):
-        """Two donuts side by side must divide the portfolio the same way."""
-        agency_report = AnnualAgencyProjectReportFactory(
-            progress_report=AnnualProgressReportFactory(year=2024)
-        )
-        for country, disbursed in (
-            (CountryFactory(name="Ghana", iso3="GHA", is_lvc=True), 60),
-            (CountryFactory(name="Brazil", iso3="BRA", is_lvc=False), 40),
-        ):
-            AnnualProjectReportFactory(
-                project=approved_project(country=country, status=ongoing_status),
-                report=agency_report,
-                funds_disbursed=disbursed,
-            )
-
-        self.client.force_authenticate(user=user)
-        metrics = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)
-        disbursed = metrics["funds_disbursed_lvc_split"]["value"]
-
-        assert disbursed["lvc"]["all_time"] == 60
-        assert disbursed["non_lvc"]["all_time"] == 40
-        # Same components as the approved split, so the slices line up.
-        assert set(disbursed) == set(metrics["funds_lvc_split"]["value"])
-        # And they total what the undivided figure reports.
-        assert sum(c["all_time"] for c in disbursed.values()) == (
-            metrics["funds_disbursed"]["value"]["all_time"]
-        )
-
-    def test_a_component_with_no_reports_is_zero_rather_than_missing(
-        self, user, ongoing_status
-    ):
-        """A slice that vanished would read as a different split, not as silence."""
-        agency_report = AnnualAgencyProjectReportFactory(
-            progress_report=AnnualProgressReportFactory(year=2024)
-        )
-        AnnualProjectReportFactory(
-            project=approved_project(
-                country=CountryFactory(name="Ghana", iso3="GHA", is_lvc=True),
-                status=ongoing_status,
-            ),
-            report=agency_report,
-            funds_disbursed=60,
-        )
-
-        self.client.force_authenticate(user=user)
-        disbursed = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)[
-            "funds_disbursed_lvc_split"
-        ]["value"]
-
-        assert disbursed["non_lvc"] == {"all_time": 0.0, "active_cycle": 0.0}
-        assert disbursed["not_classified"] == {"all_time": 0.0, "active_cycle": 0.0}
-
-    def test_the_disbursement_split_is_unavailable_without_a_cycle(
-        self, user, ongoing_status
-    ):
-        approved_project(status=ongoing_status)
-
-        assert self.fund(user)["funds_disbursed_lvc_split"]["available"] is False
-
-    def test_a_regionally_booked_project_is_not_filed_as_non_lvc(
-        self, user, ongoing_status
-    ):
-        """``is_lvc`` defaults to False on a region, which is not a statement."""
-        africa = CountryFactory(
-            name="Africa",
-            abbr="AFR",
-            location_type=Country.LocationType.REGION,
-            is_lvc=False,
-        )
-        approved_project(
-            country=africa, status=ongoing_status, total_fund=500, support_cost_psc=0
-        )
-
-        split = self.fund(user)["funds_lvc_split"]["value"]
-        assert split["non_lvc"]["funds_approved"] == 0
-        assert split["not_classified"]["funds_approved"] == 500
-
     def test_counts_separate_multi_year_agreements_from_individual_projects(
         self, user, ongoing_status
     ):
@@ -906,6 +771,153 @@ class TestFundValues(BaseTest):
             "value",
         }
         assert "funds_approved" in caplog.text
+
+
+class TestLvcSplits(BaseTest):
+    """Approved and disbursed funding, split by the LVC classification."""
+
+    url = reverse("dashboard-metrics-fund")
+
+    def fund(self, user):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        return metrics_by_id(response.data)
+
+    def test_the_lvc_split_accounts_for_every_project(self, user, ongoing_status):
+        """The three components sum to the fund, so a pie of them is honest."""
+        africa = CountryFactory(
+            name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
+        )
+        approved_project(
+            country=CountryFactory(name="Ghana", iso3="GHA", is_lvc=True),
+            status=ongoing_status,
+            total_fund=100,
+            support_cost_psc=0,
+        )
+        approved_project(
+            country=CountryFactory(name="Brazil", iso3="BRA", is_lvc=False),
+            status=ongoing_status,
+            total_fund=200,
+            support_cost_psc=0,
+        )
+        approved_project(
+            country=africa, status=ongoing_status, total_fund=700, support_cost_psc=0
+        )
+
+        metrics = self.fund(user)
+        split = metrics["funds_lvc_split"]["value"]
+
+        assert split["lvc"]["funds_approved"] == 100
+        assert split["non_lvc"]["funds_approved"] == 200
+        assert split["not_classified"]["funds_approved"] == 700
+        assert (
+            sum(component["funds_plus_psc"] for component in split.values())
+            == metrics["funds_approved"]["value"]["funds_plus_psc"]
+        )
+
+    def test_the_lvc_split_and_the_country_page_share_one_derivation(
+        self, user, ongoing_status
+    ):
+        """The fund splits on the status the country page states."""
+        lvc_country = CountryFactory(name="Ghana", iso3="GHA", is_lvc=True)
+        approved_project(
+            country=lvc_country,
+            status=ongoing_status,
+            total_fund=100,
+            support_cost_psc=0,
+        )
+
+        self.client.force_authenticate(user=user)
+        stated = self.client.get(
+            reverse("dashboard-metrics-country", args=["GHA"])
+        ).data["metrics"]["attr_hcfc_lvc"]["value"]
+        split = self.fund(user)["funds_lvc_split"]["value"]
+
+        # The page says "LVC"; the money must be in the lvc component, not
+        # beside it in a second reading of Country.is_lvc.
+        assert stated == "LVC"
+        assert split["lvc"]["funds_approved"] == 100
+        assert split["non_lvc"]["funds_approved"] == 0
+
+    def test_disbursement_splits_on_the_same_classification_as_approvals(
+        self, user, ongoing_status
+    ):
+        """Two donuts side by side must divide the portfolio the same way."""
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=2024)
+        )
+        for country, disbursed in (
+            (CountryFactory(name="Ghana", iso3="GHA", is_lvc=True), 60),
+            (CountryFactory(name="Brazil", iso3="BRA", is_lvc=False), 40),
+        ):
+            AnnualProjectReportFactory(
+                project=approved_project(country=country, status=ongoing_status),
+                report=agency_report,
+                funds_disbursed=disbursed,
+            )
+
+        self.client.force_authenticate(user=user)
+        metrics = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)
+        disbursed = metrics["funds_disbursed_lvc_split"]["value"]
+
+        assert disbursed["lvc"]["all_time"] == 60
+        assert disbursed["non_lvc"]["all_time"] == 40
+        # Same components as the approved split, so the slices line up.
+        assert set(disbursed) == set(metrics["funds_lvc_split"]["value"])
+        # And they total what the undivided figure reports.
+        assert sum(c["all_time"] for c in disbursed.values()) == (
+            metrics["funds_disbursed"]["value"]["all_time"]
+        )
+
+    def test_a_component_with_no_reports_is_zero_rather_than_missing(
+        self, user, ongoing_status
+    ):
+        """A slice that vanished would read as a different split, not as silence."""
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=2024)
+        )
+        AnnualProjectReportFactory(
+            project=approved_project(
+                country=CountryFactory(name="Ghana", iso3="GHA", is_lvc=True),
+                status=ongoing_status,
+            ),
+            report=agency_report,
+            funds_disbursed=60,
+        )
+
+        self.client.force_authenticate(user=user)
+        disbursed = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)[
+            "funds_disbursed_lvc_split"
+        ]["value"]
+
+        assert disbursed["non_lvc"] == {"all_time": 0.0, "active_cycle": 0.0}
+        assert disbursed["not_classified"] == {"all_time": 0.0, "active_cycle": 0.0}
+
+    def test_the_disbursement_split_is_unavailable_without_a_cycle(
+        self, user, ongoing_status
+    ):
+        approved_project(status=ongoing_status)
+
+        assert self.fund(user)["funds_disbursed_lvc_split"]["available"] is False
+
+    def test_a_regionally_booked_project_is_not_filed_as_non_lvc(
+        self, user, ongoing_status
+    ):
+        """``is_lvc`` defaults to False on a region, which is not a statement."""
+        africa = CountryFactory(
+            name="Africa",
+            abbr="AFR",
+            location_type=Country.LocationType.REGION,
+            is_lvc=False,
+        )
+        approved_project(
+            country=africa, status=ongoing_status, total_fund=500, support_cost_psc=0
+        )
+
+        split = self.fund(user)["funds_lvc_split"]["value"]
+        assert split["non_lvc"]["funds_approved"] == 0
+        assert split["not_classified"]["funds_approved"] == 500
 
 
 class TestMetricContext:
