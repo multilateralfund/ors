@@ -662,8 +662,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
         # is_transferred = project.status and project.status.code == "TRF"
         # is_finalised = project.status and project.status.code == "FIN"
 
-        if project.meta_project_id not in self.mya_is_ongoing:
-            return None
+        # if project.meta_project_id not in self.mya_is_ongoing:
+        #     return None
 
         # if project.status.code == "TRF":
         #     return None

@@ -773,13 +773,13 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
     @pytest.mark.parametrize(
         "date_per_agreement,stored_end_date,project_end_date,status_code,expected_end_date",
         [
-            (None, None, date(2015, 12, 1), "COM", None),
+            (None, None, date(2015, 12, 1), "COM", date(2015, 12, 1)),
             (
                 date(2018, 12, 1),
                 None,
                 date(2007, 12, 1),
                 "COM",
-                None,
+                date(2007, 12, 1),
             ),
             (date(2031, 12, 1), None, None, "ONG", None),
             (
@@ -787,7 +787,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
                 datetime(2021, 12, 1, tzinfo=timezone.utc),
                 None,
                 "COM",
-                None,
+                date(2021, 12, 1),
             ),
             (
                 date(2026, 12, 1),
@@ -799,7 +799,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         ],
     )
     # pylint: disable-next=too-many-arguments
-    def test_export_inventory_report_only_populates_ongoing_mya_completion_date(
+    def test_export_inventory_report_uses_stored_or_computed_mya_completion_date(
         self,
         admin_user,
         project_approved_status,
