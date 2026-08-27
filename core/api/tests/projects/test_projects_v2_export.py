@@ -563,6 +563,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             meta_project=meta_project,
             project_type=inv_type,
             project_end_date=date(2021, 12, 1),
+            date_completion=date(2022, 12, 1),
             submission_status=project_approved_status,
         )
 
@@ -585,7 +586,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         assert sheet[f"{headers['Extended date']}{inv_row}"].value is None
         assert sheet[
             f"{headers['Approved Date Completion']}{inv_row}"
-        ].value.date() == date(2021, 12, 1)
+        ].value.date() == date(2022, 12, 1)
 
     def test_modern_extended_date_requires_mya_extended_date(self):
         meta_project = MetaProjectFactory.create(

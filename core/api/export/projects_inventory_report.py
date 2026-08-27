@@ -541,30 +541,35 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         return result
 
-    def _get_approved_funds(self, project, version):
-        return (
-            self._p_fund_approved(self.get_version(project, version))
-            if not_adj(self.get_version(project, version))
-            else None
-        )
+    def _get_approved_project(self, project, idx):
+        result = None
+        candidates = self.get_all_not_adj_versions(project)
 
-    def _get_approved_support_costs(self, project, version):
-        return (
-            self._p_psc_approved(self.get_version(project, version))
-            if not_adj(self.get_version(project, version))
-            else None
-        )
+        if len(candidates) >= idx:
+            # idx starts at 1 because it's used as a column index. e.g. "Funds Approved 1"
+            result = candidates[idx - 1]
 
-    def _has_approved_funds(self, project, version):
-        return (
-            self._get_approved_funds(project, version) or version == MIN_PROJECT_VERSION
-        )
+        return result
+
+    def _get_approved_funds(self, project, idx):
+        return self._p_fund_approved(self._get_approved_project(project, idx))
+
+    def _get_approved_support_costs(self, project, idx):
+        return self._p_psc_approved(self._get_approved_project(project, idx))
+
+    def _has_approved_funds(self, project, idx):
+        result = self._get_approved_funds(project, idx)
+
+        if not result and idx == 1 and self._get_approved_project(project, idx):
+            result = True
+
+        return result
 
     def _get_approved_date_of_completion(self, project, *_):
         result = None
         v3 = self.get_version(project, 3)
         if v3:
-            result = v3.date_completion if v3.legacy_code else v3.project_end_date
+            result = v3.date_completion
         return result
 
     def _get_extended_date(self, project):
@@ -1221,6 +1226,14 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         return None
 
+    def get_all_not_adj_versions(self, p: Project) -> list[Project]:
+        projects = [p for p in self.get_all_previous_versions(p) if not_adj(p)]
+
+        if not_adj(p) and p not in projects:
+            projects.append(p)
+
+        return sorted(projects, key=lambda p: p.version)
+
     def get_all_previous_versions(self, p) -> Iterable[Project]:
         return sorted(self.all_versions.get(p.id, ()), key=lambda p: p.version)
 
@@ -1428,42 +1441,40 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         return [
             {
-                "id": f"funds_approved_v{version}",
+                "id": f"funds_approved_v{idx}",
                 "headerName": f"Funds Approved {idx}",
-                "method": lambda project, _: self._get_approved_funds(project, version),
+                "method": lambda project, _: self._get_approved_funds(project, idx),
                 "type": "number",
                 "align": "right",
                 "cell_format": "#,##0;-#,##0;;@",
             },
             {
-                "id": f"psc_v{version}",
+                "id": f"psc_v{idx}",
                 "headerName": f"Support Costs Approved {idx}",
                 "method": lambda project, _: self._get_approved_support_costs(
-                    project, version
+                    project, idx
                 ),
                 "type": "number",
                 "align": "right",
                 "cell_format": "#,##0;-#,##0;;@",
             },
             {
-                "id": f"post_excom_meeting_v{version}",
+                "id": f"post_excom_meeting_v{idx}",
                 "headerName": f"Meeting Approved {idx}",
                 "method": lambda project, _: (
-                    self._p_meeting_approved(self.get_version(project, version))
-                    if self._has_approved_funds(project, version)
-                    and not_adj(self.get_version(project, version))
+                    self._p_meeting_approved(self._get_approved_project(project, idx))
+                    if self._has_approved_funds(project, idx)
                     else None
                 ),
             },
             {
-                "id": f"date_approved_v{version}",
+                "id": f"date_approved_v{idx}",
                 "headerName": f"Date Approved {idx}",
                 "type": "date",
                 "cell_format": "MMM-YYYY",
                 "method": lambda project, _: (
-                    self.get_version(project, version).date_approved
-                    if self._has_approved_funds(project, version)
-                    and not_adj(self.get_version(project, version))
+                    self._get_approved_project(project, idx).date_approved
+                    if self._has_approved_funds(project, idx)
                     else None
                 ),
             },
