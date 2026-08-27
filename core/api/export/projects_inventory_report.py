@@ -1312,6 +1312,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         difference = cur_value - prev_value
         return difference if project.adjustment else -difference
+
     def _p_actual_fund(self, project):
         if project.status.name == "Transferred":
             tf = project.fund_transferred or 0
