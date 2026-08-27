@@ -171,12 +171,14 @@ class BlanketApprovalDetailsViewset(
 
     def get_queryset(self):
         queryset = (
-            Project.objects.really_all().filter(
+            Project.objects.all()
+            .filter(
                 submission_status__name__in=[
                     "Recommended",
                     "Approved",
                 ],
             )
+            .filter(transferred_from__isnull=True)
             # Avoid duplication caused by project being in Approval (draft)
             # as it's submission_status is still Recommended until being approved.
             .exclude(submission_status__name="Recommended", version__gte=3)

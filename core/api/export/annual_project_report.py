@@ -897,20 +897,21 @@ class APRSummaryTablesExportWriter:
         # effective-date fields (post_excom_decision/meeting/date_approved), so a
         # plain status-only transition to COM/FIN is invisible to that version-chain
         # comparison for every year, not just this one.
+        # Completion is read from the APR row's own status rather than the project's:
+        # the project record only catches up once the APR is endorsed.
         if self.year:
             completed_records = [
                 apr
                 for apr in self.records
                 if apr.date_actual_completion
                 and apr.date_actual_completion.year == self.year
-                and apr.project.status
-                and apr.project.status.code in ("COM", "FIN")
+                and apr.status in self._completed_status_names
             ]
         else:
             completed_records = [
                 apr
                 for apr in self.records
-                if apr.project.status and apr.project.status.code in ("COM", "FIN")
+                if apr.status in self._completed_status_names
             ]
 
         cluster_buckets = {}
@@ -1220,7 +1221,7 @@ class APRSummaryTablesExportWriter:
             region = apr.main_region
             if region is None:
                 return None
-            return region.name_for_apr or region.name
+            return region.apr_name
 
         region_items = list(
             self._compute_grouped_data(
@@ -1417,11 +1418,7 @@ class APRSummaryTablesExportWriter:
             data["avg_months_to_completion"] = self._calculate_avg_months(
                 records, "date_approved_denorm", "date_planned_completion"
             )
-            data["avg_delay"] = self._calculate_avg_months(
-                records,
-                "date_planned_completion",
-                "date_of_completion_per_agreement_or_decisions_denorm",
-            )
+            data["avg_delay"] = self._calculate_avg_delay(records)
             num_disbursing = sum(
                 1 for apr in records if apr.funds_disbursed and apr.funds_disbursed > 0
             )
@@ -1522,6 +1519,50 @@ class APRSummaryTablesExportWriter:
                 delta = relativedelta(end_date, start_date)
                 months = delta.years * 12 + delta.months
                 total_months += months
+                count += 1
+
+        return total_months / count if count > 0 else 0
+
+    @staticmethod
+    def _months_since_approval(date_approved, target_date):
+        """
+        Months from approval to `target_date`, 0 when unmeasurable.
+        """
+        if not date_approved or not target_date or target_date < date_approved:
+            return 0
+
+        delta = relativedelta(target_date, date_approved)
+        return delta.years * 12 + delta.months
+
+    def _calculate_avg_delay(self, records):
+        """
+        Average length of delay in project planned completion, positive or negative.
+
+        Measured as planned completion minus the completion date per proposal,
+        both expressed as months since approval.
+
+        Records only count when both spans are non-zero, mirroring the MLFS's reference
+        workbook.
+        This deliberately ignores date_of_completion_per_agreement_or_decisions_denorm:
+        that field holds the multi-year agreement's end date, which a single tranche
+        is not expected to reach.
+        """
+        total_months = 0
+        count = 0
+
+        for apr in records:
+            date_approved = self._get_field_value(apr, "date_approved_denorm")
+            months_to_proposal = self._months_since_approval(
+                date_approved,
+                self._get_field_value(apr, "date_completion_proposal_denorm"),
+            )
+            months_to_planned = self._months_since_approval(
+                date_approved,
+                self._get_field_value(apr, "date_planned_completion"),
+            )
+
+            if months_to_proposal and months_to_planned:
+                total_months += months_to_planned - months_to_proposal
                 count += 1
 
         return total_months / count if count > 0 else 0

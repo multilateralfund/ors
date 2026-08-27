@@ -31,7 +31,8 @@ concurrency:
 
 jobs:
   build-and-push-images:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: docker-ors # see https://helpdesk.eaudeweb.ro/issues/38046
 
     strategy:
       max-parallel: 1
@@ -53,6 +54,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Remove stale buildx builders from an interrupted run
+        run: docker buildx rm --all-inactive --force || true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4

@@ -1,10 +1,8 @@
-import { disabledClassName } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import { hasMsalConfig, scopes } from '@ors/config/msalConfig'
-import MicrosoftLogo from './MicrosoftLogo.svg'
+import UNSigninButton from './un-signin-button-6.png'
 
 import { enqueueSnackbar } from 'notistack'
 import { useMsal } from '@azure/msal-react'
-import { Button } from '@mui/material'
 import cx from 'classnames'
 import { useStore } from '@ors/store'
 
@@ -42,22 +40,15 @@ const EntraIdLoginButton = () => {
   }
 
   return (
-    <Button
-      variant="contained"
-      className={cx(
-        'mx-auto mt-3 h-9 w-fit gap-3 border border-solid border-[#d1d1d1] bg-white px-3 py-1.5 text-lg normal-case text-[#5E5E5E]',
-        { [disabledClassName]: !hasMsalConfig },
-      )}
+    <img
+      src={UNSigninButton}
+      alt="Sign in with UN System Organization account"
+      style={{ width: '100%' }}
       onClick={handleLogin}
-      disabled={!hasMsalConfig}
-    >
-      <img
-        src={MicrosoftLogo}
-        alt="Microsoft logo"
-        style={{ width: 20, height: 20 }}
-      />
-      <span className="mt-0.5">Sign in with Microsoft</span>
-    </Button>
+      className={cx('mt-3 cursor-pointer', {
+        'pointer-events-none opacity-50': !hasMsalConfig,
+      })}
+    />
   )
 }
 

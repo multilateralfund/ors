@@ -15,19 +15,24 @@ on:
 
 jobs:
   suite:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: docker-ors-2 # see https://helpdesk.eaudeweb.ro/issues/38046
+
     steps:
       - uses: actions/checkout@v6
       - name: "Configure env"
         run: |
           cp .env.test.example .env
           cp docker-compose.override.test.yml docker-compose.override.yml
+      - name: "Remove leftovers from a previous run"
+        run: |
+          docker compose down -v --remove-orphans || true
       - name: "Start services"
         run: |
           docker compose build --pull
           docker compose up -d
           docker compose exec -T app wait_for_services.sh
-      - name: "Top"
+      - name: "Show running services"
         run: |
           docker compose top
       - name: "Frontend tests"
@@ -37,8 +42,17 @@ jobs:
         id: "backendTests"
         run: |
           docker compose exec -T app ./manage.py makemigrations --check
-          docker compose exec -T app pytest -vv --cov
+          docker compose exec -T app pytest -vv
       - name: Display container logs if tests fail
         if: failure()
         run: |
           docker compose logs
+      - name: "Tear down services"
+        if: always()
+        run: |
+          docker compose down -v --remove-orphans
+      - name: "Reclaim Docker disk space on the runner"
+        if: always()
+        run: |
+          docker image prune -a -f
+          docker builder prune -a -f

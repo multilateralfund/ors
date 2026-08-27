@@ -5,6 +5,7 @@ services:
       dockerfile: docker/dev.docker
     environment:
       - GUNICORN_CMD_ARGS=--workers=2 --threads=2
+    mem_limit: 0
 
   nextjs:
     build:
@@ -16,6 +17,10 @@ services:
       context: .
       dockerfile: docker/nginx.docker
 
+  clamav:
+    mem_limit: 0
+
   celery:
     profiles:
       - donotstart
+    mem_limit: 0

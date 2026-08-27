@@ -32,6 +32,7 @@ exclude = [
     "venv",
     "frontend",
     "core/migrations",
+    "scripts",
 ]
 
 # Same as Black.
@@ -100,6 +101,7 @@ ignore = [
 ]
 
 ignore-paths = [
+  "scripts",
   "core/migrations",
   "venv",
   "frontend",
@@ -128,7 +130,6 @@ disable = [
   "too-many-ancestors",
   "too-many-positional-arguments",
 ]
-
 
 [tool.pylint.FORMAT]
 max-line-length = "120"

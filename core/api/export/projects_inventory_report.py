@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,too-many-return-statements
 from functools import partial
 from itertools import pairwise
 from operator import attrgetter
@@ -61,10 +61,19 @@ def trf_or_adj(project: Project | None):
     return None
 
 
-def not_trf_or_adj(project: Project | None):
-    if project and not project.adjustment:
-        return not (project.fund_transferred or project.psc_transferred)
-    return None
+def not_adj(project: Project | None):
+    """Return whether a project version represents an approval event."""
+    return bool(project and not project.adjustment)
+
+
+def is_legacy_project(project: Project):
+    return bool(project.legacy_code)
+
+
+def is_same_month(first, second):
+    return bool(
+        first and second and first.year == second.year and first.month == second.month
+    )
 
 
 def get_latest_endorsed_apr(project):
@@ -180,7 +189,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "id": "actual_fund",
                     "headerName": "Total Funds Approved",
                     "type": "number",
-                    "cell_format": "#,##0;-#,##0;;@",
+                    "cell_format": "#,##0;-#,##0;0;@",
+                    "show_zero": True,
                     "align": "right",
                     "method": lambda project, _: self._p_actual_fund(project),
                 },
@@ -188,7 +198,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "id": "actual_psc",
                     "headerName": "Total Support Costs Approved",
                     "type": "number",
-                    "cell_format": "#,##0;-#,##0;;@",
+                    "cell_format": "#,##0;-#,##0;0;@",
+                    "show_zero": True,
                     "align": "right",
                     "method": lambda project, _: self._p_actual_psc(project),
                 },
@@ -335,7 +346,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "headerName": "Extended date",
                     "type": "date",
                     "cell_format": "MMM-YYYY",
-                    "method": lambda project, _: project.final_version.project_end_date,
+                    "method": lambda project, _: self._get_extended_date(project),
                 },
             ]
         )
@@ -557,44 +568,154 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         super().__init__(sheet, headers)
 
+    def _get_category(self, project):
+        category = (
+            project.meta_project.type if project.meta_project else project.category
+        )
+        options = {
+            "Individual": "IND",
+            "Multi-year agreement": "MYA",
+        }
+        result = options.get(category, category)
+
+        if result != "MYA" and project.cluster and project.cluster.category == "MYA":
+            result = "MYA"
+
+        return result
+
+    def _get_approved_funds(self, project, version):
+        return (
+            self._p_fund_approved(self.get_version(project, version))
+            if not_adj(self.get_version(project, version))
+            else None
+        )
+
+    def _get_approved_support_costs(self, project, version):
+        return (
+            self._p_psc_approved(self.get_version(project, version))
+            if not_adj(self.get_version(project, version))
+            else None
+        )
+
+    def _has_approved_funds(self, project, version):
+        return self._get_approved_funds(
+            project, version
+        ) or self._get_approved_support_costs(project, version)
+
     def _get_approved_date_of_completion(self, project, *_):
         result = None
         v3 = self.get_version(project, 3)
         if v3:
-            result = v3.project_end_date
+            result = v3.date_completion if v3.legacy_code else v3.project_end_date
         return result
 
     def _get_extended_date(self, project):
+        if is_legacy_project(project):
+            return self._get_legacy_extended_date(project)
+        return self._get_modern_extended_date(project)
+
+    def _get_legacy_extended_date(self, project):
+        meta_project = project.meta_project
+        final_version = project.final_version
+
+        if (
+            not meta_project
+            or meta_project.type != MetaProject.MetaProjectType.MYA
+            or not meta_project.extended_date_of_completion
+        ):
+            return None
+
+        agreement_date = tz_naive(final_version.date_per_agreement)
+        project_end_date = tz_naive(final_version.project_end_date)
+
+        mya_completion_date = tz_naive(meta_project.end_date)
+        computed_mya_completion_date = self.mya_completion_dates.get(
+            project.meta_project_id
+        )
+        mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
+
+        is_transferred = final_version.status and final_version.status.code == "TRF"
+        is_closed = final_version.status and final_version.status.code == "CLO"
+        is_ongoing = final_version.status and final_version.status.code == "ONG"
+
+        if (
+            (agreement_date and mya_completion_date)
+            and is_same_month(agreement_date, mya_completion_date)
+            and not is_ongoing
+        ):
+            return agreement_date
+
+        if is_same_month(mya_extended_date, mya_completion_date):
+            return None
+
+        if is_same_month(mya_extended_date, computed_mya_completion_date):
+            return None
+
+        if (is_transferred or is_closed) and not agreement_date:
+            return None
+
+        if not agreement_date:
+            return mya_extended_date if not project_end_date else None
+
+        if agreement_date > mya_extended_date and is_ongoing:
+            return None
+
+        if mya_extended_date:
+            return max(mya_extended_date, agreement_date)
+
+        return agreement_date
+
+    def _get_modern_extended_date(self, project):
         meta_project = project.meta_project
 
-        p_date = tz_naive(project.final_version.project_end_date)
+        result = None
 
-        if meta_project and meta_project.type == MetaProject.MetaProjectType.IND:
-            return p_date
+        if meta_project:
+            mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
+            mya_completion_date = tz_naive(meta_project.end_date)
+            computed_mya_completion_date = self.mya_completion_dates.get(
+                project.meta_project_id
+            )
 
-        mya_type_revised_date = self.mya_type_revised_completion_dates.get(
-            (project.meta_project_id, project.project_type_id)
-        )
-        if mya_type_revised_date:
-            return mya_type_revised_date
+            result = mya_extended_date
 
-        mya_completion_date = self._get_mya_completion_date(project)
+            if mya_extended_date is None:
+                result = None
 
-        if not mya_completion_date:
-            return p_date
+            elif is_same_month(mya_extended_date, mya_completion_date):
+                result = None
 
-        if not p_date:
-            return mya_completion_date
+            elif not mya_completion_date and is_same_month(
+                mya_extended_date, computed_mya_completion_date
+            ):
+                result = None
 
-        if mya_completion_date > p_date:
-            return mya_completion_date
-
-        return p_date
+        return result
 
     def _get_mya_completion_date(self, project):
         meta_project = project.meta_project
         if not meta_project or meta_project.type != MetaProject.MetaProjectType.MYA:
             return None
+
+        if is_legacy_project(project):
+            final_version = project.final_version
+            agreement_date = tz_naive(final_version.date_per_agreement)
+            meta_end_date = tz_naive(meta_project.end_date)
+
+            mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
+
+            is_ongoing = final_version.status and final_version.status.code == "ONG"
+
+            if is_same_month(agreement_date, mya_extended_date):
+                agreement_date = None
+
+            if not agreement_date:
+                return None
+
+            if is_ongoing and meta_end_date:
+                return max(agreement_date, meta_end_date)
+
+            return agreement_date
 
         meta_end_date = tz_naive(meta_project.end_date)
         if meta_end_date:
@@ -603,20 +724,37 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return self.mya_completion_dates.get(project.meta_project_id)
 
     def _get_substance(self, project):
+        if is_legacy_project(project):
+            return project.substance_type
+
+        result = None
+
         for ods_odp in project.ods_odp.all():
             substance_type = self._substance_type_from_ods_odp(ods_odp)
+
             if substance_type:
-                return substance_type
+                result = substance_type
+                break
 
-        legacy_sector = project.sector_legacy
-        if not legacy_sector and project.legacy_code:
-            parts = project.legacy_code.split("/")
-            legacy_sector = parts[1] if len(parts) > 1 else None
+        if not result:
+            result = self._substance_type_from_legacy_sector(project.sector_legacy)
 
-        return (
-            self._substance_type_from_legacy_sector(legacy_sector)
-            or project.substance_type
-        )
+        if not result:
+            cluster = project.cluster
+            if cluster:
+                if "HCFC" in cluster.name:
+                    result = "HCFC"
+                elif (
+                    cluster.code
+                    and "KIP" in cluster.code
+                    or "HFC" in cluster.code
+                    or "EE" in cluster.code
+                ):
+                    result = "HFC"
+                elif cluster.group and "HFC" in cluster.group:
+                    result = "HFC"
+
+        return result
 
     def _substance_type_from_ods_odp(self, ods_odp):
         if ods_odp.ods_substance:
@@ -738,7 +876,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             value = getattr(project, header["id"], None)
 
         if header_type == "number":
-            return float(value or 0) or None
+            number = float(value or 0)
+            return number if header.get("show_zero") else number or None
         if header_type == "int":
             return int(value or 0) or None
         if header_type == "bool":
@@ -811,10 +950,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": "project_category",
                 "headerName": "Category",
-                "method": lambda project, _: {
-                    "Individual": "IND",
-                    "Multi-year agreement": "MYA",
-                }.get(project.category, project.category),
+                "method": lambda project, _: self._get_category(project),
             },
             {
                 "id": "agency",
@@ -1114,7 +1250,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return projects
 
     def _p_fund_approved(self, project):
-        if project is None or project.fund_transferred:
+        if project is None:
             return None
 
         total_fund = project.total_fund or 0
@@ -1127,7 +1263,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return total_fund
 
     def _p_psc_approved(self, project):
-        if project is None or project.psc_transferred:
+        if project is None:
             return None
 
         support_cost_psc = project.support_cost_psc or 0
@@ -1156,7 +1292,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
         prev_version = self.get_version(project, project.version - 1)
         prev_value = (get_value(prev_version) or 0) if prev_version else 0
 
-        return cur_value - prev_value
+        difference = cur_value - prev_value
+        return difference if project.adjustment else -difference
 
     def _p_psc_transferred(self, project):
         if project is None:
@@ -1173,15 +1310,19 @@ class ProjectsInventoryReportWriter(BaseWriter):
         prev_version = self.get_version(project, project.version - 1)
         prev_value = (get_value(prev_version) or 0) if prev_version else 0
 
-        return cur_value - prev_value
-
+        difference = cur_value - prev_value
+        return difference if project.adjustment else -difference
     def _p_actual_fund(self, project):
-        return project_actual_fund(project)
+        if project.status.name == "Transferred":
+            tf = project.fund_transferred or 0
+            result = (project.total_fund or 0) - tf
+            return result or 0
+        return project.total_fund or 0
 
     def _p_actual_psc(self, project):
         if project.status.name == "Transferred":
             tpsc = project.psc_transferred or 0
-            result = (project.support_cost_psc or 0) + tpsc
+            result = (project.support_cost_psc or 0) - tpsc
             return result
         return project.support_cost_psc or 0
 
@@ -1271,12 +1412,31 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if project is None:
             return None
 
-        meeting = project.post_excom_meeting or project.transfer_meeting
+        meeting = (
+            project.post_excom_meeting
+            if project.adjustment
+            else project.transfer_meeting
+        )
 
+        return meeting
+
+    def _p_adjustment_meeting_number(self, project):
+        result = None
+
+        meeting = self._p_adjustment_meeting(project)
         if meeting:
-            return meeting.number
+            result = meeting.number
 
-        return None
+        return result
+
+    def _p_adjustment_meeting_date(self, project):
+        result = None
+
+        meeting = self._p_adjustment_meeting(project)
+        if meeting:
+            result = meeting.date
+
+        return result
 
     def funding_headers(self, version, idx):
         if version < MIN_PROJECT_VERSION:
@@ -1286,11 +1446,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"funds_approved_v{version}",
                 "headerName": f"Funds Approved {idx}",
-                "method": lambda project, _: (
-                    self._p_fund_approved(self.get_version(project, version))
-                    if not_trf_or_adj(self.get_version(project, version))
-                    else None
-                ),
+                "method": lambda project, _: self._get_approved_funds(project, version),
                 "type": "number",
                 "align": "right",
                 "cell_format": "#,##0;-#,##0;;@",
@@ -1298,10 +1454,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"psc_v{version}",
                 "headerName": f"Support Costs Approved {idx}",
-                "method": lambda project, _: (
-                    self._p_psc_approved(self.get_version(project, version))
-                    if not_trf_or_adj(self.get_version(project, version))
-                    else None
+                "method": lambda project, _: self._get_approved_support_costs(
+                    project, version
                 ),
                 "type": "number",
                 "align": "right",
@@ -1312,7 +1466,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"Meeting Approved {idx}",
                 "method": lambda project, _: (
                     self._p_meeting_approved(self.get_version(project, version))
-                    if not_trf_or_adj(self.get_version(project, version))
+                    if self._has_approved_funds(project, version)
+                    and not_adj(self.get_version(project, version))
                     else None
                 ),
             },
@@ -1323,7 +1478,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "cell_format": "MMM-YYYY",
                 "method": lambda project, _: (
                     self.get_version(project, version).date_approved
-                    if not_trf_or_adj(self.get_version(project, version))
+                    if self._has_approved_funds(project, version)
+                    and not_adj(self.get_version(project, version))
                     else None
                 ),
             },
@@ -1354,7 +1510,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"adjustment_meeting_v{idx}",
                 "headerName": f"Adjustments Meeting {idx}",
-                "method": lambda project, _: self._p_adjustment_meeting(
+                "method": lambda project, _: self._p_adjustment_meeting_number(
                     self.get_trf_or_adj_version(project, v_idx)
                 ),
             },
@@ -1363,10 +1519,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"Adjustments Date {idx}",
                 "type": "date",
                 "cell_format": "MMM-YYYY",
-                "method": lambda project, _: (
-                    self.get_trf_or_adj_version(project, v_idx).date_approved
-                    if self.get_trf_or_adj_version(project, v_idx)
-                    else None
+                "method": lambda project, _: self._p_adjustment_meeting_date(
+                    self.get_trf_or_adj_version(project, v_idx)
                 ),
             },
         ]

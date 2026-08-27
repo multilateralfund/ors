@@ -33,6 +33,23 @@ from core.models.project_metadata import ProjectCluster, ProjectType
 # pylint: disable=W0221,W0613,R0913,R0914,R0904,C0302
 
 
+@pytest.fixture(scope="module", autouse=True)
+def use_sanitized_apr_summary_template():
+    """Use the reduced workbook fixture for this export test module only."""
+    # pylint: disable=protected-access
+    original_path = APRSummaryTablesExportWriter.TEMPLATE_PATH
+    original_template_bytes = APRSummaryTablesExportWriter._template_bytes
+    APRSummaryTablesExportWriter.TEMPLATE_PATH = original_path.with_name(
+        "APRSummaryTables_sanitized.xlsx"
+    )
+    APRSummaryTablesExportWriter._template_bytes = None
+
+    yield
+
+    APRSummaryTablesExportWriter.TEMPLATE_PATH = original_path
+    APRSummaryTablesExportWriter._template_bytes = original_template_bytes
+
+
 @pytest.mark.django_db
 class TestAPRSummaryTablesExport(BaseTest):
     """Test the summary tables export functionality"""
@@ -670,6 +687,82 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         assert found_cluster
 
+    def _completed_cluster_count(self, response, cluster_name):
+        """Number of projects the completion tab reports for one cluster."""
+        sheet = load_workbook(BytesIO(response.content))[
+            APRSummaryTablesExportWriter.SHEET_COMPLETION_YEAR
+        ]
+        for row in range(
+            APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW, sheet.max_row + 1
+        ):
+            if sheet.cell(row, 1).value == cluster_name:
+                return sheet.cell(row, 2).value
+        return 0
+
+    def test_project_completion_counts_apr_status_while_project_still_ongoing(
+        self,
+        apr_agency_viewer_user,
+        annual_progress_report,
+        annual_agency_report,
+        project_ongoing_status,
+        project_completed_status,
+    ):
+        """
+        Regression: the tab came out empty. The project record only catches up
+        once the APR is endorsed, so it still reads ONG while the agency has
+        already reported the project as completed.
+        """
+        cluster = ProjectCluster.objects.create(name="HPMP stage I", sort_order=1)
+        project = ProjectFactory(
+            agency=apr_agency_viewer_user.agency,
+            date_approved=date(2023, 1, 15),
+            status=project_ongoing_status,
+            cluster=cluster,
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project,
+            status="Completed",
+            date_actual_completion=date(annual_progress_report.year, 6, 1),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        report_year = annual_progress_report.year
+        url = reverse("apr-summary-tables-export") + f"?year={report_year}"
+        response = self.client.get(url)
+
+        assert self._completed_cluster_count(response, "HPMP stage I") == 1
+
+    def test_project_completion_excludes_apr_still_reported_as_ongoing(
+        self,
+        apr_agency_viewer_user,
+        annual_progress_report,
+        annual_agency_report,
+        project_ongoing_status,
+        project_completed_status,
+    ):
+        """The mirror case: the agency's own report decides, not the project."""
+        cluster = ProjectCluster.objects.create(name="HPMP stage II", sort_order=2)
+        project = ProjectFactory(
+            agency=apr_agency_viewer_user.agency,
+            date_approved=date(2023, 1, 15),
+            status=project_completed_status,
+            cluster=cluster,
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project,
+            status="Ongoing",
+            date_actual_completion=date(annual_progress_report.year, 6, 1),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        report_year = annual_progress_report.year
+        url = reverse("apr-summary-tables-export") + f"?year={report_year}"
+        response = self.client.get(url)
+
+        assert self._completed_cluster_count(response, "HPMP stage II") == 0
+
     def test_sector_header_row_when_more_regions_than_template(
         self,
         apr_agency_viewer_user,
@@ -1005,16 +1098,128 @@ def test_apr_summary_tables_number_formats():
     assert spec_map["total_production_co2"] == "#,##0"
 
 
-def test_avg_delay_positive_for_late_project():
+def _avg_delay_for(date_approved, proposal, planned):
+    """avg_delay for a single ongoing record with the given three dates."""
     # pylint: disable=protected-access
     writer = APRSummaryTablesExportWriter.__new__(APRSummaryTablesExportWriter)
     record = SimpleNamespace(
         approved_funding_plus_adjustment_denorm=0,
         funds_disbursed=0,
-        date_approved_denorm=None,
+        date_approved_denorm=date_approved,
         date_first_disbursement=None,
-        date_planned_completion=date(2023, 1, 1),
-        date_of_completion_per_agreement_or_decisions_denorm=date(2023, 4, 1),
+        date_completion_proposal_denorm=proposal,
+        date_planned_completion=planned,
     )
     data = writer._compute_group_data([record], False, "ongoing_non_investment")
-    assert data["avg_delay"] == 3
+    return data["avg_delay"]
+
+
+def test_avg_delay_positive_for_late_project():
+    # Now planned 3 months beyond the date originally proposed.
+    assert (
+        _avg_delay_for(
+            date_approved=date(2022, 1, 1),
+            proposal=date(2023, 1, 1),
+            planned=date(2023, 4, 1),
+        )
+        == 3
+    )
+
+
+def test_avg_delay_negative_for_project_running_ahead_of_schedule():
+    # The Secretariat's own formula reports these as negative rather than zero.
+    assert (
+        _avg_delay_for(
+            date_approved=date(2022, 1, 1),
+            proposal=date(2023, 4, 1),
+            planned=date(2023, 1, 1),
+        )
+        == -3
+    )
+
+
+def test_avg_delay_skips_records_whose_dates_precede_approval():
+    # Neither span can be measured, so the record is left out of the average.
+    assert (
+        _avg_delay_for(
+            date_approved=date(2024, 1, 1),
+            proposal=date(2023, 1, 1),
+            planned=date(2023, 4, 1),
+        )
+        == 0
+    )
+
+
+@pytest.mark.django_db
+class TestAPRRegionLabels:
+    """
+    Regions the APR does not relabel have no name_for_apr/abbr_for_apr, so both
+    the UI and the exports have to fall back to the country tree's own values.
+    """
+
+    def test_apr_labels_fall_back_to_the_plain_name_and_abbr(self):
+        region = CountryFactory(
+            name="Europe",
+            abbr="EUR",
+            location_type=Country.LocationType.REGION,
+            name_for_apr=None,
+            abbr_for_apr=None,
+        )
+
+        assert region.apr_name == "Europe"
+        assert region.apr_abbr == "EUR"
+
+    def test_apr_labels_prefer_the_override_when_it_is_set(self):
+        region = CountryFactory(
+            name="Region: Europe and Central Asia",
+            abbr="ECA",
+            location_type=Country.LocationType.REGION,
+            name_for_apr="Europe",
+            abbr_for_apr="EUR",
+        )
+
+        assert region.apr_name == "Europe"
+        assert region.apr_abbr == "EUR"
+
+    def test_region_reaches_the_api_without_an_apr_override(
+        self, apr_agency_viewer_user, annual_agency_report, project_ongoing_status
+    ):
+        """Regression: the region column and its filter were blank in the UI."""
+        region = CountryFactory(
+            name="Europe",
+            abbr="EUR",
+            location_type=Country.LocationType.REGION,
+            abbr_for_apr=None,
+        )
+        country = CountryFactory(
+            name="Bulgaria", location_type=Country.LocationType.COUNTRY, parent=region
+        )
+        project = ProjectFactory(
+            agency=apr_agency_viewer_user.agency,
+            country=country,
+            status=project_ongoing_status,
+            code="BUL/REF/90/INV/1",
+        )
+        report = AnnualProjectReportFactory(
+            report=annual_agency_report, project=project
+        )
+        report.populate_derived_fields()
+        report.save()
+
+        client = APIClient()
+        client.force_authenticate(user=apr_agency_viewer_user)
+        response = client.get(
+            reverse(
+                "apr-workspace",
+                kwargs={"year": annual_agency_report.progress_report.year},
+            )
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        rows = [
+            row
+            for row in response.data["project_reports"]
+            if row["project_code"] == project.code
+        ]
+        assert rows
+        assert rows[0]["region_name"] == "EUR"

@@ -1322,8 +1322,6 @@ class ProjectV2EditApprovalFieldsSerializer(
             ].end_date
         else:
             validated_data["date_approved"] = validated_data["meeting"].end_date
-            # project_end_date should take the value of date_completion at this point
-            validated_data["project_end_date"] = validated_data["date_completion"]
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
@@ -1657,6 +1655,9 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.status = ProjectStatus.objects.get(code="ONG")
         new_transfer_project.agency = self.validated_data.get("agency")
         new_transfer_project.meeting = self.validated_data.get("transfer_meeting")
+        new_transfer_project.date_approved = (
+            new_transfer_project.meeting.date if new_transfer_project.meeting else None
+        )
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
         new_transfer_project.support_cost_psc = self.validated_data.get("psc_received")
@@ -1676,6 +1677,9 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.lead_agency = self.validated_data.get("agency")
 
         new_transfer_project.metacode = project.metacode
+        new_transfer_project.serial_number = Project.objects.get_next_serial_number(
+            new_transfer_project.country.id
+        )
         new_transfer_project.code = get_project_sub_code(
             new_transfer_project.country,
             new_transfer_project.cluster,
@@ -1688,9 +1692,6 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         )
         new_transfer_project.excom_provision = self.validated_data.get(
             "transfer_excom_provision"
-        )
-        new_transfer_project.serial_number = Project.objects.get_next_serial_number(
-            new_transfer_project.country.id
         )
         new_transfer_project.transferred_from = project
         if self.validated_data.get("agency") != project.lead_agency:
