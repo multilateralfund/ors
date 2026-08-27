@@ -409,6 +409,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             funding_window=funding_window,
             meta_project=meta_project,
             cluster=cluster,
+            status=ProjectStatusFactory.create(code="ONG"),
             subsectors=[subsector_one, subsector_two],
             submission_status=project_approved_status,
         )
@@ -479,7 +480,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         assert last_header == "cost_effectiveness_co2_actual"
         assert (
             sheet[f"{headers['MYA Completion Date']}{row}"].value.date()
-            == project.date_per_agreement
+            == meta_project.end_date.date()
         )
         assert (
             sheet[f"{headers['Approved Date Completion']}{row}"].value.date()
@@ -601,13 +602,14 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
 
         writer = ProjectsInventoryReportWriter.__new__(ProjectsInventoryReportWriter)
         writer.mya_completion_dates = writer.build_mya_completion_dates([project])
+        writer.mya_is_ongoing = writer.build_mya_ongoing([project])
 
         # pylint: disable-next=protected-access
         value = writer._get_modern_extended_date(project)
 
         assert value is None
 
-    def test_export_inventory_report_legacy_extended_date_uses_later_date(
+    def test_export_inventory_report_uses_extended_date_for_ongoing_legacy_mya(
         self, admin_user, project_approved_status
     ):
         meta_project = MetaProjectFactory.create(
@@ -623,6 +625,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             legacy_code="LEGACY-EXTENDED",
             date_per_agreement=date(2026, 12, 1),
             project_end_date=date(2018, 12, 1),
+            status=ProjectStatusFactory.create(code="ONG"),
             submission_status=project_approved_status,
         )
         ProjectFactory.create(
@@ -632,6 +635,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             project_type=inv_type,
             legacy_code="LEGACY-REVISED",
             date_comp_revised=date(2021, 12, 1),
+            project_end_date=None,
             submission_status=project_approved_status,
         )
 
@@ -653,67 +657,45 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         )
 
     @pytest.mark.parametrize(
-        "legacy_code,agreement_date,mya_completion_date,extended_date,"
-        "project_end_date,expected_date",
+        "status_code,mya_completion_date,extended_date,expected_date",
         [
             (
-                "LEGACY-EXTENDED",
-                date(2026, 12, 1),
+                "ONG",
                 datetime(2021, 12, 1, tzinfo=timezone.utc),
                 datetime(2026, 12, 31, tzinfo=timezone.utc),
-                date(2018, 12, 1),
                 date(2026, 12, 31),
             ),
             (
-                "LEGACY-MYA-DATE",
-                date(2021, 12, 1),
+                "ONG",
+                datetime(2023, 12, 1, tzinfo=timezone.utc),
+                datetime(2023, 12, 31, tzinfo=timezone.utc),
+                None,
+            ),
+            (
+                "COM",
+                datetime(2021, 12, 1, tzinfo=timezone.utc),
+                datetime(2026, 12, 31, tzinfo=timezone.utc),
+                None,
+            ),
+            (
+                "TRF",
+                datetime(2021, 12, 1, tzinfo=timezone.utc),
+                datetime(2026, 12, 31, tzinfo=timezone.utc),
+                None,
+            ),
+            (
+                "ONG",
                 datetime(2021, 12, 31, tzinfo=timezone.utc),
-                datetime(2022, 9, 30, tzinfo=timezone.utc),
-                date(2018, 12, 1),
-                date(2021, 12, 1),
-            ),
-            (
-                "LEGACY-NO-AGREEMENT",
                 None,
-                None,
-                datetime(2022, 12, 31, tzinfo=timezone.utc),
-                date(2024, 12, 1),
-                None,
-            ),
-            (
-                "LEGACY-UMBRELLA-FALLBACK",
-                None,
-                None,
-                datetime(2020, 12, 31, tzinfo=timezone.utc),
-                None,
-                date(2020, 12, 31),
-            ),
-            (
-                "LEGACY-DUPLICATED-END",
-                date(2023, 12, 1),
-                datetime(2023, 12, 31, tzinfo=timezone.utc),
-                datetime(2023, 12, 31, tzinfo=timezone.utc),
-                date(2023, 12, 1),
-                date(2023, 12, 1),
-            ),
-            (
-                "LEGACY-DUPLICATED-LATER-END",
-                date(2023, 12, 1),
-                datetime(2021, 12, 31, tzinfo=timezone.utc),
-                datetime(2023, 12, 31, tzinfo=timezone.utc),
-                date(2023, 12, 1),
                 None,
             ),
         ],
     )
-    # pylint: disable-next=too-many-arguments
-    def test_legacy_extended_date_uses_only_qualified_dates(
+    def test_extended_date_uses_unified_ongoing_mya_rules(
         self,
-        legacy_code,
-        agreement_date,
+        status_code,
         mya_completion_date,
         extended_date,
-        project_end_date,
         expected_date,
     ):
         meta_project = MetaProjectFactory.create(
@@ -725,17 +707,17 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             version=3,
             category=Project.Category.MYA,
             meta_project=meta_project,
-            legacy_code=legacy_code,
-            date_per_agreement=agreement_date,
-            project_end_date=project_end_date,
-            status=ProjectStatusFactory.create(code="COM"),
+            legacy_code="LEGACY-MYA",
+            project_end_date=date(2018, 12, 1),
+            status=ProjectStatusFactory.create(code=status_code),
         )
 
         writer = ProjectsInventoryReportWriter.__new__(ProjectsInventoryReportWriter)
         writer.mya_completion_dates = writer.build_mya_completion_dates([project])
+        writer.mya_is_ongoing = writer.build_mya_ongoing([project])
 
         # pylint: disable-next=protected-access
-        value = writer._get_legacy_extended_date(project)
+        value = writer._get_extended_date(project)
 
         assert (value.date() if value else None) == expected_date
 
@@ -767,6 +749,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             category=Project.Category.MYA,
             meta_project=meta_project,
             project_end_date=project_end_date,
+            status=ProjectStatusFactory.create(code="ONG"),
             submission_status=project_approved_status,
         )
 
@@ -795,27 +778,27 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
                 None,
                 date(2007, 12, 1),
                 "COM",
-                date(2018, 12, 1),
+                None,
             ),
-            (date(2031, 12, 1), None, None, "ONG", date(2031, 12, 1)),
+            (date(2031, 12, 1), None, None, "ONG", None),
             (
                 date(2026, 12, 1),
                 datetime(2021, 12, 1, tzinfo=timezone.utc),
                 None,
                 "COM",
-                date(2026, 12, 1),
+                None,
             ),
             (
                 date(2026, 12, 1),
                 datetime(2021, 12, 1, tzinfo=timezone.utc),
                 None,
                 "ONG",
-                date(2026, 12, 1),
+                date(2021, 12, 1),
             ),
         ],
     )
     # pylint: disable-next=too-many-arguments
-    def test_export_inventory_report_uses_legacy_mya_date_rules(
+    def test_export_inventory_report_only_populates_ongoing_mya_completion_date(
         self,
         admin_user,
         project_approved_status,

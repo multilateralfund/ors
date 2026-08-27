@@ -13,6 +13,7 @@ import argparse
 import os
 import sys
 import django
+from operator import itemgetter
 
 from pathlib import Path
 from openpyxl import load_workbook
@@ -27,6 +28,12 @@ django.setup()
 
 from core.models import Project
 from core.api.export.projects_inventory_report import tz_naive
+
+
+def formatted_date(d):
+    if d and isinstance(d, datetime):
+        return d.strftime("%b-%y")
+    return d
 
 
 def compute_mya_completion_date(meta_project):
@@ -44,6 +51,22 @@ def compute_mya_completion_date(meta_project):
 
             if result is None or project_end_date > result:
                 result = project_end_date
+
+    return result
+
+
+def _get_category(project):
+    category = (
+        project.meta_project.type if project.meta_project else project.category
+    )
+    options = {
+        "Individual": "IND",
+        "Multi-year agreement": "MYA",
+    }
+    result = options.get(category, category)
+
+    if result != "MYA" and project.cluster and project.cluster.category == "MYA":
+        result = "MYA"
 
     return result
 
@@ -66,16 +89,16 @@ def fetch_project_info(project_id):
     )
 
     return {
-        "agreement_date": agreement_date,
-        "project_end_date": project_end_date,
-        "mya_end_date": mya_end_date,
-        "mya_completion_date": mya_completion_date,
-        "extended_date": extended_date,
-        "status": project.status,
-        "adjustment": project.adjustment,
-        "project_type": project.project_type,
-        "category": project.category,
-        "metacode": project.metacode,
+        "Date per agreement": formatted_date(agreement_date),
+        "Project end date": formatted_date(project_end_date),
+        "End date (MYA)": formatted_date(mya_end_date),
+        "Computed End date (MYA)": formatted_date(mya_completion_date),
+        "Extended date (MYA)": formatted_date(extended_date),
+        "Category": _get_category(project),
+        "Status": project.status.code,
+        "Adjustment": project.adjustment,
+        "Project type": project.project_type.code,
+        "Metacode": project.metacode,
     }
 
 
@@ -153,6 +176,9 @@ def check_value_differs(correct_value, current_value):
             current_value.month,
         )
 
+    if correct_value == "NOT EMPTY" and current_value:
+        return False
+
     return current_value != correct_value
 
 
@@ -199,16 +225,15 @@ def validate_data(inventory_data, comments_data):
 def build_report(invalid_data):
     base_header = ["id", "code", "legacy code"]
     info_header = [
-        "metacode",
-        "agreement_date",
-        "project_end_date",
-        "mya_end_date",
-        "mya_completion_date",
-        "extended_date",
-        "status",
-        "adjustment",
-        "project_type",
-        "category",
+        "Metacode",
+        "Date per agreement",
+        "Project end date",
+        "End date (MYA)",
+        "Computed End date (MYA)",
+        "Extended date (MYA)",
+        "Category",
+        "Status",
+        "Project type",
     ]
 
     tables = {}
@@ -224,11 +249,16 @@ def build_report(invalid_data):
             project = inv["project"]
             info = fetch_project_info(project["id"])
             row = [project["id"], project["Code"], project["Legacy Code"]]
-            row.extend([inv["current"], inv["correct"]])
+            row.extend([formatted_date(inv["current"]), formatted_date(inv["correct"])])
             row.extend([info[name] for name in info_header])
             group_table.append(row)
 
         tables[group] = group_table
+
+    sort_on = itemgetter((base_header + info_header).index("Metacode") + 2)
+
+    for group, table in tables.items():
+        tables[group] = [table[0]] + sorted(table[1:], key=sort_on)
 
     return tables
 

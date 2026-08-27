@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines,too-many-return-statements
+# pylint: disable=too-many-lines,too-many-return-statements,too-many-instance-attributes
 from functools import partial
 from itertools import pairwise
 from operator import attrgetter
@@ -94,6 +94,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             self.build_mya_type_revised_completion_dates(projects)
         )
         self.mya_completion_dates = self.build_mya_completion_dates(projects)
+        self.mya_is_ongoing = self.build_mya_ongoing(projects)
         self.all_versions: dict[int, list[Project]] = {}
         self.project_fields = (
             project_fields if project_fields is not None else self.get_project_fields()
@@ -555,9 +556,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
     def _has_approved_funds(self, project, version):
-        return self._get_approved_funds(
-            project, version
-        ) or self._get_approved_support_costs(project, version)
+        return (
+            self._get_approved_funds(project, version) or version == MIN_PROJECT_VERSION
+        )
 
     def _get_approved_date_of_completion(self, project, *_):
         result = None
@@ -567,84 +568,82 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return result
 
     def _get_extended_date(self, project):
-        if is_legacy_project(project):
-            return self._get_legacy_extended_date(project)
+        # if is_legacy_project(project):
+        #     return self._get_legacy_extended_date(project)
         return self._get_modern_extended_date(project)
 
-    def _get_legacy_extended_date(self, project):
-        meta_project = project.meta_project
-        final_version = project.final_version
-
-        if (
-            not meta_project
-            or meta_project.type != MetaProject.MetaProjectType.MYA
-            or not meta_project.extended_date_of_completion
-        ):
-            return None
-
-        agreement_date = tz_naive(final_version.date_per_agreement)
-        project_end_date = tz_naive(final_version.project_end_date)
-
-        mya_completion_date = tz_naive(meta_project.end_date)
-        computed_mya_completion_date = self.mya_completion_dates.get(
-            project.meta_project_id
-        )
-        mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
-
-        is_transferred = final_version.status and final_version.status.code == "TRF"
-        is_closed = final_version.status and final_version.status.code == "CLO"
-        is_ongoing = final_version.status and final_version.status.code == "ONG"
-
-        if (
-            (agreement_date and mya_completion_date)
-            and is_same_month(agreement_date, mya_completion_date)
-            and not is_ongoing
-        ):
-            return agreement_date
-
-        if is_same_month(mya_extended_date, mya_completion_date):
-            return None
-
-        if is_same_month(mya_extended_date, computed_mya_completion_date):
-            return None
-
-        if (is_transferred or is_closed) and not agreement_date:
-            return None
-
-        if not agreement_date:
-            return mya_extended_date if not project_end_date else None
-
-        if agreement_date > mya_extended_date and is_ongoing:
-            return None
-
-        if mya_extended_date:
-            return max(mya_extended_date, agreement_date)
-
-        return agreement_date
+    # def _get_legacy_extended_date(self, project):
+    #     meta_project = project.meta_project
+    #     final_version = project.final_version
+    #
+    #     if (
+    #         not meta_project
+    #         or meta_project.type != MetaProject.MetaProjectType.MYA
+    #         or not meta_project.extended_date_of_completion
+    #     ):
+    #         return None
+    #
+    #     agreement_date = tz_naive(final_version.date_per_agreement)
+    #     project_end_date = tz_naive(final_version.project_end_date)
+    #
+    #     mya_completion_date = tz_naive(meta_project.end_date)
+    #     computed_mya_completion_date = self.mya_completion_dates.get(
+    #         project.meta_project_id
+    #     )
+    #     mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
+    #
+    #     is_transferred = final_version.status and final_version.status.code == "TRF"
+    #     is_closed = final_version.status and final_version.status.code == "CLO"
+    #     is_ongoing = final_version.status and final_version.status.code == "ONG"
+    #
+    #     if (
+    #         (agreement_date and mya_completion_date)
+    #         and is_same_month(agreement_date, mya_completion_date)
+    #         and not is_ongoing
+    #     ):
+    #         return agreement_date
+    #
+    #     if is_same_month(mya_extended_date, mya_completion_date):
+    #         return None
+    #
+    #     if is_same_month(mya_extended_date, computed_mya_completion_date):
+    #         return None
+    #
+    #     if (is_transferred or is_closed) and not agreement_date:
+    #         return None
+    #
+    #     if not agreement_date:
+    #         return mya_extended_date if not project_end_date else None
+    #
+    #     if agreement_date > mya_extended_date and is_ongoing:
+    #         return None
+    #
+    #     if mya_extended_date:
+    #         return max(mya_extended_date, agreement_date)
+    #
+    #     return agreement_date
 
     def _get_modern_extended_date(self, project):
         meta_project = project.meta_project
 
         result = None
 
+        if project.status.code == "TRF":
+            return None
+
         if meta_project:
             mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
-            mya_completion_date = tz_naive(meta_project.end_date)
-            computed_mya_completion_date = self.mya_completion_dates.get(
-                project.meta_project_id
-            )
+            mya_completion_date = self._get_mya_completion_date(project)
 
             result = mya_extended_date
 
-            if mya_extended_date is None:
+            if project.meta_project_id not in self.mya_is_ongoing:
+                result = None
+
+            elif mya_extended_date is None:
                 result = None
 
             elif is_same_month(mya_extended_date, mya_completion_date):
-                result = None
-
-            elif not mya_completion_date and is_same_month(
-                mya_extended_date, computed_mya_completion_date
-            ):
                 result = None
 
         return result
@@ -654,25 +653,35 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if not meta_project or meta_project.type != MetaProject.MetaProjectType.MYA:
             return None
 
-        if is_legacy_project(project):
-            final_version = project.final_version
-            agreement_date = tz_naive(final_version.date_per_agreement)
-            meta_end_date = tz_naive(meta_project.end_date)
+        # is_ongoing = project.status and project.status.code == "ONG"
+        # is_transferred = project.status and project.status.code == "TRF"
+        # is_finalised = project.status and project.status.code == "FIN"
 
-            mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
+        if project.meta_project_id not in self.mya_is_ongoing:
+            return None
 
-            is_ongoing = final_version.status and final_version.status.code == "ONG"
+        # if project.status.code == "TRF":
+        #     return None
 
-            if is_same_month(agreement_date, mya_extended_date):
-                agreement_date = None
-
-            if not agreement_date:
-                return None
-
-            if is_ongoing and meta_end_date:
-                return max(agreement_date, meta_end_date)
-
-            return agreement_date
+        # if is_legacy_project(project):
+        #     final_version = project.final_version
+        #     agreement_date = tz_naive(final_version.date_per_agreement)
+        #     meta_end_date = tz_naive(meta_project.end_date)
+        #
+        #     mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
+        #
+        #     is_ongoing = final_version.status and final_version.status.code == "ONG"
+        #
+        #     if is_same_month(agreement_date, mya_extended_date):
+        #         agreement_date = None
+        #
+        #     if not is_ongoing and not agreement_date:
+        #         return None
+        #
+        #     if is_ongoing and meta_end_date:
+        #         return max(agreement_date, meta_end_date)
+        #
+        #     return agreement_date
 
         meta_end_date = tz_naive(meta_project.end_date)
         if meta_end_date:
@@ -782,6 +791,16 @@ class ProjectsInventoryReportWriter(BaseWriter):
             current = result.get(key)
             if current is None or project.date_comp_revised > current:
                 result[key] = project.date_comp_revised
+
+        return result
+
+    @staticmethod
+    def build_mya_ongoing(projects):
+        result = {}
+
+        for project in projects:
+            if project.meta_project_id and project.status.code == "ONG":
+                result[project.meta_project_id] = True
 
         return result
 
