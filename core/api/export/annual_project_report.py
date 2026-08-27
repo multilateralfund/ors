@@ -575,6 +575,8 @@ class APRSummaryTablesExportWriter:
         # Filter by the selected reporting year to discount prior/later years' records.
         if self.year:
             queryset = queryset.filter(report__progress_report__year=self.year)
+        # APR rows use the status name, so we need the code -> name map for QS filtering.
+        self._status_names_by_code = status_by_code
         self._completed_status_names = {
             status_by_code[c] for c in ("COM", "FIN") if c in status_by_code
         }
@@ -710,9 +712,7 @@ class APRSummaryTablesExportWriter:
 
         num_approvals = len(self.records)
         num_completed = sum(
-            1
-            for apr in self.records
-            if apr.project.status and apr.project.status.code in ("COM", "FIN")
+            1 for apr in self.records if apr.status in self._completed_status_names
         )
 
         total_funds_approved = sum(
@@ -797,7 +797,7 @@ class APRSummaryTablesExportWriter:
             num_completed = sum(
                 1
                 for apr in cluster_records
-                if apr.project.status and apr.project.status.code in ("COM", "FIN")
+                if apr.status in self._completed_status_names
             )
             pct_completed = (
                 round(num_completed / num_approved * 100) if num_approved else 0
@@ -1128,11 +1128,16 @@ class APRSummaryTablesExportWriter:
         Pass status_codes (tuple) to match any of several codes, or status_code for one.
         """
         _status_codes = status_codes or (({status_code} if status_code else set()))
+        # Match on the APR row's own status, not the project record's: the project
+        # only catches up once the APR is endorsed.
+        _status_names = {
+            self._status_names_by_code[code]
+            for code in _status_codes
+            if code in self._status_names_by_code
+        }
         result = []
         for apr in self.records:
-            if _status_codes and not (
-                apr.project.status and apr.project.status.code in _status_codes
-            ):
+            if _status_codes and apr.status not in _status_names:
                 continue
             pt_code = (
                 apr.project.project_type.code if apr.project.project_type else None

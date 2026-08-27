@@ -462,6 +462,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         # COM+INV -> sheet (b): completed investment
         AnnualProjectReportFactory(
             report=annual_agency_report,
+            status="Completed",
             project=ProjectFactory(
                 agency=apr_agency_viewer_user.agency,
                 status=project_completed_status,
@@ -471,6 +472,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         # ONG+INV -> sheet (e): ongoing investment, excluded from (b)
         AnnualProjectReportFactory(
             report=annual_agency_report,
+            status="Ongoing",
             project=ProjectFactory(
                 agency=apr_agency_viewer_user.agency,
                 status=project_ongoing_status,
@@ -480,6 +482,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         # COM+PRP -> sheet (d): completed preparation, excluded from (b) and (c)
         AnnualProjectReportFactory(
             report=annual_agency_report,
+            status="Completed",
             project=ProjectFactory(
                 agency=apr_agency_viewer_user.agency,
                 status=project_completed_status,
@@ -489,6 +492,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         # COM+OTH -> sheet (c): completed non-investment, excluded from (b) and (d)
         AnnualProjectReportFactory(
             report=annual_agency_report,
+            status="Completed",
             project=ProjectFactory(
                 agency=apr_agency_viewer_user.agency,
                 status=project_completed_status,
@@ -686,6 +690,55 @@ class TestAPRSummaryTablesExport(BaseTest):
                 break
 
         assert found_cluster
+
+    def test_summary_completed_counts_use_apr_status_not_project_status(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_ongoing_status,
+        project_completed_status,
+    ):
+        """
+        Regression: I.1 and I.2 counted from the project record and so reported
+        fewer completed projects than Annex I (a), which counts from the APR row.
+        """
+        cluster = ProjectCluster.objects.create(name="HPMP stage I", sort_order=1)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            status="Completed",
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                # The project record has not caught up yet.
+                status=project_ongoing_status,
+                cluster=cluster,
+            ),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        workbook = load_workbook(
+            BytesIO(self.client.get(reverse("apr-summary-tables-export")).content)
+        )
+
+        # I.1 row 5 column B = number of projects completed
+        summary = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
+        assert (
+            summary.cell(
+                APRSummaryTablesExportWriter.SUMMARY_DATA_START_ROW + 1, 2
+            ).value
+            == 1
+        )
+
+        # I.2 counts the same project under its cluster
+        by_cluster = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY_CLUSTER]
+        completed = [
+            by_cluster.cell(row, 3).value
+            for row in range(
+                APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW,
+                by_cluster.max_row + 1,
+            )
+            if by_cluster.cell(row, 1).value == "HPMP stage I"
+        ]
+        assert completed == [1]
 
     def _completed_cluster_count(self, response, cluster_name):
         """Number of projects the completion tab reports for one cluster."""
