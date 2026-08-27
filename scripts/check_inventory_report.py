@@ -17,6 +17,7 @@ from operator import itemgetter
 
 from pathlib import Path
 from openpyxl import load_workbook
+from openpyxl import Workbook
 from datetime import datetime
 
 
@@ -277,7 +278,20 @@ def render_md(report):
     return "\n".join(result)
 
 
-def main(inventory_path, comments_paths: list[Path], md_output=None):
+def write_xls(report, xls_path):
+    wb = Workbook(write_only=True)
+
+    for group, table in report.items():
+        sheet = wb.create_sheet(group)
+        sheet.title = group
+
+        for row in table:
+            sheet.append(row)
+
+    wb.save(xls_path)
+
+
+def main(inventory_path, comments_paths: list[Path], md_output=None, xls_output=None):
     comments_data = {}
 
     for idx, comments_path in enumerate(comments_paths):
@@ -308,6 +322,9 @@ def main(inventory_path, comments_paths: list[Path], md_output=None):
         with open(md_output, "w") as md_out_file:
             md_out_file.write(rendered_report)
 
+    if xls_output is not None:
+        write_xls(report, xls_output)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -316,6 +333,7 @@ if __name__ == "__main__":
     parser.add_argument("inventory", help="Inventory report XLSX.")
     parser.add_argument("comments", nargs="+", help="Comments XLSX.")
     parser.add_argument("-o", "--md-output", help="Output MD file.")
+    parser.add_argument("--xls-output", help="Output XLSX file.")
 
     args = parser.parse_args()
 
@@ -333,4 +351,4 @@ if __name__ == "__main__":
     inventory_path = Path(args.inventory)
     comments_paths = [Path(p) for p in args.comments]
 
-    main(inventory_path, comments_paths, args.md_output)
+    main(inventory_path, comments_paths, args.md_output, args.xls_output)
