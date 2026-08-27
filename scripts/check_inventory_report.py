@@ -56,9 +56,7 @@ def compute_mya_completion_date(meta_project):
 
 
 def _get_category(project):
-    category = (
-        project.meta_project.type if project.meta_project else project.category
-    )
+    category = project.meta_project.type if project.meta_project else project.category
     options = {
         "Individual": "IND",
         "Multi-year agreement": "MYA",
