@@ -1,18 +1,16 @@
 import { Fragment, useContext, useState } from 'react'
 
-import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import {
   ErrorsList,
   SubmitButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
-import { ApiAgency } from '@ors/types/api_agencies'
+import { TabLabel, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, find, keys, map } from 'lodash'
+import { filter, keys, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import cx from 'classnames'
 
@@ -28,33 +26,13 @@ const PCRResultsAssessment = () => {
   const sectionData = PCRData[sectionIdentifier] || []
   const activitiesData = sectionData[crtTab][activityField] || []
   const crtAgencyId = sectionData[crtTab].agency_id
+  const crtAgencies = getSectionAgencies(agencies, sectionData)
 
   const { results_assessment: resultsAssessmentErrors } = errors
   const activitiesErrors = resultsAssessmentErrors[activityField]
 
   const agencyErrors = map(activitiesErrors[crtAgencyId], 'errors')
   const formattedAgencyErrors = formatErrors({ [activityField]: agencyErrors })
-
-  const crtAgencies =
-    agencies && agencies.length > 0
-      ? map(
-          sectionData,
-          (entry) => find(agencies, (agency) => agency.id === entry.agency_id)!,
-        )
-      : []
-
-  const TabLabel = ({ agency }: { agency: ApiAgency }) => {
-    const tabErrors = {
-      [activityField]: map(activitiesErrors[agency.id], 'errors'),
-    }
-
-    return (
-      <div className="relative flex items-center justify-between gap-x-2">
-        <div className="leading-tight">{agency.name}</div>
-        {hasSectionErrors(tabErrors) && <SectionErrorIndicator errors={[]} />}
-      </div>
-    )
-  }
 
   const initialActivitiesData = {
     activity_title: '',
@@ -145,7 +123,13 @@ const PCRResultsAssessment = () => {
             key={agency.name}
             aria-controls={agency.name}
             id={agency.name}
-            label={<TabLabel {...{ agency }} />}
+            label={
+              <TabLabel
+                field={activityField}
+                errors={activitiesErrors}
+                {...{ agency }}
+              />
+            }
           />
         ))}
       </Tabs>

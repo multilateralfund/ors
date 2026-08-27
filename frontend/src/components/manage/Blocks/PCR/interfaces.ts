@@ -128,7 +128,7 @@ export interface PCRLessonsLearnedData {
   project_components: LessonLearnedProjectComponent[]
 }
 
-type ProjectPhase = {
+export type ProjectPhase = {
   project_preparation: number | null
   prefilled: boolean
   qualitative_description: string
@@ -136,7 +136,7 @@ type ProjectPhase = {
 
 export interface PCRGenderMainstreamingData {
   agency_id: number
-  project_phases: ProjectPhase[]
+  gender_mainstreamings: ProjectPhase[]
 }
 
 type Sdgs = { goal_id: number | null; description: string }

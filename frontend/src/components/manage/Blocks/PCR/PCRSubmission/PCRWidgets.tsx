@@ -1,5 +1,6 @@
 import { ChangeEvent } from 'react'
 
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
@@ -14,6 +15,7 @@ import {
   textAreaClassname,
 } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import { pcrFieldsMapping } from '../constants'
+import { hasSectionErrors } from '../utils'
 import {
   PCRData,
   WidgetPprops,
@@ -22,9 +24,10 @@ import {
   OptionsType,
   ErrorType,
 } from '../interfaces'
+import { ApiAgency } from '@ors/types/api_agencies'
 
 import { Checkbox, TextareaAutosize } from '@mui/material'
-import { find, isNil } from 'lodash'
+import { find, map } from 'lodash'
 import cx from 'classnames'
 
 const overviewFieldsClassName = formatClassName('min-w-56 md:min-w-72')
@@ -396,6 +399,7 @@ export const PCRBooleanWidget = ({
   subFields,
 }: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+  const formattedErrors = formatErrors(errors, indexes)
 
   return (
     <div>
@@ -422,15 +426,27 @@ export const PCRBooleanWidget = ({
             color: 'black',
           }}
         />
-        <FieldErrorIndicator
-          errors={
-            !isNil(indexes?.[0])
-              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
-              : errors
-          }
-          field={field}
-        />
+        <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>
+    </div>
+  )
+}
+
+export const TabLabel = ({
+  agency,
+  field,
+  errors,
+}: {
+  agency: ApiAgency
+  field: string
+  errors: Record<string, any>
+}) => {
+  const tabErrors = { [field]: map(errors[agency.id], 'errors') }
+
+  return (
+    <div className="relative flex items-center justify-between gap-x-2">
+      <div className="leading-tight">{agency.name}</div>
+      {hasSectionErrors(tabErrors) && <SectionErrorIndicator errors={[]} />}
     </div>
   )
 }

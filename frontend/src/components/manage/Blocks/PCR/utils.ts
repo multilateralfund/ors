@@ -13,6 +13,7 @@ import {
   CauseOfDelayProjectComponent,
   LessonLearnedProjectComponent,
 } from './interfaces'
+import { ApiAgency } from '@ors/types/api_agencies'
 
 import {
   find,
@@ -317,3 +318,11 @@ export const hasErrorMessage = (errors: Record<string, any>): boolean => {
 
   return false
 }
+
+export const getSectionAgencies = (agencies: ApiAgency[], sectionData: any) =>
+  agencies && agencies.length > 0
+    ? map(
+        sectionData,
+        (entry) => find(agencies, (agency) => agency.id === entry.agency_id)!,
+      )
+    : []

@@ -1,19 +1,17 @@
 import { Fragment, useContext, useState } from 'react'
 
-import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import {
   ErrorsList,
   SubmitButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
+import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import { pcField, cdField } from '../constants'
-import { ApiAgency } from '@ors/types/api_agencies'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, find, map, omit } from 'lodash'
+import { filter, map, omit } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import cx from 'classnames'
 
@@ -35,6 +33,7 @@ const PCRCausesOfDelay = () => {
   const sectionData = PCRData[sectionIdentifier] || []
   const pcData = sectionData[crtTab][pcField] || []
   const crtAgencyId = sectionData[crtTab].agency_id
+  const crtAgencies = getSectionAgencies(agencies, sectionData)
 
   const { causes_of_delay: causesOfDelayErrors } = errors
   const pcErrors = causesOfDelayErrors[pcField]
@@ -45,25 +44,6 @@ const PCRCausesOfDelay = () => {
     cdField,
   )
   const delayCausesErrors = map(agencyErrors, (error) => map(error, cdField))
-
-  const crtAgencies =
-    agencies && agencies.length > 0
-      ? map(
-          sectionData,
-          (entry) => find(agencies, (agency) => agency.id === entry.agency_id)!,
-        )
-      : []
-
-  const TabLabel = ({ agency }: { agency: ApiAgency }) => {
-    const tabErrors = { [pcField]: map(pcErrors[agency.id], 'errors') }
-
-    return (
-      <div className="relative flex items-center justify-between gap-x-2">
-        <div className="leading-tight">{agency.name}</div>
-        {hasSectionErrors(tabErrors) && <SectionErrorIndicator errors={[]} />}
-      </div>
-    )
-  }
 
   const onAddProjectComponent = () => {
     setPCRData((prevData) => {
@@ -226,7 +206,9 @@ const PCRCausesOfDelay = () => {
             key={agency.name}
             aria-controls={agency.name}
             id={agency.name}
-            label={<TabLabel {...{ agency }} />}
+            label={
+              <TabLabel field={pcField} errors={pcErrors} {...{ agency }} />
+            }
           />
         ))}
       </Tabs>

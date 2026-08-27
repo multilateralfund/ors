@@ -8,11 +8,16 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
 import { sdgsField } from '../constants'
+import {
+  getSectionAgencies,
+  formatErrors,
+  getErrorIndex,
+  hasSectionErrors,
+} from '../utils'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, find, map, omit } from 'lodash'
+import { filter, map, omit } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import cx from 'classnames'
 
@@ -28,11 +33,7 @@ const PCRSdgs = () => {
   const sectionData = PCRData[sectionIdentifier] || []
   const sdgsData = sectionData[crtTab][sdgsField] || []
   const crtAgencyId = sectionData[crtTab].agency_id
-
-  const crtAgencies = map(
-    sectionData,
-    (entry) => find(agencies, (agency) => agency.id === entry.agency_id)?.name,
-  )
+  const crtAgencies = getSectionAgencies(agencies, sectionData)
 
   const onAddSdg = (agencyIndex: number) => {
     setPCRData((prevData) => {

@@ -24,11 +24,9 @@ import {
 } from '../utils'
 import {
   pcField,
-  pcIdField,
   cdField,
-  cdIdField,
   llField,
-  llIdField,
+  ppField,
   requiredMessage,
 } from '../constants'
 
@@ -58,7 +56,10 @@ const PCRForm = () => {
       title: 'Lessons learned',
       errors: errors.lessons_learned,
     },
-    gender_mainstreaming: { title: 'Gender mainstreaming', errors: {} },
+    gender_mainstreaming: {
+      title: 'Gender mainstreaming',
+      errors: errors.gender_mainstreaming,
+    },
     sdgs_contribution: { title: 'SDGs (optional)', errors: {} },
     supporting_evidences: { title: 'Other supporting evidence', errors: {} },
   }
@@ -153,7 +154,6 @@ const PCRForm = () => {
       ...prev,
       activities: map(activitiesData, (activity, index) => {
         const existingErrors = prev.activities?.[index] ?? {}
-
         let updatedErrors = { ...existingErrors }
 
         const activitiesField = [
@@ -199,18 +199,18 @@ const PCRForm = () => {
 
   useEffect(() => {
     const projectComponents = [...cdProjectComponents, ...llProjectComponents]
+    const pcIdField = 'project_component_option_id'
 
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
       [pcField]: map(projectComponents, (pc, index) => {
         const existingErrors = prev[pcField]?.[index] ?? {}
-
         let updatedErrors = { ...existingErrors }
 
         if (!pc[pcIdField]) {
           updatedErrors[pcIdField] = [requiredMessage]
         } else if (updatedErrors[pcIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, ['project_component_option_id'])
+          updatedErrors = omit(updatedErrors, [pcIdField])
         }
 
         formatNestedPcErrors(
@@ -218,14 +218,14 @@ const PCRForm = () => {
           updatedErrors,
           existingErrors,
           cdField,
-          cdIdField,
+          'delay_id',
         )
         formatNestedPcErrors(
           pc,
           updatedErrors,
           existingErrors,
           llField,
-          llIdField,
+          'lesson_id',
         )
 
         const formattedErrors = Object.fromEntries(
@@ -241,6 +241,49 @@ const PCRForm = () => {
       }),
     }))
   }, [JSON.stringify(causesOfDelayData), JSON.stringify(lessonsLearnedData)])
+
+  const genderMainstreamingData = PCRData.gender_mainstreaming || []
+
+  useEffect(() => {
+    const ppData = flatMap(
+      genderMainstreamingData,
+      ({ gender_mainstreamings }) => gender_mainstreamings,
+    )
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [ppField]: map(ppData, (pp, index) => {
+        const ppIdField = 'project_preparation'
+        const ppTextField = 'qualitative_description'
+
+        const existingErrors = prev[ppField]?.[index] ?? {}
+        let updatedErrors = { ...existingErrors }
+
+        if (!pp[ppIdField]) {
+          updatedErrors[ppIdField] = [requiredMessage]
+        } else if (updatedErrors[ppIdField]?.includes(requiredMessage)) {
+          updatedErrors = omit(updatedErrors, [ppIdField])
+        }
+
+        updatedErrors = validateWordCount(
+          updatedErrors,
+          ppTextField,
+          pp[ppTextField],
+        )
+
+        const formattedErrors = Object.fromEntries(
+          Object.entries(updatedErrors).filter(([, value]) => {
+            if (!Array.isArray(value)) {
+              return true
+            }
+
+            return some(value, checkHasErrors)
+          }),
+        )
+        return formattedErrors
+      }),
+    }))
+  }, [JSON.stringify(genderMainstreamingData)])
 
   return (
     <>

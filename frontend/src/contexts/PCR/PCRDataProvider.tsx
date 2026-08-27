@@ -115,7 +115,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     const genderMainstreamingData =
       formatAgencyData<PCRGenderMainstreamingData>(
         PCRData.gender_mainstreaming || [],
-        'project_phases',
+        'gender_mainstreamings',
       )
 
     const agenciesErrors = map(genderMainstreamingData, (data, index) => ({
@@ -123,7 +123,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       errors: errors?.gender_mainstreamings?.[index] ?? {},
     }))
 
-    return { gender_mainstreaming: groupBy(agenciesErrors, 'agency_id') }
+    return { gender_mainstreamings: groupBy(agenciesErrors, 'agency_id') }
   }
 
   const groupErrors = (errors: Record<string, any[]>) => {

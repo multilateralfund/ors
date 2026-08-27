@@ -1,6 +1,5 @@
 import { Fragment, useContext, useState } from 'react'
 
-import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import {
   ErrorsList,
   SubmitButton,
@@ -8,16 +7,17 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
+  TabLabel,
   PCRSelectWidget,
   PCRTextAreaWidget,
   PCRBooleanWidget,
 } from './PCRWidgets'
-import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
+import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import { ppField, projectPhaseOptions } from '../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, find, map, omit } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
+import { filter, map } from 'lodash'
 import cx from 'classnames'
 
 const PCRGenderMainstreaming = () => {
@@ -31,11 +31,13 @@ const PCRGenderMainstreaming = () => {
   const sectionData = PCRData[sectionIdentifier] || []
   const ppData = sectionData[crtTab][ppField] || []
   const crtAgencyId = sectionData[crtTab].agency_id
+  const crtAgencies = getSectionAgencies(agencies, sectionData)
 
-  const crtAgencies = map(
-    sectionData,
-    (entry) => find(agencies, (agency) => agency.id === entry.agency_id)?.name,
-  )
+  const { gender_mainstreaming: genderMainstreamingErrors } = errors
+  const ppErrors = genderMainstreamingErrors[ppField]
+
+  const agencyErrors = map(ppErrors[crtAgencyId], 'errors')
+  const formattedAgencyErrors = formatErrors({ [ppField]: agencyErrors })
 
   const onAddProjectPhase = (agencyIndex: number) => {
     setPCRData((prevData) => {
@@ -78,6 +80,23 @@ const PCRGenderMainstreaming = () => {
         ),
       }
     }, ppField)
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const errorIndex = getErrorIndex(
+        sectionData,
+        ppField,
+        crtAgencyId,
+        ppIndex,
+      )
+
+      return {
+        ...prevData,
+        [ppField]: filter(
+          prevData[ppField],
+          (_, index) => index !== errorIndex,
+        ),
+      }
+    })
   }
 
   return (
@@ -97,11 +116,21 @@ const PCRGenderMainstreaming = () => {
           setCrtTab(newValue)
         }}
       >
-        {crtAgencies.map((agency) => (
-          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
+        {map(crtAgencies, (agency) => (
+          <Tab
+            key={agency.name}
+            aria-controls={agency.name}
+            id={agency.name}
+            label={
+              <TabLabel field={ppField} errors={ppErrors} {...{ agency }} />
+            }
+          />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
+          <ErrorsList errors={formattedAgencyErrors} />
+        )}
         <div className="flex flex-col gap-y-4">
           {map(ppData, (_, ppIndex) => (
             <Fragment key={ppIndex}>
@@ -110,21 +139,21 @@ const PCRGenderMainstreaming = () => {
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="project_preparation"
                   options={projectPhaseOptions}
-                  errors={{}}
+                  errors={agencyErrors}
                   indexes={[crtTab, ppIndex]}
                   subFields={['', ppField]}
                 />
                 <PCRBooleanWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="prefilled"
-                  errors={{}}
+                  errors={agencyErrors}
                   indexes={[crtTab, ppIndex]}
                   subFields={['', ppField]}
                 />
                 <PCRTextAreaWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="qualitative_description"
-                  errors={{}}
+                  errors={agencyErrors}
                   indexes={[crtTab, ppIndex]}
                   subFields={['', ppField]}
                 />
