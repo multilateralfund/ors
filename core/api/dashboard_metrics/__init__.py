@@ -5,7 +5,7 @@ See ``docs/dashboard_metrics.md``.
 """
 
 import logging
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from typing import Any
 
 from django.utils import timezone
@@ -14,7 +14,9 @@ from core.api.dashboard_metrics.apr import apr_years_available, resolve_apr_year
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.country import COUNTRY_METRICS, COUNTRY_METRICS_BY_ID
 from core.api.dashboard_metrics.fund import FUND_METRICS, FUND_METRICS_BY_ID
+from core.api.dashboard_metrics.cp import load_trends
 from core.api.dashboard_metrics.primitives import (
+    addressable_entries,
     dashboard_entries,
     excluded_status_labels,
     resolve_entry,
@@ -145,3 +147,25 @@ def get_country_metrics(
     )
     payload["entry"] = entry
     return payload
+
+
+def iter_country_metrics(
+    apr_year: int | None = None, placeholders: bool = False
+) -> Iterator[dict[str, Any]]:
+    """Every addressable entry's payload, in index order.
+
+    The country programme trends cover the whole portfolio in one pass, so they
+    are built once here and handed to every entry.
+    """
+    resolved_year = resolve_apr_year(apr_year)
+    trends = load_trends()
+    for country, entry in addressable_entries():
+        payload = _envelope(
+            COUNTRY_METRICS,
+            MetricContext(
+                apr_year=resolved_year, country=country, shared_trends=trends
+            ),
+            placeholders,
+        )
+        payload["entry"] = entry
+        yield payload

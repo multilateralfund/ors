@@ -37,6 +37,9 @@ class MetricContext:
     apr_year: int | None = None
     # Set for a per-country payload; None means the whole fund.
     country: Country | None = None
+    # The trends are built for the whole portfolio in one pass, so a caller
+    # rendering many entries builds them once and hands the same object to all.
+    shared_trends: CountryProgrammeTrends | None = None
 
     @property
     def seed_key(self) -> str:
@@ -60,7 +63,7 @@ class MetricContext:
     @cached_property
     def cp(self) -> CountryProgrammeTrends:
         """Reported consumption and production, for the whole portfolio at once."""
-        return load_trends()
+        return self.shared_trends if self.shared_trends is not None else load_trends()
 
     @cached_property
     def apr(self) -> AprMetrics | None:

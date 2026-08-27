@@ -68,6 +68,7 @@ from core.api.views.cp_archive import (
 from core.api.views.dashboard_metrics import (
     DashboardMetricsCountryIndexView,
     DashboardMetricsCountryView,
+    DashboardMetricsExportView,
     DashboardMetricsFundView,
 )
 from core.api.views.funding_window import FundingWindowListCreateView
@@ -849,6 +850,11 @@ urlpatterns = [
         "dashboard-metrics/countries/<str:key>/",
         DashboardMetricsCountryView.as_view(),
         name="dashboard-metrics-country",
+    ),
+    path(
+        "dashboard-metrics/export/",
+        DashboardMetricsExportView.as_view(),
+        name="dashboard-metrics-export",
     ),
     # User permissions
     path(

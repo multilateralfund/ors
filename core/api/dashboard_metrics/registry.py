@@ -26,6 +26,8 @@ class Kind(str, Enum):
     BREAKDOWN = "breakdown"  # dict of named components
     TABLE = "table"  # list of rows keyed by a group
     SERIES = "series"  # [[year, value], ...] ascending
+    # {group key: {"name": ..., "values": [[year, value], ...]}}
+    GROUPED_SERIES = "grouped_series"
 
 
 class Unit(str, Enum):

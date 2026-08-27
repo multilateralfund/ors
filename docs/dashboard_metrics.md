@@ -4,6 +4,7 @@
 GET /api/dashboard-metrics/fund/              ?apr_year=2024  ?placeholders=true
 GET /api/dashboard-metrics/countries/
 GET /api/dashboard-metrics/countries/{key}/   ?apr_year=2024  ?placeholders=true
+GET /api/dashboard-metrics/export/            ?apr_year=2024  ?placeholders=true
 ```
 
 An API to feed metrics for the fund-wide "Our Work" page and the per-country profile page.
@@ -17,6 +18,7 @@ An API to feed metrics for the fund-wide "Our Work" page and the per-country pro
 | `/fund/`            | The fund-wide payload.                                                   |
 | `/countries/`       | List of every addressable entry: 149 countries and 5 aggregate regions. |
 | `/countries/{key}/` | One country's payload.                                                   |
+| `/export/`          | Both pages as an .xlsx workbook, for review away from the API.           |
 
 `{key}` is `iso3` for a country (`BRA`) and `abbr` for a region (`AFR`, `ASP`, `EUR`, `LAC`, `GLO`), 
 matched case-insensitively. One route serves both; `entry.entry_type` discriminates.
@@ -71,6 +73,7 @@ currency from label text.
 | `breakdown` | an object of named components                |
 | `table`     | a list of rows keyed by a group              |
 | `series`    | `[[year, value], ...]` ascending, unwindowed |
+| `grouped_series` | `{group: {"name": …, "values": [[year, value], …]}}` - several named series sharing one year axis |
 
 `unit` is one of `USD`, `ODP_TONNES`, `CO2EQ_TONNES`, `COUNT`, `MONTHS`, `KWH_PER_YEAR`, `PERCENT`, or `null`.
 

@@ -3,8 +3,9 @@ from dataclasses import replace
 from itertools import count
 from datetime import date
 from decimal import Decimal
-from io import StringIO
+from io import BytesIO, StringIO
 
+import openpyxl
 import pytest
 from constance.test import override_config
 from django.core.exceptions import ImproperlyConfigured
@@ -205,7 +206,13 @@ def assert_envelope(payload, all_unavailable=False):
     assert payload["scope"]["production_included"] is True
     for metric_id, metric in payload["metrics"].items():
         assert metric["metric_id"] == metric_id
-        assert metric["kind"] in ("scalar", "breakdown", "table", "series")
+        assert metric["kind"] in (
+            "scalar",
+            "breakdown",
+            "table",
+            "series",
+            "grouped_series",
+        )
         assert metric["available"] is (metric["value"] is not None)
         if all_unavailable:
             assert metric["available"] is False
@@ -517,7 +524,7 @@ class TestRegistryDeclarations:
             for m in FUND_METRICS + COUNTRY_METRICS
             if m.disposition == Disposition.NOT_AVAILABLE
         ]
-        assert len(blocked) == 13
+        assert len(blocked) == 9
         assert all(m.unavailable_reason for m in blocked)
 
 
@@ -1590,6 +1597,93 @@ class TestCountryValues(BaseTest):
         assert metrics["kf_odp_approved"]["value"] == 99
 
 
+class TestReportedAttributes(BaseTest):
+    """Country attributes answered from what the projects report."""
+
+    url = reverse("dashboard-metrics-country", args=["BRA"])
+
+    def entry(self, user, key="BRA"):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(reverse("dashboard-metrics-country", args=[key]))
+        assert response.status_code == 200
+        return metrics_by_id(response.data)
+
+    def test_one_project_reporting_is_enough_for_the_country(
+        self, user, ongoing_status
+    ):
+        """The question is whether the thing exists, not how many produced it."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(country=brazil, status=ongoing_status)
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            establishment_of_technician_certification_actual=True,
+            meps_developed_commercial_ac_actual=True,
+        )
+
+        metrics = self.entry(user)
+        assert metrics["attr_certification"]["value"] == "Yes"
+        assert metrics["attr_meps"]["value"] == "Yes"
+
+    def test_no_project_reporting_is_a_no_rather_than_a_blank(
+        self, user, ongoing_status
+    ):
+        """A measured absence, not an unavailable row."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(country=brazil, status=ongoing_status)
+
+        metrics = self.entry(user)
+        assert metrics["attr_certification"]["available"] is True
+        assert metrics["attr_certification"]["value"] == "No"
+        assert metrics["attr_meps"]["value"] == "No"
+
+    def test_any_of_the_four_meps_columns_counts(self, user, ongoing_status):
+        """All four were confirmed, not the two first proposed."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            meps_developed_domestic_refrigeration_actual=True,
+        )
+
+        assert self.entry(user)["attr_meps"]["value"] == "Yes"
+
+    def test_the_same_fact_shown_twice_cannot_disagree(self, user, ongoing_status):
+        """Registered in two sections, answered by one function."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        approved_project(
+            country=brazil,
+            status=ongoing_status,
+            establishment_of_technician_certification_actual=True,
+            meps_developed_residential_ac_actual=True,
+        )
+
+        metrics = self.entry(user)
+        assert (
+            metrics["attr_certification"]["value"]
+            == metrics["impact_certification"]["value"]
+        )
+        assert metrics["attr_meps"]["value"] == metrics["impact_meps"]["value"]
+
+    def test_an_aggregate_entry_answers_from_its_own_projects(
+        self, user, ongoing_status
+    ):
+        """Derived from projects, so unlike the other attributes a region has one."""
+        africa = CountryFactory(
+            name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
+        )
+        approved_project(
+            country=africa,
+            status=ongoing_status,
+            establishment_of_technician_certification_actual=True,
+        )
+
+        metrics = self.entry(user, key="AFR")
+        assert metrics["attr_certification"]["value"] == "Yes"
+        # The genuine country attributes stay blank there.
+        assert metrics["attr_nou_name"]["available"] is False
+
+
 class TestCountryProgrammeTrends:
     """The consumption series - a reshaping of the export's own computation."""
 
@@ -1618,6 +1712,116 @@ class TestCountryProgrammeTrends:
     def country(self):
         return CountryFactory(name="Brazil", iso3="BRA")
 
+    @staticmethod
+    def totals(grouped):
+        """The grouped series added back up, for asserting the arithmetic."""
+        if grouped is None:
+            return None
+        years: dict = {}
+        for series in grouped.values():
+            for year, value in series["values"]:
+                years[year] = round(years.get(year, 0.0) + value, 2)
+        return [[year, value] for year, value in sorted(years.items())]
+
+    def test_every_protocol_group_is_present_and_in_order(self):
+        """The chart's series are the same set for every country."""
+        country = self.country()
+        self.record(country, 2020, self.substance(), imports=5)
+
+        grouped = cp.load_trends().consumption_odp_by_group("Brazil")
+
+        assert list(grouped) == [
+            "annex_a_group_1",
+            "annex_a_group_2",
+            "annex_b_group_1",
+            "annex_b_group_2",
+            "annex_b_group_3",
+            "annex_c_group_1",
+            "annex_c_group_2",
+            "annex_c_group_3",
+            "annex_e",
+        ]
+        assert grouped["annex_c_group_1"]["name"] == "Annex C Group I"
+
+    def test_groups_the_export_folds_together_are_kept_apart(self):
+        """Annex A I and Annex B I both read "CFC" upstream; here they do not."""
+        country = self.country()
+        self.record(
+            country,
+            2020,
+            self.substance(name="CFC-11", annex="A", group_id="AI"),
+            imports=10,
+        )
+        self.record(
+            country,
+            2020,
+            self.substance(name="CFC-113", annex="B", group_id="BI"),
+            imports=3,
+        )
+
+        grouped = cp.load_trends().consumption_odp_by_group("Brazil")
+
+        assert grouped["annex_a_group_1"]["values"] == [[2020, 10.0]]
+        assert grouped["annex_b_group_1"]["values"] == [[2020, 3.0]]
+
+    def test_the_groups_account_for_every_tonne_reported(self):
+        """Splitting the series must not lose or invent a tonne."""
+        country = self.country()
+        self.record(
+            country,
+            2020,
+            self.substance(name="CFC-11", annex="A", group_id="AI"),
+            imports=10,
+        )
+        self.record(
+            country,
+            2020,
+            self.substance(name="Halon-1211", annex="A", group_id="AII"),
+            imports=4,
+        )
+
+        grouped = cp.load_trends().consumption_odp_by_group("Brazil")
+
+        # Checked against what the fixture reported, not against a second
+        # reading of the same structure.
+        assert dict(grouped["annex_a_group_1"]["values"])[2020] == 10.0
+        assert dict(grouped["annex_a_group_2"]["values"])[2020] == 4.0
+        assert self.totals(grouped) == [[2020, 14.0]]
+
+    def test_a_group_outside_the_nine_is_disclosed_not_dropped(self):
+        """Uncontrolled substances are in the total, so they need a series."""
+        country = self.country()
+        self.record(
+            country,
+            2020,
+            self.substance(annex="unknown", group_id="uncontrolled"),
+            imports=7,
+        )
+
+        grouped = cp.load_trends().consumption_odp_by_group("Brazil")
+        assert grouped["other"]["values"] == [[2020, 7.0]]
+
+    def test_the_residual_is_absent_when_it_holds_nothing(self):
+        """No spurious empty series on the chart for most countries."""
+        country = self.country()
+        self.record(country, 2020, self.substance(), imports=5)
+
+        assert "other" not in cp.load_trends().consumption_odp_by_group("Brazil")
+
+    def test_hfc_consumption_stays_one_flat_series(self):
+        """Everything in it is Annex F, so there is nothing to split it by."""
+        country = self.country()
+        self.record(
+            country,
+            2020,
+            self.substance(name="HFC-134a", odp=0, gwp=1430, annex="F", group_id="F"),
+            section="B",
+            imports=2,
+        )
+
+        series = cp.load_trends().consumption_co2("Brazil")
+        assert series == [[2020, 2860.0]]
+
     def test_consumption_is_reshaped_into_an_ascending_series(self):
         """imports - exports + production, converted to ODP - all of it inherited."""
         country = self.country()
@@ -1625,7 +1829,7 @@ class TestCountryProgrammeTrends:
         self.record(country, 2021, substance, imports=10, exports=4)
         self.record(country, 2020, substance, imports=5)
 
-        assert cp.load_trends().consumption_odp("Brazil") == [
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) == [
             [2020, 10.0],
             [2021, 12.0],
         ]
@@ -1637,13 +1841,16 @@ class TestCountryProgrammeTrends:
         self.record(country, 2020, substance, imports=5)
         self.record(country, 2021, substance)
 
-        assert cp.load_trends().consumption_odp("Brazil") == [[2020, 5.0], [2021, 0.0]]
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) == [
+            [2020, 5.0],
+            [2021, 0.0],
+        ]
 
     def test_a_country_that_never_reported_has_no_series(self):
         self.record(self.country(), 2021, self.substance(), imports=5)
         CountryFactory(name="Chad", iso3="TCD")
 
-        assert cp.load_trends().consumption_odp("Chad") is None
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Chad")) is None
 
     def test_methyl_bromide_counts_only_its_non_exempt_usage(self):
         """QPS is exempt under the Protocol; the export already knows that."""
@@ -1661,7 +1868,9 @@ class TestCountryProgrammeTrends:
                 quantity=quantity,
             )
 
-        assert cp.load_trends().consumption_odp("Brazil") == [[2021, 7.0]]
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) == [
+            [2021, 7.0]
+        ]
 
     def test_sector_usage_carries_a_year_that_reports_no_trade(self):
         """5,000-odd records report usage and no trade; they used to count as zero."""
@@ -1673,7 +1882,9 @@ class TestCountryProgrammeTrends:
             quantity=12,
         )
 
-        assert cp.load_trends().consumption_odp("Brazil") == [[2021, 12.0]]
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) == [
+            [2021, 12.0]
+        ]
 
     def test_hfc_consumption_arrives_converted_to_co2(self):
         country = self.country()
@@ -1688,17 +1899,19 @@ class TestCountryProgrammeTrends:
         country = self.country()
         self.record(country, 2021, self.substance(odp=3), production=4)
 
-        assert cp.load_trends().production_odp("Brazil") == [[2021, 12.0]]
+        assert self.totals(cp.load_trends().production_odp_by_group("Brazil")) == [
+            [2021, 12.0]
+        ]
 
     def test_a_country_that_produces_nothing_has_no_production_chart(self):
         """Unlike consumption, a column of zeros here is a chart the page skips."""
         country = self.country()
         self.record(country, 2021, self.substance(odp=1), imports=5)
 
-        assert cp.load_trends().production_odp("Brazil") is None
+        assert self.totals(cp.load_trends().production_odp_by_group("Brazil")) is None
 
     def test_no_reports_at_all_costs_nothing(self):
-        assert cp.load_trends().consumption_odp("Brazil") is None
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) is None
 
 
 class TestPlaceholders(BaseTest):
@@ -1715,10 +1928,6 @@ class TestPlaceholders(BaseTest):
             "attr_hfc_licensing",
             "attr_hfc_quota",
             "attr_nou_name",
-            "attr_certification",
-            "attr_meps",
-            "impact_certification",
-            "impact_meps",
         }
     )
     IMPACT = frozenset(
@@ -1782,16 +1991,6 @@ class TestPlaceholders(BaseTest):
             brazil_metrics[m]["value"] != africa_metrics[m]["value"]
             for m in self.IMPACT
         )
-
-    def test_a_fact_shown_twice_cannot_disagree_with_itself(self, user, brazil):
-        """These are one fact each, rendered in two sections of the page."""
-        metrics = self.entry(user, placeholders="true")
-
-        assert (
-            metrics["attr_certification"]["value"]
-            == metrics["impact_certification"]["value"]
-        )
-        assert metrics["attr_meps"]["value"] == metrics["impact_meps"]["value"]
 
     def test_an_aggregate_entry_gets_impact_figures_but_no_attributes(
         self, user, africa
@@ -1882,6 +2081,98 @@ class TestFundPlaceholders(BaseTest):
         assert "placeholder" not in rows["OTHER_ODS"]
 
 
+class TestDashboardMetricsExport(BaseTest):
+    """The workbook the figures get reviewed from."""
+
+    url = reverse("dashboard-metrics-export")
+
+    def workbook(self, user, **params):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, params)
+        assert response.status_code == 200
+        content = b"".join(response.streaming_content)
+        return openpyxl.load_workbook(BytesIO(content))
+
+    @staticmethod
+    def rows(sheet):
+        headers = [cell.value for cell in sheet[1]]
+        return [
+            dict(zip(headers, values))
+            for values in sheet.iter_rows(min_row=2, values_only=True)
+        ]
+
+    def test_it_serves_a_workbook_of_both_pages(self, user, brazil):
+        assert self.workbook(user).sheetnames == ["Fund", "Countries"]
+
+    def test_it_is_a_download(self, user, brazil):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert "attachment" in response["Content-Disposition"]
+        assert ".xlsx" in response["Content-Disposition"]
+
+    def test_every_figure_gets_its_own_row(self, user, brazil):
+        """A reviewer objects to one number, so one number is one row."""
+        rows = self.rows(self.workbook(user)["Fund"])
+
+        components = {
+            row["Component"] for row in rows if row["Metric"] == "funds_approved"
+        }
+        assert components == {"funds_approved", "funds_plus_psc"}
+
+    def test_a_country_row_names_the_entry_it_belongs_to(self, user, brazil):
+        """Country-level readers filter this column to their own row."""
+        rows = self.rows(self.workbook(user)["Countries"])
+
+        brazil_rows = [row for row in rows if row["Key"] == "BRA"]
+        assert brazil_rows
+        assert {row["Country"] for row in brazil_rows} == {"Brazil"}
+        assert {row["Type"] for row in brazil_rows} == {"country"}
+
+    def test_a_grouped_series_gets_a_row_per_group(self, user, brazil):
+        CPRecordFactory(
+            country_programme_report=CPReportFactory(
+                country=brazil, year=2020, name="Brazil 2020"
+            ),
+            substance=SubstanceFactory(
+                name="CFC-11",
+                odp=1,
+                gwp=0,
+                group=GroupFactory(annex="A", group_id="AI"),
+            ),
+            blend=None,
+            section="A",
+            imports=10,
+            exports=0,
+            production=0,
+        )
+
+        rows = self.rows(self.workbook(user)["Countries"])
+
+        groups = [
+            row["Component"]
+            for row in rows
+            if row["Key"] == "BRA" and row["Metric"] == "trend_ods_consumption"
+        ]
+        assert groups[:3] == [
+            "Annex A Group I",
+            "Annex A Group II",
+            "Annex B Group I",
+        ]
+
+    def test_nothing_is_marked_a_placeholder_by_default(self, user, brazil):
+        rows = self.rows(self.workbook(user)["Fund"])
+
+        assert not [row for row in rows if row["Placeholder"]]
+
+    def test_asking_for_placeholders_marks_them(self, user, brazil):
+        """The column is what stops an invented figure being reviewed as real."""
+        rows = self.rows(self.workbook(user, placeholders="true")["Countries"])
+
+        marked = {row["Metric"] for row in rows if row["Placeholder"]}
+        assert "attr_nou_name" in marked
+
+
 class TestSpecCommand:
     """The registry's documentation half, replacing the old /spec/ endpoint."""
 
@@ -1890,7 +2181,7 @@ class TestSpecCommand:
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
 
-        assert "91 metrics, 78 implemented." in rendered
+        assert "91 metrics, 82 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 

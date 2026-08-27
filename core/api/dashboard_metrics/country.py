@@ -187,6 +187,25 @@ def attr_nou_ministry(context: MetricContext) -> str | None:
     return _text(country.ozone_unit) if country else None
 
 
+# What a project reports having established.
+# One project reporting it is enough for the country to emit Yes.
+CERTIFICATION_FIELDS = ("establishment_of_technician_certification_actual",)
+MEPS_FIELDS = (
+    "meps_developed_commercial_ac_actual",
+    "meps_developed_residential_ac_actual",
+    "meps_developed_commercial_refrigeration_actual",
+    "meps_developed_domestic_refrigeration_actual",
+)
+
+
+def _reported_by_any_project(context: MetricContext, fields: tuple[str, ...]) -> str:
+    """``"Yes"`` if any project in scope reports any of ``fields``."""
+    reported = any(
+        getattr(row.project, field) for row in context.projects for field in fields
+    )
+    return "Yes" if reported else "No"
+
+
 def kf_projects_approved(context: MetricContext) -> int:
     """How many projects the country has had approved."""
     return project_counts(context.projects)["projects_by_code"]
@@ -207,10 +226,10 @@ def kf_phased_out(context: MetricContext, fields: tuple[str, ...]) -> float | No
     return context.apr.phased_out(fields) if context.apr else None
 
 
-def trend_ods_consumption(context: MetricContext) -> list | None:
-    """Reported consumption of ozone-depleting substances, year by year."""
+def trend_ods_consumption(context: MetricContext) -> dict | None:
+    """Reported consumption of ozone-depleting substances, by Protocol group."""
     entry = _entry(context)
-    return context.cp.consumption_odp(entry.name) if entry else None
+    return context.cp.consumption_odp_by_group(entry.name) if entry else None
 
 
 def trend_hfc_consumption(context: MetricContext) -> list | None:
@@ -219,10 +238,10 @@ def trend_hfc_consumption(context: MetricContext) -> list | None:
     return context.cp.consumption_co2(entry.name) if entry else None
 
 
-def trend_ods_production(context: MetricContext) -> list | None:
-    """Reported production of ozone-depleting substances, year by year."""
+def trend_ods_production(context: MetricContext) -> dict | None:
+    """Reported production of ozone-depleting substances, by Protocol group."""
     entry = _entry(context)
-    return context.cp.production_odp(entry.name) if entry else None
+    return context.cp.production_odp_by_group(entry.name) if entry else None
 
 
 def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
@@ -516,15 +535,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
-        formula="country attribute - YES/NO",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="Project.establishment_of_technician_certification",
-        compute=None,
-        unavailable_reason=("The Country field is pending."),
-        placeholder=partial(
-            placeholders.choice, slug="certification", labels=placeholders.YES_NO
-        ),
+        disposition=Disposition.COMPUTE,
+        formula="Yes if any project in scope reports it, else No",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.establishment_of_technician_certification_actual, any project",
+        compute=partial(_reported_by_any_project, fields=CERTIFICATION_FIELDS),
     ),
     Metric(
         metric_id="attr_meps",
@@ -532,17 +547,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
-        formula="country attribute - YES/ESTABLISHED",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="Project.meps_developed_domestic_refrigeration",
-        compute=None,
-        unavailable_reason=(
-            "Settled as a country attribute; the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="meps", labels=placeholders.MEPS_LABELS
-        ),
+        disposition=Disposition.COMPUTE,
+        formula="Yes if any project in scope reports it, else No",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.meps_developed_* (four actual columns), any project",
+        compute=partial(_reported_by_any_project, fields=MEPS_FIELDS),
     ),
     Metric(
         metric_id="kf_projects_approved",
@@ -662,7 +671,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         metric_id="trend_ods_consumption",
         label="ODS consumption over time",
         section="Consumption & production trends",
-        kind=Kind.SERIES,
+        kind=Kind.GROUPED_SERIES,
         unit=Unit.ODP_TONNES,
         disposition=Disposition.COMPUTE,
         formula="per year: backend get_consumption_value over section-A records (ODP)",
@@ -689,7 +698,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         metric_id="trend_ods_production",
         label="ODS production over time",
         section="Consumption & production trends",
-        kind=Kind.SERIES,
+        kind=Kind.GROUPED_SERIES,
         unit=Unit.ODP_TONNES,
         disposition=Disposition.COMPUTE,
         formula=(
@@ -917,17 +926,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Impact",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
-        formula="country YES/NO",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="Project.establishment_of_technician_certification",
-        compute=None,
-        unavailable_reason=(
-            "Settled as a country attribute; the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="certification", labels=placeholders.YES_NO
-        ),
+        disposition=Disposition.COMPUTE,
+        formula="Yes if any project in scope reports it, else No",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.establishment_of_technician_certification_actual, any project",
+        compute=partial(_reported_by_any_project, fields=CERTIFICATION_FIELDS),
     ),
     Metric(
         metric_id="impact_meps",
@@ -935,17 +938,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Impact",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
-        formula="country ESTABLISHED",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="Project.meps_developed_domestic_refrigeration",
-        compute=None,
-        unavailable_reason=(
-            "Settled as a country attribute; the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="meps", labels=placeholders.MEPS_LABELS
-        ),
+        disposition=Disposition.COMPUTE,
+        formula="Yes if any project in scope reports it, else No",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.meps_developed_* (four actual columns), any project",
+        compute=partial(_reported_by_any_project, fields=MEPS_FIELDS),
     ),
 )
 

@@ -489,7 +489,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="hardcoded",
         db_source="MANUAL",
         src_model_field="none",
-        compute=static(120),
+        compute=static(144),
     ),
     Metric(
         metric_id="countries_assisted",

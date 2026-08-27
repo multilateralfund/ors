@@ -14,6 +14,7 @@ from core.api.dashboard_metrics import (
     get_country_metrics,
     get_fund_metrics,
 )
+from core.api.export.dashboard_metrics_export import DashboardMetricsExport
 from core.api.serializers.dashboard_metrics import (
     DashboardCountryIndexSerializer,
     DashboardCountryMetricsEnvelopeSerializer,
@@ -135,3 +136,23 @@ class DashboardMetricsCountryView(views.APIView):
                 f"countries and abbr for regions; see /countries/."
             )
         return Response(payload)
+
+
+class DashboardMetricsExportView(views.APIView):
+    """
+    Both pages' figures as a workbook: one sheet for the fund, one for every
+    country, a row per figure and a column to write review notes in.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        operation_id="dashboard_metrics_export",
+        parameters=APR_PARAMETERS + PLACEHOLDER_PARAMETERS,
+        responses={200: "Excel file download"},
+    )
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        return DashboardMetricsExport(
+            apr_year=parse_apr_year(request),
+            placeholders=parse_placeholders(request),
+        ).export_xls()
