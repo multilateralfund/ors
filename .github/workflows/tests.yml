@@ -34,7 +34,7 @@ jobs:
           docker compose exec -T app wait_for_services.sh
       - name: "Show running services"
         run: |
-          docker compose top
+          docker compose ps
       - name: "Frontend tests"
         run: |
           docker compose run --rm --no-deps --entrypoint npm nextjs test
