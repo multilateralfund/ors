@@ -65,6 +65,12 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
+from core.api.views.dashboard_metrics import (
+    DashboardMetricsCountryIndexView,
+    DashboardMetricsCountryView,
+    DashboardMetricsExportView,
+    DashboardMetricsFundView,
+)
 from core.api.views.funding_window import FundingWindowListCreateView
 from core.api.views.funding_window import FundingWindowExportView
 from core.api.views.funding_window import FundingWindowUpdateView
@@ -898,6 +904,27 @@ urlpatterns = [
         "annual-project-report/<int:year>/sync-from-projects/",
         APRSyncFromProjectsView.as_view(),
         name="apr-sync-from-projects",
+    ),
+    # Dashboard metrics
+    path(
+        "dashboard-metrics/fund/",
+        DashboardMetricsFundView.as_view(),
+        name="dashboard-metrics-fund",
+    ),
+    path(
+        "dashboard-metrics/countries/",
+        DashboardMetricsCountryIndexView.as_view(),
+        name="dashboard-metrics-countries",
+    ),
+    path(
+        "dashboard-metrics/countries/<str:key>/",
+        DashboardMetricsCountryView.as_view(),
+        name="dashboard-metrics-country",
+    ),
+    path(
+        "dashboard-metrics/export/",
+        DashboardMetricsExportView.as_view(),
+        name="dashboard-metrics-export",
     ),
     # User permissions
     path(

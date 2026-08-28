@@ -1,0 +1,189 @@
+"""
+APR cycle resolution and aggregations.
+
+The aggregations are ORS's own: :class:`AprMetrics` subclasses the summary
+tables export writer and replaces only its ``__init__``, so the arithmetic is
+inherited rather than redefined. That constructor exists to build a workbook:
+it narrows to the three statuses those sheets report on, and serializes every
+record for the one sheet that renders raw rows. We want neither, and the four
+aggregation helpers only ever read ``self.records`` - which this class sets
+itself.
+
+See ``docs/dashboard_metrics.md``.
+"""
+
+from functools import cached_property
+from typing import Any, Callable, Sequence
+
+from core.api.dashboard_metrics.primitives import dashboard_projects
+from core.api.export.annual_project_report import APRSummaryTablesExportWriter
+from core.api.utils import get_latest_endorsed_year
+from core.models.annual_project_report import AnnualProgressReport, AnnualProjectReport
+from core.models.country import Country
+from core.models.project_metadata import ProjectStatus
+
+INVESTMENT_TYPE_CODE = "INV"
+
+# The APR row carries its own status, and that is the one that is current: a
+# project's own status only catches up once the cycle is endorsed. It is stored
+# as a display name, so the names are resolved from the codes.
+ACTIVE_CYCLE_STATUS_CODES = ("ONG", "COM")
+
+# Columns for time calculations
+DATE_APPROVED = "date_approved_denorm"
+DATE_FIRST_DISBURSEMENT = "date_first_disbursement"
+DATE_ACTUAL_COMPLETION = "date_actual_completion"
+
+# The page shows two phase-out figures side by side, and they are different
+# measurements rather than two views of one. What a project was approved to
+# remove is set at approval and lives on Project; what an agency reported
+# removing is per reporting cycle and lives here. Consumption and production
+# count towards both.
+ODP_PHASED_OUT_FIELDS = ("consumption_phased_out_odp", "production_phased_out_odp")
+CO2_PHASED_OUT_FIELDS = ("consumption_phased_out_co2", "production_phased_out_co2")
+
+
+class AprMetrics(APRSummaryTablesExportWriter):
+    """The export's aggregations over a set of records we choose."""
+
+    # The parent's constructor is replaced wholesale, arguments and all.
+    # pylint: disable=W0231
+    def __init__(self, records: Sequence[AnnualProjectReport]):
+        self.records = list(records)
+
+    def investment(self) -> list[AnnualProjectReport]:
+        """Investment project reports."""
+        return self._filter_records(type_code=INVESTMENT_TYPE_CODE)
+
+    def non_investment(self) -> list[AnnualProjectReport]:
+        """Everything that is not an investment project."""
+        return self._filter_records(exclude_type_codes=(INVESTMENT_TYPE_CODE,))
+
+    def avg_months(
+        self, records: Sequence[AnnualProjectReport], start: str, end: str
+    ) -> float | None:
+        """Average whole months between two date columns, or ``None`` if unmeasured."""
+        measurable = [
+            apr
+            for apr in records
+            if self._get_field_value(apr, start) and self._get_field_value(apr, end)
+        ]
+        if not measurable:
+            return None
+        return round(self._calculate_avg_months(measurable, start, end), 1)
+
+    def months_to_first_disbursement(
+        self, records: Sequence[AnnualProjectReport]
+    ) -> float | None:
+        """Average months from approval to the first money going out."""
+        return self.avg_months(records, DATE_APPROVED, DATE_FIRST_DISBURSEMENT)
+
+    def months_to_completion(
+        self, records: Sequence[AnnualProjectReport]
+    ) -> float | None:
+        """Average months from approval to actual completion."""
+        return self.avg_months(records, DATE_APPROVED, DATE_ACTUAL_COMPLETION)
+
+    @cached_property
+    def _active_status_names(self) -> set[str]:
+        """The statuses that count as inside the active cycle, by display name."""
+        return set(
+            ProjectStatus.objects.filter(
+                code__in=ACTIVE_CYCLE_STATUS_CODES
+            ).values_list("name", flat=True)
+        )
+
+    def _disbursed(self, records: Sequence[AnnualProjectReport]) -> dict[str, float]:
+        """The two disbursement figures over one set of records."""
+        active = [apr for apr in records if apr.status in self._active_status_names]
+        return {
+            "all_time": round(sum(apr.funds_disbursed or 0 for apr in records), 2),
+            "active_cycle": round(sum(apr.funds_disbursed or 0 for apr in active), 2),
+        }
+
+    def funds_disbursed(self) -> dict[str, float]:
+        """Disbursement to date, and the part of it inside the active cycle.
+
+        ``funds_disbursed`` is cumulative per project, so the total over the
+        cycle's records is the since-inception figure.
+        """
+        return self._disbursed(self.records)
+
+    def disbursed_grouped(
+        self, key: Callable[[AnnualProjectReport], Any]
+    ) -> dict[Any, dict[str, float]]:
+        """The same two figures, split by whatever ``key`` says a record is.
+
+        The caller supplies the grouping, so this stays arithmetic and knows
+        nothing about what it is being grouped by. Groups the key does not
+        produce are absent; a caller wanting a fixed set of components fills
+        them in.
+        """
+        buckets: dict[Any, list[AnnualProjectReport]] = {}
+        for apr in self.records:
+            buckets.setdefault(key(apr), []).append(apr)
+        return {group: self._disbursed(records) for group, records in buckets.items()}
+
+    def phased_out(self, fields: Sequence[str]) -> float:
+        """Phase-out reported over the cycle, summed across the named columns."""
+        return round(
+            sum(getattr(apr, field) or 0 for apr in self.records for field in fields), 2
+        )
+
+    def disbursed_by_sector_code(self) -> dict[str, float]:
+        """``{sector code: funds disbursed}``, through the export's own grouping."""
+        grouped = self._compute_grouped_data(
+            self.records,
+            "sector_code_denorm",
+            include_odp_co2=False,
+            sheet_type="cumulative",
+        )
+        return {code: data["total_funds_disbursed"] for code, data in grouped}
+
+
+def apr_years_available() -> list[int]:
+    """Every APR year on record, ascending - the ``?apr_year=`` domain."""
+    return list(
+        AnnualProgressReport.objects.order_by("year")
+        .values_list("year", flat=True)
+        .distinct()
+    )
+
+
+def resolve_apr_year(requested: int | None = None) -> int | None:
+    """The reporting cycle this payload describes.
+
+    ``?apr_year=`` wins, else the newest endorsed cycle, else the newest cycle
+    with data. ``None`` means no APR data at all.
+    """
+    if requested is not None:
+        return requested
+    endorsed = get_latest_endorsed_year()
+    if endorsed is not None:
+        return endorsed
+    years = apr_years_available()
+    return years[-1] if years else None
+
+
+def apr_records(
+    year: int | None, country: Country | None = None
+) -> list[AnnualProjectReport]:
+    """Every report in one cycle, on a project this dashboard counts.
+
+    Unfiltered by report status on purpose: a report's status describes where
+    the project had got to that year, and these figures are quoted against the
+    whole portfolio rather than the part of it that was moving.
+
+    The population filter is not optional, though. Without it the disbursement
+    figures would cover projects whose approved funding is excluded, and the
+    two halves of "disbursed against approved" would not describe the same set.
+    """
+    if year is None:
+        return []
+    records = AnnualProjectReport.objects.filter(
+        report__progress_report__year=year,
+        project__in=dashboard_projects(),
+    ).select_related("project__project_type", "project__status", "project__country")
+    if country is not None:
+        records = records.filter(project__country=country)
+    return list(records.order_by("id"))
