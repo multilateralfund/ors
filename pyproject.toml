@@ -150,3 +150,6 @@ min-similarity-lines = "6"
 
 [tool.pylint.REPORTS]
 msg-template = "{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}"
+
+[tool.pyright]
+reportIncompatibleVariableOverride = false

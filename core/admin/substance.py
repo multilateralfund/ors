@@ -7,6 +7,7 @@ from admin_auto_filters.filters import AutocompleteFilterFactory
 
 @admin.register(SubstanceAltName)
 class SubstanceAltNameAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "name",
         "substance__name",
@@ -23,6 +24,7 @@ class SubstanceAltNameAdmin(admin.ModelAdmin):
 
 @admin.register(Substance)
 class SubstanceAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "name",
         "formula",

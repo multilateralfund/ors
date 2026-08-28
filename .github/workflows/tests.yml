@@ -35,6 +35,9 @@ jobs:
       - name: "Show running services"
         run: |
           docker compose ps
+      - name: "Frontend tests"
+        run: |
+          docker compose run --rm --no-deps --entrypoint npm nextjs test
       - name: "Backend tests"
         id: "backendTests"
         run: |

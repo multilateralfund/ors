@@ -287,6 +287,54 @@
         "app_label": "core",
         "model_name": "annualprojectreport"
     },
+     {
+        "permission_codename": "has_pcr_view_access",
+        "permission_name": "Has PCR view access",
+        "app_label": "core",
+        "model_name": "pcr"
+    },
+    {
+        "permission_codename": "has_pcr_edit_access",
+        "permission_name": "Has PCR edit access",
+        "app_label": "core",
+        "model_name": "pcr"
+    },
+    {
+        "permission_codename": "has_pcr_submit_access",
+        "permission_name": "Has PCR submit access",
+        "app_label": "core",
+        "model_name": "pcr"
+    },
+    {
+        "permission_codename": "has_pcr_lock_access",
+        "permission_name": "Has PCR lock access",
+        "app_label": "core",
+        "model_name": "pcr"
+    },
+    {
+        "permission_codename": "has_pcr_unlock_access",
+        "permission_name": "Has PCR unlock access",
+        "app_label": "core",
+        "model_name": "pcr"
+    },
+    {
+        "permission_codename": "has_pcr_admin_log_access",
+        "permission_name": "Has PCR admin log access",
+        "app_label": "core",
+        "model_name": "pcr"
+    },
+    {
+        "permission_codename": "has_project_v2_pcr_mark_pcr_due_access",
+        "permission_name": "Has Project v2 manage 'PCR due' flag",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_pcr_waive_pcr_access",
+        "permission_name": "Has Project v2 manage 'Waive PCR' flag",
+        "app_label": "core",
+        "model_name": "project"
+    },
     {
         "permission_codename": "is_mlfs_user",
         "permission_name": "Is MLFS user",

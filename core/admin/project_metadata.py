@@ -18,6 +18,7 @@ from core.models.project_metadata import (
 
 @admin.register(AlternativeTechnology)
 class AlternativeTechnologyAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = ["name"]
     list_display = ["name"]
     ordering = ["name"]
@@ -25,6 +26,7 @@ class AlternativeTechnologyAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectCluster)
 class ProjectClusterAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = ["name", "code"]
     list_filter = [
         "category",
@@ -53,6 +55,7 @@ class ProjectClusterAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectField)
 class ProjectFieldAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "read_field_name",
         "write_field_name",
@@ -69,6 +72,7 @@ class ProjectFieldAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectSpecificFields)
 class ProjectSpecificFieldsAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "cluster__name",
         "type__name",
@@ -89,6 +93,7 @@ class ProjectSpecificFieldsAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectSector)
 class ProjectSectorAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "name",
     ]
@@ -111,6 +116,7 @@ class ProjectSectorAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectStatus)
 class ProjectStatusAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "name",
     ]
@@ -122,6 +128,7 @@ class ProjectStatusAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectSubmissionStatus)
 class ProjectSubmissionStatusAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "name",
     ]
@@ -133,6 +140,7 @@ class ProjectSubmissionStatusAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectSubSector)
 class ProjectSubSectorAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "name",
     ]
@@ -153,6 +161,7 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectType)
 class ProjectTypeAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "name",
     ]

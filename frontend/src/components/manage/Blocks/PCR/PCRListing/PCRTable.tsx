@@ -12,6 +12,7 @@ const PCRTable = ({
   pcrProjects,
   projectId,
   setProjectId,
+  setPcrId,
   filters,
 }: PCRTableProps) => {
   const gridRef = useRef(null)
@@ -44,12 +45,13 @@ const PCRTable = ({
     pcrProjectsData,
     projectId,
     setProjectId,
+    setPcrId,
   )
 
   return (
     loaded && (
       <ViewTable
-        ref={gridRef}
+        gridRef={gridRef}
         key={JSON.stringify(filters)}
         getRowId={(params) =>
           `${params.data.isMetaproject ? 'metaproject' : 'project'}-${params.data.id}`

@@ -990,9 +990,9 @@ export const getMenus = (
     canViewEnterprises,
     canUpdatePostExcom,
     canTransferProjects,
+    canViewPCR,
     canViewFundingWindow,
     canViewMyaData,
-    canViewProjects,
   } = permissions
   const {
     projectId,
@@ -1065,11 +1065,15 @@ export const getMenus = (
       title: 'Reporting',
       menuItems: [
         { title: 'Annual Progress Reports', url: '/apr' },
+        // {
+        //   title: 'Project Completion Reports',
+        //   url: '/projects-listing/pcr-listing',
+        // },
         {
           title: 'Project Completion Reports',
-          url: '/projects-listing/pcr-listing',
+          url: '/pcr',
+          disabled: !canViewPCR,
         },
-        { title: 'PCR view', url: '/pcr', disabled: !canViewProjects },
       ],
     },
   ]

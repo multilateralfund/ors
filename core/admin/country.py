@@ -6,6 +6,7 @@ from core.models.country import Country
 
 @admin.register(Country)
 class CountryAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "name",
         "name_alt",

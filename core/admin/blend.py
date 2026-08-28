@@ -6,6 +6,7 @@ from core.models.blend import Blend, BlendAltName, BlendComponents
 
 @admin.register(Blend)
 class BlendAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "name",
         "composition",
@@ -45,6 +46,7 @@ class BlendAdmin(admin.ModelAdmin):
 
 @admin.register(BlendAltName)
 class BlendAltNameAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "name",
         "blend__name",
@@ -61,6 +63,7 @@ class BlendAltNameAdmin(admin.ModelAdmin):
 
 @admin.register(BlendComponents)
 class BlendComponentsAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "blend__name",
         "substance__name",

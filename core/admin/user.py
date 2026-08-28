@@ -52,6 +52,7 @@ class UserEditAdminForm(ModelForm):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
+    admin_group = "Auth"
     form = UserEditAdminForm
 
     list_display = [

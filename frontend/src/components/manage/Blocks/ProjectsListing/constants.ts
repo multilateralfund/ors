@@ -70,7 +70,7 @@ export const textAreaClassname =
   textFieldClassName
 
 const baseClassName = defaultProps.FieldProps.className
-const formatClassName = (className: string) => ({
+export const formatClassName = (className: string) => ({
   FieldProps: {
     className: `${baseClassName} ${className}`,
   },

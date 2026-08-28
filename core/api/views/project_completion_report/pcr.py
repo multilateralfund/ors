@@ -1,22 +1,81 @@
+from typing import cast
+import json
+
+from django.shortcuts import get_object_or_404
 from django.db.models import Exists, OuterRef, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, viewsets
+
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import inline_serializer
+
+from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import serializers
 
+# pylint: disable=broad-exception-caught
+
+from core.models import User
 from core.api.filters.project_completion_report import (
     PCRProjectFilter,
     project_has_cooperating_agency_q,
 )
-from core.api.permissions import DenyAll, HasProjectV2ViewAccess
-from core.api.serializers.project_completion_report import PCRProjectListSerializer
+from core.api.permissions import (
+    DenyAll,
+    HasPCRViewAccess,
+    HasPCREditAccess,
+)
+from core.api.serializers.project_completion_report import (
+    PCRCreateSerializer,
+    PCRDelayCategorySerializer,
+    PCRLearnedLessonCategorySerializer,
+    PCRProjectListSerializer,
+    PCRProjectComponentOptionSerializer,
+    PCRDetailSerializer,
+    PCRUpdateSerializer,
+)
 from core.api.views.utils import get_country_regions
 from core.models.country import Country
-from core.models.project import Project
-from core.models.project_completion_report import PCRProject
+from core.models.project import MetaProject, Project
+from core.models.project_completion_report import (
+    PCR,
+    PCRDelayCategory,
+    PCRLearnedLessonCategory,
+    PCRProject,
+    PCRProjectComponentOption,
+)
 
 
-class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class PCRProjectComponentOptionListView(generics.ListAPIView):
+    permission_classes = [HasPCRViewAccess]
+    queryset = PCRProjectComponentOption.objects.order_by("sort_order", "name")
+    serializer_class = PCRProjectComponentOptionSerializer
+
+
+class PCRDelayCategoryListView(generics.ListAPIView):
+    permission_classes = [HasPCRViewAccess]
+    queryset = PCRDelayCategory.objects.order_by("sort_order", "name")
+    serializer_class = PCRDelayCategorySerializer
+
+
+class PCRLearnedLessonCategoryListView(generics.ListAPIView):
+    permission_classes = [HasPCRViewAccess]
+    queryset = PCRLearnedLessonCategory.objects.order_by("sort_order", "name")
+    serializer_class = PCRLearnedLessonCategorySerializer
+
+
+class PCRProjectViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+):
+    parser_classes = (MultiPartParser, FormParser)
+
     serializer_class = PCRProjectListSerializer
     filterset_class = PCRProjectFilter
     filter_backends = [
@@ -44,12 +103,43 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "list_filters"]:
-            return [HasProjectV2ViewAccess]
+        if self.action in ["list", "list_filters", "retrieve"]:
+            return [HasPCRViewAccess]
+        if self.action in ["create", "create_defaults", "update", "partial_update"]:
+            return [HasPCREditAccess]
         return [DenyAll]
 
+    def get_serializer_class(self):
+        match self.action:
+            case "create" | "create_defaults":
+                return PCRCreateSerializer
+            case "retrieve":
+                return PCRDetailSerializer
+            case "update" | "partial_update":
+                return PCRUpdateSerializer
+            case "list":
+                return PCRProjectListSerializer
+            case _:
+                raise ValueError(f"Unmapped or invalid action: '${self.action}'")
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+
+        if "files" in self.request.FILES:
+            files = self.request.FILES.getlist("files")
+        else:
+            files = list(self.request.FILES.values())
+
+        context["files"] = files
+        return context
+
+    def filter_queryset(self, queryset):
+        if self.action in ["retrieve", "update", "partial_update"]:
+            return queryset
+        return super().filter_queryset(queryset)
+
     def _filter_project_permissions_queryset(self, queryset):
-        user = self.request.user
+        user = cast(User, self.request.user)
         if user.is_superuser:
             return queryset
 
@@ -73,6 +163,14 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         return queryset.none()
 
     def get_queryset(self):
+        if self.action in ["retrieve", "update", "partial_update"]:
+            return PCR.objects.select_related("meta_project").prefetch_related(
+                "pcr_projects",
+                "pcr_projects__alternative_technologies",
+                "pcr_projects__enterprises",
+                "pcr_projects__equipments",
+            )
+
         pcr_required_project = Project.objects.filter(
             pk=OuterRef("project_id")
         ).pcr_required()
@@ -173,3 +271,160 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             "pcr_due": self._get_pcr_due_values(queryset),
         }
         return Response(result)
+
+    @staticmethod
+    def _build_initial_data(meta_project, pcr):
+        if pcr:
+            return {
+                "meta_project_id": meta_project.id,
+                "country": meta_project.country.id,
+                "decisions": [decision.id for decision in pcr.decisions.all()],
+                "project_date_approved": pcr.project_date_approved,
+                "project_date_completion": pcr.project_date_completion,
+                "phase_out_ods_approved": pcr.phase_out_ods_approved,
+                "phase_out_ods_actual": pcr.phase_out_ods_actual,
+                "phase_out_co2_eq_t_approved": pcr.phase_out_co2_eq_t_approved,
+                "phase_out_co2_eq_t_actual": pcr.phase_out_co2_eq_t_actual,
+                "total_number_of_enterprises": pcr.total_number_of_enterprises,
+                "total_number_of_trainnes": meta_project.total_number_of_trainnes,
+            }
+
+        first_project = meta_project.projects.order_by("date_created").first()
+        first_project_version_3_date_approved = getattr(
+            first_project.get_version(3), "date_approved", None
+        )
+        return {
+            "meta_project_id": meta_project.id,
+            "country": meta_project.country.id,
+            "decisions": [
+                project.post_excom_decision.id
+                for project in meta_project.projects.filter(
+                    post_excom_decision__isnull=False
+                )
+            ],
+            "project_date_approved": first_project_version_3_date_approved,
+            "project_date_completion": first_project.date_completion,
+            "phase_out_ods_approved": meta_project.phase_out_odp,
+            "phase_out_ods_actual": None,  # no field on meta_project
+            "phase_out_co2_eq_t_approved": meta_project.phase_out_co2_eq_t,
+            "phase_out_co2_eq_t_actual": None,  # no field on meta_project
+            "total_number_of_enterprises": 0,
+            "total_number_of_trainnes": meta_project.total_number_of_trainnes,
+        }
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="meta_project_id",
+                location=OpenApiParameter.QUERY,
+                description="""Returns the initial information for the PCR
+                            Overview section using meta project information""",
+                type=OpenApiTypes.INT,
+                required=True,
+            ),
+            OpenApiParameter(
+                name="pcr_id",
+                location=OpenApiParameter.QUERY,
+                description="""If the PCR already exists, it will first attempt
+                                to get the information from the PCR fields""",
+                type=OpenApiTypes.INT,
+                required=False,
+            ),
+        ],
+    )
+    @action(methods=["GET"], detail=False, url_path="create")
+    def create_defaults(self, request, *_args, **_kwargs):
+        meta_project_id = request.query_params.get("meta_project_id")
+        if not meta_project_id:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        meta_project = get_object_or_404(MetaProject, pk=meta_project_id)
+
+        pcr_id = request.query_params.get("pcr_id")
+        pcr = None
+        if pcr_id:
+            pcr = get_object_or_404(PCR, pk=pcr_id)
+        initial_data = self._build_initial_data(meta_project, pcr)
+        return Response(initial_data)
+
+    @extend_schema(
+        description="""
+        This endpoint is used create a PCR with all its nested objects.
+        The PCRSupportingEvidence also receives files and as such, the endpoint
+        will receive data in the multipart/form-data format.
+        """,
+        request={
+            "multipart/form-data": inline_serializer(
+                name="MultipleFilesValidationRequest",
+                fields={
+                    "files": serializers.ListField(
+                        child=serializers.FileField(),
+                        required=True,
+                        help_text="List of documents",
+                    ),
+                    "metadata": PCRCreateSerializer(),
+                },
+            )
+        },
+    )
+    def create(self, request, *_args, **_kwargs):
+        raw_metadata = request.data.get("metadata")
+        if isinstance(raw_metadata, str):
+            try:
+                metadata = json.loads(raw_metadata)
+            except Exception:
+                return Response(
+                    {"detail": "invalid metadata JSON"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            metadata = raw_metadata or {}
+
+        serializer = self.get_serializer(data=metadata)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    @extend_schema(
+        description="""
+        This endpoint updates a PCR with all its nested objects.
+        The PCRSupportingEvidence also receives files and as such, the endpoint
+        will receive data in the multipart/form-data format.
+        """,
+        request={
+            "multipart/form-data": inline_serializer(
+                name="MultipleFilesValidationRequestUpdate",
+                fields={
+                    "files": serializers.ListField(
+                        child=serializers.FileField(),
+                        required=False,
+                        help_text="List of documents",
+                    ),
+                    "metadata": PCRUpdateSerializer(),
+                },
+            )
+        },
+    )
+    def update(self, request, *args, **kwargs):
+        raw_metadata = request.data.get("metadata")
+        if isinstance(raw_metadata, str):
+            try:
+                metadata = json.loads(raw_metadata)
+            except Exception:
+                return Response(
+                    {"detail": "invalid metadata JSON"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            metadata = raw_metadata or {}
+
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=metadata, partial=kwargs.get("partial", False)
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)

@@ -131,7 +131,22 @@ from core.api.views.projects_v2 import (
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
 )
+from core.api.views.project_completion_report.metadata import (
+    PCRRatingView,
+    PCRCompletedByView,
+    PCRDelayCategoryView,
+    PCREntityView,
+    PCRGoalView,
+    PCRLearnedLessonCategoryView,
+    PCRProjectComponentOptionView,
+    PCRSupportingEvidenceSectionView,
+)
 from core.api.views.project_completion_report.pcr import PCRProjectViewSet
+from core.api.views.project_completion_report.pcr import (
+    PCRDelayCategoryListView,
+    PCRLearnedLessonCategoryListView,
+    PCRProjectComponentOptionListView,
+)
 from core.api.views.project_completion_report.pcr_metaprojects import (
     PCRMetaprojectsViewSet,
 )
@@ -304,6 +319,61 @@ urlpatterns = [
         "project-settings/",
         ProjectSettingsView.as_view(),
         name="project-settings",
+    ),
+    path(
+        "project-completion-reports/project-component-options/",
+        PCRProjectComponentOptionListView.as_view(),
+        name="pcr-project-component-option-list",
+    ),
+    path(
+        "project-completion-reports/delay-categories/",
+        PCRDelayCategoryListView.as_view(),
+        name="pcr-delay-category-list",
+    ),
+    path(
+        "project-completion-reports/learned-lesson-categories/",
+        PCRLearnedLessonCategoryListView.as_view(),
+        name="pcr-learned-lesson-category-list",
+    ),
+    path(
+        "project-completion-report/rating/",
+        PCRRatingView.as_view(),
+        name="project-completion-report-rating",
+    ),
+    path(
+        "project-completion-report/completed-by/",
+        PCRCompletedByView.as_view(),
+        name="project-completion-report-completed-by",
+    ),
+    path(
+        "project-completion-report/entity/",
+        PCREntityView.as_view(),
+        name="project-completion-report-entity",
+    ),
+    path(
+        "project-completion-report/delay-category/",
+        PCRDelayCategoryView.as_view(),
+        name="project-completion-report-delay-category",
+    ),
+    path(
+        "project-completion-report/goal/",
+        PCRGoalView.as_view(),
+        name="project-completion-report-goal",
+    ),
+    path(
+        "project-completion-report/learned-lesson-category/",
+        PCRLearnedLessonCategoryView.as_view(),
+        name="project-completion-report-learned-lesson-category",
+    ),
+    path(
+        "project-completion-report/project-component-option/",
+        PCRProjectComponentOptionView.as_view(),
+        name="project-completion-report-project-component-option",
+    ),
+    path(
+        "project-completion-report/supporting-evidence-section/",
+        PCRSupportingEvidenceSectionView.as_view(),
+        name="project-completion-report-supporting-evidence-section",
     ),
     path(
         "agencies/",
