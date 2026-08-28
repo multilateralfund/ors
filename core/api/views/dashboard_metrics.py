@@ -2,8 +2,13 @@
 The Dashboard Metrics endpoints.
 """
 
-from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import views
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+)
+from rest_framework import renderers, views
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -45,6 +50,44 @@ PLACEHOLDER_PARAMETERS = [
     ),
 ]
 
+
+class _WorkbookRenderer(renderers.BaseRenderer):
+    """Declared so ``?format=xlsx`` survives DRF's content negotiation.
+
+    ``format`` is DRF's own renderer-selection parameter, so a value it does
+    not recognise 404s before the view runs. Both responses are built whole by
+    the exporter, so neither renderer is ever asked to render anything.
+    """
+
+    media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    format = "xlsx"
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data
+
+
+class _PageRenderer(_WorkbookRenderer):
+    """The same, for ``?format=html``."""
+
+    media_type = "text/html"
+    format = "html"
+
+
+EXPORT_FORMATS = ("xlsx", "html")
+
+FORMAT_PARAMETERS = [
+    OpenApiParameter(
+        name="format",
+        type=str,
+        enum=list(EXPORT_FORMATS),
+        description=(
+            "`xlsx` downloads a workbook, the default. `html` renders the same "
+            "figures as a page, for reading in the browser without a "
+            "spreadsheet."
+        ),
+    ),
+]
+
 TRUTHY = {"true", "1", "yes"}
 FALSY = {"false", "0", "no"}
 
@@ -60,6 +103,19 @@ def parse_placeholders(request: Request) -> bool:
     if normalised in FALSY:
         return False
     raise ValidationError({"placeholders": f"Expected true or false, got {raw!r}."})
+
+
+def parse_export_format(request: Request) -> str:
+    """``?format=xlsx|html``, defaulting to the workbook, or a 400."""
+    raw = request.query_params.get("format")
+    if raw in (None, ""):
+        return "xlsx"
+    normalised = raw.strip().lower()
+    if normalised in EXPORT_FORMATS:
+        return normalised
+    raise ValidationError(
+        {"format": f"Expected one of {', '.join(EXPORT_FORMATS)}, got {raw!r}."}
+    )
 
 
 def parse_apr_year(request: Request) -> int | None:
@@ -142,17 +198,24 @@ class DashboardMetricsExportView(views.APIView):
     """
     Both pages' figures as a workbook: one sheet for the fund, one for every
     country, a row per figure and a column to write review notes in.
+
+    ``?format=html`` serves the same figures as a page instead, so anyone with
+    a login can read them in the browser without downloading anything.
     """
 
     permission_classes = [IsAuthenticated]
+    renderer_classes = [_WorkbookRenderer, _PageRenderer]
 
     @extend_schema(
         operation_id="dashboard_metrics_export",
-        parameters=APR_PARAMETERS + PLACEHOLDER_PARAMETERS,
-        responses={200: "Excel file download"},
+        parameters=APR_PARAMETERS + PLACEHOLDER_PARAMETERS + FORMAT_PARAMETERS,
+        responses={200: OpenApiResponse(OpenApiTypes.BINARY, "Workbook or page")},
     )
     def get(self, request: Request, *args, **kwargs) -> Response:
-        return DashboardMetricsExport(
+        export = DashboardMetricsExport(
             apr_year=parse_apr_year(request),
             placeholders=parse_placeholders(request),
-        ).export_xls()
+        )
+        if parse_export_format(request) == "html":
+            return export.export_html()
+        return export.export_xls()
