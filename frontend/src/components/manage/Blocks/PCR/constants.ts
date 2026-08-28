@@ -90,6 +90,7 @@ export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   delay_causes: 'Cause of delay',
   learned_lessons: 'Lesson learned',
   gender_mainstreamings: 'Gender mainstreaming',
+  sustainable_development_goals: 'SDG',
 }
 
 export const categoryOpts = [
@@ -136,4 +137,5 @@ export const pcField = 'project_components'
 export const cdField = 'delay_causes'
 export const llField = 'learned_lessons'
 export const ppField = 'gender_mainstreamings'
+export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'

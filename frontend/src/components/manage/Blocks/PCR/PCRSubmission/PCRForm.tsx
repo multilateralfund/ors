@@ -60,7 +60,10 @@ const PCRForm = () => {
       title: 'Gender mainstreaming',
       errors: errors.gender_mainstreaming,
     },
-    sdgs_contribution: { title: 'SDGs (optional)', errors: {} },
+    sdgs_contribution: {
+      title: 'SDGs (optional)',
+      errors: errors.sdgs_contribution,
+    },
     supporting_evidences: { title: 'Other supporting evidence', errors: {} },
   }
 

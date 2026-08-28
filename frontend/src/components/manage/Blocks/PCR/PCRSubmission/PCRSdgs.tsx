@@ -1,24 +1,18 @@
 import { Fragment, useContext, useState } from 'react'
 
-import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import {
   ErrorsList,
   SubmitButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { sdgsField } from '../constants'
-import {
-  getSectionAgencies,
-  formatErrors,
-  getErrorIndex,
-  hasSectionErrors,
-} from '../utils'
+import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
+import { sdgsContributionField, sdgsField } from '../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, map, omit } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
+import { filter, map } from 'lodash'
 import cx from 'classnames'
 
 const PCRSdgs = () => {
@@ -34,6 +28,14 @@ const PCRSdgs = () => {
   const sdgsData = sectionData[crtTab][sdgsField] || []
   const crtAgencyId = sectionData[crtTab].agency_id
   const crtAgencies = getSectionAgencies(agencies, sectionData)
+
+  const { sdgs_contribution: sdgsContributionErrors } = errors
+  const sdgsErrors = sdgsContributionErrors[sdgsContributionField]
+
+  const agencyErrors = map(sdgsErrors[crtAgencyId], 'errors')
+  const formattedAgencyErrors = formatErrors({
+    [sdgsContributionField]: agencyErrors,
+  })
 
   const onAddSdg = (agencyIndex: number) => {
     setPCRData((prevData) => {
@@ -72,6 +74,23 @@ const PCRSdgs = () => {
         ),
       }
     }, sdgsField)
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const errorIndex = getErrorIndex(
+        sectionData,
+        sdgsField,
+        crtAgencyId,
+        sdgIndex,
+      )
+
+      return {
+        ...prevData,
+        [sdgsContributionField]: filter(
+          prevData[sdgsContributionField],
+          (_, index) => index !== errorIndex,
+        ),
+      }
+    })
   }
 
   return (
@@ -91,11 +110,25 @@ const PCRSdgs = () => {
           setCrtTab(newValue)
         }}
       >
-        {crtAgencies.map((agency) => (
-          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
+        {map(crtAgencies, (agency) => (
+          <Tab
+            key={agency.name}
+            aria-controls={agency.name}
+            id={agency.name}
+            label={
+              <TabLabel
+                field={sdgsContributionField}
+                errors={sdgsErrors}
+                {...{ agency }}
+              />
+            }
+          />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
+          <ErrorsList errors={formattedAgencyErrors} />
+        )}
         <div className="flex flex-col gap-y-4">
           {map(sdgsData, (_, sdgIndex) => (
             <Fragment key={sdgIndex}>
@@ -104,14 +137,14 @@ const PCRSdgs = () => {
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="goal_id"
                   options={sdgsOptions}
-                  errors={{}}
+                  errors={agencyErrors}
                   indexes={[crtTab, sdgIndex]}
                   subFields={['', sdgsField]}
                 />
                 <PCRTextAreaWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="description"
-                  errors={{}}
+                  errors={agencyErrors}
                   indexes={[crtTab, sdgIndex]}
                   subFields={['', sdgsField]}
                 />

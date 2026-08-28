@@ -8,13 +8,19 @@ import {
 
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
-import { initialOverviewData } from '@ors/components/manage/Blocks/PCR/constants'
+import {
+  initialOverviewData,
+  ppField,
+  sdgsContributionField,
+  sdgsField,
+} from '@ors/components/manage/Blocks/PCR/constants'
 import {
   PCRData,
   PCRResultsAssessmentData,
   PCRCausesOfDelayData,
   PCRLessonsLearnedData,
   PCRGenderMainstreamingData,
+  PCRSdgsData,
 } from '@ors/components/manage/Blocks/PCR/interfaces'
 import {
   formatAgencyData,
@@ -24,8 +30,17 @@ import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 
-import { filter, groupBy, keys, map, pick, reduce } from 'lodash'
 import { useParams } from 'wouter'
+import {
+  filter,
+  forEach,
+  groupBy,
+  keys,
+  map,
+  mapValues,
+  pick,
+  reduce,
+} from 'lodash'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
@@ -115,15 +130,47 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     const genderMainstreamingData =
       formatAgencyData<PCRGenderMainstreamingData>(
         PCRData.gender_mainstreaming || [],
-        'gender_mainstreamings',
+        ppField,
       )
 
     const agenciesErrors = map(genderMainstreamingData, (data, index) => ({
       agency_id: data.agency_id,
-      errors: errors?.gender_mainstreamings?.[index] ?? {},
+      errors: errors?.[ppField]?.[index] ?? {},
     }))
 
-    return { gender_mainstreamings: groupBy(agenciesErrors, 'agency_id') }
+    return { [ppField]: groupBy(agenciesErrors, 'agency_id') }
+  }
+
+  const formatSDGsErrors = (errors: Record<string, any[]>) => {
+    const data = filter(
+      PCRData.sdgs_contribution || [],
+      (sdg) => sdg.goals.length > 0,
+    )
+    const formattedErrors = reduce(
+      data,
+      (acc: Record<string, any>[], entry, index) => {
+        forEach(entry[sdgsField] as object[], (_, index2) => {
+          acc.push(
+            errors?.[sdgsContributionField]?.[index]?.goals?.[index2] ?? {},
+          )
+        })
+
+        return acc
+      },
+      [],
+    )
+
+    const sdgsData = formatAgencyData<PCRSdgsData>(
+      PCRData.sdgs_contribution || [],
+      sdgsField,
+    )
+
+    const agenciesErrors = map(sdgsData, (data, index) => ({
+      agency_id: data.agency_id,
+      errors: formattedErrors?.[index] ?? {},
+    }))
+
+    return { [sdgsContributionField]: groupBy(agenciesErrors, 'agency_id') }
   }
 
   const groupErrors = (errors: Record<string, any[]>) => {
@@ -136,8 +183,9 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pick(errors, 'project_components'),
     )
     const genderMainstreamingErrors = formatGenderMainstreamingErrors(
-      pick(errors, 'gender_mainstreamings'),
+      pick(errors, ppField),
     )
+    const sdgsErrors = formatSDGsErrors(pick(errors, sdgsContributionField))
 
     return {
       overview: overviewErrors,
@@ -145,6 +193,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       causes_of_delay: projectComponentsErrors.causes_of_delay,
       lessons_learned: projectComponentsErrors.lessons_learned,
       gender_mainstreaming: genderMainstreamingErrors,
+      sdgs_contribution: sdgsErrors,
     }
   }
 
