@@ -199,7 +199,7 @@ const ProjectView = ({
   const { setMpData } = useStore((state) => state.mpData)
 
   useEffect(() => {
-    const formattedMpdata = formatMetaprojectData(metaprojectData)
+    const formattedMpdata = formatMetaprojectData(metaprojectData, ["end_date"])
     setMpData(formattedMpdata)
   }, [metaprojectData])
 

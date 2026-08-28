@@ -1459,6 +1459,7 @@ export const isOtherOdsReplacement = (
 
 export const formatMetaprojectData = (
   metaprojectData: MetaProjectDetailType | null,
+  skipComputed?: string[],
 ) => {
   const result = {} as Record<string, any>
 
@@ -1474,7 +1475,8 @@ export const formatMetaprojectData = (
 
     const fdValue = fdEntry.value
     const computedValue = cfd[key]
-    const finalValue = fdValue === null ? computedValue : fdValue
+    const skipComputedValue = skipComputed?.includes(key) ?? false
+    const finalValue = fdValue == null && !skipComputedValue ? computedValue : fdValue
 
     result[key] =
       fdEntry.type === 'DecimalField'
