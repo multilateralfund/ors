@@ -1065,15 +1065,11 @@ export const getMenus = (
       title: 'Reporting',
       menuItems: [
         { title: 'Annual Progress Reports', url: '/apr' },
-        // {
-        //   title: 'Project Completion Reports',
-        //   url: '/projects-listing/pcr-listing',
-        // },
         {
           title: 'Project Completion Reports',
-          url: '/pcr',
-          disabled: !canViewPCR,
+          url: '/projects-listing/pcr-listing',
         },
+        { title: 'PCR view', url: '/pcr' },
       ],
     },
   ]
