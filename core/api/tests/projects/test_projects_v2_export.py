@@ -588,7 +588,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             f"{headers['Approved Date Completion']}{inv_row}"
         ].value.date() == date(2022, 12, 1)
 
-    def test_modern_extended_date_requires_mya_extended_date(self):
+    def test_extended_date_requires_mya_extended_date(self):
         meta_project = MetaProjectFactory.create(
             type=MetaProject.MetaProjectType.MYA,
             end_date=datetime(2030, 12, 1, tzinfo=timezone.utc),
@@ -606,7 +606,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         writer.mya_is_ongoing = writer.build_mya_ongoing([project])
 
         # pylint: disable-next=protected-access
-        value = writer._get_modern_extended_date(project)
+        value = writer._get_extended_date(project)
 
         assert value is None
 
@@ -725,7 +725,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
     @pytest.mark.parametrize(
         "stored_end_date, project_end_date, expected_end_date",
         [
-            (None, date(2026, 12, 1), date(2026, 12, 1)),
+            (None, date(2026, 12, 1), None),
             (
                 datetime(2025, 6, 30, tzinfo=timezone.utc),
                 date(2030, 12, 1),
@@ -733,7 +733,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             ),
         ],
     )
-    def test_export_inventory_report_derives_mya_completion_date(
+    def test_export_inventory_report_uses_stored_mya_completion_date(
         self,
         admin_user,
         project_approved_status,
@@ -765,21 +765,22 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         row = get_inventory_project_row(sheet, project.id)
 
         assert row is not None
-        assert (
-            sheet[f"{headers['MYA Completion Date']}{row}"].value.date()
-            == expected_end_date
-        )
+        value = sheet[f"{headers['MYA Completion Date']}{row}"].value
+        if expected_end_date:
+            assert value.date() == expected_end_date
+        else:
+            assert value in (None, "")
 
     @pytest.mark.parametrize(
         "date_per_agreement,stored_end_date,project_end_date,status_code,expected_end_date",
         [
-            (None, None, date(2015, 12, 1), "COM", date(2015, 12, 1)),
+            (None, None, date(2015, 12, 1), "COM", None),
             (
                 date(2018, 12, 1),
                 None,
                 date(2007, 12, 1),
                 "COM",
-                date(2007, 12, 1),
+                None,
             ),
             (date(2031, 12, 1), None, None, "ONG", None),
             (
@@ -799,7 +800,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         ],
     )
     # pylint: disable-next=too-many-arguments
-    def test_export_inventory_report_uses_stored_or_computed_mya_completion_date(
+    def test_export_inventory_report_uses_stored_mya_date_for_legacy_project(
         self,
         admin_user,
         project_approved_status,
@@ -991,6 +992,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             post_excom_meeting=MeetingFactory.create(
                 number=206,
                 date=date(2024, 6, 15),
+                end_date=date(2024, 6, 20),
             ),
             date_actual=date(2024, 6, 15),
             date_approved=date(2024, 6, 15),
@@ -1016,6 +1018,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             post_excom_meeting=MeetingFactory.create(
                 number=204,
                 date=date(2024, 4, 15),
+                end_date=date(2024, 4, 20),
             ),
             date_actual=date(2024, 4, 15),
             date_approved=date(2024, 4, 15),
@@ -1032,6 +1035,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             post_excom_meeting=MeetingFactory.create(
                 number=205,
                 date=date(2024, 5, 15),
+                end_date=date(2024, 5, 20),
             ),
             date_actual=date(2024, 5, 15),
             date_approved=date(2024, 5, 15),
@@ -1053,9 +1057,9 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         assert row is not None
 
         expected = {
-            1: {"fund": 20, "psc": 2, "meeting": 204, "date": date(2024, 4, 15)},
-            2: {"fund": 20, "psc": 2, "meeting": 205, "date": date(2024, 5, 15)},
-            3: {"fund": 20, "psc": 2, "meeting": 206, "date": date(2024, 6, 15)},
+            1: {"fund": 20, "psc": 2, "meeting": 204, "date": date(2024, 4, 20)},
+            2: {"fund": 20, "psc": 2, "meeting": 205, "date": date(2024, 5, 20)},
+            3: {"fund": 20, "psc": 2, "meeting": 206, "date": date(2024, 6, 20)},
         }
         currency_format = "#,##0;-#,##0;;@"
         for idx, values in expected.items():
@@ -1080,6 +1084,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
     ):
         approval_date = date(2024, 3, 15)
         transfer_date = date(2025, 6, 16)
+        transfer_end_date = date(2025, 6, 20)
         project = ProjectFactory.create(
             version=3,
             code="TRANSFERRED-CODE",
@@ -1091,7 +1096,7 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             transfer_meeting=MeetingFactory.create(
                 number=304,
                 date=transfer_date,
-                end_date=date(2025, 6, 20),
+                end_date=transfer_end_date,
             ),
             date_approved=approval_date,
             status__name="Transferred",
@@ -1127,7 +1132,8 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
 
         assert sheet[f"{headers['Date Approved 1']}{row}"].value.date() == approval_date
         assert (
-            sheet[f"{headers['Adjustments Date 1']}{row}"].value.date() == transfer_date
+            sheet[f"{headers['Adjustments Date 1']}{row}"].value.date()
+            == transfer_end_date
         )
         visible_zero_format = "#,##0;-#,##0;0;@"
         assert (

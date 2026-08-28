@@ -70,6 +70,17 @@ def is_legacy_project(project: Project):
     return bool(project.legacy_code)
 
 
+def is_2026_imported_project(project: Project):
+    result = False
+    if is_legacy_project(project):
+        created_by = project.version_created_by
+        if not created_by:
+            result = True
+        else:
+            result = created_by.username == "system"
+    return result
+
+
 def is_same_month(first, second):
     return bool(
         first and second and first.year == second.year and first.month == second.month
@@ -616,62 +627,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return result
 
     def _get_extended_date(self, project):
-        # if is_legacy_project(project):
-        #     return self._get_legacy_extended_date(project)
-        return self._get_modern_extended_date(project)
-
-    # def _get_legacy_extended_date(self, project):
-    #     meta_project = project.meta_project
-    #     final_version = project.final_version
-    #
-    #     if (
-    #         not meta_project
-    #         or meta_project.type != MetaProject.MetaProjectType.MYA
-    #         or not meta_project.extended_date_of_completion
-    #     ):
-    #         return None
-    #
-    #     agreement_date = tz_naive(final_version.date_per_agreement)
-    #     project_end_date = tz_naive(final_version.project_end_date)
-    #
-    #     mya_completion_date = tz_naive(meta_project.end_date)
-    #     computed_mya_completion_date = self.mya_completion_dates.get(
-    #         project.meta_project_id
-    #     )
-    #     mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
-    #
-    #     is_transferred = final_version.status and final_version.status.code == "TRF"
-    #     is_closed = final_version.status and final_version.status.code == "CLO"
-    #     is_ongoing = final_version.status and final_version.status.code == "ONG"
-    #
-    #     if (
-    #         (agreement_date and mya_completion_date)
-    #         and is_same_month(agreement_date, mya_completion_date)
-    #         and not is_ongoing
-    #     ):
-    #         return agreement_date
-    #
-    #     if is_same_month(mya_extended_date, mya_completion_date):
-    #         return None
-    #
-    #     if is_same_month(mya_extended_date, computed_mya_completion_date):
-    #         return None
-    #
-    #     if (is_transferred or is_closed) and not agreement_date:
-    #         return None
-    #
-    #     if not agreement_date:
-    #         return mya_extended_date if not project_end_date else None
-    #
-    #     if agreement_date > mya_extended_date and is_ongoing:
-    #         return None
-    #
-    #     if mya_extended_date:
-    #         return max(mya_extended_date, agreement_date)
-    #
-    #     return agreement_date
-
-    def _get_modern_extended_date(self, project):
         meta_project = project.meta_project
 
         result = None
@@ -697,45 +652,14 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return result
 
     def _get_mya_completion_date(self, project):
+        result = None
+
         meta_project = project.meta_project
-        if not meta_project or meta_project.type != MetaProject.MetaProjectType.MYA:
-            return None
 
-        # is_ongoing = project.status and project.status.code == "ONG"
-        # is_transferred = project.status and project.status.code == "TRF"
-        # is_finalised = project.status and project.status.code == "FIN"
+        if meta_project and meta_project.type == MetaProject.MetaProjectType.MYA:
+            result = tz_naive(meta_project.end_date)
 
-        # if project.meta_project_id not in self.mya_is_ongoing:
-        #     return None
-
-        # if project.status.code == "TRF":
-        #     return None
-
-        # if is_legacy_project(project):
-        #     final_version = project.final_version
-        #     agreement_date = tz_naive(final_version.date_per_agreement)
-        #     meta_end_date = tz_naive(meta_project.end_date)
-        #
-        #     mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
-        #
-        #     is_ongoing = final_version.status and final_version.status.code == "ONG"
-        #
-        #     if is_same_month(agreement_date, mya_extended_date):
-        #         agreement_date = None
-        #
-        #     if not is_ongoing and not agreement_date:
-        #         return None
-        #
-        #     if is_ongoing and meta_end_date:
-        #         return max(agreement_date, meta_end_date)
-        #
-        #     return agreement_date
-
-        meta_end_date = tz_naive(meta_project.end_date)
-        if meta_end_date:
-            return meta_end_date
-
-        return self.mya_completion_dates.get(project.meta_project_id)
+        return result
 
     def _get_substance(self, project):
         if is_legacy_project(project):
@@ -1467,7 +1391,17 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         meeting = self._p_adjustment_meeting(project)
         if meeting:
-            result = meeting.date
+            result = meeting.end_date
+
+        return result
+
+    def _get_adjustment_date(self, project):
+        result = None
+
+        if project and is_2026_imported_project(project):
+            result = project.date_approved
+        else:
+            result = self._p_adjustment_meeting_date(project)
 
         return result
 
@@ -1550,7 +1484,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"Adjustments Date {idx}",
                 "type": "date",
                 "cell_format": "MMM-YYYY",
-                "method": lambda project, _: self._p_adjustment_meeting_date(
+                "method": lambda project, _: self._get_adjustment_date(
                     self.get_trf_or_adj_version(project, v_idx)
                 ),
             },
