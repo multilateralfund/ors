@@ -614,7 +614,19 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def _has_approved_funds(self, project, idx):
         result = self._get_approved_funds(project, idx)
 
-        if not result and idx == 1 and self._get_approved_project(project, idx):
+        approved_project = self._get_approved_project(project, idx)
+
+        override_true = approved_project and approved_project.legacy_code in [
+            "CPR/PHA/80/INV/587",
+            "CPR/PHA/80/INV/584",
+            "CPR/PHA/80/INV/586",
+            "CPR/PRO/69/INV/530",
+        ]
+
+        if not result and idx == 1 and approved_project:
+            result = True
+
+        elif not result and override_true:
             result = True
 
         return result
@@ -627,6 +639,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return result
 
     def _get_extended_date(self, project):
+        if project.has_override_extended_date:
+            return project.override_extended_date
+
         meta_project = project.meta_project
 
         result = None

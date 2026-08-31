@@ -37,6 +37,22 @@ def formatted_date(d):
     return d
 
 
+def is_mya_ongoing(meta_project):
+    result = None
+
+    if meta_project:
+        projects = Project.objects.really_all().filter(
+            version__gte=3, meta_project=meta_project, project_end_date__isnull=False
+        )
+
+        for project in projects:
+            if project.status.code == "ONG":
+                result = True
+                break
+
+    return result
+
+
 def compute_mya_completion_date(meta_project):
     result = None
 
@@ -83,6 +99,8 @@ def fetch_project_info(project_id):
     mya_end_date = tz_naive(meta_project.end_date) if meta_project else None
     mya_completion_date = compute_mya_completion_date(meta_project)
 
+    mya_ongoing = is_mya_ongoing(meta_project)
+
     extended_date = (
         tz_naive(meta_project.extended_date_of_completion) if meta_project else None
     )
@@ -98,6 +116,7 @@ def fetch_project_info(project_id):
         "Adjustment": project.adjustment,
         "Project type": project.project_type.code,
         "Metacode": project.metacode,
+        "MYA Ongoing": mya_ongoing,
     }
 
 
@@ -230,6 +249,7 @@ def build_report(invalid_data):
         "End date (MYA)",
         "Computed End date (MYA)",
         "Extended date (MYA)",
+        "MYA Ongoing",
         "Category",
         "Status",
         "Project type",
