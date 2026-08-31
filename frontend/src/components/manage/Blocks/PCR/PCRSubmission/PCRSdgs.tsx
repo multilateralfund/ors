@@ -7,8 +7,8 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import { sdgsContributionField, sdgsField } from '../constants'
+import { getSectionAgencies, formatErrors } from '../utils'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
@@ -76,19 +76,35 @@ const PCRSdgs = () => {
     }, sdgsField)
 
     setErrors((prevData: Record<string, any[]>) => {
-      const errorIndex = getErrorIndex(
-        sectionData,
-        sdgsField,
-        crtAgencyId,
-        sdgIndex,
+      const pcrSdgs = PCRData.sdgs_contribution || []
+      const filteredSdgs = filter(pcrSdgs, (sdg) => sdg.goals.length > 0)
+
+      const crtAgencyIndex = filteredSdgs.findIndex(
+        (entry) => entry.agency_id === crtAgencyId,
       )
+
+      const updatedErrors = map(
+        prevData[sdgsContributionField],
+        (entry, index) =>
+          index === crtAgencyIndex
+            ? {
+                ...entry,
+                goals: filter(
+                  entry.goals,
+                  (_, goalIndex: number) => goalIndex !== sdgIndex,
+                ),
+              }
+            : entry,
+      )
+
+      const crtAgency = pcrSdgs.find((entry) => entry.agency_id === crtAgencyId)
 
       return {
         ...prevData,
-        [sdgsContributionField]: filter(
-          prevData[sdgsContributionField],
-          (_, index) => index !== errorIndex,
-        ),
+        [sdgsContributionField]:
+          crtAgency?.goals?.length === 1
+            ? updatedErrors.filter((_, index) => index !== crtAgencyIndex)
+            : updatedErrors,
       }
     })
   }

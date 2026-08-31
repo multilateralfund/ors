@@ -27,10 +27,11 @@ import {
   cdField,
   llField,
   ppField,
+  sdgsContributionField,
   requiredMessage,
 } from '../constants'
 
-import { flatMap, map, omit, some } from 'lodash'
+import { filter, flatMap, map, omit, some } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
 
 const PCRForm = () => {
@@ -287,6 +288,56 @@ const PCRForm = () => {
       }),
     }))
   }, [JSON.stringify(genderMainstreamingData)])
+
+  const sdgContributionData = PCRData.sdgs_contribution || []
+
+  useEffect(() => {
+    const sdgData = filter(sdgContributionData, (sdg) => sdg.goals.length > 0)
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [sdgsContributionField]: map(sdgData, (sdg, index) => {
+        const sdgIdField = 'goal_id'
+        const sdgTextField = 'description'
+
+        const existingErrors = prev[sdgsContributionField]?.[index] ?? {}
+
+        const updatedErrors = {
+          ...existingErrors,
+          goals: map(sdg.goals, (goal, goalIndex) => {
+            const existingGoalErrors = existingErrors.goals?.[goalIndex] ?? {}
+
+            let goalErrors = { ...existingGoalErrors }
+
+            if (!goal[sdgIdField]) {
+              goalErrors = { ...goalErrors, [sdgIdField]: [requiredMessage] }
+            } else if (goalErrors[sdgIdField]?.includes(requiredMessage)) {
+              goalErrors = omit(goalErrors, [sdgIdField])
+            }
+
+            goalErrors = validateWordCount(
+              goalErrors,
+              sdgTextField,
+              goal[sdgTextField],
+            )
+
+            return goalErrors
+          }),
+        }
+
+        const formattedErrors = Object.fromEntries(
+          Object.entries(updatedErrors).filter(([, value]) => {
+            if (!Array.isArray(value)) {
+              return true
+            }
+
+            return some(value, checkHasErrors)
+          }),
+        )
+        return formattedErrors
+      }),
+    }))
+  }, [JSON.stringify(sdgContributionData)])
 
   return (
     <>

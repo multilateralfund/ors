@@ -30,17 +30,8 @@ import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 
+import { filter, forEach, groupBy, keys, map, pick, reduce } from 'lodash'
 import { useParams } from 'wouter'
-import {
-  filter,
-  forEach,
-  groupBy,
-  keys,
-  map,
-  mapValues,
-  pick,
-  reduce,
-} from 'lodash'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
@@ -142,17 +133,16 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   }
 
   const formatSDGsErrors = (errors: Record<string, any[]>) => {
-    const data = filter(
-      PCRData.sdgs_contribution || [],
-      (sdg) => sdg.goals.length > 0,
-    )
+    const pcrSdgs = PCRData.sdgs_contribution || []
+    const filteredSdgs = filter(pcrSdgs, (sdg) => sdg.goals.length > 0)
+
     const formattedErrors = reduce(
-      data,
+      filteredSdgs,
       (acc: Record<string, any>[], entry, index) => {
-        forEach(entry[sdgsField] as object[], (_, index2) => {
-          acc.push(
-            errors?.[sdgsContributionField]?.[index]?.goals?.[index2] ?? {},
-          )
+        forEach(entry[sdgsField] as object[], (_, subEntryIndex) => {
+          const crtAgencyErrors = errors?.[sdgsContributionField]?.[index]
+
+          acc.push(crtAgencyErrors?.[sdgsField]?.[subEntryIndex] ?? {})
         })
 
         return acc
@@ -160,10 +150,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       [],
     )
 
-    const sdgsData = formatAgencyData<PCRSdgsData>(
-      PCRData.sdgs_contribution || [],
-      sdgsField,
-    )
+    const sdgsData = formatAgencyData<PCRSdgsData>(pcrSdgs, sdgsField)
 
     const agenciesErrors = map(sdgsData, (data, index) => ({
       agency_id: data.agency_id,
