@@ -667,47 +667,47 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         src_model_field="Project.total_phase_out_co2_tonnes",
         compute=lambda context: phase_out(context.projects, TOTAL_PHASE_OUT_CO2),
     ),
-    # Metric(
-    #     metric_id="trend_ods_consumption",
-    #     label="ODS consumption over time",
-    #     section="Consumption & production trends",
-    #     kind=Kind.GROUPED_SERIES,
-    #     unit=Unit.ODP_TONNES,
-    #     disposition=Disposition.COMPUTE,
-    #     formula="per year: backend get_consumption_value over section-A records (ODP)",
-    #     db_source="DB-COMPUTABLE-CP",
-    #     src_model_field="CPRecord.imports/exports/production (section A)",
-    #     compute=trend_ods_consumption,
-    # ),
-    # Metric(
-    #     metric_id="trend_hfc_consumption",
-    #     label="HFC consumption over time",
-    #     section="Consumption & production trends",
-    #     kind=Kind.SERIES,
-    #     unit=Unit.CO2EQ_TONNES,
-    #     disposition=Disposition.COMPUTE,
-    #     formula=(
-    #         "per year: backend get_consumption_value over Annex-F records "
-    #         "(CO2-eq/GWP)"
-    #     ),
-    #     db_source="DB-COMPUTABLE-CP",
-    #     src_model_field="CPRecord (Annex F)",
-    #     compute=trend_hfc_consumption,
-    # ),
-    # Metric(
-    #     metric_id="trend_ods_production",
-    #     label="ODS production over time",
-    #     section="Consumption & production trends",
-    #     kind=Kind.GROUPED_SERIES,
-    #     unit=Unit.ODP_TONNES,
-    #     disposition=Disposition.COMPUTE,
-    #     formula=(
-    #         "per year: sum of the 'production' metric over the country's CP records"
-    #     ),
-    #     db_source="DB-COMPUTABLE-CP",
-    #     src_model_field="CPRecord.production",
-    #     compute=trend_ods_production,
-    # ),
+    Metric(
+        metric_id="trend_ods_consumption",
+        label="ODS consumption over time",
+        section="Consumption & production trends",
+        kind=Kind.GROUPED_SERIES,
+        unit=Unit.ODP_TONNES,
+        disposition=Disposition.COMPUTE,
+        formula="per year: backend get_consumption_value over section-A records (ODP)",
+        db_source="DB-COMPUTABLE-CP",
+        src_model_field="CPRecord.imports/exports/production (section A)",
+        compute=trend_ods_consumption,
+    ),
+    Metric(
+        metric_id="trend_hfc_consumption",
+        label="HFC consumption over time",
+        section="Consumption & production trends",
+        kind=Kind.SERIES,
+        unit=Unit.CO2EQ_TONNES,
+        disposition=Disposition.COMPUTE,
+        formula=(
+            "per year: backend get_consumption_value over Annex-F records "
+            "(CO2-eq/GWP)"
+        ),
+        db_source="DB-COMPUTABLE-CP",
+        src_model_field="CPRecord (Annex F)",
+        compute=trend_hfc_consumption,
+    ),
+    Metric(
+        metric_id="trend_ods_production",
+        label="ODS production over time",
+        section="Consumption & production trends",
+        kind=Kind.GROUPED_SERIES,
+        unit=Unit.ODP_TONNES,
+        disposition=Disposition.COMPUTE,
+        formula=(
+            "per year: sum of the 'production' metric over the country's CP records"
+        ),
+        db_source="DB-COMPUTABLE-CP",
+        src_model_field="CPRecord.production",
+        compute=trend_ods_production,
+    ),
     Metric(
         metric_id="theme_funding",
         label="Funding by project theme",

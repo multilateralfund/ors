@@ -105,7 +105,7 @@ def load_trends() -> CountryProgrammeTrends:
     min_year, max_year = span
     export = CPDataExtractionAllExport()
     existent_reports = export.get_existent_reports(min_year, max_year)
-    consumption_set = export.get_consumption_set(min_year, max_year)
+    consumption_set = export.get_consumption_set(min_year, max_year, list_sort=False)
 
     # Called, not reimplemented, so that the consumption rules and the ODP and
     # GWP conversions keep one definition. Change them there and this follows;
