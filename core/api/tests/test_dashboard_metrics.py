@@ -5,6 +5,8 @@ from datetime import date
 from decimal import Decimal
 from io import BytesIO, StringIO
 
+import json
+
 import openpyxl
 import pytest
 from constance.test import override_config
@@ -17,6 +19,7 @@ from core.api.dashboard_metrics import classify, cp, get_metric, registry, taxon
 from core.api.dashboard_metrics.apr import AprMetrics
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.registry import Disposition
+from core.api.export.dashboard_metrics_export import DashboardMetricsExport
 from core.api.dashboard_metrics.country import COUNTRY_METRICS
 from core.api.dashboard_metrics.fund import FUND_METRICS
 from core.api.tests.base import BaseTest
@@ -2159,6 +2162,81 @@ class TestDashboardMetricsExport(BaseTest):
             "Annex A Group II",
             "Annex B Group I",
         ]
+
+    def page(self, user, **params):
+        self.client.force_authenticate(user=user)
+        response = self.client.get(self.url, {"format": "html", **params})
+        assert response.status_code == 200
+        return response
+
+    def test_it_can_serve_the_same_figures_as_a_page(self, user, brazil):
+        """So a reviewer can read them without a spreadsheet."""
+        response = self.page(user)
+
+        assert response["Content-Type"].startswith("text/html")
+        assert b"dashboard metrics" in response.content.lower()
+
+    def test_the_page_has_a_tab_each_for_the_fund_and_the_countries(self, user, brazil):
+        body = self.page(user).content.decode()
+
+        assert 'data-tab="fund"' in body
+        assert 'data-tab="country"' in body
+
+    def test_every_entry_is_offered_in_the_picker(self, user, brazil):
+        """One country at a time, chosen rather than scrolled to."""
+        body = self.page(user).content.decode()
+
+        assert '<option value="BRA">Brazil</option>' in body
+
+    def test_the_entries_are_carried_as_data_not_markup(self, user, brazil):
+        """Rendering 150-odd countries into the document would be most of the file."""
+        body = self.page(user).content.decode()
+        blob = body.split('id="entries" type="application/json">')[1].split(
+            "</script>"
+        )[0]
+
+        entries = json.loads(blob.replace("\\u003c", "<"))
+        assert "BRA" in entries
+        sections = dict((title, rows) for title, rows in entries["BRA"]["sections"])
+        assert "Regulatory status" in sections
+
+    def test_the_page_is_self_contained(self, user, brazil):
+        """It gets saved and emailed on, so it must not fetch anything.
+
+        Reads the exporter rather than the response: the dev debug toolbar
+        injects a script tag into any HTML that passes through middleware, and
+        that is not part of the artifact.
+        """
+        body = DashboardMetricsExport().export_html().content.decode()
+
+        assert "<style>" in body
+        assert "src=" not in body
+        assert "<link" not in body
+
+    def test_the_page_shows_every_section_the_fund_declares(self, user, brazil):
+        """Laid out under the headings the metrics declare, not a flat list."""
+        body = self.page(user).content.decode()
+        rows = self.rows(self.workbook(user)["Fund"])
+
+        for section in {row["Section"] for row in rows}:
+            assert section in body
+
+    def test_the_page_marks_placeholders(self, user, brazil):
+        """So nobody reads an invented figure as a measurement.
+
+        Counts rendered badges rather than the string: the page's own script
+        builds that markup for the country tab, so it is always in the source.
+        """
+        assert '<span class="ph">' not in self.page(user).content.decode()
+        assert (
+            '<span class="ph">' in self.page(user, placeholders="true").content.decode()
+        )
+
+    def test_an_unknown_format_is_refused(self, user, brazil):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"format": "pdf"})
+        assert response.status_code == 404
 
     def test_nothing_is_marked_a_placeholder_by_default(self, user, brazil):
         rows = self.rows(self.workbook(user)["Fund"])

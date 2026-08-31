@@ -4,7 +4,7 @@
 GET /api/dashboard-metrics/fund/              ?apr_year=2024  ?placeholders=true
 GET /api/dashboard-metrics/countries/
 GET /api/dashboard-metrics/countries/{key}/   ?apr_year=2024  ?placeholders=true
-GET /api/dashboard-metrics/export/            ?apr_year=2024  ?placeholders=true
+GET /api/dashboard-metrics/export/            ?apr_year=2024  ?placeholders=true  ?format=html
 ```
 
 An API to feed metrics for the fund-wide "Our Work" page and the per-country profile page.
@@ -18,7 +18,7 @@ An API to feed metrics for the fund-wide "Our Work" page and the per-country pro
 | `/fund/`            | The fund-wide payload.                                                   |
 | `/countries/`       | List of every addressable entry: 149 countries and 5 aggregate regions. |
 | `/countries/{key}/` | One country's payload.                                                   |
-| `/export/`          | Both pages as an .xlsx workbook, for review away from the API.           |
+| `/export/`          | Both pages as an .xlsx workbook, or `?format=html` as a page.            |
 
 `{key}` is `iso3` for a country (`BRA`) and `abbr` for a region (`AFR`, `ASP`, `EUR`, `LAC`, `GLO`), 
 matched case-insensitively. One route serves both; `entry.entry_type` discriminates.

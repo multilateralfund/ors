@@ -9,9 +9,12 @@ and an empty column to write in.
 from typing import Any, Iterator
 
 import openpyxl
+from django.http import HttpResponse
+from django.utils import timezone
 
 from core.api.dashboard_metrics import get_fund_metrics, iter_country_metrics
-from core.api.export.base import BaseWriter, configure_sheet_print
+from core.api.export.base import WriteOnlyBase, configure_sheet_print
+from core.api.export.dashboard_metrics_page import render_page
 from core.api.utils import workbook_response
 
 SERIES_KINDS = ("series", "grouped_series")
@@ -39,12 +42,20 @@ ENTRY_HEADERS = [
 ]
 
 
-class MetricsWriter(BaseWriter):
+class MetricsWriter(WriteOnlyBase):
     """The declarative writer; every column is described in the headers."""
 
     ROW_HEIGHT = 15
     COLUMN_WIDTH = 20
     header_row_start_idx = 1
+
+    def write_data(self, data):
+        """Append plain values instead of a styled cell object for each -
+        helps with performance with many rows.
+        """
+        keys = [header["id"] for header in self.headers]
+        for record in data:
+            self.sheet.append([record.get(key, "") for key in keys])
 
 
 def _points(pairs: Any) -> str:
@@ -96,6 +107,18 @@ def _figures(metric: dict[str, Any]) -> list[tuple[str, Any]]:
     return list(_leaves(value))
 
 
+def _cell(value: Any) -> Any:
+    """A figure as something a spreadsheet cell and a table cell can both hold.
+
+    Numbers and strings pass through so the spreadsheet keeps them typed;
+    anything else - an empty table, a nested remnant - becomes text, because a
+    cell cannot hold a list.
+    """
+    if value is None or (isinstance(value, (list, dict, str)) and not value):
+        return ""
+    return value if isinstance(value, (int, float, str)) else str(value)
+
+
 def _metric_rows(metric: dict[str, Any], **extra: str) -> Iterator[dict[str, Any]]:
     for component, figure in _figures(metric):
         yield {
@@ -109,7 +132,7 @@ def _metric_rows(metric: dict[str, Any], **extra: str) -> Iterator[dict[str, Any
             # Only ever written onto an invented value, so the column is blank
             # wherever the figure is real.
             "placeholder": "PLACEHOLDER" if metric.get("placeholder") else "",
-            "value": figure if figure is not None else "",
+            "value": _cell(figure),
             "notes": "",
         }
 
@@ -125,37 +148,50 @@ class DashboardMetricsExport:
     def __init__(self, apr_year: int | None = None, placeholders: bool = False):
         self.apr_year = apr_year
         self.placeholders = placeholders
-        self.wb = openpyxl.Workbook()
+        self.wb = openpyxl.Workbook(write_only=True)
 
     def _sheet(self, title: str, headers: list[dict], rows: Iterator[dict]) -> None:
         sheet = self.wb.create_sheet(title)
         configure_sheet_print(sheet, "landscape")
-        MetricsWriter(sheet, headers).write(list(rows))
+        MetricsWriter(sheet, headers).write(rows)
 
-    def export_xls(self):
-        """The response, with both sheets written."""
+    def _sheets(self) -> Iterator[tuple[str, list[dict], Iterator[dict]]]:
+        """``(title, headers, rows)`` for each sheet, in order.
+
+        Both output formats read this, so the workbook and the page cannot
+        disagree about a figure.
+        """
         fund = get_fund_metrics(apr_year=self.apr_year, placeholders=self.placeholders)
-        self._sheet("Fund", METRIC_HEADERS, _payload_rows(fund))
-
+        yield "Fund", METRIC_HEADERS, _payload_rows(fund)
         # The trends cover the whole portfolio in one pass, so every entry
         # shares one build; see iter_country_metrics.
-        self._sheet(
-            "Countries",
-            ENTRY_HEADERS + METRIC_HEADERS,
-            (
-                row
-                for payload in iter_country_metrics(
-                    apr_year=self.apr_year, placeholders=self.placeholders
-                )
-                for row in _payload_rows(
-                    payload,
-                    key=payload["entry"]["key"],
-                    country=payload["entry"]["name"],
-                    entry_type=payload["entry"]["entry_type"],
-                )
-            ),
+        yield "Countries", ENTRY_HEADERS + METRIC_HEADERS, (
+            row
+            for payload in iter_country_metrics(
+                apr_year=self.apr_year, placeholders=self.placeholders
+            )
+            for row in _payload_rows(
+                payload,
+                key=payload["entry"]["key"],
+                country=payload["entry"]["name"],
+                entry_type=payload["entry"]["entry_type"],
+            )
         )
 
-        # openpyxl opens with a default sheet that nothing was written to.
-        del self.wb[self.wb.sheetnames[0]]
+    def export_html(self):
+        """The same figures laid out as a page, for reading without a spreadsheet."""
+        fund = get_fund_metrics(apr_year=self.apr_year, placeholders=self.placeholders)
+        entries = list(
+            iter_country_metrics(apr_year=self.apr_year, placeholders=self.placeholders)
+        )
+        generated = timezone.now().strftime("%Y-%m-%d %H:%M UTC")
+        return HttpResponse(
+            render_page(fund, entries, generated), content_type="text/html"
+        )
+
+    def export_xls(self):
+        """Both sheets as a workbook."""
+        for title, headers, rows in self._sheets():
+            self._sheet(title, headers, rows)
+        # A write-only workbook opens with no default sheet to remove.
         return workbook_response("Dashboard metrics", self.wb)
