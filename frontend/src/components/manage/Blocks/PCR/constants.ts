@@ -84,7 +84,12 @@ export const pcrFieldsMapping: { [key: string]: string } = {
 }
 
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
+  financial_figures_status_explanation: 'Financial figures status explanation',
+  addresses: 'Address(es) of enterprise(s) and project site(s)',
+  project_goal_achieved_explanation: 'All project goals achieved explanation',
+  rating_explanation: 'Rating explanation',
   additional_comments: 'Additional comment',
+  comment: 'Comment',
   activities: 'Activity',
   project_components: 'Project component',
   delay_causes: 'Cause of delay',
@@ -129,6 +134,12 @@ export const initialOverviewData = {
   completed_by: null,
 }
 
+export const overviewFieldsToValidate = [
+  'financial_figures_status_explanation',
+  'addresses',
+  'project_goal_achieved_explanation',
+  'rating_explanation',
+]
 export const requiredMessage = 'This field is required.'
 export const validWordCountMessage =
   'This field must be between 150 and 250 words.'

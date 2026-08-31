@@ -23,6 +23,7 @@ import {
   map,
   omit,
   reduce,
+  some,
   sumBy,
 } from 'lodash'
 
@@ -326,3 +327,14 @@ export const getSectionAgencies = (agencies: ApiAgency[], sectionData: any) =>
         (entry) => find(agencies, (agency) => agency.id === entry.agency_id)!,
       )
     : []
+
+export const normalizeErrors = (errors: Record<string, any>) =>
+  Object.fromEntries(
+    Object.entries(errors).filter(([, value]) => {
+      if (!Array.isArray(value)) {
+        return true
+      }
+
+      return some(value, checkHasErrors)
+    }),
+  )

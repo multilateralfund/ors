@@ -50,9 +50,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
-  const hasOverviewDefaultErrors = hasErrorMessage(
-    errors.overview.additional_comments,
-  )
+  const hasOverviewDefaultErrors = hasErrorMessage(errors.overview)
   const hasResultsAssessmentDefaultErrors = hasErrorMessage(
     errors.results_assessment,
   )

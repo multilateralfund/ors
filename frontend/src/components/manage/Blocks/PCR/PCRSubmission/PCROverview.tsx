@@ -9,7 +9,7 @@ import { getOtherOptionId } from '../utils'
 
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
-import { map } from 'lodash'
+import { filter, map } from 'lodash'
 
 const PCROverview = () => {
   const sectionIdentifier = 'overview'
@@ -19,6 +19,7 @@ const PCROverview = () => {
     PCRData,
     setPCRData,
     errors,
+    setErrors,
     ratingOptions,
     entityOptions,
     completionReportDoneByOptions,
@@ -65,6 +66,14 @@ const PCROverview = () => {
         },
       }
     }, additionalCommentsField)
+
+    setErrors((prevData: Record<string, any[]>) => ({
+      ...prevData,
+      [additionalCommentsField]: filter(
+        prevData[additionalCommentsField],
+        (_, commentIndex) => index !== commentIndex,
+      ),
+    }))
   }
 
   return (
