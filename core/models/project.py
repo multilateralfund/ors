@@ -1693,7 +1693,7 @@ class Project(models.Model):
         ProjectFile.objects.filter(project=self).update(project=archieved_project)
 
     def __str__(self):
-        return self.title
+        return f"{self.title} (Version: {self.version})"
 
     @property
     def final_version(self):

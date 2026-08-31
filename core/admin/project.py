@@ -5,7 +5,8 @@ from rangefilter.filters import (
 
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
-from django.utils.html import format_html_join
+from django.urls import reverse
+from django.utils.html import format_html_join, format_html
 from django.utils.translation import gettext_lazy as _
 
 from core.admin.utils import get_final_display_list
@@ -210,6 +211,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
+            "meta_project",
             "component",
             "progress_reports",
             "projectsubmission",
@@ -227,7 +229,9 @@ class ProjectAdmin(admin.ModelAdmin):
             "transferred_projects",
             "pcr_projects",
         ]
-        return get_final_display_list(Project, exclude)
+
+        leading = ["id", "title", "code", "meta_project_link", "metacode"]
+        return leading + get_final_display_list(Project, exclude + leading)
 
     def get_queryset(self, request):
         return Project.objects.really_all().select_related(
@@ -283,6 +287,15 @@ class ProjectAdmin(admin.ModelAdmin):
         return fields
 
     readonly_fields = ["other_projects_in_component"]
+
+    def meta_project_link(self, obj):
+        if obj.meta_project_id:
+            url = reverse("admin:core_metaproject_change", args=(obj.meta_project_id,))
+            return format_html('<a href="{}">{}</a>', url, obj.meta_project)
+        return "-"
+
+    meta_project_link.short_description = "Meta project"
+    meta_project_link.admin_order_field = "meta_project__id"
 
 
 @admin.register(ProjectProgressReport)
