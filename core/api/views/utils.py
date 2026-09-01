@@ -220,14 +220,14 @@ def get_archive_reports_final_for_years(min_year, max_year):
 
     @return: list of archive reports (country_id, year, max_version)
     """
-    current_reports = (
-        CPReport.objects.filter(
-            year__gte=min_year,
-            year__lte=max_year,
-            status=CPReport.CPReportStatus.FINAL,
-        )
-        .values_list("country_id", "year")
-        .all()
+    # A country-year with a final report is served from CPReport, so its archived
+    # versions are superseded. One subquery rather than one exclude() per final
+    # report: that built a statement with thousands of negated clauses, and grew
+    # with every reporting cycle.
+    has_final_report = CPReport.objects.filter(
+        country_id=models.OuterRef("country_id"),
+        year=models.OuterRef("year"),
+        status=CPReport.CPReportStatus.FINAL,
     )
 
     # get the max version for each archive report (country&yuear)
@@ -236,13 +236,7 @@ def get_archive_reports_final_for_years(min_year, max_year):
         year__gte=min_year,
         year__lte=max_year,
         status=CPReport.CPReportStatus.FINAL,
-    )
-    # exclude the current reports
-    for country, year in current_reports:
-        archive_reports_q = archive_reports_q.exclude(
-            country_id=country,
-            year=year,
-        )
+    ).exclude(models.Exists(has_final_report))
 
     return (
         archive_reports_q.values("country_id", "year")

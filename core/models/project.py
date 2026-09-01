@@ -981,6 +981,16 @@ class Project(models.Model):
         help_text=OLD_FIELD_HELP_TEXT,
     )  # obsolete
 
+    has_override_extended_date = models.BooleanField(
+        default=False,
+        help_text="Used in the inventory report. Overrides the Extended date (MYA)",
+    )
+    override_extended_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Extended date value override.",
+    )
+
     # new fields
     consumption_level_status = models.CharField(
         max_length=256,
@@ -1683,7 +1693,7 @@ class Project(models.Model):
         ProjectFile.objects.filter(project=self).update(project=archieved_project)
 
     def __str__(self):
-        return self.title
+        return f"{self.title} (Version: {self.version})"
 
     @property
     def final_version(self):

@@ -643,13 +643,13 @@ class CPDataExtractionAllExport(views.APIView):
 
         return existent_reports
 
-    def get_consumption_set(self, min_year, max_year):
+    def get_consumption_set(self, min_year, max_year, list_sort=True):
         """
         Get the set of country,year,section pairs for which
             the consumption value should be calculated
         For methyl bromide, the consumption value should be calculated using the sectorial total
         """
-        records = get_final_records_for_years(min_year, max_year)
+        records = get_final_records_for_years(min_year, max_year, list_sort=list_sort)
         return {
             (
                 record.country_programme_report.country.name,
