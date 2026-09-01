@@ -30,6 +30,7 @@ import {
   llField,
   ppField,
   sdgsContributionField,
+  supportingEvidencesField,
   requiredMessage,
 } from '../constants'
 
@@ -68,7 +69,10 @@ const PCRForm = () => {
       title: 'SDGs (optional)',
       errors: errors.sdgs_contribution,
     },
-    supporting_evidences: { title: 'Other supporting evidence', errors: {} },
+    supporting_evidences: {
+      title: 'Other supporting evidence',
+      errors: errors.supporting_evidences,
+    },
   }
 
   const TabLabel = ({ field }: { field: keyof typeof tabMapping }) => (
@@ -341,6 +345,33 @@ const PCRForm = () => {
       }),
     }))
   }, [JSON.stringify(sdgContributionData)])
+
+  const supportingEvidencesData = PCRData[supportingEvidencesField] || []
+
+  useEffect(() => {
+    const evidencesData = flatMap(
+      supportingEvidencesData,
+      ({ evidences }) => evidences,
+    )
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [supportingEvidencesField]: map(evidencesData, (evidence, index) => {
+        const evidenceIdField = 'section_id'
+
+        const existingErrors = prev[supportingEvidencesField]?.[index] ?? {}
+        let updatedErrors = { ...existingErrors }
+
+        if (!evidence[evidenceIdField]) {
+          updatedErrors[evidenceIdField] = [requiredMessage]
+        } else if (updatedErrors[evidenceIdField]?.includes(requiredMessage)) {
+          updatedErrors = omit(updatedErrors, [evidenceIdField])
+        }
+
+        return normalizeErrors(updatedErrors)
+      }),
+    }))
+  }, [JSON.stringify(supportingEvidencesData)])
 
   return (
     <>

@@ -13,6 +13,8 @@ import {
   ppField,
   sdgsContributionField,
   sdgsField,
+  supportingEvidencesField,
+  evidencesField,
 } from '@ors/components/manage/Blocks/PCR/constants'
 import {
   PCRData,
@@ -21,6 +23,7 @@ import {
   PCRLessonsLearnedData,
   PCRGenderMainstreamingData,
   PCRSdgsData,
+  PCRSupportingEvidencesData,
 } from '@ors/components/manage/Blocks/PCR/interfaces'
 import {
   formatAgencyData,
@@ -160,6 +163,20 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     return { [sdgsContributionField]: groupBy(agenciesErrors, 'agency_id') }
   }
 
+  const formatEvidencesErrors = (errors: Record<string, any[]>) => {
+    const evidencesData = formatAgencyData<PCRSupportingEvidencesData>(
+      PCRData.supporting_evidences || [],
+      evidencesField,
+    )
+
+    const agenciesErrors = map(evidencesData, (data, index) => ({
+      agency_id: data.agency_id,
+      errors: errors?.[supportingEvidencesField]?.[index] ?? {},
+    }))
+
+    return { [supportingEvidencesField]: groupBy(agenciesErrors, 'agency_id') }
+  }
+
   const groupErrors = (errors: Record<string, any[]>) => {
     const overviewFields = keys(initialOverviewData)
     const overviewErrors = pick(errors, overviewFields)
@@ -173,6 +190,9 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pick(errors, ppField),
     )
     const sdgsErrors = formatSDGsErrors(pick(errors, sdgsContributionField))
+    const evidencesErrors = formatEvidencesErrors(
+      pick(errors, supportingEvidencesField),
+    )
 
     return {
       overview: overviewErrors,
@@ -181,6 +201,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       lessons_learned: projectComponentsErrors.lessons_learned,
       gender_mainstreaming: genderMainstreamingErrors,
       sdgs_contribution: sdgsErrors,
+      supporting_evidences: evidencesErrors,
     }
   }
 

@@ -81,6 +81,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   qualitative_description: 'Qualitative description',
   prefilled: 'Gender policy for all projects approved from 85th meeting',
   goal_id: 'SDG',
+  section_id: 'Section',
 }
 
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
@@ -96,6 +97,7 @@ export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   learned_lessons: 'Lesson learned',
   gender_mainstreamings: 'Gender mainstreaming',
   sustainable_development_goals: 'SDG',
+  supporting_evidences: 'Supporting evidence',
 }
 
 export const categoryOpts = [
@@ -150,3 +152,5 @@ export const llField = 'learned_lessons'
 export const ppField = 'gender_mainstreamings'
 export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
+export const supportingEvidencesField = 'supporting_evidences'
+export const evidencesField = 'evidences'

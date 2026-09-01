@@ -60,6 +60,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     errors.gender_mainstreaming,
   )
   const hasSDGsDefaultErrors = hasErrorMessage(errors.sdgs_contribution)
+  const hasEvidencesDefaultErrors = hasErrorMessage(errors.supporting_evidences)
 
   const isSaveDisabled =
     !metaProjectId ||
@@ -68,7 +69,8 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     hasCausesOfDelayDefaultErrors ||
     hasLessonsLearnedDefaultErrors ||
     hasGenderMainstreamingDefaultErrors ||
-    hasSDGsDefaultErrors
+    hasSDGsDefaultErrors ||
+    hasEvidencesDefaultErrors
 
   const createPCR = async () => {
     setIsLoading(true)
