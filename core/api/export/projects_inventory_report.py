@@ -72,7 +72,12 @@ def is_legacy_project(project: Project):
 
 def is_2026_imported_project(project: Project):
     result = False
-    if is_legacy_project(project):
+    skip_for = [
+        "IDN/KIP1/227/WB/INV/SRV/96",
+        "IDN/KIP1/226/WB/INV/REF/96",
+        "IDN/KIP1/228/WB/TAS/PMU/96",
+    ]
+    if not skip_for and is_legacy_project(project):
         created_by = project.version_created_by
         if not created_by:
             result = True
