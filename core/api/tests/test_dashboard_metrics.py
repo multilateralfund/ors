@@ -306,7 +306,6 @@ class TestDashboardMetricsCountryIndex(BaseTest):
 class TestDashboardMetricsCountry(BaseTest):
     url = reverse("dashboard-metrics-country", args=["BRA"])
 
-
     def test_country_envelope(self, user, brazil):
         self.client.force_authenticate(user=user)
 

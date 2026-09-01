@@ -376,7 +376,6 @@ class CPHFCHCFCExportBaseView(views.APIView):
         if not filter_list:
             filter_list = []
         filter_list.append(models.Q(section=section))
-
         final_list = get_final_records_for_years(
             year, year, filter_list, list_sort=False
         )
@@ -991,7 +990,12 @@ class CPDataExtractionAllExport(views.APIView):
         return dict(sorted(country_records.items(), key=lambda x: x[0]))
 
     def _get_hfc_consumption_data(
-        self, min_year, max_year, using_consumption_value_set, existent_reports
+        self,
+        min_year,
+        max_year,
+        using_consumption_value_set,
+        existent_reports,
+        list_sort=True,
     ):
         """
         Get HFC consumption data for the given year
@@ -1014,7 +1018,7 @@ class CPDataExtractionAllExport(views.APIView):
         }
         """
         records = get_final_records_for_years(
-            min_year, max_year, [models.Q(section="B")]
+            min_year, max_year, [models.Q(section="B")], list_sort=list_sort
         )
         country_records = {}
         for record in records:
