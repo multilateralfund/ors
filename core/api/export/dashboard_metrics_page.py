@@ -83,9 +83,9 @@ def _series(value: list) -> str:
 
 def _grouped_series(value: dict) -> str:
     parts = []
-    for series in value.values():
-        points = series.get("values") or []
-        if not any(amount for _year, amount in points):
+    for series in value.get("series", []):
+        points = series.get("data") or []
+        if not any(points):
             continue
         parts.append(
             f'<div class="grp"><b>{escape(str(series.get("name", "")))}</b>'

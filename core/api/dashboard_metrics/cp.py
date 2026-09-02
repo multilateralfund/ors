@@ -299,12 +299,23 @@ def _prepare_line_chart_trend(
     grouped_series: GroupedSeries, title: str, subtitle: str
 ) -> dict[str, Any]:
     """Prepare the grouped series data for line chart visualization."""
+
+    if grouped_series is None:
+        return {
+            "type": "line",
+            "title": title,
+            "subtitle": subtitle,
+            "categories": [],
+            "series": [],
+        }
+
     colors = [
         "var(--deep-teal)",
         "var(--purple)",
         "var(--purple-mid)",
         "var(--purple-tint)",
     ]
+
     return {
         "type": "line",
         "title": title,

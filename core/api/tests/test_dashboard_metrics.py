@@ -70,7 +70,7 @@ def approved_project(**kwargs):
 
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0613,C0302
+# pylint: disable=C8008,W0613,C0302,W0123,E8001
 
 # The metric ids, pinned independently of the registry so a silent rename or
 # drop fails here rather than in a consumer.
@@ -1721,9 +1721,13 @@ class TestCountryProgrammeTrends:
         if grouped is None:
             return None
         years: dict = {}
-        for series in grouped.values():
-            for year, value in series["values"]:
-                years[year] = round(years.get(year, 0.0) + value, 2)
+        for series in grouped.get("series", []):
+            for index, year in enumerate(grouped["categories"]):
+                years[year] = round(years.get(year, 0.0) + series["data"][index], 2)
+
+        for series in grouped.get("values", []):
+            for index, year in enumerate(grouped["years"]):
+                years[year] = round(years.get(year, 0.0) + series["values"][index], 2)
         return [[year, value] for year, value in sorted(years.items())]
 
     def test_every_protocol_group_is_present_and_in_order(self):
@@ -1732,19 +1736,17 @@ class TestCountryProgrammeTrends:
         self.record(country, 2020, self.substance(), imports=5)
 
         grouped = cp.load_trends().consumption_odp_by_group("Brazil")
-
-        assert list(grouped) == [
-            "annex_a_group_1",
-            "annex_a_group_2",
-            "annex_b_group_1",
-            "annex_b_group_2",
-            "annex_b_group_3",
-            "annex_c_group_1",
-            "annex_c_group_2",
-            "annex_c_group_3",
-            "annex_e",
+        assert [x["name"] for x in grouped["series"]] == [
+            "Annex A Group I",
+            "Annex A Group II",
+            "Annex B Group I",
+            "Annex B Group II",
+            "Annex B Group III",
+            "Annex C Group I",
+            "Annex C Group II",
+            "Annex C Group III",
+            "Annex E",
         ]
-        assert grouped["annex_c_group_1"]["name"] == "Annex C Group I"
 
     def test_groups_the_export_folds_together_are_kept_apart(self):
         """Annex A I and Annex B I both read "CFC" upstream; here they do not."""
@@ -1763,9 +1765,11 @@ class TestCountryProgrammeTrends:
         )
 
         grouped = cp.load_trends().consumption_odp_by_group("Brazil")
+        # Annex A Group I
+        assert grouped["series"][0]["data"] == [10.0]
 
-        assert grouped["annex_a_group_1"]["values"] == [[2020, 10.0]]
-        assert grouped["annex_b_group_1"]["values"] == [[2020, 3.0]]
+        # Annex B Group I
+        assert grouped["series"][2]["data"] == [3.0]
 
     def test_the_groups_account_for_every_tonne_reported(self):
         """Splitting the series must not lose or invent a tonne."""
@@ -1787,8 +1791,10 @@ class TestCountryProgrammeTrends:
 
         # Checked against what the fixture reported, not against a second
         # reading of the same structure.
-        assert dict(grouped["annex_a_group_1"]["values"])[2020] == 10.0
-        assert dict(grouped["annex_a_group_2"]["values"])[2020] == 4.0
+        # Annex A Group I
+        assert grouped["series"][0]["data"][0] == 10.0
+        # Annex A Group II
+        assert grouped["series"][1]["data"][0] == 4.0
         assert self.totals(grouped) == [[2020, 14.0]]
 
     def test_a_group_outside_the_nine_is_disclosed_not_dropped(self):
@@ -1802,7 +1808,8 @@ class TestCountryProgrammeTrends:
         )
 
         grouped = cp.load_trends().consumption_odp_by_group("Brazil")
-        assert grouped["other"]["values"] == [[2020, 7.0]]
+        # Other substances
+        assert grouped["series"][9]["data"] == [7.0]
 
     def test_the_residual_is_absent_when_it_holds_nothing(self):
         """No spurious empty series on the chart for most countries."""
@@ -1831,7 +1838,6 @@ class TestCountryProgrammeTrends:
         substance = self.substance(odp=2)
         self.record(country, 2021, substance, imports=10, exports=4)
         self.record(country, 2020, substance, imports=5)
-
         assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) == [
             [2020, 10.0],
             [2021, 12.0],
@@ -1853,7 +1859,7 @@ class TestCountryProgrammeTrends:
         self.record(self.country(), 2021, self.substance(), imports=5)
         CountryFactory(name="Chad", iso3="TCD")
 
-        assert self.totals(cp.load_trends().consumption_odp_by_group("Chad")) is None
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Chad")) == []
 
     def test_methyl_bromide_counts_only_its_non_exempt_usage(self):
         """QPS is exempt under the Protocol; the export already knows that."""
@@ -1901,7 +1907,6 @@ class TestCountryProgrammeTrends:
     def test_production_is_converted_to_odp(self):
         country = self.country()
         self.record(country, 2021, self.substance(odp=3), production=4)
-
         assert self.totals(cp.load_trends().production_odp_by_group("Brazil")) == [
             [2021, 12.0]
         ]
@@ -1914,7 +1919,7 @@ class TestCountryProgrammeTrends:
         assert self.totals(cp.load_trends().production_odp_by_group("Brazil")) is None
 
     def test_no_reports_at_all_costs_nothing(self):
-        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) is None
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) == []
 
 
 class TestPlaceholders(BaseTest):
@@ -2152,11 +2157,12 @@ class TestDashboardMetricsExport(BaseTest):
 
         rows = self.rows(self.workbook(user)["Countries"])
 
-        groups = [
-            row["Component"]
+        row = [
+            row
             for row in rows
             if row["Key"] == "BRA" and row["Metric"] == "trend_ods_consumption"
-        ]
+        ][0]
+        groups = [entry["name"] for entry in eval(row["Value"])["series"]]
         assert groups[:3] == [
             "Annex A Group I",
             "Annex A Group II",
