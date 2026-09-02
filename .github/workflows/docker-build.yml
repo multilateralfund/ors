@@ -51,7 +51,7 @@ jobs:
 
   build-app:
     needs: changes
-    if: needs.changes.outputs.app == 'true' || inputs.build_app
+    if: always() && (needs.changes.outputs.app == 'true' || inputs.build_app)
     uses: ./.github/workflows/build-image.yml
     with:
       name: app
@@ -66,7 +66,7 @@ jobs:
 
   build-nextjs:
     needs: changes
-    if: needs.changes.outputs.nextjs == 'true' || inputs.build_nextjs
+    if: always() && (needs.changes.outputs.nextjs == 'true' || inputs.build_nextjs)
     uses: ./.github/workflows/build-image.yml
     with:
       name: nextjs
@@ -81,7 +81,7 @@ jobs:
 
   build-nginx:
     needs: changes
-    if: needs.changes.outputs.nginx == 'true' || inputs.build_nginx
+    if: always() && (needs.changes.outputs.nginx == 'true' || inputs.build_nginx)
     uses: ./.github/workflows/build-image.yml
     with:
       name: nginx
@@ -90,7 +90,7 @@ jobs:
 
   build-celery:
     needs: changes
-    if: needs.changes.outputs.celery == 'true' || inputs.build_celery
+    if: always() && (needs.changes.outputs.celery == 'true' || inputs.build_celery)
     uses: ./.github/workflows/build-image.yml
     with:
       name: celery

@@ -18,6 +18,8 @@ jobs:
   changes:
     runs-on: docker-ors
 
+    if: github.event_name != 'workflow_dispatch'
+
     permissions:
       contents: read
 
