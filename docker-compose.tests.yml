@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:15
+    env_file:
+      - .env.test.example
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    expose:
+      - 5432
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - synchronous_commit=off
+      - -c
+      - full_page_writes=off
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app.docker
+      args:
+        REQFILE: requirements-dev.txt
+    env_file:
+      - .env.test.example
+    volumes:
+      - app_data:/app/.fs
+    environment:
+      DJANGO_MIGRATE: "no"
+      CLAMD_ENABLED: "no"
+    entrypoint: []
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nextjs:
+    build:
+      context: .
+      dockerfile: docker/nextjs.docker
+      target: test
+
+volumes:
+  pg-data:
+    driver: local
+  app_data:
+    driver: local

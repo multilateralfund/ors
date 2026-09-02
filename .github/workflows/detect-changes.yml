@@ -11,8 +11,6 @@ on:
         value: ${{ jobs.changes.outputs.nginx }}
       celery:
         value: ${{ jobs.changes.outputs.celery }}
-      libreoffice:
-        value: ${{ jobs.changes.outputs.libreoffice }}
       any:
         value: ${{ jobs.changes.outputs.any }}
 
@@ -30,15 +28,12 @@ jobs:
       nextjs: ${{ steps.filter.outputs.nextjs }}
       nginx: ${{ steps.filter.outputs.nginx }}
       celery: ${{ steps.filter.outputs.celery }}
-      libreoffice: ${{ steps.filter.outputs.libreoffice }}
-
       any: >-
         ${{
           steps.filter.outputs.app == 'true' ||
           steps.filter.outputs.nextjs == 'true' ||
           steps.filter.outputs.nginx == 'true' ||
-          steps.filter.outputs.celery == 'true' ||
-          steps.filter.outputs.libreoffice == 'true'
+          steps.filter.outputs.celery == 'true'
         }}
 
     steps:
@@ -73,6 +68,3 @@ jobs:
               - 'multilateralfund/**'
               - 'requirements.txt'
               - 'docker/celery.docker'
-
-            libreoffice:
-              - 'docker/libreoffice.docker'

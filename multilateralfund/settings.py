@@ -517,7 +517,6 @@ EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS = 365
 CLAMD_ENABLED = env.bool("CLAMD_ENABLED", default=False)
 CLAMD_USE_TCP = env.bool("CLAMD_USE_TCP", default=True)
 CLAMD_TCP_ADDR = env.str("CLAMD_TCP_ADDR", default="localhost")
-UNOSERVER_HOST = env.str("UNOSERVER_HOST", default="")
 
 CELERY_BROKER_URL = env("RABBITMQ_HOST", default="amqp://rabbitmq:5672")
 CELERY_RESULT_BACKEND = env("REDIS_HOST", default="redis://redis:6379")

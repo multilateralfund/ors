@@ -1,3 +1,4 @@
+import logging
 import re
 from dataclasses import replace
 from itertools import count
@@ -71,6 +72,19 @@ def approved_project(**kwargs):
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0613,C0302,W0123,E8001
+
+
+@pytest.fixture(name="core_caplog")
+def _core_caplog(caplog):
+    """Capture records from the deliberately non-propagating core logger."""
+    core_logger = logging.getLogger("core")
+    core_logger.addHandler(caplog.handler)
+    try:
+        with caplog.at_level(logging.DEBUG, logger="core"):
+            yield caplog
+    finally:
+        core_logger.removeHandler(caplog.handler)
+
 
 # The metric ids, pinned independently of the registry so a silent rename or
 # drop fails here rather than in a consumer.
@@ -762,7 +776,7 @@ class TestFundValues(BaseTest):
         assert metrics["inv_months_completion"]["value"] == 12
         assert metrics["noninv_months_completion"]["value"] == 30
 
-    def test_a_metric_that_breaks_costs_only_itself(self, caplog):
+    def test_a_metric_that_breaks_costs_only_itself(self, core_caplog):
         """One bad figure must not take the page down, or say anything."""
         broken = replace(get_metric("funds_approved"), compute=_explode)
 
@@ -780,7 +794,7 @@ class TestFundValues(BaseTest):
             "available",
             "value",
         }
-        assert "funds_approved" in caplog.text
+        assert "funds_approved" in core_caplog.text
 
 
 class TestLvcSplits(BaseTest):
@@ -1030,13 +1044,13 @@ class TestClassification:
 
         assert classify.window_code(window) == "91/66"
 
-    def test_a_contradictory_window_follows_its_decision(self, caplog):
+    def test_a_contradictory_window_follows_its_decision(self, core_caplog):
         window = FundingWindowFactory(
             decision=DecisionFactory(number="91/65"), description="91/66"
         )
 
         assert classify.window_code(window) == "91/65"
-        assert "is named" in caplog.text
+        assert "is named" in core_caplog.text
 
     def test_institutional_strengthening_comes_last(self):
         project = self.project(
@@ -1110,15 +1124,15 @@ class TestClassification:
             project = self.project(sector=ProjectSectorFactory(code=code))
             assert classify.sector_bucket(project) == classify.SECTOR_SERVICING
 
-    def test_a_sector_outside_the_six_is_dropped_and_reported(self, caplog):
+    def test_a_sector_outside_the_six_is_dropped_and_reported(self, core_caplog):
         project = self.project(sector=ProjectSectorFactory(code="NOU"), total_fund=500)
 
         classified = classify.classify([project])
-        with caplog.at_level("INFO"):
+        with core_caplog.at_level("INFO", logger="core"):
             classify.log_unbucketed_sectors(classified)
 
         assert classified[0].sector_bucket is None
-        assert "NOU" in caplog.text
+        assert "NOU" in core_caplog.text
 
 
 class TestInheritedAprAggregations:
@@ -2015,7 +2029,7 @@ class TestPlaceholders(BaseTest):
         for metric_id in self.ATTRIBUTES:
             assert metrics[metric_id]["available"] is False
 
-    def test_a_placeholder_that_breaks_costs_only_itself(self, caplog):
+    def test_a_placeholder_that_breaks_costs_only_itself(self, core_caplog):
         """A demo aid must not be able to take the endpoint down."""
         broken = replace(
             get_metric("attr_nou_name"), compute=None, placeholder=_explode
@@ -2026,7 +2040,7 @@ class TestPlaceholders(BaseTest):
 
         assert rendered["available"] is False
         assert "placeholder" not in rendered
-        assert "attr_nou_name" in caplog.text
+        assert "attr_nou_name" in core_caplog.text
 
     def test_a_real_metric_never_gains_a_stand_in(self, user, brazil):
         """``placeholder`` only fires where ``compute`` gave nothing."""

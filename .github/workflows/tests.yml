@@ -24,43 +24,33 @@ jobs:
     # runs-on: ubuntu-latest
     runs-on: docker-ors-2 # see https://helpdesk.eaudeweb.ro/issues/38046
 
+    env:
+      COMPOSE_FILE: docker-compose.tests.yml
+
     steps:
       - uses: actions/checkout@v6
-      - name: "Configure env"
-        run: |
-          cp .env.test.example .env
-          cp docker-compose.override.test.yml docker-compose.override.yml
-      - name: "Remove leftovers from a previous run"
-        run: |
-          docker compose down -v --remove-orphans || true
-      - name: "Start services"
-        run: |
-          docker compose build --pull
-          docker compose up -d
-          docker compose exec -T app wait_for_services.sh
-      - name: "Show running services"
-        run: |
-          docker compose ps
+
+      - name: "Remove leftovers"
+        run: docker compose down -v --remove-orphans || true
+
       - name: "Frontend tests"
         if: needs.changes.outputs.nextjs == 'true'
         run: |
-          docker compose run --rm --no-deps --entrypoint npm nextjs test
+          docker compose build --pull nextjs
+          docker compose run --rm --no-deps nextjs npm test
+
       - name: "Backend tests"
-        id: "backendTests"
         if: needs.changes.outputs.app == 'true'
         run: |
-          docker compose exec -T app ./manage.py makemigrations --check
-          docker compose exec -T app pytest -vv
-      - name: Display container logs if tests fail
+          docker compose build --pull app
+          docker compose up -d --wait postgres
+          docker compose run --rm --no-deps app \
+            sh -c 'python manage.py makemigrations --check && pytest -vv'
+
+      - name: "Display logs if tests fail"
         if: failure()
-        run: |
-          docker compose logs
-      - name: "Tear down services"
+        run: docker compose logs
+
+      - name: "Tear down"
         if: always()
-        run: |
-          docker compose down -v --remove-orphans
-      - name: "Reclaim Docker disk space on the runner"
-        if: always()
-        run: |
-          docker image prune -a -f
-          docker builder prune -a -f
+        run: docker compose down -v --remove-orphans

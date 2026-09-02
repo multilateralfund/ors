@@ -27,11 +27,6 @@ on:
         type: boolean
         default: false
 
-      build_libreoffice:
-        description: "Build LibreOffice image"
-        type: boolean
-        default: false
-
   workflow_call:
 
 jobs:
@@ -44,7 +39,6 @@ jobs:
       build_nextjs: ${{ github.event_name == 'workflow_dispatch' && inputs.build_nextjs || false }}
       build_nginx: ${{ github.event_name == 'workflow_dispatch' && inputs.build_nginx || false }}
       build_celery: ${{ github.event_name == 'workflow_dispatch' && inputs.build_celery || false }}
-      build_libreoffice: ${{ github.event_name == 'workflow_dispatch' && inputs.build_libreoffice || false }}
     secrets:
       VITE_TENANT_ID: ${{ secrets.STAGING_VITE_TENANT_ID || '' }}
       VITE_FRONTEND_CLIENT_ID: ${{ secrets.STAGING_VITE_FRONTEND_CLIENT_ID || '' }}

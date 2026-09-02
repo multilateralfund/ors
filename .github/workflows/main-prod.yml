@@ -23,11 +23,6 @@ on:
         type: boolean
         default: false
 
-      build_libreoffice:
-        description: "Build LibreOffice image"
-        type: boolean
-        default: false
-
 jobs:
   docker-build:
     uses: ./.github/workflows/docker-build.yml
@@ -39,7 +34,6 @@ jobs:
       build_nextjs: ${{ inputs.build_nextjs }}
       build_nginx: ${{ inputs.build_nginx }}
       build_celery: ${{ inputs.build_celery }}
-      build_libreoffice: ${{ inputs.build_libreoffice }}
 
     secrets:
       VITE_TENANT_ID: ${{ secrets.PROD_VITE_TENANT_ID || '' }}

@@ -8,12 +8,6 @@ services:
       - ./:/app
       - ./static:/app/static
 
-  libreoffice:
-    build:
-      context: .
-      dockerfile: docker/libreoffice.docker
-    container_name: "mlf.libreoffice"
-
   nginx:
     build:
       context: .
