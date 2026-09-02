@@ -106,7 +106,15 @@ class CountryProgrammeTrends:
         produced = any(
             value for series in (by_group or {}).values() for value in series.values()
         )
-        return _grouped_series(by_group) if produced else None
+        return (
+            _prepare_line_chart_grouped_trend(
+                _grouped_series(by_group),
+                "ODS Production",
+                "",
+            )
+            if produced
+            else None
+        )
 
 
 def load_trends(country=None) -> CountryProgrammeTrends:
