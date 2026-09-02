@@ -616,7 +616,7 @@ class CPDataExtractionAllExport(views.APIView):
 
         return workbook_response("CP Data Extraction-All", wb)
 
-    def get_existent_reports(self, min_year, max_year):
+    def get_existent_reports(self, min_year, max_year, country=None):
         final_reports = (
             CPReport.objects.filter(
                 year__gte=min_year,
@@ -626,11 +626,15 @@ class CPDataExtractionAllExport(views.APIView):
             .select_related("country")
             .all()
         )
+        if country:
+            final_reports = final_reports.filter(country=country)
         archive_reports = (
             CPReportArchive.objects.filter(year__gte=min_year, year__lte=max_year)
             .select_related("country")
             .all()
         )
+        if country:
+            archive_reports = archive_reports.filter(country=country)
 
         existent_reports = {}
         for report in list(final_reports) + list(archive_reports):
@@ -642,13 +646,15 @@ class CPDataExtractionAllExport(views.APIView):
 
         return existent_reports
 
-    def get_consumption_set(self, min_year, max_year, list_sort=True):
+    def get_consumption_set(self, min_year, max_year, list_sort=True, country=None):
         """
         Get the set of country,year,section pairs for which
             the consumption value should be calculated
         For methyl bromide, the consumption value should be calculated using the sectorial total
         """
-        records = get_final_records_for_years(min_year, max_year, list_sort=list_sort)
+        records = get_final_records_for_years(
+            min_year, max_year, list_sort=list_sort, country=country
+        )
         return {
             (
                 record.country_programme_report.country.name,
@@ -1048,6 +1054,14 @@ class CPDataExtractionAllExport(views.APIView):
             consumption_value = record.get_consumption_value(
                 (country_name, year, record.section) in using_consumption_value_set
             )
+            if f"consumption_mt_{year}" not in country_records[key]:
+                country_records[key][f"consumption_mt_{year}"] = 0
+            if f"consumption_co2_{year}" not in country_records[key]:
+                country_records[key][f"consumption_co2_{year}"] = 0
+            if f"servicing_{year}" not in country_records[key]:
+                country_records[key][f"servicing_{year}"] = 0
+            if f"usages_total_{year}" not in country_records[key]:
+                country_records[key][f"usages_total_{year}"] = 0
             country_records[key][f"consumption_mt_{year}"] += consumption_value
 
             # convert consumption value to CO₂ equivalent

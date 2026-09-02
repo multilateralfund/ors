@@ -63,7 +63,11 @@ class MetricContext:
     @cached_property
     def cp(self) -> CountryProgrammeTrends:
         """Reported consumption and production, for the whole portfolio at once."""
-        return self.shared_trends if self.shared_trends is not None else load_trends()
+        return (
+            self.shared_trends
+            if self.shared_trends is not None
+            else load_trends(self.country)
+        )
 
     @cached_property
     def apr(self) -> AprMetrics | None:

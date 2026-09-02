@@ -105,7 +105,7 @@ class CountryProgrammeTrends:
         return _grouped_series(by_group) if produced else None
 
 
-def load_trends() -> CountryProgrammeTrends:
+def load_trends(country=None) -> CountryProgrammeTrends:
     """Build the whole portfolio's trends in one pass."""
     span = _reported_years()
     if span is None:
@@ -113,7 +113,7 @@ def load_trends() -> CountryProgrammeTrends:
 
     min_year, max_year = span
     export = CPDataExtractionAllExport()
-    existent_reports = export.get_existent_reports(min_year, max_year)
+    existent_reports = export.get_existent_reports(min_year, max_year, country)
     consumption_set = export.get_consumption_set(min_year, max_year, list_sort=False)
 
     # Called, not reimplemented, so that the consumption rules and the ODP and
@@ -121,7 +121,7 @@ def load_trends() -> CountryProgrammeTrends:
     # rename or re-signature them and this breaks loudly.
     return CountryProgrammeTrends(
         ods_consumption=_consumption_by_group(
-            min_year, max_year, consumption_set, existent_reports
+            min_year, max_year, consumption_set, existent_reports, country
         ),
         hfc_consumption=_totalled(
             export._get_hfc_consumption_data(
@@ -179,7 +179,11 @@ def _seed_reported_years(totals: ByGroup, existent_reports: dict) -> None:
 
 
 def _consumption_by_group(
-    min_year: int, max_year: int, consumption_set: set, existent_reports: dict
+    min_year: int,
+    max_year: int,
+    consumption_set: set,
+    existent_reports: dict,
+    country: Country | None,
 ) -> ByGroup:
     """Section-A consumption in ODP tonnes, per country, group and year."""
     names = dict(Country.objects.values_list("id", "name"))
@@ -188,6 +192,7 @@ def _consumption_by_group(
         max_year,
         [models.Q(substance__isnull=False), models.Q(section=CONSUMPTION_SECTION)],
         list_sort=False,
+        country=country,
     )
 
     totals: ByGroup = {}
@@ -224,6 +229,14 @@ def _consumption_by_group(
         series[report.year] = series.get(report.year, 0.0) + value
 
     _seed_reported_years(totals, existent_reports)
+
+    # remove groups where every value is zero
+    for country_name, by_group in list(totals.items()):
+        for group_key, by_year in list(by_group.items()):
+            if all(float(value) == 0 for value in by_year.values()):
+                del by_group[group_key]
+        if not by_group:
+            del totals[country_name]
     return totals
 
 
@@ -282,6 +295,7 @@ def _grouped_series(
             ],
         }
         for _group_id, key, name in ANNEX_GROUPS
+        if any(by_group.get(key, {}).values())
     ]
 
     residual = by_group.get(OTHER_GROUP_KEY)

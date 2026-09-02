@@ -2,6 +2,7 @@
 The Dashboard Metrics endpoints.
 """
 
+from django.core.cache import cache
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiParameter,
@@ -181,16 +182,32 @@ class DashboardMetricsCountryView(views.APIView):
         responses=DashboardCountryMetricsEnvelopeSerializer,
     )
     def get(self, request: Request, key: str, *args, **kwargs) -> Response:
+
+        apr_year = parse_apr_year(request)
+        placeholders = parse_placeholders(request)
+
+        # include user identity/perm-relevant bits if output varies by user
+        user_part = f"user:{getattr(request.user, 'id', 'anon')}"
+        # short stable cache key; include placeholders / apr_year so different requests cache separately
+        cache_key = f"dashboard:country:{key}:apr={apr_year}:ph={int(bool(placeholders))}:{user_part}"
+
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
         payload = get_country_metrics(
             key,
-            apr_year=parse_apr_year(request),
-            placeholders=parse_placeholders(request),
+            apr_year=apr_year,
+            placeholders=placeholders,
         )
         if payload is None:
             raise NotFound(
                 f"No dashboard entry with key {key!r}. Keys are iso3 for "
                 f"countries and abbr for regions; see /countries/."
             )
+
+        cache.set(cache_key, payload, timeout=60 * 60)
+
         return Response(payload)
 
 

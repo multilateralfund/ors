@@ -1698,6 +1698,16 @@ class TestCountryProgrammeTrends:
             group=GroupFactory(annex=annex, group_id=group_id),
         )
 
+    def substance_other_group(
+        self, name="Halon-1211", odp=3, gwp=0, annex="C", group_id="CII"
+    ):
+        return SubstanceFactory(
+            name=name,
+            odp=odp,
+            gwp=gwp,
+            group=GroupFactory(annex=annex, group_id=group_id),
+        )
+
     def record(self, country, year, substance, section="A", **kwargs):
         kwargs.setdefault("imports", 0)
         kwargs.setdefault("exports", 0)
@@ -1730,22 +1740,15 @@ class TestCountryProgrammeTrends:
                 years[year] = round(years.get(year, 0.0) + series["values"][index], 2)
         return [[year, value] for year, value in sorted(years.items())]
 
-    def test_every_protocol_group_is_present_and_in_order(self):
+    def test_only_groups_that_have_values_are_present_and_in_order(self):
         """The chart's series are the same set for every country."""
         country = self.country()
         self.record(country, 2020, self.substance(), imports=5)
-
+        self.record(country, 2020, self.substance_other_group(), imports=3)
         grouped = cp.load_trends().consumption_odp_by_group("Brazil")
         assert [x["name"] for x in grouped["series"]] == [
-            "Annex A Group I",
-            "Annex A Group II",
-            "Annex B Group I",
-            "Annex B Group II",
-            "Annex B Group III",
             "Annex C Group I",
             "Annex C Group II",
-            "Annex C Group III",
-            "Annex E",
         ]
 
     def test_groups_the_export_folds_together_are_kept_apart(self):
@@ -1769,7 +1772,7 @@ class TestCountryProgrammeTrends:
         assert grouped["series"][0]["data"] == [10.0]
 
         # Annex B Group I
-        assert grouped["series"][2]["data"] == [3.0]
+        assert grouped["series"][1]["data"] == [3.0]
 
     def test_the_groups_account_for_every_tonne_reported(self):
         """Splitting the series must not lose or invent a tonne."""
@@ -1809,7 +1812,7 @@ class TestCountryProgrammeTrends:
 
         grouped = cp.load_trends().consumption_odp_by_group("Brazil")
         # Other substances
-        assert grouped["series"][9]["data"] == [7.0]
+        assert grouped["series"][0]["data"] == [7.0]
 
     def test_the_residual_is_absent_when_it_holds_nothing(self):
         """No spurious empty series on the chart for most countries."""
@@ -2155,6 +2158,22 @@ class TestDashboardMetricsExport(BaseTest):
             production=0,
         )
 
+        CPRecordFactory(
+            country_programme_report=CPReportFactory(
+                country=brazil, year=2020, name="Brazil 2020"
+            ),
+            substance=SubstanceFactory(
+                name="CFC-113",
+                odp=1,
+                gwp=0,
+                group=GroupFactory(annex="B", group_id="BI"),
+            ),
+            blend=None,
+            section="A",
+            imports=10,
+            exports=0,
+            production=0,
+        )
         rows = self.rows(self.workbook(user)["Countries"])
 
         row = [
@@ -2165,7 +2184,6 @@ class TestDashboardMetricsExport(BaseTest):
         groups = [entry["name"] for entry in eval(row["Value"])["series"]]
         assert groups[:3] == [
             "Annex A Group I",
-            "Annex A Group II",
             "Annex B Group I",
         ]
 

@@ -210,7 +210,7 @@ def get_archive_reports_final_for_year(year):
     return archive_reports
 
 
-def get_archive_reports_final_for_years(min_year, max_year):
+def get_archive_reports_final_for_years(min_year, max_year, country=None):
     """
     Get the max version for each archive report that does not have a final report
     This will take into account the range of years [min_year, max_year]
@@ -238,6 +238,8 @@ def get_archive_reports_final_for_years(min_year, max_year):
         status=CPReport.CPReportStatus.FINAL,
     ).exclude(models.Exists(has_final_report))
 
+    if country:
+        archive_reports_q = archive_reports_q.filter(country_id=country.id)
     return (
         archive_reports_q.values("country_id", "year")
         .annotate(max_version=models.Max("version"))
@@ -246,7 +248,9 @@ def get_archive_reports_final_for_years(min_year, max_year):
     )
 
 
-def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=True):
+def get_final_records_for_years(
+    min_year, max_year, filter_list=None, list_sort=True, country=None
+):
     """
     Get all the final records for the years in the range [min_year, max_year]
      - first get the final records for the countries that have a final report (CPReport)
@@ -276,10 +280,11 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
             "country_programme_report__country", "substance__group", "blend"
         )
     )
+    if country:
+        final_records = final_records.filter(country_programme_report__country=country)
 
     # get the max version for each archive report that does not have a final report
-    archive_reports = get_archive_reports_final_for_years(min_year, max_year)
-
+    archive_reports = get_archive_reports_final_for_years(min_year, max_year, country)
     # get all the records for the archive reports
     archive_records = CPRecordArchive.objects.none()
     if archive_reports:
@@ -388,9 +393,9 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
     # if the country does not have the display_substance for the year,
     # then include a 0 value record
     final_list = []
-    for country, year in existent_records:
+    for country_entry, year in existent_records:
         added_chemical_keys = set()
-        for chemical_key, record in existent_records[(country, year)].items():
+        for chemical_key, record in existent_records[(country_entry, year)].items():
             added_chemical_keys.add(chemical_key)
             final_list.append(record)
 
@@ -402,7 +407,7 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
             if chemical_key not in added_chemical_keys:
                 cp_record_data = {
                     "country_programme_report": CPReport(
-                        country_id=country, year=year, version=0
+                        country_id=country_entry, year=year, version=0
                     ),
                     "substance": chemical if row.substance else None,
                     "blend": chemical if row.blend else None,
