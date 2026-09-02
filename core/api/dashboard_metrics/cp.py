@@ -64,7 +64,7 @@ OTHER_GROUP_NAME = "Other substances"
 GROUP_KEY_BY_ID = {group_id: key for group_id, key, _name in ANNEX_GROUPS}
 
 # [[year, value], ...] ascending.
-Series = list[list[float]]
+Series = dict[str, dict[str, dict[int, float]]]
 ByYear = dict[str, dict[int, float]]
 # country -> group key -> year -> value
 ByGroup = dict[str, dict[str, dict[int, float]]]
@@ -85,16 +85,20 @@ class CountryProgrammeTrends:
 
     def consumption_odp_by_group(self, country_name: str) -> GroupedSeries | None:
         """Section-A consumption in ODP tonnes, split by Protocol group."""
-        result = _prepare_line_chart_trend(
+        result = _prepare_line_chart_grouped_trend(
             _grouped_series(self.ods_consumption.get(country_name)),
             "ODS Consumption",
-            "Chart subtitle",
+            "",
         )
         return result
 
     def consumption_co2(self, country_name: str) -> Series | None:
         """Annex-F consumption in CO2-eq tonnes, or ``None`` if data doesn't exist."""
-        return _series(self.hfc_consumption.get(country_name))
+        return _prepare_line_chart_trend(
+            _series(self.hfc_consumption.get(country_name)),
+            "HFC Consumption",
+            "",
+        )
 
     def production_odp_by_group(self, country_name: str) -> GroupedSeries | None:
         """Production ODP tonnes time series, split by Protocol group."""
@@ -309,7 +313,7 @@ def _grouped_series(
     return grouped
 
 
-def _prepare_line_chart_trend(
+def _prepare_line_chart_grouped_trend(
     grouped_series: GroupedSeries, title: str, subtitle: str
 ) -> dict[str, Any]:
     """Prepare the grouped series data for line chart visualization."""
@@ -346,8 +350,39 @@ def _prepare_line_chart_trend(
     }
 
 
+def _prepare_line_chart_trend(
+    series: Series, title: str, subtitle: str
+) -> dict[str, Any]:
+    """Prepare the grouped series data for line chart visualization."""
+
+    if series is None:
+        return {
+            "type": "line",
+            "title": title,
+            "subtitle": subtitle,
+            "categories": [],
+            "series": [],
+        }
+    return {
+        "type": "line",
+        "title": title,
+        "subtitle": subtitle,
+        "categories": series["years"],
+        "series": [
+            {
+                "name": "",
+                "color": "var(--deep-teal)",
+                "data": series["values"],
+            }
+        ],
+    }
+
+
 def _series(by_year: dict[int, float] | None) -> Series | None:
-    """``[[year, value], ...]`` ascending. Zero years are kept."""
+    """`` ["years": [...], "values": [...]]`` ascending. Zero years are kept."""
     if not by_year:
         return None
-    return [[year, round(value, 2)] for year, value in sorted(by_year.items())]
+    return {
+        "years": sorted(by_year.keys()),
+        "values": [round(value, 2) for _, value in sorted(by_year.items())],
+    }

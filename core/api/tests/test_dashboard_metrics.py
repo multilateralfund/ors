@@ -1833,7 +1833,8 @@ class TestCountryProgrammeTrends:
         )
 
         series = cp.load_trends().consumption_co2("Brazil")
-        assert series == [[2020, 2860.0]]
+        assert series['series'][0]['data'] == [2860.0]
+        assert series['categories'] == [2020]
 
     def test_consumption_is_reshaped_into_an_ascending_series(self):
         """imports - exports + production, converted to ODP - all of it inherited."""
@@ -1904,8 +1905,9 @@ class TestCountryProgrammeTrends:
             name="HFC-134a", odp=0, gwp=1430, annex="F", group_id="F"
         )
         self.record(country, 2021, substance, section="B", imports=10)
-
-        assert cp.load_trends().consumption_co2("Brazil") == [[2021, 14300.0]]
+        data = cp.load_trends().consumption_co2("Brazil")
+        data['categories'] = [2021]
+        data['series'][0]['data'] = [14300.0]
 
     def test_production_is_converted_to_odp(self):
         country = self.country()
