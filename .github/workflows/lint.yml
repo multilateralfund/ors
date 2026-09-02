@@ -8,5 +8,10 @@ on:
   pull_request:
 
 jobs:
+  changes:
+    uses: ./.github/workflows/detect-changes.yml
+
   lint-backend:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     uses: ./.github/workflows/lint-backend.yml

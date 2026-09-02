@@ -63,7 +63,7 @@ jobs:
               - 'docker/nginx.conf'
 
             celery:
-              - 'docker/celery.docker'
+              - 'core/**'
+              - 'multilateralfund/**'
               - 'requirements.txt'
-              - 'multilateralfund/settings.py'
-              - 'multilateralfund/celery.py'
+              - 'docker/celery.docker'
