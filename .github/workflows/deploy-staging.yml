@@ -20,7 +20,7 @@ jobs:
       - ors-staging-v2
     steps:
       - uses: actions/checkout@v6
-      
+
       - name: 'Configure SSH'
         run: |
           mkdir -p ~/.ssh/

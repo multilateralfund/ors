@@ -27,11 +27,6 @@ env:
   IMAGE_TAG: 1.0.${{ github.run_number }}
 
 
-concurrency:
-  group: docker-build-${{ github.ref }}
-  cancel-in-progress: true
-
-
 jobs:
   changes:
     runs-on: docker-ors
