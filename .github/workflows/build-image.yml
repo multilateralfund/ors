@@ -112,6 +112,4 @@ jobs:
           docker buildx prune \
             --builder ors-builder \
             --force \
-            --max-used-space 20gb \
-            --min-free-space 15gb \
-            --reserved-space 5gb
+            --keep-storage 20gb
