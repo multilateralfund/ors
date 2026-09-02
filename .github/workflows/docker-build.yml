@@ -56,6 +56,7 @@ jobs:
           filters: |
             app:
               - 'core/**'
+              - 'multilateralfund/**'
               - 'requirements.txt'
               - 'docker/app.docker'
               - 'docker/wait_for_services.sh'
