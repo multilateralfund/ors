@@ -32,6 +32,11 @@ on:
         type: boolean
         default: false
 
+      build_libreoffice:
+        required: false
+        type: boolean
+        default: false
+
     secrets:
       VITE_FRONTEND_CLIENT_ID:
         required: false
@@ -97,12 +102,22 @@ jobs:
       dockerfile: ./docker/celery.docker
       image: ghcr.io/multilateralfund/multilateralfund-celery
 
+  build-libreoffice:
+    needs: changes
+    if: always() && (needs.changes.outputs.libreoffice == 'true' || inputs.build_libreoffice)
+    uses: ./.github/workflows/build-image.yml
+    with:
+      name: libreoffice
+      dockerfile: ./docker/libreoffice.docker
+      image: ghcr.io/multilateralfund/multilateralfund-libreoffice
+
   result:
     needs:
       - build-app
       - build-nextjs
       - build-nginx
       - build-celery
+      - build-libreoffice
     if: always()
     runs-on: ubuntu-latest
 
@@ -116,5 +131,6 @@ jobs:
             needs.build-app.outputs.built == 'true' ||
             needs.build-nextjs.outputs.built == 'true' ||
             needs.build-nginx.outputs.built == 'true' ||
-            needs.build-celery.outputs.built == 'true'
+            needs.build-celery.outputs.built == 'true' ||
+            needs.build-libreoffice.outputs.built == 'true'
           }}" >> "$GITHUB_OUTPUT"

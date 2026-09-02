@@ -7,6 +7,12 @@ services:
       - GUNICORN_CMD_ARGS=--workers=2 --threads=2
     mem_limit: 0
 
+  libreoffice:
+    build:
+      context: .
+      dockerfile: docker/libreoffice.docker
+    mem_limit: 0
+
   nextjs:
     build:
       context: .

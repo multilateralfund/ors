@@ -23,6 +23,11 @@ on:
         type: boolean
         default: false
 
+      build_libreoffice:
+        description: "Build LibreOffice image"
+        type: boolean
+        default: false
+
 jobs:
   docker-build:
     if: github.ref == 'refs/heads/main'
@@ -32,6 +37,7 @@ jobs:
       build_nextjs: ${{ inputs.build_nextjs }}
       build_nginx: ${{ inputs.build_nginx }}
       build_celery: ${{ inputs.build_celery }}
+      build_libreoffice: ${{ inputs.build_libreoffice }}
       # SENTRY_DSN: ${{ vars.PROD_SENTRY_DSN }}
       # SENTRY_ENVIRONMENT: ${{ vars.PROD_SENTRY_ENVIRONMENT }}
 

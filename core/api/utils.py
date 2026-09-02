@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import TypedDict
 
 import django.core.exceptions
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 from django.db.models import Exists, OuterRef, Q
@@ -13,6 +15,7 @@ from django_filters import rest_framework as filters
 
 from django_clamd.validators import validate_file_infection
 from openpyxl.worksheet.page import PageMargins
+from unoserver.client import UnoClient
 
 from core.models import (
     AnnualProgressReport,
@@ -141,22 +144,57 @@ def workbook_pdf_response(name, wb, orientation=None):
         libreoffice_bin = shutil.which("libreoffice")
         if libreoffice_bin is None:
             libreoffice_bin = shutil.which("soffice")
-        subprocess.check_call(
-            [
-                libreoffice_bin,
-                "--headless",
-                "--convert-to",
-                "pdf",
-                str(xlsx_file),
-            ],
-            cwd=tmpdirname,
-            shell=False,
-        )
+
+        if libreoffice_bin is not None:
+            subprocess.check_call(
+                [
+                    libreoffice_bin,
+                    "--headless",
+                    "--convert-to",
+                    "pdf",
+                    str(xlsx_file),
+                ],
+                cwd=tmpdirname,
+                shell=False,
+            )
+        else:
+            host, port = _unoserver_address()
+            converter = UnoClient(
+                server=host,
+                port=port,
+                host_location="remote",
+            )
+            pdf_file.write_bytes(
+                converter.convert(
+                    indata=xlsx_file.read_bytes(),
+                    convert_to="pdf",
+                )
+            )
+
         return FileResponse(
             pdf_file.open("rb"),
             as_attachment=True,
             filename=name + ".pdf",
         )
+
+
+def _unoserver_address():
+    try:
+        host, port = settings.UNOSERVER_HOST.rsplit(":", 1)
+        port_number = int(port)
+    except (AttributeError, TypeError, ValueError) as error:
+        raise ImproperlyConfigured(
+            "UNOSERVER_HOST must use the host:port format when LibreOffice is not "
+            "installed."
+        ) from error
+
+    if not host or not 1 <= port_number <= 65535:
+        raise ImproperlyConfigured(
+            "UNOSERVER_HOST must use the host:port format when LibreOffice is not "
+            "installed."
+        )
+
+    return host, port
 
 
 FileValidationError = TypedDict("FileValidationError", {"name": str, "error": str})

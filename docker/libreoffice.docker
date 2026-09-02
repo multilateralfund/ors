@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1
+
+FROM debian:trixie-slim
+
+ARG UNOSERVER_VERSION=3.7
+
+ENV PATH=/opt/unoserver/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libreoffice-calc-nogui \
+        python3-pip \
+        python3-uno \
+        python3-venv \
+    && python3 -m venv --system-site-packages /opt/unoserver \
+    && /opt/unoserver/bin/pip install --no-cache-dir "unoserver==${UNOSERVER_VERSION}" \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 1000 unoserver
+
+USER unoserver
+
+EXPOSE 2003
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 \
+    CMD ["unoping", "--host", "127.0.0.1", "--port", "2003", "--quiet"]
+
+ENTRYPOINT ["unoserver"]
+CMD ["--interface", "0.0.0.0", "--port", "2003"]

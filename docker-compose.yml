@@ -19,6 +19,7 @@ services:
       - DJANGO_MIGRATE=yes
       - CLAMD_TCP_ADDR=clamav
       - CLAMD_ENABLED=yes
+      - UNOSERVER_HOST=libreoffice:2003
     volumes:
       - app_data:/app/.fs
     expose:
@@ -26,6 +27,7 @@ services:
     depends_on:
       - postgres
       - clamav
+      - libreoffice
     restart: always
     mem_limit: 2g
 
@@ -78,6 +80,13 @@ services:
       - clam_db:/var/lib/clamav
     restart: always
     mem_limit: 2g
+
+  libreoffice:
+    image: ghcr.io/multilateralfund/multilateralfund-libreoffice:${DOCKER_TAG:-latest}
+    expose:
+      - 2003
+    restart: always
+    mem_limit: 1g
 
 volumes:
   pg-data:
