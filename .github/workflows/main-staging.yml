@@ -19,6 +19,7 @@ jobs:
       VITE_APPLICATION_ID_URI: ${{ secrets.STAGING_VITE_APPLICATION_ID_URI || '' }}
   deploy-staging:
     needs: docker-build
+    if: needs.docker-build.outputs.images_changed == 'true'
     uses: ./.github/workflows/deploy-staging.yml
     secrets:
       STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
