@@ -11,6 +11,27 @@ on:
         required: false
         type: string
         default: "production"
+
+      build_app:
+        required: false
+        type: boolean
+        default: false
+
+      build_nextjs:
+        required: false
+        type: boolean
+        default: false
+
+      build_nginx:
+        required: false
+        type: boolean
+        default: false
+
+      build_celery:
+        required: false
+        type: boolean
+        default: false
+
     secrets:
       VITE_FRONTEND_CLIENT_ID:
         required: false
@@ -18,9 +39,10 @@ on:
         required: false
       VITE_APPLICATION_ID_URI:
         required: false
+
     outputs:
-      images_changed:
-        value: ${{ jobs.changes.outputs.any }}
+      images_built:
+        value: ${{ jobs.result.outputs.images_built }}
 
 
 jobs:
@@ -29,7 +51,7 @@ jobs:
 
   build-app:
     needs: changes
-    if: needs.changes.outputs.app == 'true'
+    if: needs.changes.outputs.app == 'true' || inputs.build_app
     uses: ./.github/workflows/build-image.yml
     with:
       dockerfile: ./docker/app.docker
@@ -43,7 +65,7 @@ jobs:
 
   build-nextjs:
     needs: changes
-    if: needs.changes.outputs.nextjs == 'true'
+    if: needs.changes.outputs.nextjs == 'true' || inputs.build_nextjs
     uses: ./.github/workflows/build-image.yml
     with:
       dockerfile: ./docker/nextjs.docker
@@ -57,7 +79,7 @@ jobs:
 
   build-nginx:
     needs: changes
-    if: needs.changes.outputs.nginx == 'true'
+    if: needs.changes.outputs.nginx == 'true' || inputs.build_nginx
     uses: ./.github/workflows/build-image.yml
     with:
       dockerfile: ./docker/nginx.docker
@@ -65,9 +87,30 @@ jobs:
 
   build-celery:
     needs: changes
-    if: needs.changes.outputs.celery == 'true'
+    if: needs.changes.outputs.celery == 'true' || inputs.build_celery
     uses: ./.github/workflows/build-image.yml
     with:
       dockerfile: ./docker/celery.docker
       image: ghcr.io/multilateralfund/multilateralfund-celery
 
+  result:
+    needs:
+      - build-app
+      - build-nextjs
+      - build-nginx
+      - build-celery
+    if: always()
+    runs-on: ubuntu-latest
+
+    outputs:
+      images_built: ${{ steps.result.outputs.images_built }}
+
+    steps:
+      - id: result
+        run: |
+          echo "images_built=${{
+            needs.build-app.outputs.built == 'true' ||
+            needs.build-nextjs.outputs.built == 'true' ||
+            needs.build-nginx.outputs.built == 'true' ||
+            needs.build-celery.outputs.built == 'true'
+          }}" >> "$GITHUB_OUTPUT"

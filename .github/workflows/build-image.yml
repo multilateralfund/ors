@@ -34,12 +34,19 @@ on:
       VITE_APPLICATION_ID_URI:
         required: false
 
+    outputs:
+      built:
+        value: ${{ jobs.build.outputs.built }}
+
 env:
   REGISTRY: ghcr.io
 
 jobs:
   build:
     runs-on: docker-ors
+
+    outputs:
+      built: ${{ steps.result.outputs.built }}
 
     permissions:
       contents: read
@@ -84,3 +91,7 @@ jobs:
             VITE_TENANT_ID=${{ secrets.VITE_TENANT_ID || '' }}
             VITE_FRONTEND_CLIENT_ID=${{ secrets.VITE_FRONTEND_CLIENT_ID || '' }}
             VITE_APPLICATION_ID_URI=${{ secrets.VITE_APPLICATION_ID_URI || '' }}
+
+      - name: Mark image as built
+        id: result
+        run: echo "built=true" >> "$GITHUB_OUTPUT"
