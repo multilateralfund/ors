@@ -7,8 +7,13 @@ import {
   useState,
 } from 'react'
 
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import {
+  SubmitButton,
+  ErrorsList,
+  FieldErrorIndicator,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { textAreaClassname } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import {
   DateInput,
@@ -23,6 +28,16 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import useApi from '@ors/hooks/useApi'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ProjectType } from '@ors/types/api_projects'
+import {
+  groupSummaryOfKeyDataErrors,
+  formatErrors,
+  checkHasErrors,
+  hasSectionErrors,
+} from '../utils'
+import {
+  summaryOfKeyDataField,
+  defaultSummaryOfKeyDataErrors,
+} from '../constants'
 import {
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
@@ -48,6 +63,7 @@ import {
 } from 'ag-grid-community'
 import { FiEdit } from 'react-icons/fi'
 import { IoTrash } from 'react-icons/io5'
+import { find } from 'lodash'
 
 type SubstanceOption = ApiSubstance & { label: string }
 type DisposalTypeOption = { id: number; name: string; label: string }
@@ -85,8 +101,8 @@ const cloneSummaryData = (
   alternative_technologies: data.alternative_technologies.map((entry) => ({
     ...entry,
   })),
-  enterprises: data.enterprises.map((entry) => ({...entry})),
-  equipments: data.equipments.map((entry) => ({...entry})),
+  enterprises: data.enterprises.map((entry) => ({ ...entry })),
+  equipments: data.equipments.map((entry) => ({ ...entry })),
 })
 
 const formatProjectValue = (value: unknown): string => {
@@ -132,10 +148,10 @@ const FieldGroup = ({
   </div>
 )
 
-const EmptyField = ({label}: { label: string }) => (
+const EmptyField = ({ label }: { label: string }) => (
   <div>
     <Label>{label}</Label>
-    <div className="h-10 w-40 rounded-lg border border-solid border-gray-300 bg-gray-50"/>
+    <div className="h-10 w-40 rounded-lg border border-solid border-gray-300 bg-gray-50" />
   </div>
 )
 
@@ -164,7 +180,7 @@ const SubstanceSelect = ({
       isOptionEqualToValue={(option: any, selected: any) =>
         option.id === selected.id
       }
-      FieldProps={{className: 'mb-0 w-full'}}
+      FieldProps={{ className: 'mb-0 w-full' }}
     />
   </div>
 )
@@ -198,21 +214,51 @@ const DisposalTypeSelect = ({
       isOptionEqualToValue={(option: any, selected: any) =>
         option.id === selected.id
       }
-      FieldProps={{className: 'mb-0 w-full'}}
+      FieldProps={{ className: 'mb-0 w-full' }}
     />
   </div>
 )
 
 const PCRSummaryOfKeyData = () => {
-  const {PCRData, pcrMetaproject, setPCRData} = useContext(PCRDataContext)
+  const { PCRData, pcrMetaproject, setPCRData, errors } =
+    useContext(PCRDataContext)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
   const [currentTab, setCurrentTab] = useState(0)
   const [draftSummaryData, setDraftSummaryData] =
     useState<PCRSummaryOfKeyDataType | null>(null)
-  const {data: metaproject, loaded: metaprojectLoaded, loading} = pcrMetaproject
+  const {
+    data: metaproject,
+    loaded: metaprojectLoaded,
+    loading,
+  } = pcrMetaproject
   const projects = metaproject?.projects ?? []
 
-  const {data: substances = []} = useApi<ApiSubstance[]>({
+  const summaryOfKeyDataErrors = errors.summary_of_key_data
+  const projectsErrors = summaryOfKeyDataErrors[summaryOfKeyDataField]
+  const groupedErrors = useMemo(
+    () =>
+      !!editingProjectId
+        ? groupSummaryOfKeyDataErrors(projectsErrors, editingProjectId)
+        : defaultSummaryOfKeyDataErrors,
+    [editingProjectId],
+  )
+
+  const formattedErrors = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(groupedErrors).map(([key, value]) => [
+          key,
+          formatErrors(value),
+        ]),
+      ),
+    [groupedErrors],
+  )
+  const generalErrors = useMemo(
+    () => formattedErrors.general,
+    [formattedErrors],
+  )
+
+  const { data: substances = [] } = useApi<ApiSubstance[]>({
     options: {
       withStoreCache: true,
     },
@@ -223,14 +269,14 @@ const PCRSummaryOfKeyData = () => {
     () =>
       [...(substances ?? [])]
         .sort((first, second) => first.name.localeCompare(second.name))
-        .map((substance) => ({...substance, label: substance.name})),
+        .map((substance) => ({ ...substance, label: substance.name })),
     [substances],
   )
 
   const disposalTypeOptions = [
-    {id: 1, name: 'Disposal type 1', label: 'Disposal type 1'},
-    {id: 2, name: 'Disposal type 2', label: 'Disposal type 2'},
-    {id: 3, name: 'Disposal type 3', label: 'Disposal type 3'},
+    { id: 1, name: 'Disposal type 1', label: 'Disposal type 1' },
+    { id: 2, name: 'Disposal type 2', label: 'Disposal type 2' },
+    { id: 3, name: 'Disposal type 3', label: 'Disposal type 3' },
   ]
 
   const editingProject = projects.find(
@@ -251,14 +297,17 @@ const PCRSummaryOfKeyData = () => {
     setCurrentTab(0)
   }
 
-  const openDialog = useCallback((projectId: number | null | undefined) => {
-    if (!projectId) {
-      return
-    }
-    setEditingProjectId(projectId)
-    setDraftSummaryData(cloneSummaryData(getSummaryData(projectId)))
-    setCurrentTab(0)
-  }, [getSummaryData])
+  const openDialog = useCallback(
+    (projectId: number | null | undefined) => {
+      if (!projectId) {
+        return
+      }
+      setEditingProjectId(projectId)
+      setDraftSummaryData(cloneSummaryData(getSummaryData(projectId)))
+      setCurrentTab(0)
+    },
+    [getSummaryData],
+  )
 
   const saveSummaryData = () => {
     if (!editingProjectId || !draftSummaryData) {
@@ -278,8 +327,8 @@ const PCRSummaryOfKeyData = () => {
           projectDataIndex === -1
             ? [...sectionData, draftSummaryData]
             : sectionData.map((entry, index) =>
-              index === projectDataIndex ? draftSummaryData : entry,
-            ),
+                index === projectDataIndex ? draftSummaryData : entry,
+              ),
       }
     }, 'summary_of_key_data')
     closeDialog()
@@ -291,21 +340,31 @@ const PCRSummaryOfKeyData = () => {
         headerName: 'Project code',
         field: 'code',
         minWidth: 210,
-        cellRenderer: (params: ICellRendererParams<ProjectType>) => (
-          <div className="flex h-full items-center gap-x-2">
+        cellRenderer: (params: ICellRendererParams<ProjectType>) => {
+          const hasErrors = find(
+            Object.entries(projectsErrors),
+            ([key, value]: [string, { errors: Record<string, any> }[]]) =>
+              Number(key) === params.data?.id &&
+              Object.values(value[0].errors).some(checkHasErrors),
+          )
+
+          return (
+            <div className="flex h-full items-center gap-x-2">
               <IconButton
                 aria-label={`Edit project ${params.data?.code ?? ''}`}
                 className="h-7 w-7"
                 onClick={() => openDialog(params.data?.id)}
                 size="small"
               >
-              <FiEdit size={16}/>
-            </IconButton>
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-              {params.value}
-            </span>
-          </div>
-        ),
+                <FiEdit size={16} />
+              </IconButton>
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                {params.value}
+              </span>
+              {!!hasErrors && <SectionErrorIndicator errors={[]} />}
+            </div>
+          )
+        },
       },
       {
         headerName: 'Type',
@@ -382,8 +441,21 @@ const PCRSummaryOfKeyData = () => {
           ),
       },
     ],
-    [openDialog],
+    [openDialog, summaryOfKeyDataErrors],
   )
+
+  const TabLabel = ({ field, label }: { field: string; label: string }) => {
+    const tabErrors = groupedErrors[field as keyof typeof groupedErrors]
+
+    return (
+      <div className="relative flex items-center justify-between gap-x-2">
+        <div className="leading-tight">{label}</div>
+        {!!tabErrors && hasSectionErrors(tabErrors) && (
+          <SectionErrorIndicator errors={[]} />
+        )}
+      </div>
+    )
+  }
 
   const updateSummaryData = (
     updater: (data: PCRSummaryOfKeyDataType) => PCRSummaryOfKeyDataType,
@@ -398,15 +470,13 @@ const PCRSummaryOfKeyData = () => {
     field: keyof PCRAlternativeTechnologyType,
     value: number | null,
   ) => {
-    updateSummaryData(
-      (projectData) => ({
-        ...projectData,
-        alternative_technologies: projectData.alternative_technologies.map(
-          (entry, entryIndex) =>
-            entryIndex === index ? {...entry, [field]: value} : entry,
-        ),
-      }),
-    )
+    updateSummaryData((projectData) => ({
+      ...projectData,
+      alternative_technologies: projectData.alternative_technologies.map(
+        (entry, entryIndex) =>
+          entryIndex === index ? { ...entry, [field]: value } : entry,
+      ),
+    }))
   }
 
   const updateEnterprise = (
@@ -414,28 +484,24 @@ const PCRSummaryOfKeyData = () => {
     field: keyof PCREnterpriseType,
     value: string,
   ) => {
-    updateSummaryData(
-      (projectData) => ({
-        ...projectData,
-        enterprises: projectData.enterprises.map((entry, entryIndex) =>
-          entryIndex === index ? {...entry, [field]: value} : entry,
-        ),
-      }),
-    )
+    updateSummaryData((projectData) => ({
+      ...projectData,
+      enterprises: projectData.enterprises.map((entry, entryIndex) =>
+        entryIndex === index ? { ...entry, [field]: value } : entry,
+      ),
+    }))
   }
   const updateEquipment = (
     index: number,
     field: keyof PCREquipmentType,
     value: PCREquipmentType[typeof field],
   ) => {
-    updateSummaryData(
-      (projectData) => ({
-        ...projectData,
-        equipments: projectData.equipments.map((entry, entryIndex) =>
-          entryIndex === index ? {...entry, [field]: value} : entry,
-        ),
-      }),
-    )
+    updateSummaryData((projectData) => ({
+      ...projectData,
+      equipments: projectData.equipments.map((entry, entryIndex) =>
+        entryIndex === index ? { ...entry, [field]: value } : entry,
+      ),
+    }))
   }
 
   return (
@@ -477,12 +543,16 @@ const PCRSummaryOfKeyData = () => {
               allowScrollButtonsMobile
               TabIndicatorProps={{
                 className: 'h-0',
-                style: {transitionDuration: '150ms'},
+                style: { transitionDuration: '150ms' },
               }}
               value={currentTab}
               onChange={(_, newValue) => setCurrentTab(newValue)}
             >
-              <Tab id="general" aria-controls="general" label="General"/>
+              <Tab
+                id="general"
+                aria-controls="general"
+                label={<TabLabel field="general" label="General" />}
+              />
               <Tab
                 id="alternative-technology"
                 aria-controls="alternative-technology"
@@ -493,338 +563,346 @@ const PCRSummaryOfKeyData = () => {
                 aria-controls="enterprises"
                 label="Enterprises"
               />
-              <Tab id="equipment" aria-controls="equipment" label="Equipment"/>
+              <Tab id="equipment" aria-controls="equipment" label="Equipment" />
             </Tabs>
             <div className="flex flex-col gap-y-6 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
               {currentTab === 0 && (
-                <FieldGroup>
-                <div className="flex flex-wrap gap-x-7 gap-y-4">
-                  <div>
-                    <Label htmlFor={`funds-disbursed-${editingProject.id}`}>
-                      Funds disbursed
-                    </Label>
-                    <FormattedNumberInput
-                      id={`funds-disbursed-${editingProject.id}`}
-                      className="w-40 !m-0"
-                      value={summaryData.funds_disbursed}
-                      withoutDefaultValue={true}
-                      onChange={(event) =>
-                        updateSummaryData(
-                          (projectData) => ({
-                            ...projectData,
-                            funds_disbursed: event.target.value,
-                          }),
-                        )
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label
-                      htmlFor={`planned-date-of-completion-${editingProject.id}`}
-                    >
-                      Planned date of completion
-                    </Label>
-                    <DateInput
-                      id={`planned-date-of-completion-${editingProject.id}`}
-                      className="w-48 !m-0"
-                      value={summaryData.planned_date_of_completion}
-                      onChange={(event) =>
-                        updateSummaryData(
-                          (projectData) => ({
-                            ...projectData,
-                            planned_date_of_completion: event.target.value,
-                          }),
-                        )
-                      }
-                    />
-                  </div>
-                  <EmptyField label="Planned duration (months)"/>
-                  <EmptyField label="Actual duration (months)"/>
-                  <EmptyField label="Delay (months)"/>
-                </div>
-                </FieldGroup>
+                <>
+                  {!!generalErrors && generalErrors.length > 0 && (
+                    <ErrorsList errors={generalErrors} />
+                  )}
+                  <FieldGroup>
+                    <div className="flex flex-wrap gap-x-7 gap-y-4">
+                      <div>
+                        <Label htmlFor={`funds-disbursed-${editingProject.id}`}>
+                          Funds disbursed
+                        </Label>
+                        <div className="flex items-center">
+                          <FormattedNumberInput
+                            id={`funds-disbursed-${editingProject.id}`}
+                            className="!m-0 w-40"
+                            value={summaryData.funds_disbursed}
+                            withoutDefaultValue={true}
+                            onChange={(event) =>
+                              updateSummaryData((projectData) => ({
+                                ...projectData,
+                                funds_disbursed: event.target.value,
+                              }))
+                            }
+                          />
+                          <FieldErrorIndicator
+                            errors={groupedErrors.general}
+                            field="funds_disbursed"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label
+                          htmlFor={`planned-date-of-completion-${editingProject.id}`}
+                        >
+                          Planned date of completion
+                        </Label>
+                        <div className="flex items-center">
+                          <DateInput
+                            id={`planned-date-of-completion-${editingProject.id}`}
+                            className="!m-0 w-48"
+                            value={summaryData.planned_date_of_completion}
+                            onChange={(event) =>
+                              updateSummaryData((projectData) => ({
+                                ...projectData,
+                                planned_date_of_completion: event.target.value,
+                              }))
+                            }
+                          />
+                          <FieldErrorIndicator
+                            errors={groupedErrors.general}
+                            field="planned_date_of_completion"
+                          />
+                        </div>
+                      </div>
+                      <EmptyField label="Planned duration (months)" />
+                      <EmptyField label="Actual duration (months)" />
+                      <EmptyField label="Delay (months)" />
+                    </div>
+                  </FieldGroup>
+                </>
               )}
 
               {currentTab === 1 && (
                 <FieldGroup title="Alternative technology">
-
-                <div className="flex flex-col gap-y-4">
-                  <div className="flex gap-x-7">
-                    <div className="min-w-56 sm:min-w-64">
-                      <Label>Substance converted from</Label>
+                  <div className="flex flex-col gap-y-4">
+                    <div className="flex gap-x-7">
+                      <div className="min-w-56 sm:min-w-64">
+                        <Label>Substance converted from</Label>
+                      </div>
+                      <div className="min-w-56 sm:min-w-64">
+                        <Label>Substance converted to</Label>
+                      </div>
                     </div>
-                    <div className="min-w-56 sm:min-w-64">
-                      <Label>Substance converted to</Label>
-                    </div>
+                    {summaryData.alternative_technologies.map(
+                      (entry, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-wrap items-end gap-x-7 gap-y-4"
+                        >
+                          <SubstanceSelect
+                            id={`substance-from-${editingProject.id}-${index}`}
+                            options={substanceOptions}
+                            value={entry.substance_from}
+                            onChange={(value) =>
+                              updateAlternativeTechnology(
+                                index,
+                                'substance_from',
+                                value,
+                              )
+                            }
+                          />
+                          <SubstanceSelect
+                            id={`substance-to-${editingProject.id}-${index}`}
+                            options={substanceOptions}
+                            value={entry.substance_to}
+                            onChange={(value) =>
+                              updateAlternativeTechnology(
+                                index,
+                                'substance_to',
+                                value,
+                              )
+                            }
+                          />
+                          <IconButton
+                            aria-label="Remove alternative technology"
+                            onClick={() =>
+                              updateSummaryData((projectData) => ({
+                                ...projectData,
+                                alternative_technologies:
+                                  projectData.alternative_technologies.filter(
+                                    (_, entryIndex) => entryIndex !== index,
+                                  ),
+                              }))
+                            }
+                          >
+                            <IoTrash className="fill-gray-400" size={18} />
+                          </IconButton>
+                        </div>
+                      ),
+                    )}
                   </div>
-                  {summaryData.alternative_technologies.map((entry, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-wrap items-end gap-x-7 gap-y-4"
-                    >
-                      <SubstanceSelect
-                        id={`substance-from-${editingProject.id}-${index}`}
-                        options={substanceOptions}
-                        value={entry.substance_from}
-                        onChange={(value) =>
-                          updateAlternativeTechnology(
-                            index,
-                            'substance_from',
-                            value,
-                          )
-                        }
-                      />
-                      <SubstanceSelect
-                        id={`substance-to-${editingProject.id}-${index}`}
-                        options={substanceOptions}
-                        value={entry.substance_to}
-                        onChange={(value) =>
-                          updateAlternativeTechnology(
-                            index,
-                            'substance_to',
-                            value,
-                          )
-                        }
-                      />
-                      <IconButton
-                        aria-label="Remove alternative technology"
-                        onClick={() =>
-                          updateSummaryData(
-                            (projectData) => ({
-                              ...projectData,
-                              alternative_technologies:
-                                projectData.alternative_technologies.filter(
-                                  (_, entryIndex) => entryIndex !== index,
-                                ),
-                            }),
-                          )
-                        }
-                      >
-                        <IoTrash className="fill-gray-400" size={18}/>
-                      </IconButton>
-                    </div>
-                  ))}
-                </div>
-                <SubmitButton
-                  title="Add alternative technology"
-                  onSubmit={() =>
-                    updateSummaryData(
-                      (projectData) => ({
+                  <SubmitButton
+                    title="Add alternative technology"
+                    onSubmit={() =>
+                      updateSummaryData((projectData) => ({
                         ...projectData,
                         alternative_technologies: [
                           ...projectData.alternative_technologies,
                           createAlternativeTechnology(),
                         ],
-                      }),
-                    )
-                  }
-                  className="mr-auto h-8"
-                />
+                      }))
+                    }
+                    className="mr-auto h-8"
+                  />
                 </FieldGroup>
               )}
 
               {currentTab === 2 && (
                 <FieldGroup>
-
-                <div className="flex flex-col gap-y-4">
-                  <div className="grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]">
-                    <div>
-                      <Label>Name of Enterprise</Label>
-                    </div>
-                    <div>
-                      <Label>Address of enterprises</Label>
-                    </div>
-                  </div>
-                  {summaryData.enterprises.map((entry, index) => (
-                    <div
-                      key={index}
-                      className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
-                    >
-                      <div className="w-full">
-                        <SimpleInput
-                          id={`enterprise-name-${editingProject.id}-${index}`}
-                          label=""
-                          type="text"
-                          value={entry.name}
-                          onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                            updateEnterprise(index, 'name', event.target.value)
-                          }
-                        />
+                  <div className="flex flex-col gap-y-4">
+                    <div className="grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]">
+                      <div>
+                        <Label>Name of Enterprise</Label>
                       </div>
-                      <div className="w-full">
-                        <TextareaAutosize
-                          id={`enterprise-address-${editingProject.id}-${index}`}
-                          className={`${textAreaClassname} min-h-24 w-full pb-2`}
-                          minRows={3}
-                          style={STYLE}
-                          value={entry.address}
-                          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                            updateEnterprise(
-                              index,
-                              'address',
-                              event.target.value,
-                            )
-                          }
-                        />
+                      <div>
+                        <Label>Address of enterprises</Label>
                       </div>
-                      <IconButton
-                        aria-label="Remove enterprise"
-                        className="mt-7 justify-self-start"
-                        onClick={() =>
-                          updateSummaryData(
-                            (projectData) => ({
+                    </div>
+                    {summaryData.enterprises.map((entry, index) => (
+                      <div
+                        key={index}
+                        className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
+                      >
+                        <div className="w-full">
+                          <SimpleInput
+                            id={`enterprise-name-${editingProject.id}-${index}`}
+                            label=""
+                            type="text"
+                            value={entry.name}
+                            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                              updateEnterprise(
+                                index,
+                                'name',
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="w-full">
+                          <TextareaAutosize
+                            id={`enterprise-address-${editingProject.id}-${index}`}
+                            className={`${textAreaClassname} min-h-24 w-full pb-2`}
+                            minRows={3}
+                            style={STYLE}
+                            value={entry.address}
+                            onChange={(
+                              event: ChangeEvent<HTMLTextAreaElement>,
+                            ) =>
+                              updateEnterprise(
+                                index,
+                                'address',
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                        <IconButton
+                          aria-label="Remove enterprise"
+                          className="mt-7 justify-self-start"
+                          onClick={() =>
+                            updateSummaryData((projectData) => ({
                               ...projectData,
                               enterprises: projectData.enterprises.filter(
                                 (_, entryIndex) => entryIndex !== index,
                               ),
-                            }),
-                          )
-                        }
-                      >
-                        <IoTrash className="fill-gray-400" size={18}/>
-                      </IconButton>
-                    </div>
-                  ))}
-                </div>
-                <SubmitButton
-                  title="Add enterprise"
-                  onSubmit={() =>
-                    updateSummaryData(
-                      (projectData) => ({
+                            }))
+                          }
+                        >
+                          <IoTrash className="fill-gray-400" size={18} />
+                        </IconButton>
+                      </div>
+                    ))}
+                  </div>
+                  <SubmitButton
+                    title="Add enterprise"
+                    onSubmit={() =>
+                      updateSummaryData((projectData) => ({
                         ...projectData,
                         enterprises: [
                           ...projectData.enterprises,
                           createEnterprise(),
                         ],
-                      }),
-                    )
-                  }
-                  className="mr-auto h-8"
-                />
+                      }))
+                    }
+                    className="mr-auto h-8"
+                  />
                 </FieldGroup>
               )}
 
               {currentTab === 3 && (
                 <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
-
-                <div className="flex flex-col gap-y-4">
-                  <div className="hidden max-w-[84rem] grid-cols-[16rem_minmax(22rem,28rem)_16rem_14rem_auto] gap-4 xl:grid">
-                    <Label>Name of equipment</Label>
-                    <Label>Description</Label>
-                    <Label>Disposal type</Label>
-                    <Label>Date of disposal</Label>
-                  </div>
-                  {summaryData.equipments.map((entry, index) => (
-                    <div
-                      key={index}
-                      className="grid max-w-[84rem] grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[16rem_minmax(22rem,28rem)_16rem_14rem_auto]"
-                    >
-                      <div className="w-full">
-                        <div className="xl:hidden">
-                          <Label
-                            htmlFor={`equipment-name-${editingProject.id}-${index}`}
-                          >
-                            Name of equipment
-                          </Label>
+                  <div className="flex flex-col gap-y-4">
+                    <div className="hidden max-w-[84rem] grid-cols-[16rem_minmax(22rem,28rem)_16rem_14rem_auto] gap-4 xl:grid">
+                      <Label>Name of equipment</Label>
+                      <Label>Description</Label>
+                      <Label>Disposal type</Label>
+                      <Label>Date of disposal</Label>
+                    </div>
+                    {summaryData.equipments.map((entry, index) => (
+                      <div
+                        key={index}
+                        className="grid max-w-[84rem] grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[16rem_minmax(22rem,28rem)_16rem_14rem_auto]"
+                      >
+                        <div className="w-full">
+                          <div className="xl:hidden">
+                            <Label
+                              htmlFor={`equipment-name-${editingProject.id}-${index}`}
+                            >
+                              Name of equipment
+                            </Label>
+                          </div>
+                          <SimpleInput
+                            id={`equipment-name-${editingProject.id}-${index}`}
+                            label=""
+                            type="text"
+                            value={entry.name}
+                            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                              updateEquipment(index, 'name', event.target.value)
+                            }
+                          />
                         </div>
-                        <SimpleInput
-                          id={`equipment-name-${editingProject.id}-${index}`}
-                          label=""
-                          type="text"
-                          value={entry.name}
-                          onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                            updateEquipment(index, 'name', event.target.value)
+                        <div className="w-full md:col-span-2 xl:col-span-1">
+                          <div className="xl:hidden">
+                            <Label
+                              htmlFor={`equipment-description-${editingProject.id}-${index}`}
+                            >
+                              Description
+                            </Label>
+                          </div>
+                          <TextareaAutosize
+                            id={`equipment-description-${editingProject.id}-${index}`}
+                            className={`${textAreaClassname} min-h-10 w-full pb-2`}
+                            minRows={1}
+                            style={STYLE}
+                            value={entry.description}
+                            onChange={(
+                              event: ChangeEvent<HTMLTextAreaElement>,
+                            ) =>
+                              updateEquipment(
+                                index,
+                                'description',
+                                event.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                        <DisposalTypeSelect
+                          id={`equipment-disposal_type-${editingProject.id}-${index}`}
+                          label="Disposal type"
+                          labelClassName="xl:hidden"
+                          options={disposalTypeOptions}
+                          value={entry.disposal_type}
+                          onChange={(value) =>
+                            updateEquipment(index, 'disposal_type', value)
                           }
                         />
-                      </div>
-                      <div className="w-full md:col-span-2 xl:col-span-1">
-                        <div className="xl:hidden">
-                          <Label
-                            htmlFor={`equipment-description-${editingProject.id}-${index}`}
-                          >
-                            Description
-                          </Label>
+                        <div className="w-full">
+                          <div className="xl:hidden">
+                            <Label
+                              htmlFor={`equipment-disposal_date-${editingProject.id}-${index}`}
+                            >
+                              Date of disposal
+                            </Label>
+                          </div>
+                          <DateInput
+                            id={`equipment-disposal_date-${editingProject.id}-${index}`}
+                            className="!m-0 w-full"
+                            value={entry.disposal_date}
+                            onChange={(event) =>
+                              updateEquipment(
+                                index,
+                                'disposal_date',
+                                event.target.value,
+                              )
+                            }
+                          />
                         </div>
-                        <TextareaAutosize
-                          id={`equipment-description-${editingProject.id}-${index}`}
-                          className={`${textAreaClassname} min-h-10 w-full pb-2`}
-                          minRows={1}
-                          style={STYLE}
-                          value={entry.description}
-                          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                            updateEquipment(
-                              index,
-                              'description',
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </div>
-                      <DisposalTypeSelect
-                        id={`equipment-disposal_type-${editingProject.id}-${index}`}
-                        label="Disposal type"
-                        labelClassName="xl:hidden"
-                        options={disposalTypeOptions}
-                        value={entry.disposal_type}
-                        onChange={(value) =>
-                          updateEquipment(index, 'disposal_type', value)
-                        }
-                      />
-                      <div className="w-full">
-                        <div className="xl:hidden">
-                          <Label
-                            htmlFor={`equipment-disposal_date-${editingProject.id}-${index}`}
-                          >
-                            Date of disposal
-                          </Label>
-                        </div>
-                        <DateInput
-                          id={`equipment-disposal_date-${editingProject.id}-${index}`}
-                          className="w-full !m-0"
-                          value={entry.disposal_date}
-                          onChange={(event) =>
-                            updateEquipment(
-                              index,
-                              'disposal_date',
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </div>
-                      <IconButton
-                        aria-label="Remove equipment"
-                        className="justify-self-start xl:self-center"
-                        onClick={() =>
-                          updateSummaryData(
-                            (projectData) => ({
+                        <IconButton
+                          aria-label="Remove equipment"
+                          className="justify-self-start xl:self-center"
+                          onClick={() =>
+                            updateSummaryData((projectData) => ({
                               ...projectData,
                               equipments: projectData.equipments.filter(
                                 (_, entryIndex) => entryIndex !== index,
                               ),
-                            }),
-                          )
-                        }
-                      >
-                        <IoTrash className="fill-gray-400" size={18}/>
-                      </IconButton>
-                    </div>
-                  ))}
-                </div>
-                <SubmitButton
-                  title="Add equipment"
-                  onSubmit={() =>
-                    updateSummaryData(
-                      (projectData) => ({
+                            }))
+                          }
+                        >
+                          <IoTrash className="fill-gray-400" size={18} />
+                        </IconButton>
+                      </div>
+                    ))}
+                  </div>
+                  <SubmitButton
+                    title="Add equipment"
+                    onSubmit={() =>
+                      updateSummaryData((projectData) => ({
                         ...projectData,
                         equipments: [
                           ...projectData.equipments,
                           createEquipment(),
                         ],
-                      }),
-                    )
-                  }
-                  className="mr-auto h-8"
-                />
+                      }))
+                    }
+                    className="mr-auto h-8"
+                  />
                 </FieldGroup>
               )}
             </div>

@@ -47,7 +47,7 @@ const PCRForm = () => {
     overview: { title: 'Overview', errors: errors.overview },
     summary_of_key_data: {
       title: 'Summary of key data (tranches)',
-      errors: {},
+      errors: errors.summary_of_key_data,
     },
     results_assessment: {
       title: 'Project results overall assessment',

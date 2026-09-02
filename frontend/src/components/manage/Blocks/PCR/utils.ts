@@ -22,6 +22,7 @@ import {
   lowerCase,
   map,
   omit,
+  pick,
   reduce,
   some,
   sumBy,
@@ -338,3 +339,27 @@ export const normalizeErrors = (errors: Record<string, any>) =>
       return some(value, checkHasErrors)
     }),
   )
+
+export const groupSummaryOfKeyDataErrors = (
+  errors: Record<string, any>,
+  projectId: number,
+) => {
+  const crtProjectErrors = errors[projectId]
+
+  if (!crtProjectErrors) {
+    return errors
+  }
+
+  const projectErrors = crtProjectErrors[0].errors
+  const groupedErrors = {
+    general: pick(projectErrors, [
+      'funds_disbursed',
+      'planned_date_of_completion',
+    ]),
+    alternative_technology: {},
+    enterprises: {},
+    equipment: {},
+  }
+
+  return groupedErrors
+}

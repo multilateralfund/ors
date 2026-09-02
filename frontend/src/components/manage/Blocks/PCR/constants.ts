@@ -67,6 +67,8 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   entity: 'Entity user inputting the comment on behalf',
   comment: 'Add comment',
   completed_by: 'Completion report done by',
+  funds_disbursed: 'Funds disbursed',
+  planned_date_of_completion: 'Planned date of completion',
   activity_title: 'Activity title',
   type_of_activity: 'Type of activity',
   type_of_sector: 'Type of sector',
@@ -136,6 +138,13 @@ export const initialOverviewData = {
   completed_by: null,
 }
 
+export const defaultSummaryOfKeyDataErrors = {
+  general: {},
+  alternative_technology: {},
+  enterprises: {},
+  equipment: {},
+}
+
 export const overviewFieldsToValidate = [
   'financial_figures_status_explanation',
   'addresses',
@@ -146,6 +155,7 @@ export const requiredMessage = 'This field is required.'
 export const validWordCountMessage =
   'This field must be between 150 and 250 words.'
 
+export const summaryOfKeyDataField = 'pcr_projects'
 export const pcField = 'project_components'
 export const cdField = 'delay_causes'
 export const llField = 'learned_lessons'

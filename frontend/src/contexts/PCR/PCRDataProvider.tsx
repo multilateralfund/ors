@@ -10,6 +10,7 @@ import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGe
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import {
   initialOverviewData,
+  summaryOfKeyDataField,
   ppField,
   sdgsContributionField,
   sdgsField,
@@ -74,6 +75,17 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     },
     [addUpdatedField],
   )
+
+  const formatSummaryOfKeyData = (errors: Record<string, any[]>) => {
+    const summaryOfKeyData = PCRData.summary_of_key_data || []
+
+    const projectErrors = map(summaryOfKeyData, (data, index) => ({
+      project_id: data.project_id,
+      errors: errors?.[summaryOfKeyDataField]?.[index] ?? {},
+    }))
+
+    return { [summaryOfKeyDataField]: groupBy(projectErrors, 'project_id') }
+  }
 
   const formatResultsAssessmentErrors = (errors: Record<string, any[]>) => {
     const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
@@ -180,6 +192,9 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const groupErrors = (errors: Record<string, any[]>) => {
     const overviewFields = keys(initialOverviewData)
     const overviewErrors = pick(errors, overviewFields)
+    const summaryOfKeyDataErrors = formatSummaryOfKeyData(
+      pick(errors, summaryOfKeyDataField),
+    )
     const resultsAssessmentErrors = formatResultsAssessmentErrors(
       pick(errors, 'activities'),
     )
@@ -196,6 +211,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
     return {
       overview: overviewErrors,
+      summary_of_key_data: summaryOfKeyDataErrors,
       results_assessment: resultsAssessmentErrors,
       causes_of_delay: projectComponentsErrors.causes_of_delay,
       lessons_learned: projectComponentsErrors.lessons_learned,
