@@ -1,0 +1,69 @@
+name: Detect changes
+
+on:
+  workflow_call:
+    outputs:
+      app:
+        value: ${{ jobs.changes.outputs.app }}
+      nextjs:
+        value: ${{ jobs.changes.outputs.nextjs }}
+      nginx:
+        value: ${{ jobs.changes.outputs.nginx }}
+      celery:
+        value: ${{ jobs.changes.outputs.celery }}
+      any:
+        value: ${{ jobs.changes.outputs.any }}
+
+jobs:
+  changes:
+    runs-on: docker-ors
+
+    permissions:
+      contents: read
+
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      nextjs: ${{ steps.filter.outputs.nextjs }}
+      nginx: ${{ steps.filter.outputs.nginx }}
+      celery: ${{ steps.filter.outputs.celery }}
+
+      any: >-
+        ${{
+          steps.filter.outputs.app == 'true' ||
+          steps.filter.outputs.nextjs == 'true' ||
+          steps.filter.outputs.nginx == 'true' ||
+          steps.filter.outputs.celery == 'true'
+        }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'core/**'
+              - 'multilateralfund/**'
+              - 'requirements.txt'
+              - 'docker/app.docker'
+              - 'docker/wait_for_services.sh'
+              - 'docker/entrypoint.sh'
+
+            nextjs:
+              - 'frontend/**'
+              - 'docker/nextjs.docker'
+              - 'docker/entrypoint-nextjs.sh'
+
+            nginx:
+              - 'docker/nginx.docker'
+              - 'docker/nginx-templates/**'
+              - 'docker/nginx.conf'
+
+            celery:
+              - 'docker/celery.docker'
+              - 'requirements.txt'
+              - 'multilateralfund/settings.py'
+              - 'multilateralfund/celery.py'

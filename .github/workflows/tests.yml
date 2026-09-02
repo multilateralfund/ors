@@ -14,7 +14,13 @@ on:
       - develop
 
 jobs:
+  changes:
+    uses: ./.github/workflows/detect-changes.yml
+
   suite:
+    needs: changes
+    if: needs.changes.outputs.app == 'true' || needs.changes.outputs.nextjs == 'true'
+
     # runs-on: ubuntu-latest
     runs-on: docker-ors-2 # see https://helpdesk.eaudeweb.ro/issues/38046
 
@@ -36,10 +42,12 @@ jobs:
         run: |
           docker compose ps
       - name: "Frontend tests"
+        if: needs.changes.outputs.nextjs == 'true'
         run: |
           docker compose run --rm --no-deps --entrypoint npm nextjs test
       - name: "Backend tests"
         id: "backendTests"
+        if: needs.changes.outputs.app == 'true'
         run: |
           docker compose exec -T app ./manage.py makemigrations --check
           docker compose exec -T app pytest -vv

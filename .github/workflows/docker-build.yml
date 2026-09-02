@@ -29,52 +29,7 @@ env:
 
 jobs:
   changes:
-    runs-on: docker-ors
-    permissions:
-      contents: read
-
-    outputs:
-      app: ${{ steps.changes.outputs.app }}
-      nextjs: ${{ steps.changes.outputs.nextjs }}
-      nginx: ${{ steps.changes.outputs.nginx }}
-      celery: ${{ steps.changes.outputs.celery }}
-      any: >-
-        ${{
-          steps.changes.outputs.app == 'true' ||
-          steps.changes.outputs.nextjs == 'true' ||
-          steps.changes.outputs.nginx == 'true' ||
-          steps.changes.outputs.celery == 'true'
-        }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - uses: dorny/paths-filter@v4
-        id: changes
-        with:
-          filters: |
-            app:
-              - 'core/**'
-              - 'multilateralfund/**'
-              - 'requirements.txt'
-              - 'docker/app.docker'
-              - 'docker/wait_for_services.sh'
-              - 'docker/entrypoint.sh'
-            nextjs:
-              - 'frontend/**'
-              - 'docker/nextjs.docker'
-              - 'docker/entrypoint-nextjs.sh'
-            nginx:
-              - 'docker/nginx.docker'
-              - 'docker/nginx-templates/**'
-              - 'docker/nginx.conf'
-            celery:
-              - 'docker/celery.docker'
-              - 'requirements.txt'
-              - 'core/tasks.py'
-              - 'multilateralfund/settings.py'
-              - 'multilateralfund/celery.py'
+    uses: ./.github/workflows/detect-changes.yml
 
   build-and-push-images:
     needs: changes
