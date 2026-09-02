@@ -8,6 +8,10 @@ concurrency:
 on:
   workflow_call:
     inputs:
+      name:
+        required: true
+        type: string
+
       dockerfile:
         required: true
         type: string
@@ -44,6 +48,8 @@ env:
 jobs:
   build:
     runs-on: docker-ors
+
+    name: Build ${{ inputs.name }}
 
     outputs:
       built: ${{ steps.result.outputs.built }}
