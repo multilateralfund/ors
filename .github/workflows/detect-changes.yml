@@ -9,8 +9,6 @@ on:
         value: ${{ jobs.changes.outputs.nextjs }}
       nginx:
         value: ${{ jobs.changes.outputs.nginx }}
-      celery:
-        value: ${{ jobs.changes.outputs.celery }}
       any:
         value: ${{ jobs.changes.outputs.any }}
 
@@ -27,13 +25,11 @@ jobs:
       app: ${{ steps.filter.outputs.app }}
       nextjs: ${{ steps.filter.outputs.nextjs }}
       nginx: ${{ steps.filter.outputs.nginx }}
-      celery: ${{ steps.filter.outputs.celery }}
       any: >-
         ${{
           steps.filter.outputs.app == 'true' ||
           steps.filter.outputs.nextjs == 'true' ||
-          steps.filter.outputs.nginx == 'true' ||
-          steps.filter.outputs.celery == 'true'
+          steps.filter.outputs.nginx == 'true'
         }}
 
     steps:
@@ -62,9 +58,3 @@ jobs:
               - 'docker/nginx.docker'
               - 'docker/nginx-templates/**'
               - 'docker/nginx.conf'
-
-            celery:
-              - 'core/**'
-              - 'multilateralfund/**'
-              - 'requirements.txt'
-              - 'docker/celery.docker'

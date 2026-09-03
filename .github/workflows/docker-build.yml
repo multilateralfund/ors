@@ -27,11 +27,6 @@ on:
         type: boolean
         default: false
 
-      build_celery:
-        required: false
-        type: boolean
-        default: false
-
     secrets:
       VITE_FRONTEND_CLIENT_ID:
         required: false
@@ -88,21 +83,11 @@ jobs:
       dockerfile: ./docker/nginx.docker
       image: ghcr.io/multilateralfund/multilateralfund-nginx
 
-  build-celery:
-    needs: changes
-    if: always() && (needs.changes.outputs.celery == 'true' || inputs.build_celery)
-    uses: ./.github/workflows/build-image.yml
-    with:
-      name: celery
-      dockerfile: ./docker/celery.docker
-      image: ghcr.io/multilateralfund/multilateralfund-celery
-
   result:
     needs:
       - build-app
       - build-nextjs
       - build-nginx
-      - build-celery
     if: always()
     runs-on: ubuntu-latest
 
@@ -115,6 +100,5 @@ jobs:
           echo "images_built=${{
             needs.build-app.outputs.built == 'true' ||
             needs.build-nextjs.outputs.built == 'true' ||
-            needs.build-nginx.outputs.built == 'true' ||
-            needs.build-celery.outputs.built == 'true'
+            needs.build-nginx.outputs.built == 'true'
           }}" >> "$GITHUB_OUTPUT"

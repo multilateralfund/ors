@@ -18,13 +18,9 @@ on:
         type: boolean
         default: false
 
-      build_celery:
-        description: "Build celery image"
-        type: boolean
-        default: false
-
 jobs:
   docker-build:
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/docker-build.yml
     with:
       SENTRY_DSN: ${{ vars.PROD_SENTRY_DSN }}
@@ -33,7 +29,6 @@ jobs:
       build_app: ${{ inputs.build_app }}
       build_nextjs: ${{ inputs.build_nextjs }}
       build_nginx: ${{ inputs.build_nginx }}
-      build_celery: ${{ inputs.build_celery }}
 
     secrets:
       VITE_TENANT_ID: ${{ secrets.PROD_VITE_TENANT_ID || '' }}

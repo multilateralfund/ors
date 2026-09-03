@@ -22,15 +22,11 @@ on:
         type: boolean
         default: false
 
-      build_celery:
-        description: "Build celery image"
-        type: boolean
-        default: false
-
   workflow_call:
 
 jobs:
   docker-build:
+    if: github.ref == 'refs/heads/staging'
     uses: ./.github/workflows/docker-build.yml
     with:
       SENTRY_DSN: ${{ vars.STAGING_SENTRY_DSN }}
@@ -38,7 +34,6 @@ jobs:
       build_app: ${{ github.event_name == 'workflow_dispatch' && inputs.build_app || false }}
       build_nextjs: ${{ github.event_name == 'workflow_dispatch' && inputs.build_nextjs || false }}
       build_nginx: ${{ github.event_name == 'workflow_dispatch' && inputs.build_nginx || false }}
-      build_celery: ${{ github.event_name == 'workflow_dispatch' && inputs.build_celery || false }}
     secrets:
       VITE_TENANT_ID: ${{ secrets.STAGING_VITE_TENANT_ID || '' }}
       VITE_FRONTEND_CLIENT_ID: ${{ secrets.STAGING_VITE_FRONTEND_CLIENT_ID || '' }}

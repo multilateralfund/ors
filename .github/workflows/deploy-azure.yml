@@ -44,4 +44,4 @@ jobs:
 
       - name: Update services
         run: |
-          ssh server "cd /var/local/ors/ && docker compose pull && docker compose up -d --remove-orphans && docker compose rm -f nextjs && docker compose top"
+          ssh server "cd /var/local/ors/ && export DOCKER_TAG=main && docker compose pull && docker compose up -d --remove-orphans && docker compose rm -f nextjs && docker compose top"

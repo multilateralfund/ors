@@ -81,6 +81,9 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ inputs.image }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
@@ -92,7 +95,7 @@ jobs:
           cache-to: type=registry,ref=${{ inputs.image }}:buildcache,mode=max
           no-cache: false
           file: ${{ inputs.dockerfile }}
-          tags: ${{ inputs.image }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VITE_PUBLIC_SENTRY_DSN=${{ inputs.SENTRY_DSN }}

@@ -22,7 +22,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: docker/celery.docker
+      dockerfile: docker/dev.docker
     container_name: "mlf.celery"
     volumes:
       - ./:/app
