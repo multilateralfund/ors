@@ -1975,7 +1975,7 @@ class TestPlaceholders(BaseTest):
     def test_asking_fills_every_row_that_has_no_source(self, user, brazil):
         metrics = self.entry(user, placeholders="true")
 
-        assert self.flagged(metrics) ==  self.IMPACT
+        assert self.flagged(metrics) == self.IMPACT
         for metric_id in self.IMPACT:
             assert metrics[metric_id]["available"] is True
             assert metrics[metric_id]["value"] is not None
@@ -2270,6 +2270,7 @@ class TestDashboardMetricsExport(BaseTest):
         rows = self.rows(self.workbook(user)["Fund"])
 
         assert not [row for row in rows if row["Placeholder"]]
+
 
 class TestSpecCommand:
     """The registry's documentation half, replacing the old /spec/ endpoint."""
