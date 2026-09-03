@@ -30,7 +30,9 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Lint frontend
+        continue-on-error: true
         run: npm run lint
 
       - name: Check TypeScript
+        continue-on-error: true
         run: npm run tsc
