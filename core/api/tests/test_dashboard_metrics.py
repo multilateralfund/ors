@@ -1548,12 +1548,18 @@ class TestCountryValues(BaseTest):
             )
 
         table = self.entry(user)["theme_funding"]["value"]
-        assert [row["group"] for row in table] == [
+
+        groups = []
+        for group in table["groups"]:
+            for entry in group["items"]:
+                if entry.get("percent", None):
+                    groups.append(entry["label"])
+        assert groups == [
             "HFCs consumption",
             "HCFCs consumption",
             "Disposal",
         ]
-        assert table[0]["funds_plus_psc"] == 900
+        assert table["groups"][0]["items"][0]["displayValue"] == "$900.0"
 
     def test_funding_with_no_theme_is_reported_beside_the_total(
         self, user, ongoing_status
@@ -1578,8 +1584,14 @@ class TestCountryValues(BaseTest):
         metrics = self.entry(user)
         assert metrics["theme_total"]["value"] == 700
         assert metrics["theme_unmapped"]["value"] == 200
-        assert [row["group"] for row in metrics["theme_funding"]["value"]] == [
-            "HCFCs consumption"
+        groups = []
+        for group in metrics["theme_funding"]["value"]["groups"]:
+            for entry in group["items"]:
+                if entry.get("percent", None):
+                    groups.append(entry["label"])
+        assert groups == [
+            "HCFCs consumption",
+            "Disposal",
         ]
 
     def test_the_reporting_cycle_supplies_the_actual_phase_out(

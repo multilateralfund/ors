@@ -20,6 +20,7 @@ from core.api.dashboard_metrics.classify import (
 )
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
+    format_money,
     funds_pair,
     grouped,
     grouped_row,
@@ -292,7 +293,36 @@ def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
     table = grouped(context.projects, _theme_of)
     order = {theme: rank for rank, theme in enumerate(taxonomy.THEME_ORDER)}
     table.sort(key=lambda row: order.get(row["group"], len(order)))
-    return table or None
+    groups = taxonomy.THEME_STRUCTURE
+    index = 0
+    total_value = theme_total(context)
+    for group in groups:
+        for item in group["items"]:
+            try:
+                if not table[index]["group"] == item["label"]:
+                    item["percent"] = 0
+                    item["displayValue"] = format_money(0)
+                    continue
+            except (IndexError, TypeError):
+                item["percent"] = 0
+                item["displayValue"] = format_money(0)
+                continue
+            item["percent"] = round(
+                table[index]["funds_plus_psc"] / theme_total(context) * 100, 2
+            )
+            item["displayValue"] = format_money(table[index]["funds_plus_psc"])
+            index += 1
+    return {
+        "type": "bar_list",
+        "title": "Funding by project theme",
+        "subtitle": "Approved funding split by project theme",
+        "subtitle_note": None,
+        "groups": groups,
+        "total": {
+            "label": "TOTAL APPROVED",
+            "displayValue": format_money(total_value),
+        },
+    }
 
 
 def theme_total(context: MetricContext) -> float:

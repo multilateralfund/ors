@@ -20,6 +20,26 @@ THEME_ORDER = (
     "Institutional Strengthening",
 )
 
+THEME_STRUCTURE = [
+    {"items": [{"label": "HFCs consumption", "color": "#012A3C"}]},
+    {
+        "items": [
+            {"label": "HCFCs consumption", "color": "#0B4C66"},
+            {"label": "HCFCs production", "color": "#0E6E8C"},
+        ]
+    },
+    {
+        "items": [
+            {"label": "Other ODS consumption", "color": "#0095D5"},
+            {"label": "Other ODS production", "color": "#2CA9DD"},
+        ]
+    },
+    {"items": [{"label": "Energy efficiency", "color": "#57BEE4"}]},
+    {"items": [{"label": "Disposal", "color": "#7ACBEA"}]},
+    {"items": [{"label": "Emission control", "color": "#9AD8EF"}]},
+    {"items": [{"label": "Institutional strengthening", "color": "#DEF1FA"}]},
+]
+
 THEME_BY_CLUSTER_CODE = {
     "CFCIND": "Other ODS consumption",
     "CPOP": "Other ODS consumption",

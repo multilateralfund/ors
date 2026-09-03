@@ -334,6 +334,25 @@ def _prepare_line_chart_grouped_trend(
             "categories": [],
             "series": [],
         }
+    if title == "ODS Production":
+        colors = [
+            "var(--deep-teal)",
+            "var(--data-orange-shade)",
+            "var(--data-orange)",
+            "var(--data-orange-tint-1)",
+            "var(--data-orange-tint-2)",
+            "var(--data-orange-tint-3)",
+        ]
+    else:
+        colors = [
+            "var(--deep-teal)",
+            "var(--data-purple-shade-2)",
+            "var(--data-purple-shade-1)",
+            "var(--data-purple)",
+            "var(--data-purple-tint-1)",
+            "var(--data-purple-tint-2)",
+            "var(--un-light-grey)",
+        ]
 
     colors = [
         "var(--deep-teal)",
