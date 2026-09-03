@@ -181,10 +181,48 @@ def attr_hcfc_lvc(context: MetricContext) -> str | None:
     return classify.lvc_status(_entry(context))
 
 
+def attr_ods_licensing(context: MetricContext) -> str | None:
+    """ODS import/export licensing system exists, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.ods_licensing else "No"
+
+
+def attr_ods_quota(context: MetricContext) -> str | None:
+    """ODS quota system exist, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.ods_quota else "No"
+
+
+def attr_hfc_licensing(context: MetricContext) -> str | None:
+    """HFC-specific licensing system exists, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.hfc_licensing else "No"
+
+
 def attr_nou_ministry(context: MetricContext) -> str | None:
     """The ministry or office the national ozone unit sits in."""
     country = _country(context)
     return _text(country.ozone_unit) if country else None
+
+
+def attr_nou_name(context: MetricContext) -> str | None:
+    """The contact person for the national ozone unit."""
+    country = _country(context)
+    return _text(country.ozone_unit_name) if country else None
+
+
+def attr_hfc_quota(context: MetricContext) -> str | None:
+    """HFC-specific quota system exists, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.hfc_quota else "No"
 
 
 # What a project reports having established.
@@ -411,17 +449,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - does an ODS import/export licensing system exist",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="Project.upgrade_of_imp_exp_licensing",
-        compute=None,
-        unavailable_reason=(
-            "No country-level licensing field, the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="ods_licensing", labels=placeholders.YES_NO
-        ),
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.ods_licensing",
+        compute=attr_ods_licensing,
     ),
     Metric(
         metric_id="attr_ods_quota",
@@ -429,17 +461,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - does an ODS quota system exist",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="Project.upgrade_of_quota_system",
-        compute=None,
-        unavailable_reason=(
-            "No country-level quota field, the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="ods_quota", labels=placeholders.YES_NO
-        ),
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.ods_quota",
+        compute=attr_ods_quota,
     ),
     Metric(
         metric_id="attr_hfc_licensing",
@@ -447,17 +473,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - HFC-specific licensing system",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="none",
-        compute=None,
-        unavailable_reason=(
-            "No HFC-specific licensing field exists, the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="hfc_licensing", labels=placeholders.YES_NO
-        ),
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.hfc_licensing",
+        compute=attr_hfc_licensing,
     ),
     Metric(
         metric_id="attr_hfc_quota",
@@ -465,17 +485,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - HFC-specific quota system",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="none",
-        compute=None,
-        unavailable_reason=(
-            "No HFC-specific quota field exists (no ODS/HFC split), the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="hfc_quota", labels=placeholders.YES_NO
-        ),
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.hfc_quota",
+        compute=attr_hfc_quota,
     ),
     Metric(
         metric_id="attr_hfc_group",
@@ -519,15 +533,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - NOU contact person name",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="none",
-        compute=None,
-        unavailable_reason=(
-            "No contact-person field on Country, the Country field is pending."
-        ),
-        placeholder=placeholders.nou_name,
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.ozone_unit_name",
+        compute=attr_nou_name,
     ),
     Metric(
         metric_id="attr_certification",

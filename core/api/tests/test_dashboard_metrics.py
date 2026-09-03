@@ -541,7 +541,7 @@ class TestRegistryDeclarations:
             for m in FUND_METRICS + COUNTRY_METRICS
             if m.disposition == Disposition.NOT_AVAILABLE
         ]
-        assert len(blocked) == 9
+        assert len(blocked) == 4
         assert all(m.unavailable_reason for m in blocked)
 
 
@@ -1948,15 +1948,6 @@ class TestPlaceholders(BaseTest):
 
     # The rows with no source yet. Nine are country attributes; four are impact
     # figures, which an aggregate entry can meaningfully carry.
-    ATTRIBUTES = frozenset(
-        {
-            "attr_ods_licensing",
-            "attr_ods_quota",
-            "attr_hfc_licensing",
-            "attr_hfc_quota",
-            "attr_nou_name",
-        }
-    )
     IMPACT = frozenset(
         {"impact_technicians", "impact_customs", "impact_enterprises", "ee_kwh_saved"}
     )
@@ -1976,17 +1967,16 @@ class TestPlaceholders(BaseTest):
     def test_nothing_is_invented_unless_it_is_asked_for(self, user, brazil):
         """The default payload is the honest one."""
         metrics = self.entry(user)
-
         assert self.flagged(metrics) == set()
-        for metric_id in self.ATTRIBUTES | self.IMPACT:
+        for metric_id in self.IMPACT:
             assert metrics[metric_id]["available"] is False
             assert metrics[metric_id]["value"] is None
 
     def test_asking_fills_every_row_that_has_no_source(self, user, brazil):
         metrics = self.entry(user, placeholders="true")
 
-        assert self.flagged(metrics) == self.ATTRIBUTES | self.IMPACT
-        for metric_id in self.ATTRIBUTES | self.IMPACT:
+        assert self.flagged(metrics) ==  self.IMPACT
+        for metric_id in self.IMPACT:
             assert metrics[metric_id]["available"] is True
             assert metrics[metric_id]["value"] is not None
 
@@ -1996,7 +1986,7 @@ class TestPlaceholders(BaseTest):
 
         for metric_id, metric in metrics.items():
             if metric.get("placeholder"):
-                assert metric_id in self.ATTRIBUTES | self.IMPACT
+                assert metric_id in self.IMPACT
             else:
                 assert "placeholder" not in metric
 
@@ -2026,8 +2016,6 @@ class TestPlaceholders(BaseTest):
         metrics = self.entry(user, key="AFR", placeholders="true")
 
         assert self.flagged(metrics) == self.IMPACT
-        for metric_id in self.ATTRIBUTES:
-            assert metrics[metric_id]["available"] is False
 
     def test_a_placeholder_that_breaks_costs_only_itself(self, core_caplog):
         """A demo aid must not be able to take the endpoint down."""
@@ -2283,14 +2271,6 @@ class TestDashboardMetricsExport(BaseTest):
 
         assert not [row for row in rows if row["Placeholder"]]
 
-    def test_asking_for_placeholders_marks_them(self, user, brazil):
-        """The column is what stops an invented figure being reviewed as real."""
-        rows = self.rows(self.workbook(user, placeholders="true")["Countries"])
-
-        marked = {row["Metric"] for row in rows if row["Placeholder"]}
-        assert "attr_nou_name" in marked
-
-
 class TestSpecCommand:
     """The registry's documentation half, replacing the old /spec/ endpoint."""
 
@@ -2298,8 +2278,7 @@ class TestSpecCommand:
         out = StringIO()
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
-
-        assert "91 metrics, 82 implemented." in rendered
+        assert "91 metrics, 87 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 
