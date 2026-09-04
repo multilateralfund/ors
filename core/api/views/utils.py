@@ -1,4 +1,4 @@
-# pylint: disable=C0302,R0914
+# pylint: disable=C0302,R0914,R0915
 
 from datetime import datetime
 
@@ -210,7 +210,7 @@ def get_archive_reports_final_for_year(year):
     return archive_reports
 
 
-def get_archive_reports_final_for_years(min_year, max_year):
+def get_archive_reports_final_for_years(min_year, max_year, country=None):
     """
     Get the max version for each archive report that does not have a final report
     This will take into account the range of years [min_year, max_year]
@@ -238,6 +238,8 @@ def get_archive_reports_final_for_years(min_year, max_year):
         status=CPReport.CPReportStatus.FINAL,
     ).exclude(models.Exists(has_final_report))
 
+    if country:
+        archive_reports_q = archive_reports_q.filter(country_id=country.id)
     return (
         archive_reports_q.values("country_id", "year")
         .annotate(max_version=models.Max("version"))
@@ -246,7 +248,9 @@ def get_archive_reports_final_for_years(min_year, max_year):
     )
 
 
-def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=True):
+def get_final_records_for_years(
+    min_year, max_year, filter_list=None, list_sort=True, country=None
+):
     """
     Get all the final records for the years in the range [min_year, max_year]
      - first get the final records for the countries that have a final report (CPReport)
@@ -266,22 +270,27 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
     if not filter_list:
         filter_list = []
 
-    final_records = CPRecord.objects.get_for_years(min_year, max_year).filter(
-        country_programme_report__status=CPReport.CPReportStatus.FINAL,
-        *filter_list,
+    final_records = (
+        CPRecord.objects.get_for_years(min_year, max_year)
+        .filter(
+            country_programme_report__status=CPReport.CPReportStatus.FINAL,
+            *filter_list,
+        )
+        .select_related(
+            "country_programme_report__country", "substance__group", "blend"
+        )
     )
+    if country:
+        final_records = final_records.filter(country_programme_report__country=country)
 
     # get the max version for each archive report that does not have a final report
-    archive_reports = get_archive_reports_final_for_years(min_year, max_year)
-
+    archive_reports = get_archive_reports_final_for_years(min_year, max_year, country)
     # get all the records for the archive reports
-    archive_records = []
+    archive_records = CPRecordArchive.objects.none()
     if archive_reports:
         archive_records = (
             CPRecordArchive.objects.get_for_years(min_year, max_year)
-            .filter(
-                *filter_list,
-            )
+            .filter(*filter_list)
             .filter(
                 # get the records for the max version of the archive reports
                 *[
@@ -294,19 +303,79 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
                 ],
                 _connector=models.Q.OR,
             )
+            .select_related(
+                "country_programme_report__country", "substance__group", "blend"
+            )
         )
 
-    # union the final records with the archive records
-    reported_list = list(final_records) + list(archive_records)
-    # set dict (country, year)
+    # Annotate DB ordering keys so we can iterate ordered querysets and merge them
+    def _annotate_ordering(qs):
+        return qs.annotate(
+            country_name=F("country_programme_report__country__name"),
+            sort_order=Coalesce(
+                F("substance__sort_order"),
+                F("blend__sort_order"),
+                models.Value(10**9),
+                output_field=models.FloatField(),
+            ),
+        ).order_by("country_programme_report__year", "country_name", "sort_order")
+
+    final_iter = _annotate_ordering(final_records).iterator()
+    archive_iter = _annotate_ordering(archive_records).iterator()
+
+    # merge two already-ordered iterators (linear time, low memory)
+    def _merge_two(a_iter, b_iter, key_fn):
+        try:
+            a = next(a_iter)
+        except StopIteration:
+            yield from b_iter
+            return
+        try:
+            b = next(b_iter)
+        except StopIteration:
+            yield a
+            yield from a_iter
+            return
+        while True:
+            if key_fn(a) <= key_fn(b):
+                yield a
+                try:
+                    a = next(a_iter)
+                except StopIteration:
+                    yield b
+                    yield from b_iter
+                    return
+            else:
+                yield b
+                try:
+                    b = next(b_iter)
+                except StopIteration:
+                    yield a
+                    yield from a_iter
+                    return
+
+    def _record_key(r):
+        return (
+            r.country_programme_report.year,
+            getattr(
+                r,
+                "country_name",
+                getattr(r.country_programme_report.country, "name", "") or "",
+            ),
+            getattr(r, "sort_order", float("inf")),
+        )
+
+    # build mapping while streaming merged records
     existent_records = defaultdict(dict)
-    for r in reported_list:
+    for r in _merge_two(final_iter, archive_iter, _record_key):
         country_year = (
             r.country_programme_report.country_id,
             r.country_programme_report.year,
         )
         chemical_key = (
-            f"substance_{r.substance_id}" if r.substance else f"blend_{r.blend_id}"
+            f"substance_{r.substance_id}"
+            if getattr(r, "substance_id", None)
+            else f"blend_{r.blend_id}"
         )
         existent_records[country_year][chemical_key] = r
 
@@ -324,9 +393,9 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
     # if the country does not have the display_substance for the year,
     # then include a 0 value record
     final_list = []
-    for country, year in existent_records:
+    for country_entry, year in existent_records:
         added_chemical_keys = set()
-        for chemical_key, record in existent_records[(country, year)].items():
+        for chemical_key, record in existent_records[(country_entry, year)].items():
             added_chemical_keys.add(chemical_key)
             final_list.append(record)
 
@@ -338,7 +407,7 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
             if chemical_key not in added_chemical_keys:
                 cp_record_data = {
                     "country_programme_report": CPReport(
-                        country_id=country, year=year, version=0
+                        country_id=country_entry, year=year, version=0
                     ),
                     "substance": chemical if row.substance else None,
                     "blend": chemical if row.blend else None,
@@ -349,20 +418,21 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
     if not list_sort:
         return final_list
 
+    # Precompute keys to optimize sorting
+    keyed = []
+    inf = float("inf")
+    for r in final_list:
+        year = r.country_programme_report.year
+        country_name = getattr(r.country_programme_report.country, "name", "") or ""
+        if getattr(r, "substance", None):
+            sort_order = getattr(r.substance, "sort_order", None) or inf
+        else:
+            sort_order = getattr(r.blend, "sort_order", None) or inf
+        keyed.append(((year, country_name, sort_order), r))
+
     # sort the final list
-    final_list.sort(
-        key=lambda x: (
-            (
-                x.country_programme_report.year,
-                x.country_programme_report.country.name,
-                (
-                    x.substance.sort_order or float("inf")
-                    if x.substance
-                    else x.blend.sort_order or float("inf")
-                ),
-            )
-        )
-    )
+    keyed.sort(key=lambda t: t[0])
+    final_list = [r for _, r in keyed]
 
     return final_list
 

@@ -2,16 +2,36 @@ name: "CI-azure"
 
 on:
   workflow_dispatch:
+    inputs:
+      build_app:
+        description: "Build app image"
+        type: boolean
+        default: true
+
+      build_nextjs:
+        description: "Build nextjs image"
+        type: boolean
+        default: true
+
+      build_nginx:
+        description: "Build nginx image"
+        type: boolean
+        default: false
 
 jobs:
   docker-build:
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/docker-build.yml
-    # with:
-    #   SENTRY_DSN: ${{ vars.PROD_SENTRY_DSN }}
-    #   SENTRY_ENVIRONMENT: ${{ vars.PROD_SENTRY_ENVIRONMENT }}
+    with:
+      build_app: ${{ inputs.build_app }}
+      build_nextjs: ${{ inputs.build_nextjs }}
+      build_nginx: ${{ inputs.build_nginx }}
+      # SENTRY_DSN: ${{ vars.PROD_SENTRY_DSN }}
+      # SENTRY_ENVIRONMENT: ${{ vars.PROD_SENTRY_ENVIRONMENT }}
+
   deploy-azure:
     needs: docker-build
+    if: needs.docker-build.outputs.images_built == 'true'
     uses: ./.github/workflows/deploy-azure.yml
     secrets:
       AZURE_SSH_USER: ${{ secrets.AZURE_SSH_USER }}

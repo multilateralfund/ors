@@ -1,3 +1,5 @@
+# pylint: disable=W0212,R0914
+
 """
 Country-programme consumption and production trends.
 
@@ -33,6 +35,8 @@ from core.models.country import Country
 from core.models.country_programme import CPReport
 from core.models.country_programme_archive import CPReportArchive
 
+from typing import Any
+
 # The year suffix carries the figure; every other key on those rows is metadata.
 ODS_CONSUMPTION_PREFIX = "record_value_"
 HFC_CONSUMPTION_PREFIX = "consumption_co2_"
@@ -60,7 +64,7 @@ OTHER_GROUP_NAME = "Other substances"
 GROUP_KEY_BY_ID = {group_id: key for group_id, key, _name in ANNEX_GROUPS}
 
 # [[year, value], ...] ascending.
-Series = list[list[float]]
+Series = dict[str, dict[str, dict[int, float]]]
 ByYear = dict[str, dict[int, float]]
 # country -> group key -> year -> value
 ByGroup = dict[str, dict[str, dict[int, float]]]
@@ -81,11 +85,20 @@ class CountryProgrammeTrends:
 
     def consumption_odp_by_group(self, country_name: str) -> GroupedSeries | None:
         """Section-A consumption in ODP tonnes, split by Protocol group."""
-        return _grouped_series(self.ods_consumption.get(country_name))
+        result = _prepare_line_chart_grouped_trend(
+            _grouped_series(self.ods_consumption.get(country_name)),
+            "ODS Consumption",
+            "",
+        )
+        return result
 
     def consumption_co2(self, country_name: str) -> Series | None:
         """Annex-F consumption in CO2-eq tonnes, or ``None`` if data doesn't exist."""
-        return _series(self.hfc_consumption.get(country_name))
+        return _prepare_line_chart_trend(
+            _series(self.hfc_consumption.get(country_name)),
+            "HFC Consumption",
+            "",
+        )
 
     def production_odp_by_group(self, country_name: str) -> GroupedSeries | None:
         """Production ODP tonnes time series, split by Protocol group."""
@@ -93,10 +106,18 @@ class CountryProgrammeTrends:
         produced = any(
             value for series in (by_group or {}).values() for value in series.values()
         )
-        return _grouped_series(by_group) if produced else None
+        return (
+            _prepare_line_chart_grouped_trend(
+                _grouped_series(by_group),
+                "ODS Production",
+                "",
+            )
+            if produced
+            else None
+        )
 
 
-def load_trends() -> CountryProgrammeTrends:
+def load_trends(country=None) -> CountryProgrammeTrends:
     """Build the whole portfolio's trends in one pass."""
     span = _reported_years()
     if span is None:
@@ -104,20 +125,19 @@ def load_trends() -> CountryProgrammeTrends:
 
     min_year, max_year = span
     export = CPDataExtractionAllExport()
-    existent_reports = export.get_existent_reports(min_year, max_year)
+    existent_reports = export.get_existent_reports(min_year, max_year, country)
     consumption_set = export.get_consumption_set(min_year, max_year, list_sort=False)
 
     # Called, not reimplemented, so that the consumption rules and the ODP and
     # GWP conversions keep one definition. Change them there and this follows;
     # rename or re-signature them and this breaks loudly.
-    # pylint: disable=W0212
     return CountryProgrammeTrends(
         ods_consumption=_consumption_by_group(
-            min_year, max_year, consumption_set, existent_reports
+            min_year, max_year, consumption_set, existent_reports, country
         ),
         hfc_consumption=_totalled(
             export._get_hfc_consumption_data(
-                min_year, max_year, consumption_set, existent_reports
+                min_year, max_year, consumption_set, existent_reports, list_sort=False
             ),
             HFC_CONSUMPTION_PREFIX,
         ),
@@ -171,7 +191,11 @@ def _seed_reported_years(totals: ByGroup, existent_reports: dict) -> None:
 
 
 def _consumption_by_group(
-    min_year: int, max_year: int, consumption_set: set, existent_reports: dict
+    min_year: int,
+    max_year: int,
+    consumption_set: set,
+    existent_reports: dict,
+    country: Country | None,
 ) -> ByGroup:
     """Section-A consumption in ODP tonnes, per country, group and year."""
     names = dict(Country.objects.values_list("id", "name"))
@@ -180,27 +204,51 @@ def _consumption_by_group(
         max_year,
         [models.Q(substance__isnull=False), models.Q(section=CONSUMPTION_SECTION)],
         list_sort=False,
+        country=country,
     )
 
     totals: ByGroup = {}
+
+    names_get = names.get
+    cons_contains = consumption_set.__contains__
+    group_key_fn = _group_key
+    totals_setdefault = totals.setdefault
+
     for record in records:
-        key = _group_key(record)
-        report = record.country_programme_report
-        country_name = names.get(report.country_id)
-        if key is None or country_name is None:
+        sub = getattr(record, "substance", None)
+        if sub is None:
             continue
-        using_consumption_value = (
-            country_name,
-            report.year,
-            record.section,
-        ) in consumption_set
-        value = float(
-            record.get_consumption_value(using_consumption_value) or 0
-        ) * float(record.substance.odp or 0)
-        series = totals.setdefault(country_name, {}).setdefault(key, {})
+
+        key = group_key_fn(record)
+        if key is None:
+            continue
+
+        report = record.country_programme_report
+        country_name = names_get(report.country_id)
+        if country_name is None:
+            continue
+
+        using_consumption_value = cons_contains(
+            (country_name, report.year, record.section)
+        )
+
+        consumption_val = record.get_consumption_value(using_consumption_value) or 0.0
+        odp_val = getattr(sub, "odp", 0) or 0
+
+        value = float(consumption_val) * float(odp_val)
+        country_dict = totals_setdefault(country_name, {})
+        series = country_dict.setdefault(key, {})
         series[report.year] = series.get(report.year, 0.0) + value
 
     _seed_reported_years(totals, existent_reports)
+
+    # remove groups where every value is zero
+    for country_name, by_group in list(totals.items()):
+        for group_key, by_year in list(by_group.items()):
+            if all(float(value) == 0 for value in by_year.values()):
+                del by_group[group_key]
+        if not by_group:
+            del totals[country_name]
     return totals
 
 
@@ -249,25 +297,119 @@ def _grouped_series(
         return None
     years = sorted({year for series in by_group.values() for year in series})
     grouped = {
-        key: {
+        "years": years,
+    }
+    grouped["values"] = [
+        {
             "name": name,
             "values": [
-                [year, round(by_group.get(key, {}).get(year, 0.0), 2)] for year in years
+                round(by_group.get(key, {}).get(year, 0.0), 2) for year in years
             ],
         }
         for _group_id, key, name in ANNEX_GROUPS
-    }
+        if any(by_group.get(key, {}).values())
+    ]
+
     residual = by_group.get(OTHER_GROUP_KEY)
     if residual:
-        grouped[OTHER_GROUP_KEY] = {
-            "name": OTHER_GROUP_NAME,
-            "values": [[year, round(residual.get(year, 0.0), 2)] for year in years],
-        }
+        grouped["values"].append(
+            {
+                "name": OTHER_GROUP_NAME,
+                "values": [round(residual.get(year, 0.0), 2) for year in years],
+            }
+        )
     return grouped
 
 
+def _prepare_line_chart_grouped_trend(
+    grouped_series: GroupedSeries, title: str, subtitle: str
+) -> dict[str, Any]:
+    """Prepare the grouped series data for line chart visualization."""
+
+    if grouped_series is None:
+        return {
+            "type": "line",
+            "title": title,
+            "subtitle": subtitle,
+            "categories": [],
+            "series": [],
+        }
+    if title == "ODS Production":
+        colors = [
+            "var(--deep-teal)",
+            "var(--data-orange-shade)",
+            "var(--data-orange)",
+            "var(--data-orange-tint-1)",
+            "var(--data-orange-tint-2)",
+            "var(--data-orange-tint-3)",
+        ]
+    else:
+        colors = [
+            "var(--deep-teal)",
+            "var(--data-purple-shade-2)",
+            "var(--data-purple-shade-1)",
+            "var(--data-purple)",
+            "var(--data-purple-tint-1)",
+            "var(--data-purple-tint-2)",
+            "var(--un-light-grey)",
+        ]
+
+    colors = [
+        "var(--deep-teal)",
+        "var(--purple)",
+        "var(--purple-mid)",
+        "var(--purple-tint)",
+    ]
+
+    return {
+        "type": "line",
+        "title": title,
+        "subtitle": subtitle,
+        "categories": grouped_series["years"],
+        "series": [
+            {
+                "name": series["name"],
+                "color": colors[i % len(colors)],
+                "data": series["values"],
+            }
+            for i, series in enumerate(grouped_series["values"])
+        ],
+    }
+
+
+def _prepare_line_chart_trend(
+    series: Series, title: str, subtitle: str
+) -> dict[str, Any]:
+    """Prepare the grouped series data for line chart visualization."""
+
+    if series is None:
+        return {
+            "type": "line",
+            "title": title,
+            "subtitle": subtitle,
+            "categories": [],
+            "series": [],
+        }
+    return {
+        "type": "line",
+        "title": title,
+        "subtitle": subtitle,
+        "categories": series["years"],
+        "series": [
+            {
+                "name": "",
+                "color": "var(--deep-teal)",
+                "data": series["values"],
+            }
+        ],
+    }
+
+
 def _series(by_year: dict[int, float] | None) -> Series | None:
-    """``[[year, value], ...]`` ascending. Zero years are kept."""
+    """`` ["years": [...], "values": [...]]`` ascending. Zero years are kept."""
     if not by_year:
         return None
-    return [[year, round(value, 2)] for year, value in sorted(by_year.items())]
+    return {
+        "years": sorted(by_year.keys()),
+        "values": [round(value, 2) for _, value in sorted(by_year.items())],
+    }

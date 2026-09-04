@@ -7,6 +7,8 @@ narrowed to one country, so these read the same primitives the fund-wide
 figures do and get a country's worth of answer back.
 """
 
+# pylint: disable=C0302,R1710
+
 from functools import partial
 from typing import Any
 
@@ -20,6 +22,7 @@ from core.api.dashboard_metrics.classify import (
 )
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
+    format_money,
     funds_pair,
     grouped,
     grouped_row,
@@ -181,10 +184,48 @@ def attr_hcfc_lvc(context: MetricContext) -> str | None:
     return classify.lvc_status(_entry(context))
 
 
+def attr_ods_licensing(context: MetricContext) -> str | None:
+    """ODS import/export licensing system exists, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.ods_licensing else "No"
+
+
+def attr_ods_quota(context: MetricContext) -> str | None:
+    """ODS quota system exist, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.ods_quota else "No"
+
+
+def attr_hfc_licensing(context: MetricContext) -> str | None:
+    """HFC-specific licensing system exists, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.hfc_licensing else "No"
+
+
 def attr_nou_ministry(context: MetricContext) -> str | None:
     """The ministry or office the national ozone unit sits in."""
     country = _country(context)
     return _text(country.ozone_unit) if country else None
+
+
+def attr_nou_name(context: MetricContext) -> str | None:
+    """The contact person for the national ozone unit."""
+    country = _country(context)
+    return _text(country.ozone_unit_name) if country else None
+
+
+def attr_hfc_quota(context: MetricContext) -> str | None:
+    """HFC-specific quota system exists, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.hfc_quota else "No"
 
 
 # What a project reports having established.
@@ -254,7 +295,36 @@ def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
     table = grouped(context.projects, _theme_of)
     order = {theme: rank for rank, theme in enumerate(taxonomy.THEME_ORDER)}
     table.sort(key=lambda row: order.get(row["group"], len(order)))
-    return table or None
+    groups = taxonomy.THEME_STRUCTURE
+    index = 0
+    total_value = theme_total(context)
+    for group in groups:
+        for item in group["items"]:
+            try:
+                if not table[index]["group"] == item["label"]:
+                    item["percent"] = 0
+                    item["displayValue"] = format_money(0)
+                    continue
+            except (IndexError, TypeError):
+                item["percent"] = 0
+                item["displayValue"] = format_money(0)
+                continue
+            item["percent"] = round(
+                table[index]["funds_plus_psc"] / theme_total(context) * 100, 2
+            )
+            item["displayValue"] = format_money(table[index]["funds_plus_psc"])
+            index += 1
+    return {
+        "type": "bar_list",
+        "title": "Funding by project theme",
+        "subtitle": "Approved funding split by project theme",
+        "subtitle_note": None,
+        "groups": groups,
+        "total": {
+            "label": "TOTAL APPROVED",
+            "displayValue": format_money(total_value),
+        },
+    }
 
 
 def theme_total(context: MetricContext) -> float:
@@ -291,14 +361,50 @@ def sector_tonnage(
     for row in rows:
         buckets.setdefault(classify.country_sector_bucket(row.project), []).append(row)
 
-    table = [
-        {
-            **grouped_row(bucket, buckets.get(bucket, [])),
-            "tonnage": phase_out(buckets.get(bucket, []), field),
-        }
-        for bucket in classify.COUNTRY_SECTOR_ORDER
-    ]
-    return table if any(row["tonnage"] for row in table) else None
+    table = sorted(
+        [
+            {
+                **grouped_row(bucket, buckets.get(bucket, [])),
+                "tonnage": phase_out(buckets.get(bucket, []), field),
+            }
+            for bucket in classify.COUNTRY_SECTOR_ORDER
+        ],
+        key=lambda row: row["tonnage"],
+        reverse=True,
+    )
+    if not any(row["tonnage"] for row in table):
+        return
+    total = sum(row["tonnage"] for row in table)
+
+    coloration = (
+        taxonomy.SECTOR_HFC_COLORING if family == HFC else taxonomy.SECTOR_HCFC_COLORING
+    )
+
+    return {
+        "type": "donut",
+        "title": "Tonnage approved - HFCs",
+        "subtitle": "CO2-EQ-Tonnes, breakdown by sector",
+        "subtitle_note": "Consumption only",
+        "donuts": [
+            {
+                "label": None,
+                "total": str(total),
+                "total_label": "TOTAL",
+                "total_position": "above",
+                "series": [
+                    {
+                        "name": row["group"],
+                        "value": row["tonnage"],
+                        "displayValue": str(row["tonnage"]),
+                        "color": coloring["color"],
+                        "icon": coloring["icon"],
+                    }
+                    for row, coloring in zip(table, coloration)
+                ],
+            }
+        ],
+        "meta": {},
+    }
 
 
 def prod_tonnage(context: MetricContext) -> float | None:
@@ -411,17 +517,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - does an ODS import/export licensing system exist",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="Project.upgrade_of_imp_exp_licensing",
-        compute=None,
-        unavailable_reason=(
-            "No country-level licensing field, the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="ods_licensing", labels=placeholders.YES_NO
-        ),
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.ods_licensing",
+        compute=attr_ods_licensing,
     ),
     Metric(
         metric_id="attr_ods_quota",
@@ -429,17 +529,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - does an ODS quota system exist",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="Project.upgrade_of_quota_system",
-        compute=None,
-        unavailable_reason=(
-            "No country-level quota field, the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="ods_quota", labels=placeholders.YES_NO
-        ),
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.ods_quota",
+        compute=attr_ods_quota,
     ),
     Metric(
         metric_id="attr_hfc_licensing",
@@ -447,17 +541,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - HFC-specific licensing system",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="none",
-        compute=None,
-        unavailable_reason=(
-            "No HFC-specific licensing field exists, the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="hfc_licensing", labels=placeholders.YES_NO
-        ),
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.hfc_licensing",
+        compute=attr_hfc_licensing,
     ),
     Metric(
         metric_id="attr_hfc_quota",
@@ -465,17 +553,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - HFC-specific quota system",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="none",
-        compute=None,
-        unavailable_reason=(
-            "No HFC-specific quota field exists (no ODS/HFC split), the Country field is pending."
-        ),
-        placeholder=partial(
-            placeholders.choice, slug="hfc_quota", labels=placeholders.YES_NO
-        ),
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.hfc_quota",
+        compute=attr_hfc_quota,
     ),
     Metric(
         metric_id="attr_hfc_group",
@@ -519,15 +601,11 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Regulatory status",
         kind=Kind.SCALAR,
         unit=None,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula="country attribute - NOU contact person name",
-        db_source="PENDING-COUNTRY-FIELD",
-        src_model_field="none",
-        compute=None,
-        unavailable_reason=(
-            "No contact-person field on Country, the Country field is pending."
-        ),
-        placeholder=placeholders.nou_name,
+        db_source="DB-COMPUTABLE",
+        src_model_field="Country.ozone_unit_name",
+        compute=attr_nou_name,
     ),
     Metric(
         metric_id="attr_certification",

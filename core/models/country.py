@@ -47,6 +47,7 @@ class Country(models.Model):
     full_name = models.CharField(max_length=256)
     iso3 = models.CharField(max_length=3, unique=True, null=True, blank=True)
     ozone_unit = models.TextField(null=True, blank=True)
+    ozone_unit_name = models.CharField(max_length=256, null=True, blank=True)
     is_lvc = models.BooleanField(default=False)
     lvc_baseline = models.FloatField(null=True, blank=True)
     ozone_id = models.IntegerField(null=True, blank=True)
@@ -59,6 +60,22 @@ class Country(models.Model):
     is_a2 = models.BooleanField(default=False)
     consumption_category = models.CharField(max_length=100, blank=True)
     consumption_group = models.CharField(max_length=100, blank=True)
+    ods_licensing = models.BooleanField(
+        default=False,
+        verbose_name="ODS import/export licensing system exists",
+    )
+    ods_quota = models.BooleanField(
+        default=False,
+        verbose_name="ODS quota system exist",
+    )
+    hfc_licensing = models.BooleanField(
+        default=False,
+        verbose_name="HFC-specific licensing system exists",
+    )
+    hfc_quota = models.BooleanField(
+        default=False,
+        verbose_name="HFC-specific quota system exists",
+    )
 
     # APR-specific fields
     abbr_for_apr = models.CharField(

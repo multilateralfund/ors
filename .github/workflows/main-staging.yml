@@ -5,20 +5,42 @@ on:
     branches:
       - "staging"
 
+  workflow_dispatch:
+    inputs:
+      build_app:
+        description: "Build app image"
+        type: boolean
+        default: true
+
+      build_nextjs:
+        description: "Build nextjs image"
+        type: boolean
+        default: true
+
+      build_nginx:
+        description: "Build nginx image"
+        type: boolean
+        default: false
+
   workflow_call:
 
 jobs:
   docker-build:
+    if: github.ref == 'refs/heads/staging'
     uses: ./.github/workflows/docker-build.yml
     with:
       SENTRY_DSN: ${{ vars.STAGING_SENTRY_DSN }}
       SENTRY_ENVIRONMENT: ${{ vars.STAGING_SENTRY_ENVIRONMENT }}
+      build_app: ${{ github.event_name == 'workflow_dispatch' && inputs.build_app || false }}
+      build_nextjs: ${{ github.event_name == 'workflow_dispatch' && inputs.build_nextjs || false }}
+      build_nginx: ${{ github.event_name == 'workflow_dispatch' && inputs.build_nginx || false }}
     secrets:
       VITE_TENANT_ID: ${{ secrets.STAGING_VITE_TENANT_ID || '' }}
       VITE_FRONTEND_CLIENT_ID: ${{ secrets.STAGING_VITE_FRONTEND_CLIENT_ID || '' }}
       VITE_APPLICATION_ID_URI: ${{ secrets.STAGING_VITE_APPLICATION_ID_URI || '' }}
   deploy-staging:
     needs: docker-build
+    if: needs.docker-build.outputs.images_built == 'true'
     uses: ./.github/workflows/deploy-staging.yml
     secrets:
       STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}

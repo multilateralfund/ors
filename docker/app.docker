@@ -1,29 +1,36 @@
-FROM python:3.11
+# syntax=docker/dockerfile:1
+
+FROM python:3.11-slim-trixie
 
 ARG REQFILE=requirements.txt
 
-ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-RUN mkdir /.fs /app
 WORKDIR /app
-VOLUME ["/.fs"]
 
-RUN runDeps="wait-for-it gettext build-essential gcc libreoffice-calc-nogui" \
-    && apt-get update -y \
-    && apt-get install -y --no-install-recommends $runDeps \
-    && apt-get clean \
-    && rm -vrf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libreoffice-calc-nogui \
+        media-types \
+        wait-for-it \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
-COPY $REQFILE .
-RUN pip install --no-cache-dir -r $REQFILE
+COPY requirements.txt requirements-dev.txt ./
 
-COPY . /app
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r "${REQFILE}"
+
+COPY pytest.ini ./
+COPY manage.py ./
+COPY multilateralfund/ ./multilateralfund/
+COPY core/ ./core/
 
 COPY docker/wait_for_services.sh /usr/local/bin/wait_for_services.sh
-COPY docker/entrypoint.sh /usr/local/bin/
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+RUN mkdir -p /app/.fs
+VOLUME ["/app/.fs"]
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["run"]

@@ -12,7 +12,7 @@ services:
     restart: always
 
   app:
-    image: ghcr.io/multilateralfund/multilateralfund-app:${DOCKER_TAG:-latest}
+    image: ghcr.io/multilateralfund/multilateralfund-app:${DOCKER_TAG:-main}
     env_file:
       - .env
     environment:
@@ -30,12 +30,12 @@ services:
     mem_limit: 2g
 
   nextjs:
-    image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-latest}
+    image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-main}
     volumes:
       - nextjs_data:/frontend/.shared
 
   nginx:
-    image: ghcr.io/multilateralfund/multilateralfund-nginx:${DOCKER_TAG:-latest}
+    image: ghcr.io/multilateralfund/multilateralfund-nginx:${DOCKER_TAG:-main}
     volumes:
       - app_data:/.fs
       - nextjs_data:/.next
@@ -55,8 +55,9 @@ services:
     restart: always
 
   celery:
-    image: ghcr.io/multilateralfund/multilateralfund-celery:${DOCKER_TAG:-latest}
-    command: celery -A multilateralfund worker --beat -l info --without-mingle --without-gossip
+    image: ghcr.io/multilateralfund/multilateralfund-app:${DOCKER_TAG:-main}
+    entrypoint: ["celery"]
+    command: ["-A", "multilateralfund", "worker", "--beat", "-l", "info", "--without-mingle", "--without-gossip"]
     environment:
       - CELERY_BROKER_URL=amqp://rabbitmq:5672
       - CELERY_RESULT_BACKEND=redis://redis:6379

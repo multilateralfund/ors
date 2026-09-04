@@ -4,6 +4,7 @@ The project population and the country/region entries every metric is built on.
 See ``docs/dashboard_metrics.md``.
 """
 
+# pylint: disable=R0911
 import logging
 from collections.abc import Sequence
 from typing import Any, Callable
@@ -287,3 +288,26 @@ def resolve_entry(key: str) -> tuple[Country, dict[str, Any]] | None:
         if entry["key"].upper() == wanted:
             return country, entry
     return None
+
+
+def format_money(num: float) -> str:
+    """Format a number as a money string with suffixes."""
+    sign = "-" if num < 0 else ""
+    num = abs(num)
+
+    if num >= 1_000_000_000:
+        if num % 1_000_000_000 == 0:
+            return f"${sign}{num // 1_000_000_000}B"
+        return f"${sign}{round(num / 1_000_000_000, 1)}B"
+
+    if num >= 1_000_000:
+        if num % 1_000_000 == 0:
+            return f"${sign}{num // 1_000_000}M"
+        return f"${sign}{round(num / 1_000_000, 1)}M"
+
+    if num >= 1_000:
+        if num % 1_000 == 0:
+            return f"${sign}{num // 1_000}K"
+        return f"${sign}{round(num / 1_000, 1)}K"
+
+    return f"${sign}{round(num, 0):,}"

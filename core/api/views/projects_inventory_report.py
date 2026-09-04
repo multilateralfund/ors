@@ -74,7 +74,7 @@ class ProjectsInventoryReportExport:
                         "ods_substance",
                         "ods_blend",
                         "ods_replacement",
-                    ),
+                    ).order_by("sort_order"),
                 ),
                 Prefetch(
                     "annual_reports",

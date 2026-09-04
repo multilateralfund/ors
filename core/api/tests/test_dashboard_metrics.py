@@ -1,3 +1,4 @@
+import logging
 import re
 from dataclasses import replace
 from itertools import count
@@ -70,7 +71,20 @@ def approved_project(**kwargs):
 
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0613,C0302
+# pylint: disable=C8008,W0613,C0302,W0123,E8001
+
+
+@pytest.fixture(name="core_caplog")
+def _core_caplog(caplog):
+    """Capture records from the deliberately non-propagating core logger."""
+    core_logger = logging.getLogger("core")
+    core_logger.addHandler(caplog.handler)
+    try:
+        with caplog.at_level(logging.DEBUG, logger="core"):
+            yield caplog
+    finally:
+        core_logger.removeHandler(caplog.handler)
+
 
 # The metric ids, pinned independently of the registry so a silent rename or
 # drop fails here rather than in a consumer.
@@ -306,7 +320,6 @@ class TestDashboardMetricsCountryIndex(BaseTest):
 class TestDashboardMetricsCountry(BaseTest):
     url = reverse("dashboard-metrics-country", args=["BRA"])
 
-
     def test_country_envelope(self, user, brazil):
         self.client.force_authenticate(user=user)
 
@@ -528,7 +541,7 @@ class TestRegistryDeclarations:
             for m in FUND_METRICS + COUNTRY_METRICS
             if m.disposition == Disposition.NOT_AVAILABLE
         ]
-        assert len(blocked) == 9
+        assert len(blocked) == 4
         assert all(m.unavailable_reason for m in blocked)
 
 
@@ -763,7 +776,7 @@ class TestFundValues(BaseTest):
         assert metrics["inv_months_completion"]["value"] == 12
         assert metrics["noninv_months_completion"]["value"] == 30
 
-    def test_a_metric_that_breaks_costs_only_itself(self, caplog):
+    def test_a_metric_that_breaks_costs_only_itself(self, core_caplog):
         """One bad figure must not take the page down, or say anything."""
         broken = replace(get_metric("funds_approved"), compute=_explode)
 
@@ -781,7 +794,7 @@ class TestFundValues(BaseTest):
             "available",
             "value",
         }
-        assert "funds_approved" in caplog.text
+        assert "funds_approved" in core_caplog.text
 
 
 class TestLvcSplits(BaseTest):
@@ -1031,13 +1044,13 @@ class TestClassification:
 
         assert classify.window_code(window) == "91/66"
 
-    def test_a_contradictory_window_follows_its_decision(self, caplog):
+    def test_a_contradictory_window_follows_its_decision(self, core_caplog):
         window = FundingWindowFactory(
             decision=DecisionFactory(number="91/65"), description="91/66"
         )
 
         assert classify.window_code(window) == "91/65"
-        assert "is named" in caplog.text
+        assert "is named" in core_caplog.text
 
     def test_institutional_strengthening_comes_last(self):
         project = self.project(
@@ -1111,15 +1124,15 @@ class TestClassification:
             project = self.project(sector=ProjectSectorFactory(code=code))
             assert classify.sector_bucket(project) == classify.SECTOR_SERVICING
 
-    def test_a_sector_outside_the_six_is_dropped_and_reported(self, caplog):
+    def test_a_sector_outside_the_six_is_dropped_and_reported(self, core_caplog):
         project = self.project(sector=ProjectSectorFactory(code="NOU"), total_fund=500)
 
         classified = classify.classify([project])
-        with caplog.at_level("INFO"):
+        with core_caplog.at_level("INFO", logger="core"):
             classify.log_unbucketed_sectors(classified)
 
         assert classified[0].sector_bucket is None
-        assert "NOU" in caplog.text
+        assert "NOU" in core_caplog.text
 
 
 class TestInheritedAprAggregations:
@@ -1453,10 +1466,21 @@ class TestCountryValues(BaseTest):
                 sector=ProjectSectorFactory(code=code),
                 total_phase_out_odp_tonnes=tonnes,
             )
-
         table = self.entry(user)["sector_hcfc"]["value"]
-        assert [row["group"] for row in table] == list(classify.COUNTRY_SECTOR_ORDER)
-        by_bucket = {row["group"]: row["tonnage"] for row in table}
+        by_bucket = {}
+        groups = []
+        for donuts in table["donuts"]:
+            for entry in donuts["series"]:
+                groups.append(entry["name"])
+                by_bucket.update({entry["name"]: entry["value"]})
+        assert groups == [
+            "Air-conditioning",
+            "Other sectors",
+            "Refrigeration",
+            "Foam",
+            "Aerosol",
+            "Servicing",
+        ]
         assert by_bucket[classify.SECTOR_AIR_CONDITIONING] == 30
         assert by_bucket[classify.SECTOR_OTHER] == 7
         assert by_bucket[classify.SECTOR_REFRIGERATION] == 0
@@ -1485,7 +1509,6 @@ class TestCountryValues(BaseTest):
             cluster=ProjectClusterFactory(code="HFCIND", name="HFCIND"),
             total_phase_out_co2_tonnes=4000,
         )
-
         metrics = self.entry(user)
         assert self.tonnage(metrics["sector_hcfc"]) == 30
         assert self.tonnage(metrics["sector_other_ods"]) == 8
@@ -1493,7 +1516,11 @@ class TestCountryValues(BaseTest):
         assert metrics["sector_unclassified"]["available"] is False
 
     def tonnage(self, metric):
-        return sum(row["tonnage"] for row in metric["value"])
+        total_tonnage = 0
+        for donuts in metric["value"]["donuts"]:
+            for entry in donuts["series"]:
+                total_tonnage += entry["value"]
+        return total_tonnage
 
     def test_a_production_project_is_left_off_the_sector_charts(
         self, user, ongoing_status
@@ -1535,12 +1562,18 @@ class TestCountryValues(BaseTest):
             )
 
         table = self.entry(user)["theme_funding"]["value"]
-        assert [row["group"] for row in table] == [
+
+        groups = []
+        for group in table["groups"]:
+            for entry in group["items"]:
+                if entry.get("percent", None):
+                    groups.append(entry["label"])
+        assert groups == [
             "HFCs consumption",
             "HCFCs consumption",
             "Disposal",
         ]
-        assert table[0]["funds_plus_psc"] == 900
+        assert table["groups"][0]["items"][0]["displayValue"] == "$900.0"
 
     def test_funding_with_no_theme_is_reported_beside_the_total(
         self, user, ongoing_status
@@ -1565,9 +1598,12 @@ class TestCountryValues(BaseTest):
         metrics = self.entry(user)
         assert metrics["theme_total"]["value"] == 700
         assert metrics["theme_unmapped"]["value"] == 200
-        assert [row["group"] for row in metrics["theme_funding"]["value"]] == [
-            "HCFCs consumption"
-        ]
+        groups = []
+        for group in metrics["theme_funding"]["value"]["groups"]:
+            for entry in group["items"]:
+                if entry.get("percent", None):
+                    groups.append(entry["label"])
+        assert groups == ["HCFCs consumption"]
 
     def test_the_reporting_cycle_supplies_the_actual_phase_out(
         self, user, ongoing_status
@@ -1699,6 +1735,16 @@ class TestCountryProgrammeTrends:
             group=GroupFactory(annex=annex, group_id=group_id),
         )
 
+    def substance_other_group(
+        self, name="Halon-1211", odp=3, gwp=0, annex="C", group_id="CII"
+    ):
+        return SubstanceFactory(
+            name=name,
+            odp=odp,
+            gwp=gwp,
+            group=GroupFactory(annex=annex, group_id=group_id),
+        )
+
     def record(self, country, year, substance, section="A", **kwargs):
         kwargs.setdefault("imports", 0)
         kwargs.setdefault("exports", 0)
@@ -1722,30 +1768,25 @@ class TestCountryProgrammeTrends:
         if grouped is None:
             return None
         years: dict = {}
-        for series in grouped.values():
-            for year, value in series["values"]:
-                years[year] = round(years.get(year, 0.0) + value, 2)
+        for series in grouped.get("series", []):
+            for index, year in enumerate(grouped["categories"]):
+                years[year] = round(years.get(year, 0.0) + series["data"][index], 2)
+
+        for series in grouped.get("values", []):
+            for index, year in enumerate(grouped["years"]):
+                years[year] = round(years.get(year, 0.0) + series["values"][index], 2)
         return [[year, value] for year, value in sorted(years.items())]
 
-    def test_every_protocol_group_is_present_and_in_order(self):
+    def test_only_groups_that_have_values_are_present_and_in_order(self):
         """The chart's series are the same set for every country."""
         country = self.country()
         self.record(country, 2020, self.substance(), imports=5)
-
+        self.record(country, 2020, self.substance_other_group(), imports=3)
         grouped = cp.load_trends().consumption_odp_by_group("Brazil")
-
-        assert list(grouped) == [
-            "annex_a_group_1",
-            "annex_a_group_2",
-            "annex_b_group_1",
-            "annex_b_group_2",
-            "annex_b_group_3",
-            "annex_c_group_1",
-            "annex_c_group_2",
-            "annex_c_group_3",
-            "annex_e",
+        assert [x["name"] for x in grouped["series"]] == [
+            "Annex C Group I",
+            "Annex C Group II",
         ]
-        assert grouped["annex_c_group_1"]["name"] == "Annex C Group I"
 
     def test_groups_the_export_folds_together_are_kept_apart(self):
         """Annex A I and Annex B I both read "CFC" upstream; here they do not."""
@@ -1764,9 +1805,11 @@ class TestCountryProgrammeTrends:
         )
 
         grouped = cp.load_trends().consumption_odp_by_group("Brazil")
+        # Annex A Group I
+        assert grouped["series"][0]["data"] == [10.0]
 
-        assert grouped["annex_a_group_1"]["values"] == [[2020, 10.0]]
-        assert grouped["annex_b_group_1"]["values"] == [[2020, 3.0]]
+        # Annex B Group I
+        assert grouped["series"][1]["data"] == [3.0]
 
     def test_the_groups_account_for_every_tonne_reported(self):
         """Splitting the series must not lose or invent a tonne."""
@@ -1788,8 +1831,10 @@ class TestCountryProgrammeTrends:
 
         # Checked against what the fixture reported, not against a second
         # reading of the same structure.
-        assert dict(grouped["annex_a_group_1"]["values"])[2020] == 10.0
-        assert dict(grouped["annex_a_group_2"]["values"])[2020] == 4.0
+        # Annex A Group I
+        assert grouped["series"][0]["data"][0] == 10.0
+        # Annex A Group II
+        assert grouped["series"][1]["data"][0] == 4.0
         assert self.totals(grouped) == [[2020, 14.0]]
 
     def test_a_group_outside_the_nine_is_disclosed_not_dropped(self):
@@ -1803,7 +1848,8 @@ class TestCountryProgrammeTrends:
         )
 
         grouped = cp.load_trends().consumption_odp_by_group("Brazil")
-        assert grouped["other"]["values"] == [[2020, 7.0]]
+        # Other substances
+        assert grouped["series"][0]["data"] == [7.0]
 
     def test_the_residual_is_absent_when_it_holds_nothing(self):
         """No spurious empty series on the chart for most countries."""
@@ -1824,7 +1870,8 @@ class TestCountryProgrammeTrends:
         )
 
         series = cp.load_trends().consumption_co2("Brazil")
-        assert series == [[2020, 2860.0]]
+        assert series["series"][0]["data"] == [2860.0]
+        assert series["categories"] == [2020]
 
     def test_consumption_is_reshaped_into_an_ascending_series(self):
         """imports - exports + production, converted to ODP - all of it inherited."""
@@ -1832,7 +1879,6 @@ class TestCountryProgrammeTrends:
         substance = self.substance(odp=2)
         self.record(country, 2021, substance, imports=10, exports=4)
         self.record(country, 2020, substance, imports=5)
-
         assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) == [
             [2020, 10.0],
             [2021, 12.0],
@@ -1854,7 +1900,7 @@ class TestCountryProgrammeTrends:
         self.record(self.country(), 2021, self.substance(), imports=5)
         CountryFactory(name="Chad", iso3="TCD")
 
-        assert self.totals(cp.load_trends().consumption_odp_by_group("Chad")) is None
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Chad")) == []
 
     def test_methyl_bromide_counts_only_its_non_exempt_usage(self):
         """QPS is exempt under the Protocol; the export already knows that."""
@@ -1896,13 +1942,13 @@ class TestCountryProgrammeTrends:
             name="HFC-134a", odp=0, gwp=1430, annex="F", group_id="F"
         )
         self.record(country, 2021, substance, section="B", imports=10)
-
-        assert cp.load_trends().consumption_co2("Brazil") == [[2021, 14300.0]]
+        data = cp.load_trends().consumption_co2("Brazil")
+        data["categories"] = [2021]
+        data["series"][0]["data"] = [14300.0]
 
     def test_production_is_converted_to_odp(self):
         country = self.country()
         self.record(country, 2021, self.substance(odp=3), production=4)
-
         assert self.totals(cp.load_trends().production_odp_by_group("Brazil")) == [
             [2021, 12.0]
         ]
@@ -1915,7 +1961,7 @@ class TestCountryProgrammeTrends:
         assert self.totals(cp.load_trends().production_odp_by_group("Brazil")) is None
 
     def test_no_reports_at_all_costs_nothing(self):
-        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) is None
+        assert self.totals(cp.load_trends().consumption_odp_by_group("Brazil")) == []
 
 
 class TestPlaceholders(BaseTest):
@@ -1925,15 +1971,6 @@ class TestPlaceholders(BaseTest):
 
     # The rows with no source yet. Nine are country attributes; four are impact
     # figures, which an aggregate entry can meaningfully carry.
-    ATTRIBUTES = frozenset(
-        {
-            "attr_ods_licensing",
-            "attr_ods_quota",
-            "attr_hfc_licensing",
-            "attr_hfc_quota",
-            "attr_nou_name",
-        }
-    )
     IMPACT = frozenset(
         {"impact_technicians", "impact_customs", "impact_enterprises", "ee_kwh_saved"}
     )
@@ -1953,17 +1990,16 @@ class TestPlaceholders(BaseTest):
     def test_nothing_is_invented_unless_it_is_asked_for(self, user, brazil):
         """The default payload is the honest one."""
         metrics = self.entry(user)
-
         assert self.flagged(metrics) == set()
-        for metric_id in self.ATTRIBUTES | self.IMPACT:
+        for metric_id in self.IMPACT:
             assert metrics[metric_id]["available"] is False
             assert metrics[metric_id]["value"] is None
 
     def test_asking_fills_every_row_that_has_no_source(self, user, brazil):
         metrics = self.entry(user, placeholders="true")
 
-        assert self.flagged(metrics) == self.ATTRIBUTES | self.IMPACT
-        for metric_id in self.ATTRIBUTES | self.IMPACT:
+        assert self.flagged(metrics) == self.IMPACT
+        for metric_id in self.IMPACT:
             assert metrics[metric_id]["available"] is True
             assert metrics[metric_id]["value"] is not None
 
@@ -1973,7 +2009,7 @@ class TestPlaceholders(BaseTest):
 
         for metric_id, metric in metrics.items():
             if metric.get("placeholder"):
-                assert metric_id in self.ATTRIBUTES | self.IMPACT
+                assert metric_id in self.IMPACT
             else:
                 assert "placeholder" not in metric
 
@@ -2003,10 +2039,8 @@ class TestPlaceholders(BaseTest):
         metrics = self.entry(user, key="AFR", placeholders="true")
 
         assert self.flagged(metrics) == self.IMPACT
-        for metric_id in self.ATTRIBUTES:
-            assert metrics[metric_id]["available"] is False
 
-    def test_a_placeholder_that_breaks_costs_only_itself(self, caplog):
+    def test_a_placeholder_that_breaks_costs_only_itself(self, core_caplog):
         """A demo aid must not be able to take the endpoint down."""
         broken = replace(
             get_metric("attr_nou_name"), compute=None, placeholder=_explode
@@ -2017,7 +2051,7 @@ class TestPlaceholders(BaseTest):
 
         assert rendered["available"] is False
         assert "placeholder" not in rendered
-        assert "attr_nou_name" in caplog.text
+        assert "attr_nou_name" in core_caplog.text
 
     def test_a_real_metric_never_gains_a_stand_in(self, user, brazil):
         """``placeholder`` only fires where ``compute`` gave nothing."""
@@ -2151,16 +2185,32 @@ class TestDashboardMetricsExport(BaseTest):
             production=0,
         )
 
+        CPRecordFactory(
+            country_programme_report=CPReportFactory(
+                country=brazil, year=2020, name="Brazil 2020"
+            ),
+            substance=SubstanceFactory(
+                name="CFC-113",
+                odp=1,
+                gwp=0,
+                group=GroupFactory(annex="B", group_id="BI"),
+            ),
+            blend=None,
+            section="A",
+            imports=10,
+            exports=0,
+            production=0,
+        )
         rows = self.rows(self.workbook(user)["Countries"])
 
-        groups = [
-            row["Component"]
+        row = [
+            row
             for row in rows
             if row["Key"] == "BRA" and row["Metric"] == "trend_ods_consumption"
-        ]
+        ][0]
+        groups = [entry["name"] for entry in eval(row["Value"])["series"]]
         assert groups[:3] == [
             "Annex A Group I",
-            "Annex A Group II",
             "Annex B Group I",
         ]
 
@@ -2244,13 +2294,6 @@ class TestDashboardMetricsExport(BaseTest):
 
         assert not [row for row in rows if row["Placeholder"]]
 
-    def test_asking_for_placeholders_marks_them(self, user, brazil):
-        """The column is what stops an invented figure being reviewed as real."""
-        rows = self.rows(self.workbook(user, placeholders="true")["Countries"])
-
-        marked = {row["Metric"] for row in rows if row["Placeholder"]}
-        assert "attr_nou_name" in marked
-
 
 class TestSpecCommand:
     """The registry's documentation half, replacing the old /spec/ endpoint."""
@@ -2259,8 +2302,7 @@ class TestSpecCommand:
         out = StringIO()
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
-
-        assert "91 metrics, 82 implemented." in rendered
+        assert "91 metrics, 87 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 

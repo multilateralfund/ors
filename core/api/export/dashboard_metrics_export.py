@@ -97,11 +97,17 @@ def _figures(metric: dict[str, Any]) -> list[tuple[str, Any]]:
     if not metric["available"] or metric["value"] is None:
         return [("", "")]
     kind, value = metric["kind"], metric["value"]
+    series_values = []
     if kind == "grouped_series" and isinstance(value, dict):
-        return [
-            (series.get("name", key), _points(series.get("values")))
-            for key, series in value.items()
-        ]
+        for index, year in enumerate(value.get("years", [])):
+            data = []
+            for entry in value.get("series", []):
+                data.append(
+                    entry.get("data", [])[index]
+                    if index < len(entry.get("data", []))
+                    else None
+                )
+                series_values.append((entry.get("name", ""), {year: data}))
     if kind in SERIES_KINDS:
         return [("", _points(value))]
     return list(_leaves(value))

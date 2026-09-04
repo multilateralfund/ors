@@ -141,6 +141,7 @@ def workbook_pdf_response(name, wb, orientation=None):
         libreoffice_bin = shutil.which("libreoffice")
         if libreoffice_bin is None:
             libreoffice_bin = shutil.which("soffice")
+
         subprocess.check_call(
             [
                 libreoffice_bin,
@@ -152,6 +153,7 @@ def workbook_pdf_response(name, wb, orientation=None):
             cwd=tmpdirname,
             shell=False,
         )
+
         return FileResponse(
             pdf_file.open("rb"),
             as_attachment=True,
