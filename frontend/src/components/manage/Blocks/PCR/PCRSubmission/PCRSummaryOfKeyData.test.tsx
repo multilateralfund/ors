@@ -60,7 +60,23 @@ const createInitialPCRData = () => ({
   sdgs_contribution: [],
 })
 
-const renderSummary = (initialPCRData = createInitialPCRData()) => {
+const createInitialErrors = () => ({
+  overview: {},
+  summary_of_key_data: {
+    pcr_projects: {},
+  },
+  results_assessment: {},
+  causes_of_delay: {},
+  lessons_learned: {},
+  gender_mainstreaming: {},
+  sdgs_contribution: {},
+  supporting_evidences: {},
+})
+
+const renderSummary = (
+  initialPCRData = createInitialPCRData(),
+  initialErrors = createInitialErrors(),
+) => {
   const setPCRData = vi.fn()
   const setErrors = vi.fn()
 
@@ -70,7 +86,7 @@ const renderSummary = (initialPCRData = createInitialPCRData()) => {
         {
           PCRData: initialPCRData,
           setPCRData,
-          errors: {},
+          errors: initialErrors,
           setErrors,
           pcrMetaproject: {
             data: {
