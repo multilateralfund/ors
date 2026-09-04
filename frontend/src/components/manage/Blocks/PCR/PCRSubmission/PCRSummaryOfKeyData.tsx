@@ -8,13 +8,18 @@ import {
 } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import { getProjectDuration } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+
 import {
   SubmitButton,
   ErrorsList,
   FieldErrorIndicator,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
-import { textAreaClassname } from '@ors/components/manage/Blocks/ProjectsListing/constants'
+import {
+  disabledClassName,
+  textAreaClassname,
+} from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import {
   DateInput,
   FormattedNumberInput,
@@ -45,6 +50,11 @@ import {
   PCRSummaryOfKeyDataType,
 } from '../interfaces'
 
+import { filter, find, map, omit } from 'lodash'
+import { IoTrash } from 'react-icons/io5'
+import { FiEdit } from 'react-icons/fi'
+import cx from 'classnames'
+import dayjs from 'dayjs'
 import {
   Button,
   Dialog,
@@ -61,9 +71,6 @@ import {
   ICellRendererParams,
   ValueGetterParams,
 } from 'ag-grid-community'
-import { filter, find, omit } from 'lodash'
-import { IoTrash } from 'react-icons/io5'
-import { FiEdit } from 'react-icons/fi'
 
 type SubstanceOption = ApiSubstance & { label: string }
 type DisposalTypeOption = { id: number; name: string; label: string }
@@ -148,10 +155,17 @@ const FieldGroup = ({
   </div>
 )
 
-const EmptyField = ({ label }: { label: string }) => (
+const ComputedField = ({ label, value }: { label: string; value: number }) => (
   <div>
     <Label>{label}</Label>
-    <div className="h-10 w-40 rounded-lg border border-solid border-gray-300 bg-gray-50" />
+    <FormattedNumberInput
+      id={label}
+      className={cx('!m-0 w-40', disabledClassName)}
+      value={value}
+      withoutDefaultValue={true}
+      decimalDigits={0}
+      disabled={true}
+    />
   </div>
 )
 
@@ -350,6 +364,9 @@ const PCRSummaryOfKeyData = () => {
     closeDialog()
   }
 
+  const formatDate = (date: string | null | undefined) =>
+    date ? dayjs(date).format('DD/MM/YYYY') : ''
+
   const summaryTableColumnDefs = useMemo<ColDef<ProjectType>[]>(
     () => [
       {
@@ -410,13 +427,15 @@ const PCRSummaryOfKeyData = () => {
         headerName: 'Date approved',
         minWidth: 135,
         valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatProjectValue(params.data?.date_approved),
+          formatProjectValue(formatDate(params.data?.date_approved)),
       },
       {
         headerName: 'Actual date of completion',
         minWidth: 165,
         valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatProjectValue(params.data?.actual_date_of_completion),
+          formatProjectValue(
+            formatDate(params.data?.actual_date_of_completion),
+          ),
       },
       {
         headerName: 'Funds approved',
@@ -523,7 +542,7 @@ const PCRSummaryOfKeyData = () => {
   const updateErrors = (field: string, index: number) => {
     setErrors((prevData: Record<string, any[]>) => ({
       ...prevData,
-      pcr_projects: prevData.pcr_projects.map((error, errorIndex) => {
+      pcr_projects: map(prevData.pcr_projects, (error, errorIndex) => {
         if (errorIndex !== projectErrorIndex) {
           return error
         }
@@ -542,6 +561,39 @@ const PCRSummaryOfKeyData = () => {
       }),
     }))
   }
+
+  const computedFields = useMemo(() => {
+    if (!editingProject) {
+      return {
+        planned_duration: 0,
+        actual_duration: 0,
+        delay: 0,
+      }
+    }
+
+    const dateApproved = editingProject.date_approved ?? null
+    const actualCompletionDate =
+      editingProject.actual_date_of_completion ?? null
+    const plannedCompletionDate =
+      draftSummaryData?.planned_date_of_completion ?? null
+
+    const plannedDuration =
+      getProjectDuration({
+        project_start_date: dateApproved,
+        project_end_date: plannedCompletionDate,
+      }) ?? 0
+    const actualDuration =
+      getProjectDuration({
+        project_start_date: dateApproved,
+        project_end_date: actualCompletionDate,
+      }) ?? 0
+
+    return {
+      planned_duration: Number(plannedDuration),
+      actual_duration: Number(actualDuration),
+      delay: Number(actualDuration) - Number(plannedDuration),
+    }
+  }, [editingProject, draftSummaryData])
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -656,6 +708,9 @@ const PCRSummaryOfKeyData = () => {
                             id={`planned-date-of-completion-${editingProject.id}`}
                             className="!m-0 w-48"
                             value={summaryData.planned_date_of_completion}
+                            formatValue={(value) =>
+                              dayjs(value).format('DD/MM/YYYY')
+                            }
                             onChange={(event) =>
                               updateSummaryData((projectData) => ({
                                 ...projectData,
@@ -669,9 +724,18 @@ const PCRSummaryOfKeyData = () => {
                           />
                         </div>
                       </div>
-                      <EmptyField label="Planned duration (months)" />
-                      <EmptyField label="Actual duration (months)" />
-                      <EmptyField label="Delay (months)" />
+                      <ComputedField
+                        label="Planned duration (months)"
+                        value={computedFields.planned_duration}
+                      />
+                      <ComputedField
+                        label="Actual duration (months)"
+                        value={computedFields.actual_duration}
+                      />
+                      <ComputedField
+                        label="Delay (months)"
+                        value={computedFields.delay}
+                      />
                     </div>
                   </FieldGroup>
                 </div>
@@ -984,6 +1048,9 @@ const PCRSummaryOfKeyData = () => {
                                 id={`equipment-disposal_date-${editingProject.id}-${index}`}
                                 className="!m-0 w-full flex-1"
                                 value={entry.disposal_date}
+                                formatValue={(value) =>
+                                  dayjs(value).format('DD/MM/YYYY')
+                                }
                                 onChange={(event) =>
                                   updateEquipment(
                                     index,
