@@ -50,9 +50,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
-  const hasOverviewDefaultErrors = hasErrorMessage(
-    errors.overview.additional_comments,
-  )
+  const hasOverviewDefaultErrors = hasErrorMessage(errors.overview)
   const hasResultsAssessmentDefaultErrors = hasErrorMessage(
     errors.results_assessment,
   )
@@ -61,6 +59,8 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const hasGenderMainstreamingDefaultErrors = hasErrorMessage(
     errors.gender_mainstreaming,
   )
+  const hasSDGsDefaultErrors = hasErrorMessage(errors.sdgs_contribution)
+  const hasEvidencesDefaultErrors = hasErrorMessage(errors.supporting_evidences)
 
   const isSaveDisabled =
     !metaProjectId ||
@@ -68,7 +68,9 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     hasResultsAssessmentDefaultErrors ||
     hasCausesOfDelayDefaultErrors ||
     hasLessonsLearnedDefaultErrors ||
-    hasGenderMainstreamingDefaultErrors
+    hasGenderMainstreamingDefaultErrors ||
+    hasSDGsDefaultErrors ||
+    hasEvidencesDefaultErrors
 
   const createPCR = async () => {
     setIsLoading(true)

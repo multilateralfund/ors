@@ -10,9 +10,12 @@ import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGe
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import {
   initialOverviewData,
+  summaryOfKeyDataField,
   ppField,
   sdgsContributionField,
   sdgsField,
+  supportingEvidencesField,
+  evidencesField,
 } from '@ors/components/manage/Blocks/PCR/constants'
 import {
   PCRData,
@@ -21,6 +24,7 @@ import {
   PCRLessonsLearnedData,
   PCRGenderMainstreamingData,
   PCRSdgsData,
+  PCRSupportingEvidencesData,
 } from '@ors/components/manage/Blocks/PCR/interfaces'
 import {
   formatAgencyData,
@@ -30,17 +34,8 @@ import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 
+import { filter, forEach, groupBy, keys, map, pick, reduce } from 'lodash'
 import { useParams } from 'wouter'
-import {
-  filter,
-  forEach,
-  groupBy,
-  keys,
-  map,
-  mapValues,
-  pick,
-  reduce,
-} from 'lodash'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
@@ -80,6 +75,17 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     },
     [addUpdatedField],
   )
+
+  const formatSummaryOfKeyData = (errors: Record<string, any[]>) => {
+    const summaryOfKeyData = PCRData.summary_of_key_data || []
+
+    const projectErrors = map(summaryOfKeyData, (data, index) => ({
+      project_id: data.project_id,
+      errors: errors?.[summaryOfKeyDataField]?.[index] ?? {},
+    }))
+
+    return { [summaryOfKeyDataField]: groupBy(projectErrors, 'project_id') }
+  }
 
   const formatResultsAssessmentErrors = (errors: Record<string, any[]>) => {
     const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
@@ -142,17 +148,16 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   }
 
   const formatSDGsErrors = (errors: Record<string, any[]>) => {
-    const data = filter(
-      PCRData.sdgs_contribution || [],
-      (sdg) => sdg.goals.length > 0,
-    )
+    const pcrSdgs = PCRData.sdgs_contribution || []
+    const filteredSdgs = filter(pcrSdgs, (sdg) => sdg.goals.length > 0)
+
     const formattedErrors = reduce(
-      data,
+      filteredSdgs,
       (acc: Record<string, any>[], entry, index) => {
-        forEach(entry[sdgsField] as object[], (_, index2) => {
-          acc.push(
-            errors?.[sdgsContributionField]?.[index]?.goals?.[index2] ?? {},
-          )
+        forEach(entry[sdgsField] as object[], (_, subEntryIndex) => {
+          const crtAgencyErrors = errors?.[sdgsContributionField]?.[index]
+
+          acc.push(crtAgencyErrors?.[sdgsField]?.[subEntryIndex] ?? {})
         })
 
         return acc
@@ -160,10 +165,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       [],
     )
 
-    const sdgsData = formatAgencyData<PCRSdgsData>(
-      PCRData.sdgs_contribution || [],
-      sdgsField,
-    )
+    const sdgsData = formatAgencyData<PCRSdgsData>(pcrSdgs, sdgsField)
 
     const agenciesErrors = map(sdgsData, (data, index) => ({
       agency_id: data.agency_id,
@@ -173,9 +175,26 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     return { [sdgsContributionField]: groupBy(agenciesErrors, 'agency_id') }
   }
 
+  const formatEvidencesErrors = (errors: Record<string, any[]>) => {
+    const evidencesData = formatAgencyData<PCRSupportingEvidencesData>(
+      PCRData.supporting_evidences || [],
+      evidencesField,
+    )
+
+    const agenciesErrors = map(evidencesData, (data, index) => ({
+      agency_id: data.agency_id,
+      errors: errors?.[supportingEvidencesField]?.[index] ?? {},
+    }))
+
+    return { [supportingEvidencesField]: groupBy(agenciesErrors, 'agency_id') }
+  }
+
   const groupErrors = (errors: Record<string, any[]>) => {
     const overviewFields = keys(initialOverviewData)
     const overviewErrors = pick(errors, overviewFields)
+    const summaryOfKeyDataErrors = formatSummaryOfKeyData(
+      pick(errors, summaryOfKeyDataField),
+    )
     const resultsAssessmentErrors = formatResultsAssessmentErrors(
       pick(errors, 'activities'),
     )
@@ -186,14 +205,19 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pick(errors, ppField),
     )
     const sdgsErrors = formatSDGsErrors(pick(errors, sdgsContributionField))
+    const evidencesErrors = formatEvidencesErrors(
+      pick(errors, supportingEvidencesField),
+    )
 
     return {
       overview: overviewErrors,
+      summary_of_key_data: summaryOfKeyDataErrors,
       results_assessment: resultsAssessmentErrors,
       causes_of_delay: projectComponentsErrors.causes_of_delay,
       lessons_learned: projectComponentsErrors.lessons_learned,
       gender_mainstreaming: genderMainstreamingErrors,
       sdgs_contribution: sdgsErrors,
+      supporting_evidences: evidencesErrors,
     }
   }
 

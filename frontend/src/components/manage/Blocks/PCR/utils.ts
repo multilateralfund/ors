@@ -22,7 +22,9 @@ import {
   lowerCase,
   map,
   omit,
+  pick,
   reduce,
+  some,
   sumBy,
 } from 'lodash'
 
@@ -184,8 +186,22 @@ const formatNestedErrors = (
 export const formatErrors = (
   errors: { [key: string]: string[] },
   nestedField?: string,
+  tabKey?: string,
 ) => {
-  const fieldNames = { ...pcrFieldsMapping, ...pcrFieldsErrorsMapping }
+  const extraFieldNames: Record<string, string> = !!tabKey
+    ? {
+        name:
+          {
+            enterprises: 'Name of enterprise',
+            equipments: 'Name of equipment',
+          }[tabKey] ?? '',
+      }
+    : {}
+
+  const initialFieldNames = { ...pcrFieldsMapping, ...pcrFieldsErrorsMapping }
+  const fieldNames = !!tabKey
+    ? { ...initialFieldNames, ...extraFieldNames }
+    : initialFieldNames
 
   return Object.entries(errors)
     .filter(([, error]) => error.length > 0)
@@ -326,3 +342,38 @@ export const getSectionAgencies = (agencies: ApiAgency[], sectionData: any) =>
         (entry) => find(agencies, (agency) => agency.id === entry.agency_id)!,
       )
     : []
+
+export const normalizeErrors = (errors: Record<string, any>) =>
+  Object.fromEntries(
+    Object.entries(errors).filter(([, value]) => {
+      if (!Array.isArray(value)) {
+        return true
+      }
+
+      return some(value, checkHasErrors)
+    }),
+  )
+
+export const groupSummaryOfKeyDataErrors = (
+  errors: Record<string, any>,
+  projectId: number,
+) => {
+  const crtProjectErrors = errors[projectId]
+
+  if (!crtProjectErrors) {
+    return errors
+  }
+
+  const projectErrors = crtProjectErrors[0].errors
+  const groupedErrors = {
+    general: pick(projectErrors, [
+      'funds_disbursed',
+      'planned_date_of_completion',
+    ]),
+    alternative_technologies: pick(projectErrors, 'alternative_technologies'),
+    enterprises: pick(projectErrors, 'enterprises'),
+    equipments: pick(projectErrors, 'equipments'),
+  }
+
+  return groupedErrors
+}

@@ -16,33 +16,38 @@ import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
 import { Activity } from '../interfaces'
 import {
-  checkHasErrors,
   formatErrors,
   formatNestedPcErrors,
   hasSectionErrors,
   validateWordCount,
+  normalizeErrors,
+  getOtherOptionId,
 } from '../utils'
 import {
+  overviewFieldsToValidate,
   pcField,
   cdField,
   llField,
   ppField,
+  sdgsContributionField,
+  supportingEvidencesField,
   requiredMessage,
 } from '../constants'
 
-import { flatMap, map, omit, some } from 'lodash'
+import { filter, flatMap, map, omit } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
 
 const PCRForm = () => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { PCRData, errors, setErrors } = useContext(PCRDataContext)
+  const { PCRData, errors, setErrors, ratingOptions } =
+    useContext(PCRDataContext)
 
   const tabMapping = {
     overview: { title: 'Overview', errors: errors.overview },
     summary_of_key_data: {
       title: 'Summary of key data (tranches)',
-      errors: {},
+      errors: errors.summary_of_key_data,
     },
     results_assessment: {
       title: 'Project results overall assessment',
@@ -64,7 +69,10 @@ const PCRForm = () => {
       title: 'SDGs (optional)',
       errors: errors.sdgs_contribution,
     },
-    supporting_evidences: { title: 'Other supporting evidence', errors: {} },
+    supporting_evidences: {
+      title: 'Other supporting evidence',
+      errors: errors.supporting_evidences,
+    },
   }
 
   const TabLabel = ({ field }: { field: keyof typeof tabMapping }) => (
@@ -119,10 +127,39 @@ const PCRForm = () => {
       component: <PCRDocumentation />,
     },
   ]
-
   const additionalCommentsField = 'additional_comments'
 
   const overviewData = PCRData.overview || []
+  const inlineOverviewData = omit(overviewData, additionalCommentsField)
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any>) => {
+      let updatedErrors = { ...prev }
+
+      const isOtherRating =
+        inlineOverviewData.rating === getOtherOptionId(ratingOptions)
+
+      const fields = isOtherRating
+        ? [...overviewFieldsToValidate, 'rating_explanation_other']
+        : overviewFieldsToValidate
+
+      fields.forEach((field) => {
+        updatedErrors = validateWordCount(
+          updatedErrors,
+          field,
+          (inlineOverviewData[field as keyof typeof inlineOverviewData] ??
+            '') as string,
+        )
+      })
+
+      if (!isOtherRating) {
+        updatedErrors = omit(updatedErrors, ['rating_explanation_other'])
+      }
+
+      return normalizeErrors(updatedErrors)
+    })
+  }, [JSON.stringify(inlineOverviewData)])
+
   const additionalCommentsData = overviewData[additionalCommentsField] || []
 
   useEffect(() => {
@@ -132,14 +169,21 @@ const PCRForm = () => {
         additionalCommentsData,
         (comment, index) => {
           const existingErrors = prev[additionalCommentsField]?.[index] ?? {}
+          let updatedErrors = { ...existingErrors }
 
           if (!comment.entity) {
-            return { ...existingErrors, entity: [requiredMessage] }
+            updatedErrors = { ...updatedErrors, entity: [requiredMessage] }
+          } else if (existingErrors.entity?.includes(requiredMessage)) {
+            updatedErrors = omit(updatedErrors, ['entity'])
           }
 
-          return existingErrors.entity?.includes(requiredMessage)
-            ? omit(existingErrors, ['entity'])
-            : existingErrors
+          updatedErrors = validateWordCount(
+            updatedErrors,
+            'comment',
+            comment.comment,
+          )
+
+          return normalizeErrors(updatedErrors)
         },
       ),
     }))
@@ -175,16 +219,7 @@ const PCRForm = () => {
           )
         })
 
-        const formattedErrors = Object.fromEntries(
-          Object.entries(updatedErrors).filter(([, value]) => {
-            if (!Array.isArray(value)) {
-              return true
-            }
-
-            return some(value, checkHasErrors)
-          }),
-        )
-        return formattedErrors
+        return normalizeErrors(updatedErrors)
       }),
     }))
   }, [JSON.stringify(resultsAssessmentData)])
@@ -231,16 +266,7 @@ const PCRForm = () => {
           'lesson_id',
         )
 
-        const formattedErrors = Object.fromEntries(
-          Object.entries(updatedErrors).filter(([, value]) => {
-            if (!Array.isArray(value)) {
-              return true
-            }
-
-            return some(value, checkHasErrors)
-          }),
-        )
-        return formattedErrors
+        return normalizeErrors(updatedErrors)
       }),
     }))
   }, [JSON.stringify(causesOfDelayData), JSON.stringify(lessonsLearnedData)])
@@ -274,19 +300,78 @@ const PCRForm = () => {
           pp[ppTextField],
         )
 
-        const formattedErrors = Object.fromEntries(
-          Object.entries(updatedErrors).filter(([, value]) => {
-            if (!Array.isArray(value)) {
-              return true
-            }
-
-            return some(value, checkHasErrors)
-          }),
-        )
-        return formattedErrors
+        return normalizeErrors(updatedErrors)
       }),
     }))
   }, [JSON.stringify(genderMainstreamingData)])
+
+  const sdgContributionData = PCRData.sdgs_contribution || []
+
+  useEffect(() => {
+    const sdgData = filter(sdgContributionData, (sdg) => sdg.goals.length > 0)
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [sdgsContributionField]: map(sdgData, (sdg, index) => {
+        const sdgIdField = 'goal_id'
+        const sdgTextField = 'description'
+
+        const existingErrors = prev[sdgsContributionField]?.[index] ?? {}
+
+        const updatedErrors = {
+          ...existingErrors,
+          goals: map(sdg.goals, (goal, goalIndex) => {
+            const existingGoalErrors = existingErrors.goals?.[goalIndex] ?? {}
+
+            let goalErrors = { ...existingGoalErrors }
+
+            if (!goal[sdgIdField]) {
+              goalErrors = { ...goalErrors, [sdgIdField]: [requiredMessage] }
+            } else if (goalErrors[sdgIdField]?.includes(requiredMessage)) {
+              goalErrors = omit(goalErrors, [sdgIdField])
+            }
+
+            goalErrors = validateWordCount(
+              goalErrors,
+              sdgTextField,
+              goal[sdgTextField],
+            )
+
+            return goalErrors
+          }),
+        }
+
+        return normalizeErrors(updatedErrors)
+      }),
+    }))
+  }, [JSON.stringify(sdgContributionData)])
+
+  const supportingEvidencesData = PCRData[supportingEvidencesField] || []
+
+  useEffect(() => {
+    const evidencesData = flatMap(
+      supportingEvidencesData,
+      ({ evidences }) => evidences,
+    )
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [supportingEvidencesField]: map(evidencesData, (evidence, index) => {
+        const evidenceIdField = 'section_id'
+
+        const existingErrors = prev[supportingEvidencesField]?.[index] ?? {}
+        let updatedErrors = { ...existingErrors }
+
+        if (!evidence[evidenceIdField]) {
+          updatedErrors[evidenceIdField] = [requiredMessage]
+        } else if (updatedErrors[evidenceIdField]?.includes(requiredMessage)) {
+          updatedErrors = omit(updatedErrors, [evidenceIdField])
+        }
+
+        return normalizeErrors(updatedErrors)
+      }),
+    }))
+  }, [JSON.stringify(supportingEvidencesData)])
 
   return (
     <>

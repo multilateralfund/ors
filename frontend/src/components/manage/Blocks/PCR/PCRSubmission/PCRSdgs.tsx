@@ -7,8 +7,8 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import { sdgsContributionField, sdgsField } from '../constants'
+import { getSectionAgencies, formatErrors } from '../utils'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
@@ -37,7 +37,7 @@ const PCRSdgs = () => {
     [sdgsContributionField]: agencyErrors,
   })
 
-  const onAddSdg = (agencyIndex: number) => {
+  const onAddSdg = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialSdgsData = { goal_id: null, description: '' }
@@ -45,7 +45,7 @@ const PCRSdgs = () => {
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [sdgsField]: [...data[sdgsField], initialSdgsData],
@@ -56,14 +56,14 @@ const PCRSdgs = () => {
     }, sdgsField)
   }
 
-  const onRemoveSdg = (sdgIndex: number, agencyIndex: number) => {
+  const onRemoveSdg = (sdgIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [sdgsField]: data[sdgsField].filter(
@@ -76,19 +76,35 @@ const PCRSdgs = () => {
     }, sdgsField)
 
     setErrors((prevData: Record<string, any[]>) => {
-      const errorIndex = getErrorIndex(
-        sectionData,
-        sdgsField,
-        crtAgencyId,
-        sdgIndex,
+      const pcrSdgs = PCRData.sdgs_contribution || []
+      const filteredSdgs = filter(pcrSdgs, (sdg) => sdg.goals.length > 0)
+
+      const crtAgencyIndex = filteredSdgs.findIndex(
+        (entry) => entry.agency_id === crtAgencyId,
       )
+
+      const updatedErrors = map(
+        prevData[sdgsContributionField],
+        (entry, index) =>
+          index === crtAgencyIndex
+            ? {
+                ...entry,
+                goals: filter(
+                  entry.goals,
+                  (_, goalIndex: number) => goalIndex !== sdgIndex,
+                ),
+              }
+            : entry,
+      )
+
+      const crtAgency = pcrSdgs.find((entry) => entry.agency_id === crtAgencyId)
 
       return {
         ...prevData,
-        [sdgsContributionField]: filter(
-          prevData[sdgsContributionField],
-          (_, index) => index !== errorIndex,
-        ),
+        [sdgsContributionField]:
+          crtAgency?.goals?.length === 1
+            ? updatedErrors.filter((_, index) => index !== crtAgencyIndex)
+            : updatedErrors,
       }
     })
   }
@@ -152,7 +168,7 @@ const PCRSdgs = () => {
                   className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
                   size={16}
                   onClick={() => {
-                    onRemoveSdg(sdgIndex, crtTab)
+                    onRemoveSdg(sdgIndex)
                   }}
                 />
               </div>
@@ -162,7 +178,7 @@ const PCRSdgs = () => {
         </div>
         <SubmitButton
           title="Add SDG"
-          onSubmit={() => onAddSdg(crtTab)}
+          onSubmit={onAddSdg}
           className={cx('mr-auto h-8', { 'mt-4': sdgsData.length > 0 })}
         />
       </div>

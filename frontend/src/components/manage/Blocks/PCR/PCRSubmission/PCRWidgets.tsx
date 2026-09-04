@@ -244,7 +244,7 @@ export const changeHandler: Record<FieldType, FieldHandler> = {
   },
 }
 
-const formatErrors = (errors: ErrorType, indexes?: number[]) => {
+export const formatErrors = (errors: ErrorType, indexes?: number[]) => {
   const indexesLength = indexes?.length
   const [dataIndex, nestedDataIndex, deepNestedDataIndex] = indexes ?? []
 

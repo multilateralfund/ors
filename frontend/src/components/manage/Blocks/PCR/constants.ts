@@ -67,6 +67,13 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   entity: 'Entity user inputting the comment on behalf',
   comment: 'Add comment',
   completed_by: 'Completion report done by',
+  funds_disbursed: 'Funds disbursed',
+  planned_date_of_completion: 'Planned date of completion',
+  substance_from: 'Substance converted from',
+  substance_to: 'Substance converted to',
+  address: 'Address of enterprise',
+  disposal_type: 'Disposal type',
+  disposal_date: 'Date of disposal',
   activity_title: 'Activity title',
   type_of_activity: 'Type of activity',
   type_of_sector: 'Type of sector',
@@ -81,16 +88,26 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   qualitative_description: 'Qualitative description',
   prefilled: 'Gender policy for all projects approved from 85th meeting',
   goal_id: 'SDG',
+  section_id: 'Section',
 }
 
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
+  financial_figures_status_explanation: 'Financial figures status explanation',
+  addresses: 'Address(es) of enterprise(s) and project site(s)',
+  project_goal_achieved_explanation: 'All project goals achieved explanation',
+  rating_explanation: 'Rating explanation',
   additional_comments: 'Additional comment',
+  comment: 'Comment',
+  alternative_technologies: 'Alternative technology',
+  enterprises: 'Enterprise',
+  equipments: 'Equipment',
   activities: 'Activity',
   project_components: 'Project component',
   delay_causes: 'Cause of delay',
   learned_lessons: 'Lesson learned',
   gender_mainstreamings: 'Gender mainstreaming',
   sustainable_development_goals: 'SDG',
+  supporting_evidences: 'Supporting evidence',
 }
 
 export const categoryOpts = [
@@ -129,13 +146,29 @@ export const initialOverviewData = {
   completed_by: null,
 }
 
+export const defaultSummaryOfKeyDataErrors = {
+  general: {},
+  alternative_technologies: {},
+  enterprises: {},
+  equipments: {},
+}
+
+export const overviewFieldsToValidate = [
+  'financial_figures_status_explanation',
+  'addresses',
+  'project_goal_achieved_explanation',
+  'rating_explanation',
+]
 export const requiredMessage = 'This field is required.'
 export const validWordCountMessage =
   'This field must be between 150 and 250 words.'
 
+export const summaryOfKeyDataField = 'pcr_projects'
 export const pcField = 'project_components'
 export const cdField = 'delay_causes'
 export const llField = 'learned_lessons'
 export const ppField = 'gender_mainstreamings'
 export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
+export const supportingEvidencesField = 'supporting_evidences'
+export const evidencesField = 'evidences'

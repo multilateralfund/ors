@@ -8,8 +8,8 @@ import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 vi.mock('@ors/hooks/useApi', () => ({
   default: () => ({
     data: [
-      {id: 10, name: 'Substance from'},
-      {id: 20, name: 'Substance to'},
+      { id: 10, name: 'Substance from' },
+      { id: 20, name: 'Substance to' },
     ],
     loaded: true,
     loading: false,
@@ -17,9 +17,9 @@ vi.mock('@ors/hooks/useApi', () => ({
 }))
 
 vi.mock('@ors/components/manage/Form/ViewTable', () => ({
-  default: ({columnDefs}: any) =>
+  default: ({ columnDefs }: any) =>
     columnDefs[0].cellRenderer({
-      data: {id: 101, code: 'PCR-TEST-101'},
+      data: { id: 101, code: 'PCR-TEST-101' },
       value: 'PCR-TEST-101',
     }),
 }))
@@ -60,8 +60,25 @@ const createInitialPCRData = () => ({
   sdgs_contribution: [],
 })
 
-const renderSummary = (initialPCRData = createInitialPCRData()) => {
+const createInitialErrors = () => ({
+  overview: {},
+  summary_of_key_data: {
+    pcr_projects: {},
+  },
+  results_assessment: {},
+  causes_of_delay: {},
+  lessons_learned: {},
+  gender_mainstreaming: {},
+  sdgs_contribution: {},
+  supporting_evidences: {},
+})
+
+const renderSummary = (
+  initialPCRData = createInitialPCRData(),
+  initialErrors = createInitialErrors(),
+) => {
   const setPCRData = vi.fn()
+  const setErrors = vi.fn()
 
   render(
     <PCRDataContext.Provider
@@ -69,9 +86,11 @@ const renderSummary = (initialPCRData = createInitialPCRData()) => {
         {
           PCRData: initialPCRData,
           setPCRData,
+          errors: initialErrors,
+          setErrors,
           pcrMetaproject: {
             data: {
-              projects: [{id: 101, code: 'PCR-TEST-101'}],
+              projects: [{ id: 101, code: 'PCR-TEST-101' }],
             },
             loaded: true,
             loading: false,
@@ -79,42 +98,47 @@ const renderSummary = (initialPCRData = createInitialPCRData()) => {
         } as any
       }
     >
-      <PCRSummaryOfKeyData/>
+      <PCRSummaryOfKeyData />
     </PCRDataContext.Provider>,
   )
 
-  return {initialPCRData, setPCRData}
+  return { initialPCRData, setPCRData }
 }
 
 const openSummaryDialog = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(
-    screen.getByRole('button', {name: 'Edit project PCR-TEST-101'}),
+    screen.getByRole('button', { name: 'Edit project PCR-TEST-101' }),
   )
 }
 
 describe('PCRSummaryOfKeyData', () => {
   it('keeps every backend-compatible summary section when Done is clicked', async () => {
     const user = userEvent.setup()
-    const {initialPCRData, setPCRData} = renderSummary()
+    const { initialPCRData, setPCRData } = renderSummary()
 
     await openSummaryDialog(user)
     expect(screen.getByText('Funds disbursed')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('tab', {name: 'Alternative technology'}))
+    await user.click(
+      screen.getByRole('tab', { name: 'Alternative technology' }),
+    )
     expect(screen.getByText('Substance converted from')).toBeInTheDocument()
     expect(screen.getByText('Substance converted to')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('tab', {name: 'Enterprises'}))
+    await user.click(screen.getByRole('tab', { name: 'Enterprises' }))
     expect(screen.getByDisplayValue('Updated enterprise')).toBeInTheDocument()
     expect(screen.getByDisplayValue('Updated address')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('tab', {name: 'Equipment'}))
+    await user.click(screen.getByRole('tab', { name: 'Equipment' }))
     expect(screen.getByDisplayValue('Updated equipment')).toBeInTheDocument()
     expect(screen.getByDisplayValue('Disposed')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', {name: 'Done'}))
+    await user.click(screen.getByRole('button', { name: 'Done' }))
 
     expect(setPCRData).toHaveBeenCalledOnce()
-    expect(setPCRData).toHaveBeenCalledWith(expect.any(Function), 'summary_of_key_data')
+    expect(setPCRData).toHaveBeenCalledWith(
+      expect.any(Function),
+      'summary_of_key_data',
+    )
 
     const updater = setPCRData.mock.calls[0][0]
     expect(updater(initialPCRData)).toMatchObject({
@@ -150,17 +174,17 @@ describe('PCRSummaryOfKeyData', () => {
 
   it('discards draft row changes when Cancel is clicked', async () => {
     const user = userEvent.setup()
-    const {setPCRData} = renderSummary()
+    const { setPCRData } = renderSummary()
 
     await openSummaryDialog(user)
-    await user.click(screen.getByRole('tab', {name: 'Equipment'}))
-    await user.click(screen.getByRole('button', {name: 'Add equipment'}))
+    await user.click(screen.getByRole('tab', { name: 'Equipment' }))
+    await user.click(screen.getByRole('button', { name: 'Add equipment' }))
 
     expect(
-      screen.getAllByRole('button', {name: 'Remove equipment'}),
+      screen.getAllByRole('button', { name: 'Remove equipment' }),
     ).toHaveLength(2)
 
-    await user.click(screen.getByRole('button', {name: 'Cancel'}))
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
     expect(setPCRData).not.toHaveBeenCalled()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -182,20 +206,24 @@ describe('PCRSummaryOfKeyData', () => {
       addButton: 'Add equipment',
       removeButton: 'Remove equipment',
     },
-  ])('adds and removes $tab rows', async ({tab, addButton, removeButton}) => {
+  ])('adds and removes $tab rows', async ({ tab, addButton, removeButton }) => {
     const user = userEvent.setup()
-    const {setPCRData} = renderSummary()
+    const { setPCRData } = renderSummary()
 
     await openSummaryDialog(user)
-    await user.click(screen.getByRole('tab', {name: tab}))
-    await user.click(screen.getByRole('button', {name: addButton}))
+    await user.click(screen.getByRole('tab', { name: tab }))
+    await user.click(screen.getByRole('button', { name: addButton }))
 
-    expect(screen.getAllByRole('button', {name: removeButton})).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: removeButton })).toHaveLength(
+      2,
+    )
 
-    await user.click(screen.getAllByRole('button', {name: removeButton})[1])
-    expect(screen.getAllByRole('button', {name: removeButton})).toHaveLength(1)
+    await user.click(screen.getAllByRole('button', { name: removeButton })[1])
+    expect(screen.getAllByRole('button', { name: removeButton })).toHaveLength(
+      1,
+    )
 
-    await user.click(screen.getByRole('button', {name: 'Done'}))
+    await user.click(screen.getByRole('button', { name: 'Done' }))
     expect(setPCRData).toHaveBeenCalledOnce()
   })
 })
