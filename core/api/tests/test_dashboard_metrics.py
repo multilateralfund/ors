@@ -1466,10 +1466,21 @@ class TestCountryValues(BaseTest):
                 sector=ProjectSectorFactory(code=code),
                 total_phase_out_odp_tonnes=tonnes,
             )
-
         table = self.entry(user)["sector_hcfc"]["value"]
-        assert [row["group"] for row in table] == list(classify.COUNTRY_SECTOR_ORDER)
-        by_bucket = {row["group"]: row["tonnage"] for row in table}
+        by_bucket = {}
+        groups = []
+        for donuts in table["donuts"]:
+            for entry in donuts["series"]:
+                groups.append(entry["name"])
+                by_bucket.update({entry["name"]: entry["value"]})
+        assert groups == [
+            "Air-conditioning",
+            "Other sectors",
+            "Refrigeration",
+            "Foam",
+            "Aerosol",
+            "Servicing",
+        ]
         assert by_bucket[classify.SECTOR_AIR_CONDITIONING] == 30
         assert by_bucket[classify.SECTOR_OTHER] == 7
         assert by_bucket[classify.SECTOR_REFRIGERATION] == 0
@@ -1498,7 +1509,6 @@ class TestCountryValues(BaseTest):
             cluster=ProjectClusterFactory(code="HFCIND", name="HFCIND"),
             total_phase_out_co2_tonnes=4000,
         )
-
         metrics = self.entry(user)
         assert self.tonnage(metrics["sector_hcfc"]) == 30
         assert self.tonnage(metrics["sector_other_ods"]) == 8
@@ -1506,7 +1516,11 @@ class TestCountryValues(BaseTest):
         assert metrics["sector_unclassified"]["available"] is False
 
     def tonnage(self, metric):
-        return sum(row["tonnage"] for row in metric["value"])
+        total_tonnage = 0
+        for donuts in metric["value"]["donuts"]:
+            for entry in donuts["series"]:
+                total_tonnage += entry["value"]
+        return total_tonnage
 
     def test_a_production_project_is_left_off_the_sector_charts(
         self, user, ongoing_status
@@ -1589,10 +1603,7 @@ class TestCountryValues(BaseTest):
             for entry in group["items"]:
                 if entry.get("percent", None):
                     groups.append(entry["label"])
-        assert groups == [
-            "HCFCs consumption",
-            "Disposal",
-        ]
+        assert groups == ["HCFCs consumption"]
 
     def test_the_reporting_cycle_supplies_the_actual_phase_out(
         self, user, ongoing_status

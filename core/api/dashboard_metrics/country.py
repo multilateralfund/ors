@@ -7,6 +7,8 @@ narrowed to one country, so these read the same primitives the fund-wide
 figures do and get a country's worth of answer back.
 """
 
+# pylint: disable=C0302,R1710
+
 from functools import partial
 from typing import Any
 
@@ -359,14 +361,50 @@ def sector_tonnage(
     for row in rows:
         buckets.setdefault(classify.country_sector_bucket(row.project), []).append(row)
 
-    table = [
-        {
-            **grouped_row(bucket, buckets.get(bucket, [])),
-            "tonnage": phase_out(buckets.get(bucket, []), field),
-        }
-        for bucket in classify.COUNTRY_SECTOR_ORDER
-    ]
-    return table if any(row["tonnage"] for row in table) else None
+    table = sorted(
+        [
+            {
+                **grouped_row(bucket, buckets.get(bucket, [])),
+                "tonnage": phase_out(buckets.get(bucket, []), field),
+            }
+            for bucket in classify.COUNTRY_SECTOR_ORDER
+        ],
+        key=lambda row: row["tonnage"],
+        reverse=True,
+    )
+    if not any(row["tonnage"] for row in table):
+        return
+    total = sum(row["tonnage"] for row in table)
+
+    coloration = (
+        taxonomy.SECTOR_HFC_COLORING if family == HFC else taxonomy.SECTOR_HCFC_COLORING
+    )
+
+    return {
+        "type": "donut",
+        "title": "Tonnage approved - HFCs",
+        "subtitle": "CO2-EQ-Tonnes, breakdown by sector",
+        "subtitle_note": "Consumption only",
+        "donuts": [
+            {
+                "label": None,
+                "total": str(total),
+                "total_label": "TOTAL",
+                "total_position": "above",
+                "series": [
+                    {
+                        "name": row["group"],
+                        "value": row["tonnage"],
+                        "displayValue": str(row["tonnage"]),
+                        "color": coloring["color"],
+                        "icon": coloring["icon"],
+                    }
+                    for row, coloring in zip(table, coloration)
+                ],
+            }
+        ],
+        "meta": {},
+    }
 
 
 def prod_tonnage(context: MetricContext) -> float | None:
