@@ -252,8 +252,8 @@ const PCRSummaryOfKeyData = () => {
   } = pcrMetaproject
   const projects = metaproject?.projects ?? []
 
-  const summaryOfKeyDataErrors = errors?.summary_of_key_data ?? {}
-  const projectsErrors = summaryOfKeyDataErrors[summaryOfKeyDataField] ?? {}
+  const summaryOfKeyDataErrors = errors.summary_of_key_data
+  const projectsErrors = summaryOfKeyDataErrors[summaryOfKeyDataField]
   const projectErrorIndex = Object.keys(projectsErrors).indexOf(
     String(editingProjectId),
   )
