@@ -69,6 +69,11 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   completed_by: 'Completion report done by',
   funds_disbursed: 'Funds disbursed',
   planned_date_of_completion: 'Planned date of completion',
+  substance_from: 'Substance converted from',
+  substance_to: 'Substance converted to',
+  address: 'Address of enterprise',
+  disposal_type: 'Disposal type',
+  disposal_date: 'Date of disposal',
   activity_title: 'Activity title',
   type_of_activity: 'Type of activity',
   type_of_sector: 'Type of sector',
@@ -93,6 +98,9 @@ export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   rating_explanation: 'Rating explanation',
   additional_comments: 'Additional comment',
   comment: 'Comment',
+  alternative_technologies: 'Alternative technology',
+  enterprises: 'Enterprise',
+  equipments: 'Equipment',
   activities: 'Activity',
   project_components: 'Project component',
   delay_causes: 'Cause of delay',
@@ -140,9 +148,9 @@ export const initialOverviewData = {
 
 export const defaultSummaryOfKeyDataErrors = {
   general: {},
-  alternative_technology: {},
+  alternative_technologies: {},
   enterprises: {},
-  equipment: {},
+  equipments: {},
 }
 
 export const overviewFieldsToValidate = [

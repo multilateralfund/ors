@@ -186,8 +186,22 @@ const formatNestedErrors = (
 export const formatErrors = (
   errors: { [key: string]: string[] },
   nestedField?: string,
+  tabKey?: string,
 ) => {
-  const fieldNames = { ...pcrFieldsMapping, ...pcrFieldsErrorsMapping }
+  const extraFieldNames: Record<string, string> = !!tabKey
+    ? {
+        name:
+          {
+            enterprises: 'Name of enterprise',
+            equipments: 'Name of equipment',
+          }[tabKey] ?? '',
+      }
+    : {}
+
+  const initialFieldNames = { ...pcrFieldsMapping, ...pcrFieldsErrorsMapping }
+  const fieldNames = !!tabKey
+    ? { ...initialFieldNames, ...extraFieldNames }
+    : initialFieldNames
 
   return Object.entries(errors)
     .filter(([, error]) => error.length > 0)
@@ -356,9 +370,9 @@ export const groupSummaryOfKeyDataErrors = (
       'funds_disbursed',
       'planned_date_of_completion',
     ]),
-    alternative_technology: {},
-    enterprises: {},
-    equipment: {},
+    alternative_technologies: pick(projectErrors, 'alternative_technologies'),
+    enterprises: pick(projectErrors, 'enterprises'),
+    equipments: pick(projectErrors, 'equipments'),
   }
 
   return groupedErrors
