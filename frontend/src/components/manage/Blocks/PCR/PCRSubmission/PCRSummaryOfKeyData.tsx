@@ -351,13 +351,21 @@ const PCRSummaryOfKeyData = () => {
         (entry) => entry.project_id === editingProjectId,
       )
 
+      const formattedDraftSummaryData = {
+        ...draftSummaryData,
+        enterprises: map(draftSummaryData.enterprises, (enterprise) => ({
+          ...enterprise,
+          isDefault: false,
+        })),
+      }
+
       return {
         ...previousData,
         summary_of_key_data:
           projectDataIndex === -1
-            ? [...sectionData, draftSummaryData]
+            ? [...sectionData, formattedDraftSummaryData]
             : sectionData.map((entry, index) =>
-                index === projectDataIndex ? draftSummaryData : entry,
+                index === projectDataIndex ? formattedDraftSummaryData : entry,
               ),
       }
     }, 'summary_of_key_data')

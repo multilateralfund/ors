@@ -86,6 +86,7 @@ export interface PCRAlternativeTechnologyType {
 export interface PCREnterpriseType {
   name: string
   address: string
+  isDefault?: boolean
 }
 
 export interface PCREquipmentType {

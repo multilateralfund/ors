@@ -5,24 +5,17 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { formatAgencyData, formatPayload, isSubmitDisabled } from '../utils'
 import {
   PCRActionButtons,
-  PCRResultsAssessmentData,
-  PCRGenderMainstreamingData,
   PCRSupportingEvidencesData,
   FormattedSupportingEvidencesData,
 } from '../interfaces'
-import {
-  buildPCRProjectPayload,
-  formatAgencyData,
-  getOtherOptionId,
-  hasErrorMessage,
-} from '../utils'
 import { formatApiUrl } from '@ors/helpers'
 
-import { filter, flatMap, map, omit, pick } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
+import { map, omit } from 'lodash'
 import Cookies from 'js-cookie'
 
 const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
@@ -36,41 +29,13 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     ratingOptions,
   } = useContext(PCRDataContext)
   const metaProjectId = pcrMetaproject.data?.id
-  const {
-    overview,
-    results_assessment,
-    causes_of_delay,
-    lessons_learned,
-    gender_mainstreaming,
-    sdgs_contribution,
-    supporting_evidences,
-  } = PCRData
+  const { supporting_evidences } = PCRData
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
-  const hasOverviewDefaultErrors = hasErrorMessage(errors.overview)
-  const hasResultsAssessmentDefaultErrors = hasErrorMessage(
-    errors.results_assessment,
-  )
-  const hasCausesOfDelayDefaultErrors = hasErrorMessage(errors.causes_of_delay)
-  const hasLessonsLearnedDefaultErrors = hasErrorMessage(errors.lessons_learned)
-  const hasGenderMainstreamingDefaultErrors = hasErrorMessage(
-    errors.gender_mainstreaming,
-  )
-  const hasSDGsDefaultErrors = hasErrorMessage(errors.sdgs_contribution)
-  const hasEvidencesDefaultErrors = hasErrorMessage(errors.supporting_evidences)
-
-  const isSaveDisabled =
-    !metaProjectId ||
-    hasOverviewDefaultErrors ||
-    hasResultsAssessmentDefaultErrors ||
-    hasCausesOfDelayDefaultErrors ||
-    hasLessonsLearnedDefaultErrors ||
-    hasGenderMainstreamingDefaultErrors ||
-    hasSDGsDefaultErrors ||
-    hasEvidencesDefaultErrors
+  const isSaveDisabled = !metaProjectId || isSubmitDisabled(errors)
 
   const createPCR = async () => {
     setIsLoading(true)
@@ -79,75 +44,6 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
       if (!metaProjectId) {
         throw new Error('PCR metaproject data is not loaded.')
       }
-
-      const overviewPrefilledData = {
-        ...pick(pcrDefaultData.data, [
-          'project_date_approved',
-          'project_date_completion',
-          'phase_out_ods_actual',
-          'phase_out_ods_approved',
-          'phase_out_co2_eq_t_actual',
-          'phase_out_co2_eq_t_approved',
-        ]),
-        decision_ids: pcrDefaultData.data?.decisions,
-      }
-
-      const overviewData = {
-        ...overview,
-        rating_explanation_other:
-          overview.rating === getOtherOptionId(ratingOptions)
-            ? overview.rating_explanation_other
-            : null,
-      }
-
-      const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
-        results_assessment,
-        'activities',
-      )
-
-      const causesOfDelayProjectComponents = flatMap(
-        causes_of_delay,
-        ({ agency_id, project_components }) =>
-          map(
-            project_components,
-            ({ project_component_option_id, delay_causes }) => ({
-              agency_id,
-              project_component_option_id,
-              delay_causes,
-              learned_lessons: [],
-            }),
-          ),
-      )
-
-      const lessonsLearnedProjectComponents = flatMap(
-        lessons_learned,
-        ({ agency_id, project_components }) =>
-          map(
-            project_components,
-            ({ project_component_option_id, learned_lessons }) => ({
-              agency_id,
-              project_component_option_id,
-              delay_causes: [],
-              learned_lessons,
-            }),
-          ),
-      )
-
-      const projectComponentsData = [
-        ...causesOfDelayProjectComponents,
-        ...lessonsLearnedProjectComponents,
-      ]
-
-      const genderMainstreamingsData =
-        formatAgencyData<PCRGenderMainstreamingData>(
-          gender_mainstreaming,
-          'gender_mainstreamings',
-        )
-
-      const sdgsContributionData = filter(
-        sdgs_contribution,
-        (sdg) => sdg.goals.length > 0,
-      )
 
       const formattedSupportingEvidence =
         formatAgencyData<PCRSupportingEvidencesData>(
@@ -162,14 +58,8 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
       const payload = {
         meta_project_id: metaProjectId,
-        ...overviewPrefilledData,
-        ...overviewData,
-        activities: resultsAssessmentData,
-        project_components: projectComponentsData,
-        gender_mainstreamings: genderMainstreamingsData,
-        sustainable_development_goals: sdgsContributionData,
+        ...formatPayload(pcrDefaultData, PCRData, ratingOptions),
         supporting_evidences: supportingEvidencesData,
-        pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
       }
 
       const formData = new FormData()

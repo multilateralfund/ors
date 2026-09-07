@@ -5,6 +5,7 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
+import { initialOverviewData } from '../constants'
 import useApi from '@ors/hooks/useApi'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import {
@@ -13,6 +14,7 @@ import {
   PCREquipmentType,
 } from '../interfaces'
 
+import { keys, pick } from 'lodash'
 import { useParams } from 'wouter'
 
 type PCRProjectResponse = {
@@ -39,6 +41,7 @@ const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
 const emptyEnterprise = (): PCREnterpriseType => ({
   name: '',
   address: '',
+  isDefault: true,
 })
 
 const emptyEquipment = (): PCREquipmentType => ({
@@ -73,11 +76,14 @@ const PCREditWrapper = () => {
 
     setPCRData((prevData) => ({
       ...prevData,
+      overview: {
+        ...prevData.overview,
+        ...pick(pcrData, keys(initialOverviewData)),
+      },
       summary_of_key_data: pcrData.pcr_projects.map((pcrProject) => ({
         project_id: pcrProject.project_id,
         funds_disbursed: pcrProject.funds_disbursed ?? '',
-        planned_date_of_completion:
-          pcrProject.planned_date_of_completion ?? '',
+        planned_date_of_completion: pcrProject.planned_date_of_completion ?? '',
         alternative_technologies: ensureRows(
           pcrProject.alternative_technologies,
           emptyAlternativeTechnology,
@@ -99,7 +105,7 @@ const PCREditWrapper = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <PCRHeader mode="edit" pcrMetaproject={pcrMetaproject.data}/>
+      <PCRHeader mode="edit" pcrMetaproject={pcrMetaproject.data} />
       <PCRForm />
     </>
   )
