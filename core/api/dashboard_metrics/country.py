@@ -12,7 +12,7 @@ figures do and get a country's worth of answer back.
 from functools import partial
 from typing import Any
 
-from core.api.dashboard_metrics import classify, placeholders, taxonomy
+from core.api.dashboard_metrics import classify, taxonomy
 from core.api.dashboard_metrics.apr import CO2_PHASED_OUT_FIELDS, ODP_PHASED_OUT_FIELDS
 from core.api.dashboard_metrics.classify import (
     HCFC,
@@ -421,6 +421,46 @@ def prod_tonnage(context: MetricContext) -> float | None:
     """
     rows = [row for row in context.projects if row.is_production]
     return phase_out(rows, TOTAL_PHASE_OUT_ODP) if rows else None
+
+
+def ee_kwh_saved(context: MetricContext) -> float | None:
+    """Returns the sum of energy_savings_actual entries of all the projects in context"""
+    return sum(
+        classified_project.project.energy_savings_actual or 0
+        for classified_project in context.projects
+    )
+
+
+def impact_technicians(context: MetricContext) -> int | None:
+    """Returns the sum of total_number_of_technicians_trained_actual entries of all the projects in context"""
+    return sum(
+        classified_project.project.total_number_of_technicians_trained_actual or 0
+        for classified_project in context.projects
+    )
+
+
+def impact_customs(context: MetricContext) -> int | None:
+    """Returns the sum of total_number_of_customs_officers_trained_actual entries of all the projects in context"""
+    return sum(
+        classified_project.project.total_number_of_customs_officers_trained_actual or 0
+        for classified_project in context.projects
+    )
+
+
+def impact_enterprises(context: MetricContext) -> int | None:
+    """Returns the sum of total_number_of_customs_officers_trained_actual entries of all the projects in context"""
+    return sum(
+        sum(
+            [
+                classified_project.project.number_of_smes_directly_funded_actual or 0,
+                classified_project.project.number_of_non_sme_directly_funded_actual
+                or 0,
+                classified_project.project.number_of_both_sme_non_sme_not_directly_funded_actual
+                or 0,
+            ]
+        )
+        for classified_project in context.projects
+    )
 
 
 COUNTRY_METRICS: tuple[Metric, ...] = (
@@ -920,25 +960,17 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Production & energy efficiency",
         kind=Kind.SCALAR,
         unit=Unit.KWH_PER_YEAR,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula=(
             "sum(Projects sheet 'Energy savings - actual (kWh/year)') over the "
             "country's projects"
         ),
-        db_source="IMPACT-UNPOPULATED",
+        db_source="DB-COMPUTABLE",
         src_model_field=(
             'Project.energy_savings_actual  [export column: "Energy savings - actual '
             '(kWh/year)"; planned twin: "Energy savings - planned (kWh/year)"]'
         ),
-        compute=None,
-        unavailable_reason="Per-country data unavailable.",
-        placeholder=partial(
-            placeholders.count,
-            slug="kwh",
-            low=1_500_000,
-            high=45_000_000,
-            step=100_000,
-        ),
+        compute=ee_kwh_saved,
     ),
     Metric(
         metric_id="impact_technicians",
@@ -946,19 +978,17 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Impact",
         kind=Kind.SCALAR,
         unit=Unit.COUNT,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula=(
             "sum(Projects sheet 'Total number of technicians trained - actual') over "
             "the country's projects"
         ),
-        db_source="IMPACT-UNPOPULATED",
+        db_source="DB-COMPUTABLE",
         src_model_field=(
             "Project.total_number_of_technicians_trained_actual  [export column: "
             '"Total number of technicians trained - actual"]'
         ),
-        compute=None,
-        unavailable_reason="Per-country data unavailable.",
-        placeholder=partial(placeholders.count, slug="technicians", low=150, high=3500),
+        compute=impact_technicians,
     ),
     Metric(
         metric_id="impact_customs",
@@ -966,19 +996,17 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Impact",
         kind=Kind.SCALAR,
         unit=Unit.COUNT,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula=(
             "sum(Projects sheet 'Total number of customs officers trained - actual') "
             "over the country's projects"
         ),
-        db_source="IMPACT-UNPOPULATED",
+        db_source="DB-COMPUTABLE",
         src_model_field=(
             "Project.total_number_of_customs_officers_trained_actual  [export column: "
             '"Total number of customs officers trained - actual"]'
         ),
-        compute=None,
-        unavailable_reason="Per-country data unavailable.",
-        placeholder=partial(placeholders.count, slug="customs", low=20, high=600),
+        compute=impact_customs,
     ),
     Metric(
         metric_id="impact_enterprises",
@@ -986,12 +1014,12 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         section="Impact",
         kind=Kind.SCALAR,
         unit=Unit.COUNT,
-        disposition=Disposition.NOT_AVAILABLE,
+        disposition=Disposition.COMPUTE,
         formula=(
             "sum of the three 'directly funded' actual columns (SMEs + non-SMEs + "
             "both-not-directly-funded)"
         ),
-        db_source="IMPACT-UNPOPULATED",
+        db_source="DB-COMPUTABLE",
         src_model_field=(
             "Project.number_of_smes_directly_funded_actual + "
             "number_of_non_sme_directly_funded_actual + "
@@ -1000,9 +1028,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
             'funded - actual", "Number of both SMEs and non-SMEs included in the '
             'project but not directly funded - actual"]'
         ),
-        compute=None,
-        unavailable_reason="Per-country data unavailable.",
-        placeholder=partial(placeholders.count, slug="enterprises", low=8, high=90),
+        compute=impact_enterprises,
     ),
     Metric(
         metric_id="impact_certification",

@@ -541,7 +541,7 @@ class TestRegistryDeclarations:
             for m in FUND_METRICS + COUNTRY_METRICS
             if m.disposition == Disposition.NOT_AVAILABLE
         ]
-        assert len(blocked) == 4
+        assert len(blocked) == 0
         assert all(m.unavailable_reason for m in blocked)
 
 
@@ -1971,9 +1971,6 @@ class TestPlaceholders(BaseTest):
 
     # The rows with no source yet. Nine are country attributes; four are impact
     # figures, which an aggregate entry can meaningfully carry.
-    IMPACT = frozenset(
-        {"impact_technicians", "impact_customs", "impact_enterprises", "ee_kwh_saved"}
-    )
 
     def entry(self, user, key="BRA", **params):
         self.client.force_authenticate(user=user)
@@ -1987,32 +1984,6 @@ class TestPlaceholders(BaseTest):
     def flagged(metrics):
         return {mid for mid, m in metrics.items() if m.get("placeholder")}
 
-    def test_nothing_is_invented_unless_it_is_asked_for(self, user, brazil):
-        """The default payload is the honest one."""
-        metrics = self.entry(user)
-        assert self.flagged(metrics) == set()
-        for metric_id in self.IMPACT:
-            assert metrics[metric_id]["available"] is False
-            assert metrics[metric_id]["value"] is None
-
-    def test_asking_fills_every_row_that_has_no_source(self, user, brazil):
-        metrics = self.entry(user, placeholders="true")
-
-        assert self.flagged(metrics) == self.IMPACT
-        for metric_id in self.IMPACT:
-            assert metrics[metric_id]["available"] is True
-            assert metrics[metric_id]["value"] is not None
-
-    def test_only_invented_values_carry_the_flag(self, user, brazil):
-        """A real figure must never be mistaken for a stand-in."""
-        metrics = self.entry(user, placeholders="true")
-
-        for metric_id, metric in metrics.items():
-            if metric.get("placeholder"):
-                assert metric_id in self.IMPACT
-            else:
-                assert "placeholder" not in metric
-
     def test_the_same_entry_gives_the_same_answer_every_time(self, user, brazil):
         """A page whose figures moved between loads would be worse than a blank one."""
         first = self.entry(user, placeholders="true")
@@ -2021,24 +1992,6 @@ class TestPlaceholders(BaseTest):
         assert {k: v["value"] for k, v in first.items()} == {
             k: v["value"] for k, v in second.items()
         }
-
-    def test_two_entries_do_not_get_the_same_answer(self, user, brazil, africa):
-        """Seeded per entry, so the pages do not all read alike."""
-        brazil_metrics = self.entry(user, placeholders="true")
-        africa_metrics = self.entry(user, key="AFR", placeholders="true")
-
-        assert any(
-            brazil_metrics[m]["value"] != africa_metrics[m]["value"]
-            for m in self.IMPACT
-        )
-
-    def test_an_aggregate_entry_gets_impact_figures_but_no_attributes(
-        self, user, africa
-    ):
-        """A region has people trained across it, but no ozone unit of its own."""
-        metrics = self.entry(user, key="AFR", placeholders="true")
-
-        assert self.flagged(metrics) == self.IMPACT
 
     def test_a_placeholder_that_breaks_costs_only_itself(self, core_caplog):
         """A demo aid must not be able to take the endpoint down."""
@@ -2302,7 +2255,7 @@ class TestSpecCommand:
         out = StringIO()
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
-        assert "91 metrics, 87 implemented." in rendered
+        assert "91 metrics, 91 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 
