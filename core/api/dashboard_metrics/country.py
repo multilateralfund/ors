@@ -379,11 +379,17 @@ def sector_tonnage(
     coloration = (
         taxonomy.SECTOR_HFC_COLORING if family == HFC else taxonomy.SECTOR_HCFC_COLORING
     )
+    title = "Tonnage approved - HFCs" if family == HFC else "Tonnage approved - HCFCs"
+    subtitle = (
+        "CO2-EQ-Tonnes, breakdown by sector"
+        if family == "HFC"
+        else "ODP-Tonnes, breakdown by sector"
+    )
 
     return {
         "type": "donut",
-        "title": "Tonnage approved - HFCs",
-        "subtitle": "CO2-EQ-Tonnes, breakdown by sector",
+        "title": title,
+        "subtitle": subtitle,
         "subtitle_note": "Consumption only",
         "donuts": [
             {
