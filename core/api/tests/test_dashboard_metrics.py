@@ -2156,16 +2156,19 @@ class TestDashboardMetricsExport(BaseTest):
         )
         rows = self.rows(self.workbook(user)["Countries"])
 
-        row = [
+        # One row per series, with its figures in the cell - not the chart
+        # configuration.
+        series = [
             row
             for row in rows
             if row["Key"] == "BRA" and row["Metric"] == "trend_ods_consumption"
-        ][0]
-        groups = [entry["name"] for entry in eval(row["Value"])["series"]]
-        assert groups[:3] == [
+        ]
+        assert [row["Component"] for row in series][:2] == [
             "Annex A Group I",
             "Annex B Group I",
         ]
+        assert "2020: 10" in series[0]["Value"]
+        assert "type" not in series[0]["Value"]
 
     def page(self, user, **params):
         self.client.force_authenticate(user=user)

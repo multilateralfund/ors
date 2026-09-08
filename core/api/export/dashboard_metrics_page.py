@@ -94,6 +94,68 @@ def _grouped_series(value: dict) -> str:
     return "".join(parts) or '<span class="none">nothing reported</span>'
 
 
+def _line_figures(value: dict) -> list[tuple[str, Any]]:
+    """One entry per line, its points written out against the shared years."""
+    years = value.get("categories") or []
+    figures = []
+    for line in value.get("series") or []:
+        points = []
+        for year, amount in zip(years, line.get("data") or []):
+            points.append(f"{year}: {_number(amount)}")
+        figures.append((line.get("name") or "", "; ".join(points)))
+    return figures
+
+
+def _bar_list_figures(value: dict) -> list[tuple[str, Any]]:
+    """One entry per bar, across every group."""
+    figures = []
+    for group in value.get("groups") or []:
+        for item in group.get("items") or []:
+            figures.append((item.get("label") or "", item.get("displayValue") or ""))
+    return figures
+
+
+def _donut_figures(value: dict) -> list[tuple[str, Any]]:
+    """One entry per segment, across every donut."""
+    figures = []
+    for donut in value.get("donuts") or []:
+        for segment in donut.get("series") or []:
+            figures.append(
+                (segment.get("name") or "", segment.get("displayValue") or "")
+            )
+    return figures
+
+
+# Several metrics now carry chart configuration rather than bare figures.
+CHART_FIGURES = {
+    "line": _line_figures,
+    "bar_list": _bar_list_figures,
+    "donut": _donut_figures,
+}
+
+
+def is_chart(value: Any) -> bool:
+    """Whether a value is chart configuration rather than a bare figure."""
+    return isinstance(value, dict) and value.get("type") in CHART_FIGURES
+
+
+def chart_figures(value: dict) -> list[tuple[str, Any]]:
+    """``(label, figure)`` for each number a chart config carries.
+
+    The page and the workbook both read this to keep in sync.
+    """
+    reader = CHART_FIGURES.get(value.get("type"))
+    return reader(value) if reader else []
+
+
+def _chart(value: dict) -> str:
+    """A chart config laid out as its figures, leaving its styling alone."""
+    figures = chart_figures(value)
+    if not figures:
+        return _breakdown(value, None)
+    return _rows_table(figures)
+
+
 def _compound(value: Any, unit: str | None) -> str:
     """A figure that may itself be a set of figures."""
     if isinstance(value, dict):
@@ -106,14 +168,14 @@ def metric_html(metric: dict[str, Any]) -> str:
     if not metric["available"] or metric["value"] is None:
         return '<span class="none">not available</span>'
     kind, value, unit = metric["kind"], metric["value"], metric["unit"]
-    if kind == "breakdown" and isinstance(value, dict):
+    if is_chart(value):
+        return _chart(value)
+    if isinstance(value, dict):
+        if kind == "grouped_series":
+            return _grouped_series(value)
         return _breakdown(value, unit)
-    if kind == "table" and isinstance(value, list):
-        return _table(value, unit)
-    if kind == "grouped_series" and isinstance(value, dict):
-        return _grouped_series(value)
-    if kind == "series" and isinstance(value, list):
-        return _series(value)
+    if isinstance(value, list):
+        return _series(value) if kind == "series" else _table(value, unit)
     return _compound(value, unit)
 
 
