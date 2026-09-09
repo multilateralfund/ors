@@ -93,6 +93,7 @@ import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprR
 
 import PCRListingPage from '@ors/app/pcr/page'
 import PCRCreatePage from '@ors/app/pcr/create/page'
+import PCRViewPage from '@ors/app/pcr/view/page'
 import PCREditPage from '@ors/app/pcr/edit/page'
 
 function RedirectToSection() {
@@ -480,6 +481,13 @@ export default function App() {
           <ProjectsDataProvider>
             <PCRDataProvider>
               <PCRCreatePage />
+            </PCRDataProvider>
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/pcr/:project_id/:pcr_id">
+          <ProjectsDataProvider>
+            <PCRDataProvider>
+              <PCRViewPage />
             </PCRDataProvider>
           </ProjectsDataProvider>
         </Route>

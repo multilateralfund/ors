@@ -104,6 +104,33 @@ export interface PCRSummaryOfKeyDataType {
   equipments: PCREquipmentType[]
 }
 
+type PCRProjectResponse = {
+  project_id: number
+  funds_disbursed?: string | null
+  planned_date_of_completion?: string | null
+  alternative_technologies?: PCRAlternativeTechnologyType[]
+  enterprises?: PCREnterpriseType[]
+  equipments?: PCREquipmentType[]
+}
+
+export type PCRResponse = {
+  id: number
+  meta_project_id: number
+  submission_date: string | null
+  total_number_of_enterprises: string
+  financial_figures_status: string
+  financial_figures_status_explanation: string
+  addresses: string
+  project_goal_achieved: string
+  project_goal_achieved_explanation: string
+  rating: string
+  rating_explanation_other: string
+  rating_explanation: string
+  additional_comments: { entity: string; comment: string }[]
+  completed_by: string
+  pcr_projects: PCRProjectResponse[]
+}
+
 type CauseOfDelay = { delay_id: number | null; description: string }
 
 export type CauseOfDelayProjectComponent = {

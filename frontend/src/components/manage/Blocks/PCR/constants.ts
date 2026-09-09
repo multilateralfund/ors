@@ -65,7 +65,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   rating_explanation_other: 'Specify rating',
   rating_explanation: 'Please explain your rating',
   entity: 'Entity user inputting the comment on behalf',
-  comment: 'Add comment',
+  comment: 'Comment',
   completed_by: 'Completion report done by',
   funds_disbursed: 'Funds disbursed',
   planned_date_of_completion: 'Planned date of completion',
@@ -172,3 +172,10 @@ export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
 export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
+
+export const defaultColDef = {
+  headerClass: 'ag-text-center',
+  cellClass: 'ag-text-center ag-cell-ellipsed',
+  resizable: true,
+  sortable: false,
+}

@@ -1,3 +1,4 @@
+import Link from '@ors/components/ui/Link/Link'
 import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { PCRUpdatedMetaproject } from '../interfaces'
@@ -113,9 +114,18 @@ const getColumnDefs = (
           ) : (
             <div className="flex w-14 shrink-0" />
           )}
-          <span className="flex-1 overflow-hidden truncate whitespace-nowrap">
-            {props.value}
-          </span>
+          {props.data.pcr_id ? (
+            <Link
+              className="flex flex-1 justify-center overflow-hidden truncate whitespace-nowrap text-sm text-inherit !underline"
+              href={`/pcr/${props.data.metaprojectId}/${props.data.pcr_id}`}
+            >
+              {props.value}
+            </Link>
+          ) : (
+            <span className="flex-1 overflow-hidden truncate whitespace-nowrap">
+              {props.value}
+            </span>
+          )}
           {props.data.pcr_id ? (
             <Tooltip title="Has PCR" placement="top" arrow>
               <span className="text-secondary">

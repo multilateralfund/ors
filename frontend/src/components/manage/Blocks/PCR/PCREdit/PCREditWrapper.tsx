@@ -11,25 +11,10 @@ import {
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
+  PCRResponse,
 } from '../interfaces'
 
 import { useParams } from 'wouter'
-
-type PCRProjectResponse = {
-  project_id: number
-  funds_disbursed?: string | null
-  planned_date_of_completion?: string | null
-  alternative_technologies?: PCRAlternativeTechnologyType[]
-  enterprises?: PCREnterpriseType[]
-  equipments?: PCREquipmentType[]
-}
-
-type PCRResponse = {
-  id: number
-  meta_project_id: number
-  submission_date: string | null
-  pcr_projects: PCRProjectResponse[]
-}
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
   substance_from: null,
@@ -76,8 +61,7 @@ const PCREditWrapper = () => {
       summary_of_key_data: pcrData.pcr_projects.map((pcrProject) => ({
         project_id: pcrProject.project_id,
         funds_disbursed: pcrProject.funds_disbursed ?? '',
-        planned_date_of_completion:
-          pcrProject.planned_date_of_completion ?? '',
+        planned_date_of_completion: pcrProject.planned_date_of_completion ?? '',
         alternative_technologies: ensureRows(
           pcrProject.alternative_technologies,
           emptyAlternativeTechnology,
@@ -99,7 +83,7 @@ const PCREditWrapper = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <PCRHeader mode="edit" pcrMetaproject={pcrMetaproject.data}/>
+      <PCRHeader mode="edit" pcrMetaproject={pcrMetaproject.data} />
       <PCRForm />
     </>
   )
