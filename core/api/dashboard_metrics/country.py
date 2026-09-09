@@ -264,13 +264,15 @@ def kf_funding_disbursed(context: MetricContext) -> float | None:
 
 def kf_phased_out(context: MetricContext, fields: tuple[str, ...]) -> float | None:
     """What the reporting cycle says was removed, as against what was approved."""
-    return context.apr.phased_out(fields) if context.apr else None
+    response = context.apr.phased_out(fields) if context.apr else None
+    return response
 
 
 def trend_ods_consumption(context: MetricContext) -> dict | None:
     """Reported consumption of ozone-depleting substances, by Protocol group."""
     entry = _entry(context)
-    return context.cp.consumption_odp_by_group(entry.name) if entry else None
+    response = context.cp.consumption_odp_by_group(entry.name) if entry else None
+    return response
 
 
 def trend_hfc_consumption(context: MetricContext) -> list | None:
