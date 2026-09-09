@@ -109,7 +109,8 @@ class AbstractCPRecord(AbstractWChemical):
         For Methyl Bromide the sectorial total will only contain the non-Qps values
 
         """
-
+        if not self.record_usages.all():
+            return 0
         if self.substance and "methyl bromide" in self.substance.name.lower():
             return sum(
                 usage.quantity

@@ -452,8 +452,8 @@ AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 if ADFS_ENABLED:
     LOGIN_URL = "/admin/login/"
     AUTHENTICATION_BACKENDS = (
-        "django_auth_adfs.backend.AdfsAccessTokenBackend",
-        "django_auth_adfs.backend.AdfsAuthCodeBackend",
+        "core.adfs_backend.EmailFallbackAdfsAccessTokenBackend",
+        "core.adfs_backend.EmailFallbackAdfsAuthCodeBackend",
         "django.contrib.auth.backends.ModelBackend",
     )
 
