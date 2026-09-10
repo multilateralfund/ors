@@ -45,12 +45,12 @@ const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
     {
       id: 'gender_mainstreaming',
       label: 'Gender mainstreaming',
-      component: <PCRGenderMainstreaming />,
+      component: <PCRGenderMainstreaming {...{ pcr }} />,
     },
     {
       id: 'sdgs_contribution',
       label: 'SDGs (optional)',
-      component: <PCRSdgs />,
+      component: <PCRSdgs {...{ pcr }} />,
     },
     {
       id: 'supporting_evidences',

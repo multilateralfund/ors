@@ -130,14 +130,22 @@ export type PCRResponse = {
   completed_by: string
   pcr_projects: PCRProjectResponse[]
   activities: (Activity & { agency_id: number })[]
-  project_components: [
-    {
-      agency_id: number
-      project_component_option: { name: string }
-      delay_causes: { delay: { name: string }; description: string }[]
-      learned_lessons: { lesson: { name: string }; description: string }[]
-    },
-  ]
+  project_components: {
+    agency_id: number
+    project_component_option: { name: string }
+    delay_causes: { delay: { name: string }; description: string }[]
+    learned_lessons: { lesson: { name: string }; description: string }[]
+  }[]
+  gender_mainstreamings: {
+    agency_id: number
+    project_preparation: string
+    prefilled: boolean
+    qualitative_description: string
+  }[]
+  sustainable_development_goals: {
+    agency_id: number
+    goals: { goal: string; description: string }[]
+  }[]
 }
 
 type CauseOfDelay = { delay_id: number | null; description: string }

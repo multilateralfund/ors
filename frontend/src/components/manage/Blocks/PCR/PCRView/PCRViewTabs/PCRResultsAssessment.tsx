@@ -75,7 +75,7 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
                     )}
                   </div>
                   {activityIndex !== activitesData.length - 1 && (
-                    <Divider className="my-5" />
+                    <Divider className="my-1" />
                   )}
                 </Fragment>
               ))
