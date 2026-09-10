@@ -129,6 +129,15 @@ export type PCRResponse = {
   additional_comments: { entity: string; comment: string }[]
   completed_by: string
   pcr_projects: PCRProjectResponse[]
+  activities: (Activity & { agency_id: number })[]
+  project_components: [
+    {
+      agency_id: number
+      project_component_option: { name: string }
+      delay_causes: { delay: { name: string }; description: string }[]
+      learned_lessons: { lesson: { name: string }; description: string }[]
+    },
+  ]
 }
 
 type CauseOfDelay = { delay_id: number | null; description: string }

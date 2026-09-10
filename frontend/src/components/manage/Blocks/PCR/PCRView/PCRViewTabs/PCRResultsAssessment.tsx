@@ -1,110 +1,37 @@
 import { Fragment, useContext, useState } from 'react'
 
-import {
-  ErrorsList,
-  SubmitButton,
-} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { TabLabel, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { getSectionAgencies, formatErrors, getErrorIndex } from '../../utils'
+import { detailItem } from './ViewHelperComponents'
+import { initialActivitiesData, pcrFieldsMapping } from '../../constants'
+import { PCRResponse, Activity } from '../../interfaces'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, keys, map } from 'lodash'
-import { IoTrash } from 'react-icons/io5'
-import cx from 'classnames'
+import { filter, find, keys, map } from 'lodash'
 
-const PCRResultsAssessment = () => {
-  const sectionIdentifier = 'results_assessment'
-  const activityField = 'activities'
-
-  const { PCRData, setPCRData, errors, setErrors } = useContext(PCRDataContext)
+const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
+  const { fundsByAgency } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const sectionData = PCRData[sectionIdentifier] || []
-  const activitiesData = sectionData[crtTab][activityField] || []
-  const crtAgencyId = sectionData[crtTab].agency_id
-  const crtAgencies = getSectionAgencies(agencies, sectionData)
+  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
+  const crtAgencyId = agencyIds[crtTab]
+  const crtAgencies = map(
+    agencyIds,
+    (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
+  )
 
-  const { results_assessment: resultsAssessmentErrors } = errors
-  const activitiesErrors = resultsAssessmentErrors[activityField]
-
-  const agencyErrors = map(activitiesErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors({ [activityField]: agencyErrors })
-
-  const initialActivitiesData = {
-    activity_title: '',
-    type_of_activity: '',
-    type_of_sector: '',
-    planned_output: '',
-    actual_activity_output: '',
-    additional_remarks: '',
-  }
-
-  const onAddActivity = () => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [activityField]: [
-                  ...data[activityField],
-                  initialActivitiesData,
-                ],
-              }
-            : data,
-        ),
-      }
-    }, activityField)
-  }
-
-  const onRemoveActivity = (activityIndex: number) => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [activityField]: data[activityField].filter(
-                  (_, crtActivityIndex) => crtActivityIndex !== activityIndex,
-                ),
-              }
-            : data,
-        ),
-      }
-    }, activityField)
-
-    setErrors((prevData: Record<string, any[]>) => {
-      const errorIndex = getErrorIndex(
-        sectionData,
-        activityField,
-        crtAgencyId,
-        activityIndex,
-      )
-
-      return {
-        ...prevData,
-        [activityField]: filter(
-          prevData[activityField],
-          (_, index) => index !== errorIndex,
-        ),
-      }
-    })
-  }
+  const activitesData = filter(
+    pcr.activities,
+    ({ agency_id }) => agency_id === Number(crtAgencyId),
+  )
 
   return (
     <>
       <Tabs
-        aria-label="results-assessment-tabs"
+        aria-label="results-assessment-view-tabs"
         className="sectionsTabs"
         variant="scrollable"
         scrollButtons="auto"
@@ -119,66 +46,40 @@ const PCRResultsAssessment = () => {
         }}
       >
         {map(crtAgencies, (agency) => (
-          <Tab
-            key={agency.name}
-            aria-controls={agency.name}
-            id={agency.name}
-            label={
-              <TabLabel
-                field={activityField}
-                errors={activitiesErrors}
-                {...{ agency }}
-              />
-            }
-          />
+          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
-          <ErrorsList errors={formattedAgencyErrors} />
-        )}
+        <SectionTitle>Activities</SectionTitle>
         <div className="flex flex-col gap-y-4">
-          {map(activitiesData, (_, activityIndex) => (
-            <Fragment key={activityIndex}>
-              <PCRTextWidget
-                {...{ PCRData, setPCRData, sectionIdentifier }}
-                field="activity_title"
-                errors={agencyErrors}
-                indexes={[crtTab, activityIndex]}
-                subFields={['', activityField]}
-              />
-              <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                {map(
-                  keys(initialActivitiesData).slice(1),
-                  (field, fieldIndex) => (
-                    <Fragment key={fieldIndex}>
-                      <PCRTextAreaWidget
-                        {...{ PCRData, setPCRData, sectionIdentifier, field }}
-                        errors={agencyErrors}
-                        indexes={[crtTab, activityIndex]}
-                        subFields={['', activityField]}
-                      />
-                    </Fragment>
-                  ),
-                )}
-                <IoTrash
-                  className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                  size={16}
-                  onClick={() => {
-                    onRemoveActivity(activityIndex)
-                  }}
-                />
-              </div>
-              {activityIndex !== activitiesData.length - 1 && (
-                <Divider className="my-5" />
-              )}
-            </Fragment>
-          ))}
-          <SubmitButton
-            title="Add activity"
-            onSubmit={onAddActivity}
-            className={cx('mr-auto h-8', { 'mt-4': activitiesData.length > 0 })}
-          />
+          {activitesData.length > 0
+            ? map(activitesData, (activity, activityIndex) => (
+                <Fragment key={activityIndex}>
+                  {detailItem(
+                    pcrFieldsMapping.activity_title,
+                    activity.activity_title,
+                    { detailClassname: 'self-start' },
+                  )}
+                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                    {map(
+                      keys(initialActivitiesData).slice(1),
+                      (field: keyof Activity, fieldIndex) => (
+                        <Fragment key={fieldIndex}>
+                          {detailItem(
+                            pcrFieldsMapping[field],
+                            activity[field],
+                            { detailClassname: 'self-start' },
+                          )}
+                        </Fragment>
+                      ),
+                    )}
+                  </div>
+                  {activityIndex !== activitesData.length - 1 && (
+                    <Divider className="my-5" />
+                  )}
+                </Fragment>
+              ))
+            : '-'}
         </div>
       </div>
     </>

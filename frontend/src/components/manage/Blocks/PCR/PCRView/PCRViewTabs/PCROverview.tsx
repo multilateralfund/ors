@@ -1,16 +1,15 @@
-import { useContext } from 'react'
+import { Fragment, useContext } from 'react'
 
+import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import { detailItem } from './ViewHelperComponents'
-import { defaultColDef, pcrFieldsMapping } from '../../constants'
-import { PCRResponse } from '../../interfaces'
+import { pcrFieldsMapping } from '../../constants'
 import { getOtherOptionId } from '../../utils'
+import { PCRResponse } from '../../interfaces'
 
 import { Divider } from '@mui/material'
-import { SectionTitle } from '../../../ProjectsListing/ProjectsCreate/ProjectsCreate'
-import ViewTable from '@ors/components/manage/Form/ViewTable'
-import { GetRowIdParams } from 'ag-grid-community'
+import { map } from 'lodash'
 
 const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
   const { ratingOptions } = useContext(PCRDataContext)
@@ -65,31 +64,21 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
         </div>
         <div className="flex flex-col">
           <SectionTitle>Additional comments</SectionTitle>
-          <ViewTable
-            rowData={pcr.additional_comments ?? []}
-            enablePagination={false}
-            suppressCellFocus={true}
-            withSeparators={true}
-            className="mb-4"
-            columnDefs={[
-              {
-                headerName: pcrFieldsMapping.entity,
-                field: 'entity',
-                tooltipField: 'entity',
-                cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-                minWidth: 130,
-              },
-              {
-                headerName: pcrFieldsMapping.comment,
-                field: 'comment',
-                tooltipField: 'comment',
-                cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-                minWidth: 180,
-              },
-            ]}
-            defaultColDef={defaultColDef}
-            getRowId={(props: GetRowIdParams) => props.data.id}
-          />
+          {pcr.additional_comments.length > 0
+            ? map(pcr.additional_comments, (comment, commentIndex) => (
+                <Fragment key={commentIndex}>
+                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                    {detailItem(pcrFieldsMapping.entity, comment.entity)}
+                    {detailItem(pcrFieldsMapping.comment, comment.comment, {
+                      detailClassname: 'self-start',
+                    })}
+                  </div>
+                  {commentIndex !== pcr.additional_comments.length - 1 && (
+                    <Divider className="my-5" />
+                  )}
+                </Fragment>
+              ))
+            : '-'}
         </div>
         {detailItem(pcrFieldsMapping.completed_by, pcr.completed_by)}
       </div>

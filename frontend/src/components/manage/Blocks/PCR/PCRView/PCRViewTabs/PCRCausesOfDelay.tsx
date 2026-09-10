@@ -1,193 +1,37 @@
 import { Fragment, useContext, useState } from 'react'
 
-import {
-  ErrorsList,
-  SubmitButton,
-} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { getSectionAgencies, formatErrors, getErrorIndex } from '../../utils'
-import { pcField, cdField } from '../../constants'
+import { detailItem } from './ViewHelperComponents'
+import { cdField, pcrFieldsMapping } from '../../constants'
+import { PCRResponse } from '../../interfaces'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, map, omit } from 'lodash'
-import { IoTrash } from 'react-icons/io5'
-import cx from 'classnames'
+import { filter, find, keys, map } from 'lodash'
 
-const PCRCausesOfDelay = () => {
-  const sectionIdentifier = 'causes_of_delay'
-
+const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
+  const { fundsByAgency } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
-  const {
-    PCRData,
-    setPCRData,
-    projectComponentOptions,
-    causeOfDelayOptions,
-    errors,
-    setErrors,
-  } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const sectionData = PCRData[sectionIdentifier] || []
-  const pcData = sectionData[crtTab][pcField] || []
-  const crtAgencyId = sectionData[crtTab].agency_id
-  const crtAgencies = getSectionAgencies(agencies, sectionData)
-
-  const { causes_of_delay: causesOfDelayErrors } = errors
-  const pcErrors = causesOfDelayErrors[pcField]
-
-  const agencyErrors = map(pcErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors(
-    { [pcField]: agencyErrors },
-    cdField,
+  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
+  const crtAgencyId = agencyIds[crtTab]
+  const crtAgencies = map(
+    agencyIds,
+    (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
   )
-  const delayCausesErrors = map(agencyErrors, (error) => map(error, cdField))
 
-  const onAddProjectComponent = () => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-      const initialProjectComponentData = {
-        project_component_option_id: null,
-        [cdField]: [],
-      }
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [pcField]: [...data[pcField], initialProjectComponentData],
-              }
-            : data,
-        ),
-      }
-    }, pcField)
-  }
-
-  const onRemoveProjectComponent = (pcIndex: number) => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [pcField]: data[pcField].filter(
-                  (_, crtPcIndex) => crtPcIndex !== pcIndex,
-                ),
-              }
-            : data,
-        ),
-      }
-    }, pcField)
-
-    setErrors((prevData: Record<string, any[]>) => {
-      const errorIndex = getErrorIndex(
-        sectionData,
-        pcField,
-        crtAgencyId,
-        pcIndex,
-      )
-
-      return {
-        ...prevData,
-        [pcField]: filter(
-          prevData[pcField],
-          (_, index) => index !== errorIndex,
-        ),
-      }
-    })
-  }
-
-  const onAddCauseOfDelay = (pcIndex: number) => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-      const initialCauseOfDelay = { delay_id: null, description: '' }
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [pcField]: data[pcField].map((pc, crtPcIndex) =>
-                  crtPcIndex === pcIndex
-                    ? {
-                        ...pc,
-                        [cdField]: [...pc[cdField], initialCauseOfDelay],
-                      }
-                    : pc,
-                ),
-              }
-            : data,
-        ),
-      }
-    }, cdField)
-  }
-
-  const onRemoveCauseOfDelay = (cdIndex: number, pcIndex: number) => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [pcField]: map(data[pcField], (pc, crtPcIndex) =>
-                  crtPcIndex === pcIndex
-                    ? {
-                        ...pc,
-                        [cdField]: pc[cdField].filter(
-                          (_, crtCdIndex) => crtCdIndex !== cdIndex,
-                        ),
-                      }
-                    : pc,
-                ),
-              }
-            : data,
-        ),
-      }
-    }, cdField)
-
-    setErrors((prevData: Record<string, any[]>) => {
-      const errorIndex = getErrorIndex(
-        sectionData,
-        pcField,
-        crtAgencyId,
-        pcIndex,
-      )
-
-      return {
-        ...prevData,
-        [pcField]: map(prevData[pcField], (component, index) => {
-          if (index !== errorIndex) {
-            return component
-          }
-
-          const updatedCausesOfDelay = filter(
-            component[cdField],
-            (_, delayIndex: number) => delayIndex !== cdIndex,
-          )
-
-          return updatedCausesOfDelay.length
-            ? { ...component, [cdField]: updatedCausesOfDelay }
-            : omit(component, [cdField])
-        }),
-      }
-    })
-  }
+  const pcData = filter(
+    pcr.project_components,
+    (pc) => pc.agency_id === Number(crtAgencyId) && pc[cdField].length > 0,
+  )
 
   return (
     <>
       <Tabs
-        aria-label="causes-of-delay-tabs"
+        aria-label="causes-of-delay-view-tabs"
         className="sectionsTabs"
         variant="scrollable"
         scrollButtons="auto"
@@ -202,91 +46,54 @@ const PCRCausesOfDelay = () => {
         }}
       >
         {map(crtAgencies, (agency) => (
-          <Tab
-            key={agency.name}
-            aria-controls={agency.name}
-            id={agency.name}
-            label={
-              <TabLabel field={pcField} errors={pcErrors} {...{ agency }} />
-            }
-          />
+          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
-          <ErrorsList errors={formattedAgencyErrors} />
-        )}
+        <SectionTitle>Project components</SectionTitle>
         <div className="flex flex-col gap-y-4">
-          {map(pcData, (_, pcIndex) => {
-            const cdData = pcData[pcIndex][cdField] || []
+          {pcData.length > 0
+            ? map(pcData, (pc, pcIndex) => {
+                const cdData = pcData[pcIndex][cdField] || []
 
-            return (
-              <div key={pcIndex} className="flex items-center gap-2">
-                <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-                  <PCRSelectWidget
-                    {...{ PCRData, setPCRData, sectionIdentifier }}
-                    field="project_component_option_id"
-                    options={projectComponentOptions}
-                    errors={agencyErrors}
-                    indexes={[crtTab, pcIndex]}
-                    subFields={['', pcField]}
-                  />
-                  {cdData.length > 0 && <Divider className="my-5" />}
-                  <div className="flex flex-col gap-y-4">
-                    {map(cdData, (_, cdIndex) => (
-                      <Fragment key={cdIndex}>
-                        <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                          <PCRSelectWidget
-                            {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="delay_id"
-                            options={causeOfDelayOptions}
-                            errors={delayCausesErrors}
-                            indexes={[crtTab, pcIndex, cdIndex]}
-                            subFields={['', pcField, cdField]}
-                          />
-                          <PCRTextAreaWidget
-                            {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="description"
-                            errors={delayCausesErrors}
-                            indexes={[crtTab, pcIndex, cdIndex]}
-                            subFields={['', pcField, cdField]}
-                          />
-                          <IoTrash
-                            className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                            size={16}
-                            onClick={() => {
-                              onRemoveCauseOfDelay(cdIndex, pcIndex)
-                            }}
-                          />
+                return (
+                  <div key={pcIndex} className="flex items-center gap-2">
+                    <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+                      {detailItem(
+                        pcrFieldsMapping.project_component_option_id,
+                        pc.project_component_option?.name,
+                      )}
+                      <div className="mt-4">
+                        <SectionTitle>Causes of delay</SectionTitle>
+                        <div className="flex flex-col">
+                          {cdData.length > 0
+                            ? map(cdData, (cd, cdIndex) => (
+                                <Fragment key={cdIndex}>
+                                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                                    {detailItem(
+                                      pcrFieldsMapping.delay_id,
+                                      cd.delay?.name,
+                                    )}
+                                    {detailItem(
+                                      pcrFieldsMapping.description,
+                                      cd.description,
+                                      { detailClassname: 'self-start' },
+                                    )}
+                                  </div>
+                                  {cdIndex !== cdData.length - 1 && (
+                                    <Divider className="my-5" />
+                                  )}
+                                </Fragment>
+                              ))
+                            : '-'}
                         </div>
-                        {cdIndex !== cdData.length - 1 && (
-                          <Divider className="my-5" />
-                        )}
-                      </Fragment>
-                    ))}
+                      </div>
+                    </div>
                   </div>
-                  <SubmitButton
-                    title="Add cause of delay"
-                    onSubmit={() => onAddCauseOfDelay(pcIndex)}
-                    className="mr-auto mt-5 h-8"
-                  />
-                </div>
-                <IoTrash
-                  className="min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                  size={16}
-                  onClick={() => {
-                    onRemoveProjectComponent(pcIndex)
-                  }}
-                />
-              </div>
-            )
-          })}
+                )
+              })
+            : '-'}
         </div>
-        <SubmitButton
-          title="Add project component"
-          onSubmit={onAddProjectComponent}
-          className={cx('mr-auto h-8', { 'mt-4': pcData.length > 0 })}
-        />
       </div>
     </>
   )

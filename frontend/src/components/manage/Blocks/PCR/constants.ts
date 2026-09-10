@@ -146,6 +146,15 @@ export const initialOverviewData = {
   completed_by: null,
 }
 
+export const initialActivitiesData = {
+  activity_title: '',
+  type_of_activity: '',
+  type_of_sector: '',
+  planned_output: '',
+  actual_activity_output: '',
+  additional_remarks: '',
+}
+
 export const defaultSummaryOfKeyDataErrors = {
   general: {},
   alternative_technologies: {},
@@ -172,10 +181,3 @@ export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
 export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
-
-export const defaultColDef = {
-  headerClass: 'ag-text-center',
-  cellClass: 'ag-text-center ag-cell-ellipsed',
-  resizable: true,
-  sortable: false,
-}

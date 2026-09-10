@@ -16,51 +16,45 @@ import { Tabs, Tab } from '@mui/material'
 const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const TabLabel = ({ title }: { title: string }) => (
-    <div className="relative flex items-center justify-between gap-x-2">
-      <div className="leading-tight">{title}</div>
-    </div>
-  )
-
   const tabs = [
     {
       id: 'overview',
-      label: <TabLabel title="Overview" />,
+      label: 'Overview',
       component: <PCROverview {...{ pcr }} />,
     },
     {
       id: 'summary_of_key_data',
-      label: <TabLabel title="Summary of key data (tranches)" />,
+      label: 'Summary of key data (tranches)',
       component: <PCRSummaryOfKeyData />,
     },
     {
       id: 'results_assessment',
-      label: <TabLabel title="Project results overall assessment" />,
-      component: <PCRResultsAssessment />,
+      label: 'Project results overall assessment',
+      component: <PCRResultsAssessment {...{ pcr }} />,
     },
     {
       id: 'causes_of_delay',
-      label: <TabLabel title="Causes of delay" />,
-      component: <PCRCausesOfDelay />,
+      label: 'Causes of delay',
+      component: <PCRCausesOfDelay {...{ pcr }} />,
     },
     {
       id: 'lessons_learned',
-      label: <TabLabel title="Lessons learned" />,
-      component: <PCRLessonsLearned />,
+      label: 'Lessons learned',
+      component: <PCRLessonsLearned {...{ pcr }} />,
     },
     {
       id: 'gender_mainstreaming',
-      label: <TabLabel title="Gender mainstreaming" />,
+      label: 'Gender mainstreaming',
       component: <PCRGenderMainstreaming />,
     },
     {
       id: 'sdgs_contribution',
-      label: <TabLabel title="SDGs (optional)" />,
+      label: 'SDGs (optional)',
       component: <PCRSdgs />,
     },
     {
       id: 'supporting_evidences',
-      label: <TabLabel title="Other supporting evidence" />,
+      label: 'Other supporting evidence',
       component: <PCRDocumentation />,
     },
   ]

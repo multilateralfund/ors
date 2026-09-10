@@ -1,213 +1,37 @@
 import { Fragment, useContext, useState } from 'react'
 
-import {
-  ErrorsList,
-  SubmitButton,
-} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { getSectionAgencies, formatErrors, getErrorIndex } from '../../utils'
-import { pcField, llField } from '../../constants'
+import { detailItem } from './ViewHelperComponents'
+import { llField, pcrFieldsMapping } from '../../constants'
+import { PCRResponse } from '../../interfaces'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, map, omit, sumBy } from 'lodash'
-import { IoTrash } from 'react-icons/io5'
-import cx from 'classnames'
+import { filter, find, keys, map } from 'lodash'
 
-const PCRLessonsLearned = () => {
-  const sectionIdentifier = 'lessons_learned'
-
+const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
+  const { fundsByAgency } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
-  const {
-    PCRData,
-    setPCRData,
-    projectComponentOptions,
-    lessonLearnedOptions,
-    errors,
-    setErrors,
-  } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const sectionData = PCRData[sectionIdentifier] || []
-  const pcData = sectionData[crtTab][pcField] || []
-  const crtAgencyId = sectionData[crtTab].agency_id
-  const crtAgencies = getSectionAgencies(agencies, sectionData)
-
-  const { lessons_learned: lessonsLearnedErrors } = errors
-  const pcErrors = lessonsLearnedErrors[pcField]
-
-  const agencyErrors = map(pcErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors(
-    { [pcField]: agencyErrors },
-    llField,
+  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
+  const crtAgencyId = agencyIds[crtTab]
+  const crtAgencies = map(
+    agencyIds,
+    (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
   )
-  const learnedLessonsErrors = map(agencyErrors, (error) => map(error, llField))
 
-  const onAddProjectComponent = () => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-      const initialProjectComponentData = {
-        project_component_option_id: null,
-        [llField]: [],
-      }
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [pcField]: [...data[pcField], initialProjectComponentData],
-              }
-            : data,
-        ),
-      }
-    }, pcField)
-  }
-
-  const onRemoveProjectComponent = (pcIndex: number) => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [pcField]: data[pcField].filter(
-                  (_, crtPcIndex) => crtPcIndex !== pcIndex,
-                ),
-              }
-            : data,
-        ),
-      }
-    }, pcField)
-
-    setErrors((prevData: Record<string, any[]>) => {
-      const sectionErrorIndex = getErrorIndex(
-        sectionData,
-        pcField,
-        crtAgencyId,
-        pcIndex,
-      )
-
-      const causesOfDelayErrors = map(PCRData.causes_of_delay, (data) => ({
-        [data.agency_id]: data[pcField].length,
-      }))
-      const causesOfDelayErrorsLength = sumBy(
-        causesOfDelayErrors,
-        (entry) => Object.values(entry)[0],
-      )
-
-      const errorIndex = sectionErrorIndex + causesOfDelayErrorsLength
-
-      return {
-        ...prevData,
-        [pcField]: filter(
-          prevData[pcField],
-          (_, index) => index !== errorIndex,
-        ),
-      }
-    })
-  }
-
-  const onAddLessonLearned = (pcIndex: number) => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-      const initialLessonLearned = { lesson_id: null, description: '' }
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [pcField]: data[pcField].map((pc, crtPcIndex) =>
-                  crtPcIndex === pcIndex
-                    ? {
-                        ...pc,
-                        [llField]: [...pc[llField], initialLessonLearned],
-                      }
-                    : pc,
-                ),
-              }
-            : data,
-        ),
-      }
-    }, llField)
-  }
-
-  const onRemoveLessonLearned = (llIndex: number, pcIndex: number) => {
-    setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-
-      return {
-        ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === crtTab
-            ? {
-                ...data,
-                [pcField]: map(data[pcField], (pc, crtPcIndex) =>
-                  crtPcIndex === pcIndex
-                    ? {
-                        ...pc,
-                        [llField]: pc[llField].filter(
-                          (_, crtLlIndex) => crtLlIndex !== llIndex,
-                        ),
-                      }
-                    : pc,
-                ),
-              }
-            : data,
-        ),
-      }
-    }, llField)
-
-    setErrors((prevData: Record<string, any[]>) => {
-      const sectionErrorIndex = getErrorIndex(
-        sectionData,
-        pcField,
-        crtAgencyId,
-        pcIndex,
-      )
-
-      const causesOfDelayErrors = map(PCRData.causes_of_delay, (data) => ({
-        [data.agency_id]: data[pcField].length,
-      }))
-      const causesOfDelayErrorsLength = sumBy(
-        causesOfDelayErrors,
-        (entry) => Object.values(entry)[0],
-      )
-
-      const errorIndex = sectionErrorIndex + causesOfDelayErrorsLength
-
-      return {
-        ...prevData,
-        [pcField]: map(prevData[pcField], (component, index) => {
-          if (index !== errorIndex) {
-            return component
-          }
-
-          const updatedLessonsLearned = filter(
-            component[llField],
-            (_, lessonIndex: number) => lessonIndex !== llIndex,
-          )
-
-          return updatedLessonsLearned.length
-            ? { ...component, [llField]: updatedLessonsLearned }
-            : omit(component, [llField])
-        }),
-      }
-    })
-  }
+  const pcData = filter(
+    pcr.project_components,
+    (pc) => pc.agency_id === Number(crtAgencyId) && pc[llField].length > 0,
+  )
 
   return (
     <>
       <Tabs
-        aria-label="lessons-learned-tabs"
+        aria-label="lessons-learned-view-tabs"
         className="sectionsTabs"
         variant="scrollable"
         scrollButtons="auto"
@@ -222,91 +46,54 @@ const PCRLessonsLearned = () => {
         }}
       >
         {map(crtAgencies, (agency) => (
-          <Tab
-            key={agency.name}
-            aria-controls={agency.name}
-            id={agency.name}
-            label={
-              <TabLabel field={pcField} errors={pcErrors} {...{ agency }} />
-            }
-          />
+          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
-          <ErrorsList errors={formattedAgencyErrors} />
-        )}
+        <SectionTitle>Project components</SectionTitle>
         <div className="flex flex-col gap-y-4">
-          {map(pcData, (_, pcIndex) => {
-            const llData = pcData[pcIndex][llField] || []
+          {pcData.length > 0
+            ? map(pcData, (pc, pcIndex) => {
+                const llData = pcData[pcIndex][llField] || []
 
-            return (
-              <div key={pcIndex} className="flex items-center gap-2">
-                <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-                  <PCRSelectWidget
-                    {...{ PCRData, setPCRData, sectionIdentifier }}
-                    field="project_component_option_id"
-                    options={projectComponentOptions}
-                    errors={agencyErrors}
-                    indexes={[crtTab, pcIndex]}
-                    subFields={['', pcField]}
-                  />
-                  {llData.length > 0 && <Divider className="my-5" />}
-                  <div className="flex flex-col gap-y-4">
-                    {map(llData, (_, llIndex) => (
-                      <Fragment key={llIndex}>
-                        <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                          <PCRSelectWidget
-                            {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="lesson_id"
-                            options={lessonLearnedOptions}
-                            errors={learnedLessonsErrors}
-                            indexes={[crtTab, pcIndex, llIndex]}
-                            subFields={['', pcField, llField]}
-                          />
-                          <PCRTextAreaWidget
-                            {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="description"
-                            errors={learnedLessonsErrors}
-                            indexes={[crtTab, pcIndex, llIndex]}
-                            subFields={['', pcField, llField]}
-                          />
-                          <IoTrash
-                            className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                            size={16}
-                            onClick={() => {
-                              onRemoveLessonLearned(llIndex, pcIndex)
-                            }}
-                          />
+                return (
+                  <div key={pcIndex} className="flex items-center gap-2">
+                    <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+                      {detailItem(
+                        pcrFieldsMapping.project_component_option_id,
+                        pc.project_component_option?.name,
+                      )}
+                      <div className="mt-4">
+                        <SectionTitle>Lessons learned</SectionTitle>
+                        <div className="flex flex-col">
+                          {llData.length > 0
+                            ? map(llData, (ll, llIndex) => (
+                                <Fragment key={llIndex}>
+                                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                                    {detailItem(
+                                      pcrFieldsMapping.lesson_id,
+                                      ll.lesson?.name,
+                                    )}
+                                    {detailItem(
+                                      pcrFieldsMapping.description,
+                                      ll.description,
+                                      { detailClassname: 'self-start' },
+                                    )}
+                                  </div>
+                                  {llIndex !== llData.length - 1 && (
+                                    <Divider className="my-5" />
+                                  )}
+                                </Fragment>
+                              ))
+                            : '-'}
                         </div>
-                        {llIndex !== llData.length - 1 && (
-                          <Divider className="my-5" />
-                        )}
-                      </Fragment>
-                    ))}
+                      </div>
+                    </div>
                   </div>
-                  <SubmitButton
-                    title="Add lesson learned"
-                    onSubmit={() => onAddLessonLearned(pcIndex)}
-                    className="mr-auto mt-5 h-8"
-                  />
-                </div>
-                <IoTrash
-                  className="min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                  size={16}
-                  onClick={() => {
-                    onRemoveProjectComponent(pcIndex)
-                  }}
-                />
-              </div>
-            )
-          })}
+                )
+              })
+            : '-'}
         </div>
-        <SubmitButton
-          title="Add project component"
-          onSubmit={onAddProjectComponent}
-          className={cx('mr-auto h-8', { 'mt-4': pcData.length > 0 })}
-        />
       </div>
     </>
   )
