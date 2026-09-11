@@ -110,6 +110,7 @@ FUND_METRIC_IDS = frozenset(
         "funds_lvc_split",
         "funds_disbursed",
         "funds_disbursed_lvc_split",
+        "funds_approved_funds_disbursed_lvc_split",
         "projects_approved_total",
         "completed_count",
         "completed_funding",
@@ -2039,13 +2040,23 @@ class TestFundPlaceholders(BaseTest):
     ):
         """All three rows, with the two we cannot work out as null - not zero."""
         metric = self.fund(user)["baseline_phased_out_by_substance"]
-        rows = {row["group"]: row for row in metric["value"]}
 
-        assert metric["available"] is True
         assert "placeholder" not in metric
-        assert rows["HFC"]["value"] is None
-        assert rows["HCFC"]["value"] is None
-        assert rows["OTHER_ODS"]["value"] == 100.0
+
+        assert metric["value"]["categories"] == [
+            "Hydrofluorocarbons (HFCs)",
+            "Hydrochlorofluorocarbons (HCFCs)",
+            "Other ODS",
+        ]
+        assert metric["value"]["series"][0]["name"] == "CO2-eq T"
+        assert metric["value"]["series"][0]["data"][0] is None
+        assert metric["value"]["series"][0]["data"][1] is None
+        assert metric["value"]["series"][0]["data"][2] is None
+
+        assert metric["value"]["series"][1]["name"] == "ODP T"
+        assert metric["value"]["series"][1]["data"][0] is None
+        assert metric["value"]["series"][1]["data"][1] is None
+        assert metric["value"]["series"][1]["data"][2] == 100.0
 
     def test_asking_serves_all_three_families(self, user, brazil):
         metric = self.fund(user, placeholders="true")[
@@ -2258,7 +2269,7 @@ class TestSpecCommand:
         out = StringIO()
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
-        assert "91 metrics, 91 implemented." in rendered
+        assert "92 metrics, 92 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 

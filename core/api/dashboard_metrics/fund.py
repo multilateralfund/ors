@@ -5,6 +5,8 @@ Every ``compute`` takes the request's :class:`MetricContext` and returns a
 value, or ``None`` when there is nothing behind the figure.
 """
 
+# pylint: disable=C0302
+
 import math
 from functools import partial
 from typing import Any
@@ -17,6 +19,7 @@ from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
     count_project_grains,
     funds_pair,
+    format_money,
     grouped,
     phase_out,
     totals,
@@ -133,6 +136,34 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
     )
 
 
+def _prepare_horizontal_bar_structure(
+    data: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return {
+        "type": "bar_horizontal",
+        "title": "Percentage of phase out from baseline (%)",
+        "subtitle": None,
+        "categories": [
+            "Hydrofluorocarbons (HFCs)",
+            "Hydrochlorofluorocarbons (HCFCs)",
+            "Other ODS",
+        ],
+        "series": [
+            {
+                "name": "CO2-eq T",
+                "color": "var(--deep-teal)",
+                "data": [data[0]["value"], None, None],
+            },
+            {
+                "name": "ODP T",
+                "color": "var(--mlf-blue)",
+                "data": [None, data[1]["value"], data[2]["value"]],
+            },
+        ],
+        "meta": {"unit": "%"},
+    }
+
+
 NOT_CLASSIFIED = "not_classified"
 
 # The component each LVC status is reported under. Keyed on what
@@ -197,7 +228,7 @@ def baseline_rows() -> list[dict[str, Any]]:
 
 def baseline_phased_out_by_substance(_context: MetricContext) -> list[dict[str, Any]]:
     """Percentage of baseline consumption phased out, per substance family."""
-    return baseline_rows()
+    return _prepare_horizontal_bar_structure(baseline_rows())
 
 
 def theme(context: MetricContext, name: str) -> dict[str, Any]:
@@ -222,6 +253,74 @@ def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
 def funds_disbursed(context: MetricContext) -> dict[str, float] | None:
     """What has actually been paid out, in total and within the current cycle."""
     return context.apr.funds_disbursed() if context.apr else None
+
+
+def funds_approved_funds_disbursed_lvc_split(
+    context: MetricContext,
+) -> dict[str, float] | None:
+    """What has actually been paid out, in total and within the current cycle."""
+    funds_approved_lvc_split_result = funds_lvc_split(context)
+    funds_approved_lvc = funds_approved_lvc_split_result["lvc"]["funds_plus_psc"]
+    funds_approved_non_lvc = funds_approved_lvc_split_result["non_lvc"][
+        "funds_plus_psc"
+    ]
+    total_funds_approved = format_money(funds_approved_lvc + funds_approved_non_lvc)
+    funds_disbursed_lvc_split_result = funds_disbursed_lvc_split(context)
+    try:
+        funds_disbursed_lvc = funds_disbursed_lvc_split_result["lvc"]["all_time"]
+        funds_disbursed_non_lvc = funds_disbursed_lvc_split_result["non_lvc"][
+            "all_time"
+        ]
+    except (AttributeError, TypeError):
+        funds_disbursed_lvc = 0
+        funds_disbursed_non_lvc = 0
+    total_funds_disbursed = format_money(funds_disbursed_lvc + funds_disbursed_non_lvc)
+    return (
+        {
+            "type": "donut",
+            "title": None,
+            "subtitle": None,
+            "donuts": [
+                {
+                    "label": "Funds approved",
+                    "total": total_funds_approved,
+                    "series": [
+                        {
+                            "name": "Low-Volume Consuming (LVC) countries",
+                            "value": funds_approved_lvc,
+                            "displayValue": format_money(funds_approved_lvc),
+                            "color": "var(--deep-teal)",
+                        },
+                        {
+                            "name": "Non-LVC countries",
+                            "value": funds_approved_non_lvc,
+                            "displayValue": format_money(funds_approved_non_lvc),
+                            "color": "var(--purple)",
+                        },
+                    ],
+                },
+                {
+                    "label": "Funds disbursed",
+                    "total": total_funds_disbursed,
+                    "series": [
+                        {
+                            "name": "Low-Volume Consuming (LVC) countries",
+                            "value": funds_disbursed_lvc,
+                            "displayValue": format_money(funds_disbursed_lvc),
+                            "color": "var(--deep-teal)",
+                        },
+                        {
+                            "name": "Non-LVC countries",
+                            "value": funds_disbursed_non_lvc,
+                            "displayValue": format_money(funds_disbursed_non_lvc),
+                            "color": "var(--purple)",
+                        },
+                    ],
+                },
+            ],
+            "meta": {"currency": "USD"},
+        },
+    )
 
 
 def investment_timeline(context: MetricContext) -> dict[str, float | int | None] | None:
@@ -555,6 +654,18 @@ FUND_METRICS: tuple[Metric, ...] = (
         db_source="NEEDS-APR",
         src_model_field="AnnualProjectReport.funds_disbursed",
         compute=funds_disbursed,
+    ),
+    Metric(
+        metric_id="funds_approved_funds_disbursed_lvc_split",
+        label="Funds split by lvc donut",
+        section="Targeted support for developing countries",
+        kind=Kind.SERIES,
+        unit=Unit.USD,
+        disposition=Disposition.COMPUTE,
+        formula=("funds_lvc_split + unds_disbursed"),
+        db_source="NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed + Country.is_lvc",
+        compute=funds_approved_funds_disbursed_lvc_split,
     ),
     Metric(
         metric_id="projects_approved_total",
