@@ -645,9 +645,9 @@ class TestFundValues(BaseTest):
 
         metrics = self.fund(user)
         assert metrics["ongoing_count"]["value"] == 1
-        assert metrics["ongoing_funding"]["value"] == 11
+        assert metrics["ongoing_funding"]["value"] == '$11.0'
         assert metrics["completed_count"]["value"] == 2
-        assert metrics["completed_funding"]["value"] == 220
+        assert metrics["completed_funding"]["value"] == '$220.0'
 
     def test_ods_phased_out_covers_hcfc_and_older_ods_alike(self, user, ongoing_status):
         """The per-country page splits ODS three ways; this figure stays the union."""
@@ -680,17 +680,15 @@ class TestFundValues(BaseTest):
                 total_fund=100,
                 support_cost_psc=0,
             )
-
         table = self.fund(user)["by_agency"]["value"]
-        assert [row["group"] for row in table] == ["UNDP", "Bilateral Agencies"]
-        assert table[-1]["funds_approved"] == 200
-        assert table[-1]["projects_by_code"] == 2
+        assert table['categories'] == ["UNDP", "Bilateral Agencies"]
+        assert table['series'][1]['data'][-1]  == '$200.0'
+        assert table['series'][0]['data'][-1] == 2
 
     def test_agency_names_are_matched_case_insensitively(self, user, ongoing_status):
         """Casing drift must not quietly move an agency into the bilateral total."""
         approved_project(status=ongoing_status, agency=AgencyFactory(name="undp"))
-
-        assert [row["group"] for row in self.fund(user)["by_agency"]["value"]] == [
+        assert self.fund(user)["by_agency"]['value']['categories'] == [
             "undp"
         ]
 

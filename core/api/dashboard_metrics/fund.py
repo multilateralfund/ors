@@ -121,7 +121,7 @@ def portfolio_projects_rounded(context: MetricContext) -> int:
 
 def by_agency(context: MetricContext) -> list[dict[str, Any]]:
     """Delivery split across the agencies that implement the Fund's projects."""
-    return classify.agency_rollup(context.projects)
+    return _prepare_vertical_bar_structure(classify.agency_rollup(context.projects))
 
 
 def by_region(context: MetricContext) -> list[dict[str, Any]]:
@@ -161,6 +161,30 @@ def _prepare_horizontal_bar_structure(
             },
         ],
         "meta": {"unit": "%"},
+    }
+
+
+def _prepare_vertical_bar_structure(
+    data: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return {
+        "type": "bar_vertical",
+        "title": "Projects and funds per agency",
+        "subtitle": None,
+        "categories": [entry["group"] for entry in data],
+        "series": [
+            {
+                "name": "Number of projects",
+                "color": "var(--deep-teal)",
+                "data": [entry["projects_by_code"] for entry in data],
+            },
+            {
+                "name": "Funds approved",
+                "color": "var(--purple)",
+                "data": [format_money(entry["funds_plus_psc"]) for entry in data],
+            },
+        ],
+        "meta": {"currency": "USD"},
     }
 
 
@@ -701,7 +725,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="Sum funding over the #22 completed set",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund+psc filtered completed",
-        compute=lambda context: funds_for(context, *COMPLETED_STATUS_CODES),
+        compute=lambda context: format_money(
+            funds_for(context, *COMPLETED_STATUS_CODES)
+        ),
     ),
     Metric(
         metric_id="completed_end_year",
@@ -737,7 +763,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="Sum funding over ongoing set",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund+psc filtered ongoing",
-        compute=lambda context: funds_for(context, *ONGOING_STATUS_CODES),
+        compute=lambda context: format_money(funds_for(context, *ONGOING_STATUS_CODES)),
     ),
     Metric(
         metric_id="by_agency",
