@@ -49,7 +49,7 @@ class ProjectsInventoryReportExport:
             )
         )
         queryset = (
-            self.view.filter_queryset(self.view.get_queryset())
+            self.view.filter_queryset(self.view.get_queryset(filter_permissions=False))
             .filter(
                 version__gte=MIN_PROJECT_VERSION,
                 latest_project__isnull=True,
