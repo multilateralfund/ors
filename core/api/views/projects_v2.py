@@ -360,7 +360,7 @@ class ProjectV2ViewSet(
 
         return queryset.none()
 
-    def get_queryset(self):
+    def get_queryset(self, filter_permissions=True):
         requests_really_all = (
             self.request.query_params.get("really_all", "false") == "true"
             or self.request.query_params.get("inventory_report", "false") == "true"
@@ -369,7 +369,10 @@ class ProjectV2ViewSet(
             queryset = Project.objects.really_all()
         else:
             queryset = Project.objects.all()
-        queryset = self.filter_permissions_queryset(queryset)
+
+        if filter_permissions:
+            queryset = self.filter_permissions_queryset(queryset)
+
         if self.request.query_params.get("pcr_required", "false").lower() == "true":
             queryset = queryset.pcr_required()
         queryset = (
