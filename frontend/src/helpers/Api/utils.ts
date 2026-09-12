@@ -2,11 +2,30 @@ import { store } from '@ors/_store'
 import { addTrailingSlash, removeFirstSlash } from '@ors/helpers/Url/Url'
 import config from '@ors/registry'
 import { removeEmptyValues } from '@ors/helpers'
+import msalInstance, { scopes } from '@ors/config/msalConfig'
 
 export function delayExecution(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
+}
+
+// Requests authenticated through Microsoft SSO have no Django session, so
+// they need this Authorization header to be recognized by the backend.
+export async function getMsalAuthHeaders(): Promise<Record<string, string>> {
+  const account =
+    msalInstance.getActiveAccount() || msalInstance.getAllAccounts()[0]
+
+  if (!account) {
+    return {}
+  }
+
+  const tokenResponse = await msalInstance.acquireTokenSilent({
+    scopes,
+    account,
+  })
+
+  return { Authorization: `Bearer ${tokenResponse.accessToken}` }
 }
 
 export function longDownloadUrl(targetUrl: string) {
