@@ -86,6 +86,10 @@ class MetricContext:
         """The projects matching a rule."""
         return [row for row in self.projects if predicate(row)]
 
+    def apr_where(self, project_ids):
+        records = apr_records(self.apr_year, self.country, project_ids)
+        return AprMetrics(records) if records else None
+
     def with_status(self, *codes: str) -> list[ClassifiedProject]:
         """The projects in any of the given statuses."""
         wanted = set(codes)

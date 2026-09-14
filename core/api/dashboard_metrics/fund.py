@@ -264,7 +264,11 @@ def baseline_phased_out_by_substance(_context: MetricContext) -> list[dict[str, 
 
 def theme(context: MetricContext, name: str) -> dict[str, Any]:
     """One funding theme's share of the portfolio."""
-    return totals(context.where(lambda row: row.theme == name))
+    projects = context.where(lambda row: row.theme == name)
+    result = totals(projects)
+    disbursed = context.apr_where([p.project.id for p in projects])
+    result["funds_disbursed"] = disbursed.funds_disbursed()["active_cycle"]
+    return result
 
 
 def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
