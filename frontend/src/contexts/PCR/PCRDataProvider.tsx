@@ -33,6 +33,7 @@ import {
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
+import { ApiSubstance } from '@ors/types/api_substances'
 
 import { filter, forEach, groupBy, keys, map, pick, reduce } from 'lodash'
 import { useParams } from 'wouter'
@@ -325,6 +326,19 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   })
   const completionReportDoneByOptions = formatOptions(completedBy)
 
+  const { data: substances = [] } = useApi<ApiSubstance[]>({
+    options: { withStoreCache: true },
+    path: 'api/substances/',
+  })
+
+  const substanceOptions = useMemo(
+    () =>
+      [...(substances ?? [])]
+        .sort((first, second) => first.name.localeCompare(second.name))
+        .map((substance) => ({ ...substance, label: substance.name })),
+    [substances],
+  )
+
   const { data: projectComponentOptions } = useApi({
     options: { withStoreCache: true },
     path: 'api/project-completion-report/project-component-option/',
@@ -362,6 +376,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       ratingOptions,
       entityOptions,
       completionReportDoneByOptions,
+      substanceOptions,
       projectComponentOptions,
       causeOfDelayOptions,
       lessonLearnedOptions,
@@ -379,6 +394,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       ratingOptions,
       entityOptions,
       completionReportDoneByOptions,
+      substanceOptions,
       projectComponentOptions,
       causeOfDelayOptions,
       lessonLearnedOptions,

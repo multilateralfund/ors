@@ -1,39 +1,40 @@
 import { useContext, useState } from 'react'
 
-import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import PCRFilesViewer from './PCRFilesViewer'
-import PCRFilesInput from './PCRFilesInput'
-import { TabLabel } from './PCRWidgets'
-import { getSectionAgencies, formatErrors } from '../../utils'
-import { supportingEvidencesField } from '../../constants'
+import { detailItem } from './ViewHelperComponents'
+import { pcrFieldsMapping } from '../../constants'
+import { PCRResponse } from '../../interfaces'
+import { formatApiUrl } from '@ors/helpers'
 
-import { Tab, Tabs } from '@mui/material'
-import { map } from 'lodash'
+import { IoDownloadOutline } from 'react-icons/io5'
+import { filter, find, keys, map } from 'lodash'
+import { Tabs, Tab } from '@mui/material'
+import { TbFiles } from 'react-icons/tb'
 
-const PCRDocumentation = () => {
+const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
+  const { fundsByAgency } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
-  const { PCRData, errors } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const sectionData = PCRData[supportingEvidencesField] || []
-  const crtAgencyId = sectionData[crtTab].agency_id
-  const crtAgencies = getSectionAgencies(agencies, sectionData)
+  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
+  const crtAgencyId = agencyIds[crtTab]
+  const crtAgencies = map(
+    agencyIds,
+    (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
+  )
 
-  const { supporting_evidences: supportingEvidencesErrors } = errors
-  const evidencesErrors = supportingEvidencesErrors[supportingEvidencesField]
-
-  const agencyErrors = map(evidencesErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors({
-    [supportingEvidencesField]: agencyErrors,
-  })
+  const evidencesData = filter(
+    pcr.supporting_evidences,
+    ({ agency_id }) => agency_id === Number(crtAgencyId),
+  )
 
   return (
     <>
       <Tabs
-        aria-label="supporting-evidences-tabs"
+        aria-label="supporting-evidences-view-tabs"
         className="sectionsTabs"
         variant="scrollable"
         scrollButtons="auto"
@@ -48,27 +49,41 @@ const PCRDocumentation = () => {
         }}
       >
         {map(crtAgencies, (agency) => (
-          <Tab
-            key={agency.name}
-            aria-controls={agency.name}
-            id={agency.name}
-            label={
-              <TabLabel
-                field={supportingEvidencesField}
-                errors={evidencesErrors}
-                {...{ agency }}
-              />
-            }
-          />
+          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
-          <ErrorsList errors={formattedAgencyErrors} />
-        )}
-        <div className="flex w-full flex-col gap-4">
-          <PCRFilesViewer errors={agencyErrors} {...{ crtTab, crtAgencyId }} />
-          <PCRFilesInput {...{ crtTab }} />
+        <div className="flex flex-col">
+          <HeaderWithIcon title="File attachments" Icon={TbFiles} />
+          <div className="mt-3">
+            {evidencesData.length === 0 ? (
+              <p className="m-1 ml-0 text-lg text-gray-500">
+                No files available
+              </p>
+            ) : (
+              evidencesData.map((file, index) => {
+                const fileName = file.filename
+                const downloadUrl = file.file
+
+                return (
+                  <div
+                    key={index}
+                    className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-2"
+                  >
+                    <a
+                      className="flex gap-2.5 text-secondary no-underline"
+                      download={fileName}
+                      href={formatApiUrl(downloadUrl)}
+                    >
+                      <IoDownloadOutline className="mb-1 min-h-5 min-w-5" />
+                      <span className="text-lg font-medium">{fileName}</span>
+                    </a>
+                    {detailItem(pcrFieldsMapping.section_id, file.section)}
+                  </div>
+                )
+              })
+            )}
+          </div>
         </div>
       </div>
     </>

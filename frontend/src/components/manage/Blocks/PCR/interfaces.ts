@@ -146,6 +146,12 @@ export type PCRResponse = {
     agency_id: number
     goals: { goal: string; description: string }[]
   }[]
+  supporting_evidences: {
+    agency_id: number
+    section: string
+    filename: string
+    file: string
+  }[]
 }
 
 type CauseOfDelay = { delay_id: number | null; description: string }

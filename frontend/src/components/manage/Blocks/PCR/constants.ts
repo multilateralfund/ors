@@ -126,6 +126,12 @@ export const financialFiguresTypeOptions = [
   { id: 'Final', name: 'Final' },
 ]
 
+export const disposalTypeOptions = [
+  { id: 1, name: 'Disposal type 1', label: 'Disposal type 1' },
+  { id: 2, name: 'Disposal type 2', label: 'Disposal type 2' },
+  { id: 3, name: 'Disposal type 3', label: 'Disposal type 3' },
+]
+
 export const projectPhaseOptions = [
   { id: 'Project preparation', name: 'Project preparation' },
   { id: 'Planning/Formulation', name: 'Planning/Formulation' },
