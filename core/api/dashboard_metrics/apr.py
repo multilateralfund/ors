@@ -140,6 +140,16 @@ class AprMetrics(APRSummaryTablesExportWriter):
         )
         return {code: data["total_funds_disbursed"] for code, data in grouped}
 
+    def disbursed_by_region(self) -> dict[str, float]:
+        """``{'region': funds disbursed}``, through the export's own grouping."""
+        grouped = self._compute_grouped_data(
+            self.records,
+            "main_region",
+            include_odp_co2=False,
+            sheet_type="cumulative",
+        )
+        return {code.name: data["total_funds_disbursed"] for code, data in grouped}
+
 
 def apr_years_available() -> list[int]:
     """Every APR year on record, ascending - the ``?apr_year=`` domain."""
