@@ -51,7 +51,7 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         <SectionTitle>Gender mainstreamings</SectionTitle>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-y-4 px-5">
           {ppData.length > 0
             ? map(ppData, (pp, ppIndex) => (
                 <Fragment key={ppIndex}>
@@ -64,14 +64,14 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
                       pcrFieldsMapping.prefilled,
                       pp.prefilled,
                     )}
-                    {detailItem(
-                      pcrFieldsMapping.qualitative_description,
-                      pp.qualitative_description,
-                      { detailClassname: 'self-start' },
-                    )}
                   </div>
+                  {detailItem(
+                    pcrFieldsMapping.qualitative_description,
+                    pp.qualitative_description,
+                    'self-start whitespace-nowrap',
+                  )}
                   {ppIndex !== ppData.length - 1 && (
-                    <Divider className="my-5" />
+                    <Divider className="my-1" />
                   )}
                 </Fragment>
               ))

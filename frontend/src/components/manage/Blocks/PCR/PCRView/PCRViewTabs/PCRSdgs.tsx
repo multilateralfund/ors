@@ -52,18 +52,18 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         <SectionTitle>SDGs</SectionTitle>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-y-4 px-5">
           {sdgsData.length > 0
             ? map(sdgsData, (sdg, sdgIndex) => (
                 <Fragment key={sdgIndex}>
-                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                    {detailItem(pcrFieldsMapping.goal_id, sdg.goal)}
-                    {detailItem(pcrFieldsMapping.description, sdg.description, {
-                      detailClassname: 'self-start',
-                    })}
-                  </div>
+                  {detailItem(pcrFieldsMapping.goal_id, sdg.goal)}
+                  {detailItem(
+                    pcrFieldsMapping.description,
+                    sdg.description,
+                    'self-start whitespace-nowrap',
+                  )}
                   {sdgIndex !== sdgsData.length - 1 && (
-                    <Divider className="my-5" />
+                    <Divider className="my-1" />
                   )}
                 </Fragment>
               ))

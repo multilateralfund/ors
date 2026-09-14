@@ -65,23 +65,21 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
                       )}
                       <div className="mt-4">
                         <SectionTitle>Causes of delay</SectionTitle>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col gap-y-4 px-5">
                           {cdData.length > 0
                             ? map(cdData, (cd, cdIndex) => (
                                 <Fragment key={cdIndex}>
-                                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                                    {detailItem(
-                                      pcrFieldsMapping.delay_id,
-                                      cd.delay?.name,
-                                    )}
-                                    {detailItem(
-                                      pcrFieldsMapping.description,
-                                      cd.description,
-                                      { detailClassname: 'self-start' },
-                                    )}
-                                  </div>
+                                  {detailItem(
+                                    pcrFieldsMapping.delay_id,
+                                    cd.delay?.name,
+                                  )}
+                                  {detailItem(
+                                    pcrFieldsMapping.description,
+                                    cd.description,
+                                    'self-start whitespace-nowrap',
+                                  )}
                                   {cdIndex !== cdData.length - 1 && (
-                                    <Divider className="my-5" />
+                                    <Divider className="my-1" />
                                   )}
                                 </Fragment>
                               ))

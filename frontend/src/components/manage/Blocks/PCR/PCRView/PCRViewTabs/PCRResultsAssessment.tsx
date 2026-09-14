@@ -51,29 +51,27 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         <SectionTitle>Activities</SectionTitle>
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-y-4 px-5">
           {activitesData.length > 0
             ? map(activitesData, (activity, activityIndex) => (
                 <Fragment key={activityIndex}>
                   {detailItem(
                     pcrFieldsMapping.activity_title,
                     activity.activity_title,
-                    { detailClassname: 'self-start' },
+                    'self-start whitespace-nowrap',
                   )}
-                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                    {map(
-                      keys(initialActivitiesData).slice(1),
-                      (field: keyof Activity, fieldIndex) => (
-                        <Fragment key={fieldIndex}>
-                          {detailItem(
-                            pcrFieldsMapping[field],
-                            activity[field],
-                            { detailClassname: 'self-start' },
-                          )}
-                        </Fragment>
-                      ),
-                    )}
-                  </div>
+                  {map(
+                    keys(initialActivitiesData).slice(1),
+                    (field: keyof Activity, fieldIndex) => (
+                      <Fragment key={fieldIndex}>
+                        {detailItem(
+                          pcrFieldsMapping[field],
+                          activity[field],
+                          'self-start whitespace-nowrap',
+                        )}
+                      </Fragment>
+                    ),
+                  )}
                   {activityIndex !== activitesData.length - 1 && (
                     <Divider className="my-1" />
                   )}

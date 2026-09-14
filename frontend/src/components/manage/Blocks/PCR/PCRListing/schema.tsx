@@ -4,14 +4,9 @@ import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/u
 import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
-import {
-  MdExpandLess,
-  MdExpandMore,
-  MdCheckCircleOutline,
-  MdCheckCircle,
-} from 'react-icons/md'
-import { isNil, map, sumBy } from 'lodash'
+import { MdExpandLess, MdExpandMore, MdCheckCircle } from 'react-icons/md'
 import { Checkbox, Tooltip } from '@mui/material'
+import { isNil, map, sumBy } from 'lodash'
 import {
   ValueGetterParams,
   ICellRendererParams,

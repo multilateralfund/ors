@@ -65,23 +65,21 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
                       )}
                       <div className="mt-4">
                         <SectionTitle>Lessons learned</SectionTitle>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col gap-y-4 px-5">
                           {llData.length > 0
                             ? map(llData, (ll, llIndex) => (
                                 <Fragment key={llIndex}>
-                                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                                    {detailItem(
-                                      pcrFieldsMapping.lesson_id,
-                                      ll.lesson?.name,
-                                    )}
-                                    {detailItem(
-                                      pcrFieldsMapping.description,
-                                      ll.description,
-                                      { detailClassname: 'self-start' },
-                                    )}
-                                  </div>
+                                  {detailItem(
+                                    pcrFieldsMapping.lesson_id,
+                                    ll.lesson?.name,
+                                  )}
+                                  {detailItem(
+                                    pcrFieldsMapping.description,
+                                    ll.description,
+                                    'self-start whitespace-nowrap',
+                                  )}
                                   {llIndex !== llData.length - 1 && (
-                                    <Divider className="my-5" />
+                                    <Divider className="my-1" />
                                   )}
                                 </Fragment>
                               ))

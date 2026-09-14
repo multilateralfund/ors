@@ -267,9 +267,11 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                           className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
                         >
                           {detailItem('', entry.name)}
-                          {detailItem('', entry.address, {
-                            detailClassname: 'self-start',
-                          })}
+                          {detailItem(
+                            '',
+                            entry.address,
+                            'self-start whitespace-nowrap',
+                          )}
                         </div>
                       ))}
                     </div>
@@ -319,9 +321,11 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                                     Description
                                   </Label>
                                 </div>
-                                {detailItem('', entry.description, {
-                                  detailClassname: 'self-start',
-                                })}
+                                {detailItem(
+                                  '',
+                                  entry.description,
+                                  'self-start whitespace-nowrap',
+                                )}
                               </div>
                               <div className="min-w-56 sm:min-w-64">
                                 <div className="xl:hidden">

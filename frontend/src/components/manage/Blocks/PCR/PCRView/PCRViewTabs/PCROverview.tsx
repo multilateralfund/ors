@@ -19,59 +19,54 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
       <PCROverviewPrefilledData {...{ pcr }} />
       <Divider className="my-6" />
       <div className="flex flex-col gap-y-4">
-        <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-          {detailItem(
-            pcrFieldsMapping.financial_figures_status,
-            pcr.financial_figures_status,
+        {detailItem(
+          pcrFieldsMapping.financial_figures_status,
+          pcr.financial_figures_status,
+        )}
+        {detailItem(
+          pcrFieldsMapping.financial_figures_status_explanation,
+          pcr.financial_figures_status_explanation,
+          'self-start whitespace-nowrap',
+        )}
+        {detailItem(
+          pcrFieldsMapping.addresses,
+          pcr.addresses,
+          'self-start whitespace-nowrap',
+        )}
+        {detailItem(
+          pcrFieldsMapping.project_goal_achieved,
+          pcr.project_goal_achieved,
+        )}
+        {detailItem(
+          pcrFieldsMapping.project_goal_achieved_explanation,
+          pcr.project_goal_achieved_explanation,
+          'self-start whitespace-nowrap',
+        )}
+        {detailItem(pcrFieldsMapping.rating, pcr.rating)}
+        {pcr.rating === getOtherOptionId(ratingOptions) &&
+          detailItem(
+            pcrFieldsMapping.rating_explanation_other,
+            pcr.rating_explanation_other,
+            'self-start whitespace-nowrap',
           )}
-          {detailItem(
-            pcrFieldsMapping.financial_figures_status_explanation,
-            pcr.financial_figures_status_explanation,
-            { detailClassname: 'self-start' },
-          )}
-        </div>
-        <div className="flex">
-          {detailItem(pcrFieldsMapping.addresses, pcr.addresses, {
-            detailClassname: 'self-start',
-          })}
-        </div>
-        <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-          {detailItem(
-            pcrFieldsMapping.project_goal_achieved,
-            pcr.project_goal_achieved,
-          )}
-          {detailItem(
-            pcrFieldsMapping.project_goal_achieved_explanation,
-            pcr.project_goal_achieved_explanation,
-            { detailClassname: 'self-start' },
-          )}
-        </div>
-        <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-          {detailItem(pcrFieldsMapping.rating, pcr.rating)}
-          {pcr.rating === getOtherOptionId(ratingOptions) &&
-            detailItem(
-              pcrFieldsMapping.rating_explanation_other,
-              pcr.rating_explanation_other,
-              { detailClassname: 'self-start' },
-            )}
-        </div>
-        <div className="flex">
-          {detailItem(
-            pcrFieldsMapping.rating_explanation,
-            pcr.rating_explanation,
-            { detailClassname: 'self-start' },
-          )}
-        </div>
+        {detailItem(
+          pcrFieldsMapping.rating_explanation,
+          pcr.rating_explanation,
+          'self-start whitespace-nowrap',
+        )}
+        <Divider />
         <div className="flex flex-col">
           <SectionTitle>Additional comments</SectionTitle>
           {pcr.additional_comments.length > 0
             ? map(pcr.additional_comments, (comment, commentIndex) => (
                 <Fragment key={commentIndex}>
-                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                  <div className="flex flex-col gap-y-4 pl-5">
                     {detailItem(pcrFieldsMapping.entity, comment.entity)}
-                    {detailItem(pcrFieldsMapping.comment, comment.comment, {
-                      detailClassname: 'self-start',
-                    })}
+                    {detailItem(
+                      pcrFieldsMapping.comment,
+                      comment.comment,
+                      'self-start whitespace-nowrap',
+                    )}
                   </div>
                   {commentIndex !== pcr.additional_comments.length - 1 && (
                     <Divider className="my-5" />
@@ -80,6 +75,7 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
               ))
             : '-'}
         </div>
+        <Divider />
         {detailItem(pcrFieldsMapping.completed_by, pcr.completed_by)}
       </div>
     </>
