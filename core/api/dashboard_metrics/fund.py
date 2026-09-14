@@ -371,6 +371,21 @@ def investment_timeline(context: MetricContext) -> dict[str, float | int | None]
     }
 
 
+def non_investment_timeline(
+    context: MetricContext,
+) -> dict[str, float | int | None] | None:
+    """How long an non-investment project takes to start spending, and to finish."""
+    if context.apr is None:
+        return None
+    records = context.apr.non_investment()
+    return {
+        "months_to_first_disbursement": context.apr.months_to_first_disbursement(
+            records
+        ),
+        "months_to_completion": context.apr.months_to_completion(records),
+    }
+
+
 def inv_months_first_disb(context: MetricContext) -> float | None:
     """Months from approving an investment project to its first disbursement."""
     if context.apr is None:
@@ -831,6 +846,24 @@ FUND_METRICS: tuple[Metric, ...] = (
             "AnnualProjectReport.date_actual_completion / date_approved_denorm"
         ),
         compute=inv_months_completion,
+    ),
+    Metric(
+        metric_id="non_investment_timeline",
+        label="Non-Investment project timeline",
+        section="Timeline for non-investment projects",
+        kind=Kind.BREAKDOWN,
+        unit=Unit.MONTHS,
+        disposition=Disposition.COMPUTE,
+        formula=(
+            "avg(first disbursement - approved) & avg completion duration; "
+            "Type=non-Investment"
+        ),
+        db_source="NEEDS-APR",
+        src_model_field=(
+            "AnnualProjectReport.date_first_disbursement + date_approved_denorm "
+            "(computed avg)"
+        ),
+        compute=non_investment_timeline,
     ),
     Metric(
         metric_id="noninv_first_disbursement_scope",

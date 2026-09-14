@@ -119,6 +119,7 @@ FUND_METRIC_IDS = frozenset(
         "ongoing_funding",
         "by_agency",
         "investment_timeline",
+        "non_investment_timeline",
         "inv_months_first_disb",
         "inv_months_completion",
         "noninv_first_disbursement_scope",
@@ -732,6 +733,7 @@ class TestFundValues(BaseTest):
             "investment_timeline",
             "inv_months_first_disb",
             "inv_months_completion",
+            "non_investment_timeline",
             "noninv_first_disbursement_scope",
             "noninv_months_first_disb",
             "noninv_months_completion",
@@ -2266,7 +2268,7 @@ class TestSpecCommand:
         out = StringIO()
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
-        assert "92 metrics, 92 implemented." in rendered
+        assert "93 metrics, 93 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 
