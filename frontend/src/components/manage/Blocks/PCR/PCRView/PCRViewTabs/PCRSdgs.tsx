@@ -27,7 +27,7 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
     pcr.sustainable_development_goals,
     ({ agency_id }) => agency_id === Number(crtAgencyId),
   )
-  const sdgsData = agencySdgsData[0].goals
+  const sdgsData = agencySdgsData.length > 0 ? agencySdgsData[0].goals : []
 
   return (
     <>
