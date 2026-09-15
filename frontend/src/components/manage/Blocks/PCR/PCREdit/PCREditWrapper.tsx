@@ -5,6 +5,7 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
+import { initialOverviewData } from '../constants'
 import useApi from '@ors/hooks/useApi'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import {
@@ -14,6 +15,7 @@ import {
   PCRResponse,
 } from '../interfaces'
 
+import { keys, pick } from 'lodash'
 import { useParams } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
@@ -24,6 +26,7 @@ const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
 const emptyEnterprise = (): PCREnterpriseType => ({
   name: '',
   address: '',
+  isDefault: true,
 })
 
 const emptyEquipment = (): PCREquipmentType => ({
@@ -58,6 +61,10 @@ const PCREditWrapper = () => {
 
     setPCRData((prevData) => ({
       ...prevData,
+      overview: {
+        ...prevData.overview,
+        ...pick(pcrData, keys(initialOverviewData)),
+      },
       summary_of_key_data: pcrData.pcr_projects.map((pcrProject) => ({
         project_id: pcrProject.project_id,
         funds_disbursed: pcrProject.funds_disbursed ?? '',
