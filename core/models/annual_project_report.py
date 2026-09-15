@@ -684,47 +684,43 @@ class AnnualProjectReport(models.Model):
     def date_completion_proposal(self):
         return self.project_version_3.date_completion
 
-    @cached_property
-    def consumption_phased_out_odp_proposal(self):
-        if not self.project_version_3:
+    def _phase_out_proposal(self, unit, production):
+        # Production projects report their approved phase-out as production,
+        # all other projects as consumption.
+        if not self.project_version_3 or self.project.production != production:
             return None
 
-        return self.project_version_3.consumption_phase_out_odp
+        data = self.project_version_3.phase_out_data
+        values = [
+            value
+            for value in (data[f"consumption_{unit}"], data[f"production_{unit}"])
+            if value is not None
+        ]
+        return sum(values) if values else None
+
+    @cached_property
+    def consumption_phased_out_odp_proposal(self):
+        return self._phase_out_proposal("odp", production=False)
 
     @cached_property
     def consumption_phased_out_co2_proposal(self):
-        if not self.project_version_3:
-            return None
-
-        return self.project_version_3.consumption_phase_out_co2
+        return self._phase_out_proposal("co2", production=False)
 
     @cached_property
     def production_phased_out_odp_proposal(self):
-        if not self.project_version_3:
-            return None
-
-        return self.project_version_3.production_phase_out_odp
+        return self._phase_out_proposal("odp", production=True)
 
     @cached_property
     def production_phased_out_co2_proposal(self):
-        if not self.project_version_3:
-            return None
-
-        return self.project_version_3.production_phase_out_co2
+        return self._phase_out_proposal("co2", production=True)
 
     @cached_property
     def consumption_phased_out_mt_proposal(self):
-        if not self.project_version_3:
-            return None
-
-        return self.project_version_3.consumption_phase_out_mt
+        return self._phase_out_proposal("mt", production=False)
 
     @cached_property
     def production_phased_out_mt_proposal(self):
-        if not self.project_version_3:
-            return None
-
-        return self.project_version_3.production_phase_out_mt
+        return self._phase_out_proposal("mt", production=True)
 
     @cached_property
     def approved_funding(self):
@@ -941,22 +937,22 @@ class AnnualProjectReport(models.Model):
 
             # Phaseout proposals
             self.consumption_phased_out_odp_proposal_denorm = (
-                version_3.consumption_phase_out_odp
+                self.consumption_phased_out_odp_proposal
             )
             self.consumption_phased_out_co2_proposal_denorm = (
-                version_3.consumption_phase_out_co2
+                self.consumption_phased_out_co2_proposal
             )
             self.production_phased_out_odp_proposal_denorm = (
-                version_3.production_phase_out_odp
+                self.production_phased_out_odp_proposal
             )
             self.production_phased_out_co2_proposal_denorm = (
-                version_3.production_phase_out_co2
+                self.production_phased_out_co2_proposal
             )
             self.consumption_phased_out_mt_proposal_denorm = (
-                version_3.consumption_phase_out_mt
+                self.consumption_phased_out_mt_proposal
             )
             self.production_phased_out_mt_proposal_denorm = (
-                version_3.production_phase_out_mt
+                self.production_phased_out_mt_proposal
             )
 
             # Approved funding
