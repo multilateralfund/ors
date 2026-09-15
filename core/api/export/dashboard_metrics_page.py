@@ -115,6 +115,18 @@ def _bar_list_figures(value: dict) -> list[tuple[str, Any]]:
     return figures
 
 
+def _bar_figures(value: dict) -> list[tuple[str, Any]]:
+    """One entry per bar, across every group."""
+    groups = value.get("categories") or []
+    figures = []
+    for line in value.get("series") or []:
+        points = []
+        for group, amount in zip(groups, line.get("data") or []):
+            points.append(f"{group}: {_number(amount)}")
+        figures.append((line.get("name") or "", "; ".join(points)))
+    return figures
+
+
 def _donut_figures(value: dict) -> list[tuple[str, Any]]:
     """One entry per segment, across every donut."""
     figures = []
@@ -131,6 +143,8 @@ CHART_FIGURES = {
     "line": _line_figures,
     "bar_list": _bar_list_figures,
     "donut": _donut_figures,
+    "bar_horizontal": _bar_figures,
+    "bar_vertical": _bar_figures,
 }
 
 
