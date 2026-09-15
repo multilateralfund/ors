@@ -14,7 +14,11 @@ from django.utils import timezone
 
 from core.api.dashboard_metrics import get_fund_metrics, iter_country_metrics
 from core.api.export.base import WriteOnlyBase, configure_sheet_print
-from core.api.export.dashboard_metrics_page import render_page
+from core.api.export.dashboard_metrics_page import (
+    chart_figures,
+    is_chart,
+    render_page,
+)
 from core.api.utils import workbook_response
 
 SERIES_KINDS = ("series", "grouped_series")
@@ -97,17 +101,9 @@ def _figures(metric: dict[str, Any]) -> list[tuple[str, Any]]:
     if not metric["available"] or metric["value"] is None:
         return [("", "")]
     kind, value = metric["kind"], metric["value"]
-    series_values = []
-    if kind == "grouped_series" and isinstance(value, dict):
-        for index, year in enumerate(value.get("years", [])):
-            data = []
-            for entry in value.get("series", []):
-                data.append(
-                    entry.get("data", [])[index]
-                    if index < len(entry.get("data", []))
-                    else None
-                )
-                series_values.append((entry.get("name", ""), {year: data}))
+    # Read values from metrics with chart configuration
+    if is_chart(value):
+        return chart_figures(value)
     if kind in SERIES_KINDS:
         return [("", _points(value))]
     return list(_leaves(value))

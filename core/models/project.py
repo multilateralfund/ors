@@ -147,11 +147,9 @@ class MetaProject(models.Model):
         help_text="MYA Total agreed costs in principle (US $)",
     )
 
-    start_date = models.DateTimeField(
-        null=True, blank=True, help_text="Start date (MYA)"
-    )
-    end_date = models.DateTimeField(null=True, blank=True, help_text="End date (MYA)")
-    extended_date_of_completion = models.DateTimeField(
+    start_date = models.DateField(null=True, blank=True, help_text="Start date (MYA)")
+    end_date = models.DateField(null=True, blank=True, help_text="End date (MYA)")
+    extended_date_of_completion = models.DateField(
         null=True, blank=True, help_text="Extended date of completion"
     )
     project_duration = models.IntegerField(

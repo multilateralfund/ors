@@ -13,6 +13,13 @@ logger = logging.getLogger(__name__)
 # pylint: disable=bare-except,import-outside-toplevel,broad-exception-caught
 
 
+def fill_missing_email_claim(claims):
+    """Populate a missing Entra email claim from the user's UPN."""
+    if not claims.get("email") and claims.get("upn"):
+        claims["email"] = claims["upn"]
+    return claims
+
+
 class SmartTokenAuthentication(BaseAuthentication):
     """
     Inspect bearer token claims (unverified) and delegate to the correct token auth backend.

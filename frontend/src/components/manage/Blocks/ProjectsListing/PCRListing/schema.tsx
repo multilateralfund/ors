@@ -1,7 +1,8 @@
+import Link from '@ors/components/ui/Link/Link'
 import { pcrTableColumns } from './constants'
 
+import { ICellRendererParams, ValueFormatterParams } from 'ag-grid-community'
 import dayjs from 'dayjs'
-import { ValueFormatterParams } from 'ag-grid-community'
 
 const getColumnDefs = () => ({
   columnDefs: [
@@ -10,6 +11,16 @@ const getColumnDefs = () => ({
       field: 'project_metacode',
       tooltipField: 'project_metacode',
       minWidth: 150,
+      cellRenderer: (props: ICellRendererParams) => (
+        <div className="flex items-center p-2">
+          <Link
+            className="flex flex-1 justify-center overflow-hidden truncate whitespace-nowrap text-sm text-inherit !underline"
+            href={`/pcr/${props.data.id}/${props.data.pcr_id}`}
+          >
+            {props.value ?? '-'}
+          </Link>
+        </div>
+      ),
     },
     {
       headerName: pcrTableColumns.country,

@@ -5,6 +5,8 @@ Every ``compute`` takes the request's :class:`MetricContext` and returns a
 value, or ``None`` when there is nothing behind the figure.
 """
 
+# pylint: disable=C0302
+
 import math
 from functools import partial
 from typing import Any
@@ -17,9 +19,11 @@ from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
     count_project_grains,
     funds_pair,
+    format_money,
     grouped,
     phase_out,
     totals,
+    project_counts,
 )
 from core.api.dashboard_metrics.registry import (
     Disposition,
@@ -118,7 +122,7 @@ def portfolio_projects_rounded(context: MetricContext) -> int:
 
 def by_agency(context: MetricContext) -> list[dict[str, Any]]:
     """Delivery split across the agencies that implement the Fund's projects."""
-    return classify.agency_rollup(context.projects)
+    return _prepare_vertical_bar_structure(classify.agency_rollup(context.projects))
 
 
 def by_region(context: MetricContext) -> list[dict[str, Any]]:
@@ -128,9 +132,68 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
     fund. A project naming a region rather than one of its countries - Global
     among them - is charted under that region.
     """
-    return grouped(
+
+    result = grouped(
         context.projects, lambda row: classify.region_bucket(row.project.country)
     )
+    disbursed = context.apr.disbursed_by_region() if context.apr else {}
+    for entry in result:
+        entry["funds_disbursed"] = (
+            round(disbursed[entry["group"]], 2) if entry["group"] in disbursed else None
+        )
+    return result
+
+
+def _prepare_horizontal_bar_structure(
+    data: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return {
+        "type": "bar_horizontal",
+        "title": "Percentage of phase out from baseline (%)",
+        "subtitle": None,
+        "categories": [
+            "Hydrofluorocarbons (HFCs)",
+            "Hydrochlorofluorocarbons (HCFCs)",
+            "Other ODS",
+        ],
+        "series": [
+            {
+                "name": "CO2-eq T",
+                "color": "var(--deep-teal)",
+                "data": [data[0]["value"], None, None],
+            },
+            {
+                "name": "ODP T",
+                "color": "var(--mlf-blue)",
+                "data": [None, data[1]["value"], data[2]["value"]],
+            },
+        ],
+        "meta": {"unit": "%"},
+    }
+
+
+def _prepare_vertical_bar_structure(
+    data: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return {
+        "type": "bar_vertical",
+        "title": "Projects and funds per agency",
+        "subtitle": None,
+        "categories": [entry["group"] for entry in data],
+        "series": [
+            {
+                "name": "Number of projects",
+                "color": "var(--deep-teal)",
+                "data": [entry["projects_by_code"] for entry in data],
+            },
+            {
+                "name": "Funds approved",
+                "color": "var(--purple)",
+                "data": [format_money(entry["funds_plus_psc"]) for entry in data],
+            },
+        ],
+        "meta": {"currency": "USD"},
+    }
 
 
 NOT_CLASSIFIED = "not_classified"
@@ -197,12 +260,16 @@ def baseline_rows() -> list[dict[str, Any]]:
 
 def baseline_phased_out_by_substance(_context: MetricContext) -> list[dict[str, Any]]:
     """Percentage of baseline consumption phased out, per substance family."""
-    return baseline_rows()
+    return _prepare_horizontal_bar_structure(baseline_rows())
 
 
 def theme(context: MetricContext, name: str) -> dict[str, Any]:
     """One funding theme's share of the portfolio."""
-    return totals(context.where(lambda row: row.theme == name))
+    projects = context.where(lambda row: row.theme == name)
+    result = totals(projects)
+    disbursed = context.apr_where([p.project.id for p in projects])
+    result["funds_disbursed"] = disbursed.funds_disbursed()["active_cycle"]
+    return result
 
 
 def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
@@ -219,9 +286,99 @@ def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
     return value
 
 
+def sector_count(context: MetricContext, bucket: str) -> dict[str, Any]:
+    """Number of projects for the given sector"""
+    value = project_counts(context.where(lambda row: row.sector_bucket == bucket))
+    return value["projects_by_code"]
+
+
+def sector_funds_approved(context: MetricContext, bucket: str) -> dict[str, Any]:
+    """One sector's share of the portfolio, and what has been paid out against it."""
+    value = funds_pair(context.where(lambda row: row.sector_bucket == bucket))
+    return value["funds_plus_psc"]
+
+
+def sector_funds_disbursed(context: MetricContext, bucket: str) -> dict[str, Any]:
+    """One sector's share of the portfolio, and what has been paid out against it."""
+    disbursed = (
+        classify.disbursed_by_bucket(context.apr.disbursed_by_sector_code())
+        if context.apr
+        else {}
+    )
+    return round(disbursed[bucket], 2) if bucket in disbursed else None
+
+
 def funds_disbursed(context: MetricContext) -> dict[str, float] | None:
     """What has actually been paid out, in total and within the current cycle."""
     return context.apr.funds_disbursed() if context.apr else None
+
+
+def funds_approved_funds_disbursed_lvc_split(
+    context: MetricContext,
+) -> dict[str, float] | None:
+    """What has actually been paid out, in total and within the current cycle."""
+    funds_approved_lvc_split_result = funds_lvc_split(context)
+    funds_approved_lvc = funds_approved_lvc_split_result["lvc"]["funds_plus_psc"]
+    funds_approved_non_lvc = funds_approved_lvc_split_result["non_lvc"][
+        "funds_plus_psc"
+    ]
+    total_funds_approved = format_money(funds_approved_lvc + funds_approved_non_lvc)
+    funds_disbursed_lvc_split_result = funds_disbursed_lvc_split(context)
+    try:
+        funds_disbursed_lvc = funds_disbursed_lvc_split_result["lvc"]["all_time"]
+        funds_disbursed_non_lvc = funds_disbursed_lvc_split_result["non_lvc"][
+            "all_time"
+        ]
+    except (AttributeError, TypeError):
+        funds_disbursed_lvc = 0
+        funds_disbursed_non_lvc = 0
+    total_funds_disbursed = format_money(funds_disbursed_lvc + funds_disbursed_non_lvc)
+    return (
+        {
+            "type": "donut",
+            "title": None,
+            "subtitle": None,
+            "donuts": [
+                {
+                    "label": "Funds approved",
+                    "total": total_funds_approved,
+                    "series": [
+                        {
+                            "name": "Low-Volume Consuming (LVC) countries",
+                            "value": funds_approved_lvc,
+                            "displayValue": format_money(funds_approved_lvc),
+                            "color": "var(--deep-teal)",
+                        },
+                        {
+                            "name": "Non-LVC countries",
+                            "value": funds_approved_non_lvc,
+                            "displayValue": format_money(funds_approved_non_lvc),
+                            "color": "var(--purple)",
+                        },
+                    ],
+                },
+                {
+                    "label": "Funds disbursed",
+                    "total": total_funds_disbursed,
+                    "series": [
+                        {
+                            "name": "Low-Volume Consuming (LVC) countries",
+                            "value": funds_disbursed_lvc,
+                            "displayValue": format_money(funds_disbursed_lvc),
+                            "color": "var(--deep-teal)",
+                        },
+                        {
+                            "name": "Non-LVC countries",
+                            "value": funds_disbursed_non_lvc,
+                            "displayValue": format_money(funds_disbursed_non_lvc),
+                            "color": "var(--purple)",
+                        },
+                    ],
+                },
+            ],
+            "meta": {"currency": "USD"},
+        },
+    )
 
 
 def investment_timeline(context: MetricContext) -> dict[str, float | int | None] | None:
@@ -229,6 +386,21 @@ def investment_timeline(context: MetricContext) -> dict[str, float | int | None]
     if context.apr is None:
         return None
     records = context.apr.investment()
+    return {
+        "months_to_first_disbursement": context.apr.months_to_first_disbursement(
+            records
+        ),
+        "months_to_completion": context.apr.months_to_completion(records),
+    }
+
+
+def non_investment_timeline(
+    context: MetricContext,
+) -> dict[str, float | int | None] | None:
+    """How long an non-investment project takes to start spending, and to finish."""
+    if context.apr is None:
+        return None
+    records = context.apr.non_investment()
     return {
         "months_to_first_disbursement": context.apr.months_to_first_disbursement(
             records
@@ -557,6 +729,18 @@ FUND_METRICS: tuple[Metric, ...] = (
         compute=funds_disbursed,
     ),
     Metric(
+        metric_id="funds_approved_funds_disbursed_lvc_split",
+        label="Funds split by lvc donut",
+        section="Targeted support for developing countries",
+        kind=Kind.SERIES,
+        unit=Unit.USD,
+        disposition=Disposition.COMPUTE,
+        formula=("funds_lvc_split + unds_disbursed"),
+        db_source="NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed + Country.is_lvc",
+        compute=funds_approved_funds_disbursed_lvc_split,
+    ),
+    Metric(
         metric_id="projects_approved_total",
         label="Total number of projects",
         section="Total number of projects",
@@ -590,7 +774,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="Sum funding over the #22 completed set",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund+psc filtered completed",
-        compute=lambda context: funds_for(context, *COMPLETED_STATUS_CODES),
+        compute=lambda context: format_money(
+            funds_for(context, *COMPLETED_STATUS_CODES)
+        ),
     ),
     Metric(
         metric_id="completed_end_year",
@@ -626,7 +812,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="Sum funding over ongoing set",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund+psc filtered ongoing",
-        compute=lambda context: funds_for(context, *ONGOING_STATUS_CODES),
+        compute=lambda context: format_money(funds_for(context, *ONGOING_STATUS_CODES)),
     ),
     Metric(
         metric_id="by_agency",
@@ -683,6 +869,24 @@ FUND_METRICS: tuple[Metric, ...] = (
             "AnnualProjectReport.date_actual_completion / date_approved_denorm"
         ),
         compute=inv_months_completion,
+    ),
+    Metric(
+        metric_id="non_investment_timeline",
+        label="Non-Investment project timeline",
+        section="Timeline for non-investment projects",
+        kind=Kind.BREAKDOWN,
+        unit=Unit.MONTHS,
+        disposition=Disposition.COMPUTE,
+        formula=(
+            "avg(first disbursement - approved) & avg completion duration; "
+            "Type=non-Investment"
+        ),
+        db_source="NEEDS-APR",
+        src_model_field=(
+            "AnnualProjectReport.date_first_disbursement + date_approved_denorm "
+            "(computed avg)"
+        ),
+        compute=non_investment_timeline,
     ),
     Metric(
         metric_id="noninv_first_disbursement_scope",
@@ -864,6 +1068,44 @@ FUND_METRICS: tuple[Metric, ...] = (
         compute=partial(sector, bucket=classify.SECTOR_AIR_CONDITIONING),
     ),
     Metric(
+        metric_id="sector_ac_number_of_projects",
+        label="Air-conditioning projects number of projects",
+        section="Air-conditioning projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="count of projects",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.id",
+        compute=partial(sector_count, bucket=classify.SECTOR_AIR_CONDITIONING),
+    ),
+    Metric(
+        metric_id="sector_ac_funds_approved",
+        label="Air-conditioning projects funds approved",
+        section="Air-conditioning projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum approved funding;",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.total_fund + support_cost_psc",
+        compute=partial(sector_funds_approved, bucket=classify.SECTOR_AIR_CONDITIONING),
+    ),
+    Metric(
+        metric_id="sector_ac_funds_disbursed",
+        label="Air-conditioning projects funds disbursed",
+        section="Air-conditioning projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum of funds disbursed from apr",
+        db_source="DB-COMPUTABLE+NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed",
+        compute=partial(
+            sector_funds_disbursed, bucket=classify.SECTOR_AIR_CONDITIONING
+        ),
+    ),
+    Metric(
         metric_id="sector_ref",
         label="Refrigeration projects",
         section="Refrigeration projects",
@@ -874,6 +1116,42 @@ FUND_METRICS: tuple[Metric, ...] = (
         db_source="DB-COMPUTABLE+NEEDS-APR",
         src_model_field="(same as #47)",
         compute=partial(sector, bucket=classify.SECTOR_REFRIGERATION),
+    ),
+    Metric(
+        metric_id="sector_ref_number_of_projects",
+        label="Refrigeration projects number of projects",
+        section="Refrigeration projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="count of projects",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.id",
+        compute=partial(sector_count, bucket=classify.SECTOR_REFRIGERATION),
+    ),
+    Metric(
+        metric_id="sector_ref_funds_approved",
+        label="Refrigeration projects funds approved",
+        section="Refrigeration projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum approved funding;",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.total_fund + support_cost_psc",
+        compute=partial(sector_funds_approved, bucket=classify.SECTOR_REFRIGERATION),
+    ),
+    Metric(
+        metric_id="sector_ref_funds_disbursed",
+        label="Refrigeration projects funds disbursed",
+        section="Refrigeration projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum of funds disbursed from apr",
+        db_source="DB-COMPUTABLE+NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed",
+        compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_REFRIGERATION),
     ),
     Metric(
         metric_id="sector_srv",
@@ -888,6 +1166,42 @@ FUND_METRICS: tuple[Metric, ...] = (
         compute=partial(sector, bucket=classify.SECTOR_SERVICING),
     ),
     Metric(
+        metric_id="sector_srv_number_of_projects",
+        label="Servicing projects number of projects",
+        section="Servicing projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="count of projects",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.id",
+        compute=partial(sector_count, bucket=classify.SECTOR_SERVICING),
+    ),
+    Metric(
+        metric_id="sector_srv_funds_approved",
+        label="Servicing projectss funds approved",
+        section="Servicing projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum approved funding;",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.total_fund + support_cost_psc",
+        compute=partial(sector_funds_approved, bucket=classify.SECTOR_SERVICING),
+    ),
+    Metric(
+        metric_id="sector_srv_funds_disbursed",
+        label="Servicing projects funds disbursed",
+        section="Servicing projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum of funds disbursed from apr",
+        db_source="DB-COMPUTABLE+NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed",
+        compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_SERVICING),
+    ),
+    Metric(
         metric_id="sector_foam",
         label="Foam projects",
         section="Foam projects",
@@ -898,6 +1212,42 @@ FUND_METRICS: tuple[Metric, ...] = (
         db_source="DB-COMPUTABLE+NEEDS-APR",
         src_model_field="(same as #47)",
         compute=partial(sector, bucket=classify.SECTOR_FOAM),
+    ),
+    Metric(
+        metric_id="sector_foam_number_of_projects",
+        label="Foam projects number of projects",
+        section="Foam projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="count of projects",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.id",
+        compute=partial(sector_count, bucket=classify.SECTOR_FOAM),
+    ),
+    Metric(
+        metric_id="sector_foam_funds_approved",
+        label="Foam projects funds approved",
+        section="Foam projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum approved funding;",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.total_fund + support_cost_psc",
+        compute=partial(sector_funds_approved, bucket=classify.SECTOR_FOAM),
+    ),
+    Metric(
+        metric_id="sector_foam_funds_disbursed",
+        label="Foam projects funds disbursed",
+        section="Foam projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum of funds disbursed from apr",
+        db_source="DB-COMPUTABLE+NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed",
+        compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_FOAM),
     ),
     Metric(
         metric_id="sector_aerosol",
@@ -912,16 +1262,88 @@ FUND_METRICS: tuple[Metric, ...] = (
         compute=partial(sector, bucket=classify.SECTOR_AEROSOL),
     ),
     Metric(
+        metric_id="sector_aerosol_number_of_projects",
+        label="Aerosol projects number of projects",
+        section="Aerosol projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="count of projects",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.id",
+        compute=partial(sector_count, bucket=classify.SECTOR_AEROSOL),
+    ),
+    Metric(
+        metric_id="sector_aerosol_funds_approved",
+        label="Aerosol projects funds approved",
+        section="Aerosol projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum approved funding;",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.total_fund + support_cost_psc",
+        compute=partial(sector_funds_approved, bucket=classify.SECTOR_AEROSOL),
+    ),
+    Metric(
+        metric_id="sector_aerosol_funds_disbursed",
+        label="Aerosol projects funds disbursed",
+        section="Aerosol projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum of funds disbursed from apr",
+        db_source="DB-COMPUTABLE+NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed",
+        compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_AEROSOL),
+    ),
+    Metric(
         metric_id="sector_solvent",
         label="Solvent projects",
         section="Solvent projects",
         kind=Kind.BREAKDOWN,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="count + Sum approved funding; disbursed NOT AVAILABLE",
+        formula="count + Sum approved funding + Sum of funds disbursed from apr",
         db_source="DB-COMPUTABLE+NEEDS-APR",
         src_model_field="(same as #47)",
         compute=partial(sector, bucket=classify.SECTOR_SOLVENT),
+    ),
+    Metric(
+        metric_id="sector_solvent_number_of_projects",
+        label="Solvent projects number of projects",
+        section="Solvent projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="count of projects",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.id",
+        compute=partial(sector_count, bucket=classify.SECTOR_SOLVENT),
+    ),
+    Metric(
+        metric_id="sector_solvent_funds_approved",
+        label="Solvent projects funds approved",
+        section="Solvent projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum approved funding;",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.total_fund + support_cost_psc",
+        compute=partial(sector_funds_approved, bucket=classify.SECTOR_SOLVENT),
+    ),
+    Metric(
+        metric_id="sector_solvent_funds_disbursed",
+        label="Solvent projects funds disbursed",
+        section="Solvent projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Sum of funds disbursed from apr",
+        db_source="DB-COMPUTABLE+NEEDS-APR",
+        src_model_field="AnnualProjectReport.funds_disbursed",
+        compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_SOLVENT),
     ),
 )
 

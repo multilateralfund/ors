@@ -63,7 +63,7 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
     def get_value_for_header(self, header_id, header, record, by_usage_id):
         # delete quantity type from header_id
         value = None
-        odp_value = record.get_chemical_odp()
+        odp_value = record.get_chemical_odp
 
         # set value for custom columns
         if header_id == "country_name":
@@ -159,7 +159,7 @@ class CPReportHFCWriter(CPDataHFCHCFCWriterBase):
     def get_value_for_header(self, header_id, header, record, by_usage_id):
         # delete quantity type from header_id
         value = None
-        gwp = record.get_chemical_gwp()
+        gwp = record.get_chemical_gwp
 
         quantity_type = header.get("quantity_type")
         if quantity_type:

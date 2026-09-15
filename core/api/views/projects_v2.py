@@ -14,6 +14,7 @@ from core.api.permissions import (
     DenyAll,
     HasProjectV2ViewAccess,
     HasProjectV2EditAccess,
+    HasProjectV2DeleteDraftV2Access,
     HasProjectV2SubmitAccess,
     HasProjectV2AssociateProjectsAccess,
     HasProjectV2RemoveAssociationAccess,
@@ -56,7 +57,7 @@ from core.api.views.utils import get_available_values
 from core.api.utils import log_project_history
 from core.utils import get_meta_project
 
-# pylint: disable=C0302,R0911,R0904,R1702
+# pylint: disable=C0302,R0911,R0904,R0912,R1702
 
 
 def get_blanket_approval_individual_consideration(queryset: QuerySet[Project]):
@@ -270,7 +271,10 @@ class ProjectV2ViewSet(
             queryset = queryset.exclude(status__name__in=["Closed", "Transferred"])
 
         if self.action in ["destroy"]:
-            queryset = queryset.filter(submission_status__name="Draft", version=1)
+            if HasProjectV2DeleteDraftV2Access().has_permission(self.request, self):
+                queryset = queryset.filter(submission_status__name="Draft")
+            else:
+                queryset = queryset.filter(submission_status__name="Draft", version=1)
 
         user = self.request.user
         if user.is_superuser:
@@ -360,7 +364,7 @@ class ProjectV2ViewSet(
 
         return queryset.none()
 
-    def get_queryset(self):
+    def get_queryset(self, filter_permissions=True):
         requests_really_all = (
             self.request.query_params.get("really_all", "false") == "true"
             or self.request.query_params.get("inventory_report", "false") == "true"
@@ -369,7 +373,10 @@ class ProjectV2ViewSet(
             queryset = Project.objects.really_all()
         else:
             queryset = Project.objects.all()
-        queryset = self.filter_permissions_queryset(queryset)
+
+        if filter_permissions:
+            queryset = self.filter_permissions_queryset(queryset)
+
         if self.request.query_params.get("pcr_required", "false").lower() == "true":
             queryset = queryset.pcr_required()
         queryset = (
@@ -553,11 +560,8 @@ class ProjectV2ViewSet(
             )
         return super().update(request, *args, **kwargs)
 
-    def destroy(self, request, *args, **kwargs):
-        """Delete a project"""
-        project = self.get_object()
+    def _delete_project(self, project):
         component = project.component
-        response = super().destroy(request, *args, **kwargs)
         if component:
             component_projects_count = Project.objects.filter(
                 component=component
@@ -570,6 +574,21 @@ class ProjectV2ViewSet(
                 last_project.component = None
                 last_project.save()
                 component.delete()
+        if Project.objects.really_all().filter(pk=project.pk).exists():
+            project.delete()
+        meta_project = project.meta_project
+        if Project.objects.really_all().filter(meta_project=meta_project).count() == 0:
+            meta_project.delete()
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete a project"""
+        project = self.get_object()
+        response = super().destroy(request, *args, **kwargs)
+        if project.version == 2:
+            archieve_version = Project.objects.filter(latest_project=project).first()
+            if archieve_version:
+                self._delete_project(archieve_version)
+        self._delete_project(project)
         return response
 
     @action(methods=["GET"], detail=True)

@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
-import { getProjectDuration } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 
 import {
@@ -25,12 +24,10 @@ import {
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '@ors/components/manage/Blocks/Replenishment/Inputs/constants'
-import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import useApi from '@ors/hooks/useApi'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ProjectType } from '@ors/types/api_projects'
 import {
@@ -38,10 +35,14 @@ import {
   formatErrors,
   checkHasErrors,
   hasSectionErrors,
+  formatDate,
+  formatNumberProjectValue,
+  getComputedFields,
 } from '../utils'
 import {
   summaryOfKeyDataField,
   defaultSummaryOfKeyDataErrors,
+  disposalTypeOptions,
 } from '../constants'
 import {
   PCRAlternativeTechnologyType,
@@ -101,7 +102,7 @@ const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
   equipments: [createEquipment()],
 })
 
-const cloneSummaryData = (
+export const cloneSummaryData = (
   data: PCRSummaryOfKeyDataType,
 ): PCRSummaryOfKeyDataType => ({
   ...data,
@@ -112,7 +113,7 @@ const cloneSummaryData = (
   equipments: data.equipments.map((entry) => ({ ...entry })),
 })
 
-const formatProjectValue = (value: unknown): string => {
+export const formatProjectValue = (value: unknown): string => {
   if (value === null || value === undefined) {
     return ''
   }
@@ -136,13 +137,7 @@ const formatProjectValue = (value: unknown): string => {
   return ''
 }
 
-const formatNumberProjectValue = (
-  value: null | number | string | undefined,
-  minDigits?: number,
-  maxDigits?: number,
-) => formatNumberValue(value ?? null, minDigits, maxDigits) ?? ''
-
-const FieldGroup = ({
+export const FieldGroup = ({
   children,
   title,
 }: {
@@ -238,9 +233,84 @@ const DisposalTypeSelect = ({
   </div>
 )
 
+export const getSummaryTableColumnDefs = () => [
+  {
+    headerName: 'Type',
+    minWidth: 160,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatProjectValue(params.data?.project_type),
+  },
+  {
+    headerName: 'Sector',
+    minWidth: 160,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatProjectValue(params.data?.sector),
+  },
+  {
+    headerName: 'Agency',
+    minWidth: 130,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatProjectValue(params.data?.agency),
+  },
+  {
+    headerName: 'Tranche(s)',
+    minWidth: 110,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatProjectValue(params.data?.tranche),
+  },
+  {
+    headerName: 'Date approved',
+    minWidth: 135,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatProjectValue(formatDate(params.data?.date_approved)),
+  },
+  {
+    headerName: 'Actual date of completion',
+    minWidth: 165,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatProjectValue(formatDate(params.data?.actual_date_of_completion)),
+  },
+  {
+    headerName: 'Funds approved',
+    minWidth: 140,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatNumberProjectValue(params.data?.funds_approved, 0, 0),
+  },
+  {
+    headerName: 'ODP phase-out (Approved)',
+    minWidth: 170,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatNumberProjectValue(params.data?.odp_phase_out_approved, 1, 1),
+  },
+  {
+    headerName: 'ODP phase out (Actual)',
+    minWidth: 160,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatNumberProjectValue(params.data?.odp_phase_out_actual, 1, 1),
+  },
+  {
+    headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)',
+    minWidth: 230,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatNumberProjectValue(params.data?.hfc_phase_down_co2_approved, 0, 0),
+  },
+  {
+    headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)',
+    minWidth: 220,
+    valueGetter: (params: ValueGetterParams<ProjectType>) =>
+      formatNumberProjectValue(params.data?.hfc_phase_down_co2_actual, 0, 0),
+  },
+]
+
 const PCRSummaryOfKeyData = () => {
-  const { PCRData, pcrMetaproject, setPCRData, errors, setErrors } =
-    useContext(PCRDataContext)
+  const {
+    PCRData,
+    pcrMetaproject,
+    substanceOptions,
+    setPCRData,
+    errors,
+    setErrors,
+  } = useContext(PCRDataContext)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
   const [currentTab, setCurrentTab] = useState(0)
   const [draftSummaryData, setDraftSummaryData] =
@@ -287,27 +357,6 @@ const PCRSummaryOfKeyData = () => {
       }),
       [groupedErrors],
     )
-
-  const { data: substances = [] } = useApi<ApiSubstance[]>({
-    options: {
-      withStoreCache: true,
-    },
-    path: 'api/substances/',
-  })
-
-  const substanceOptions = useMemo(
-    () =>
-      [...(substances ?? [])]
-        .sort((first, second) => first.name.localeCompare(second.name))
-        .map((substance) => ({ ...substance, label: substance.name })),
-    [substances],
-  )
-
-  const disposalTypeOptions = [
-    { id: 1, name: 'Disposal type 1', label: 'Disposal type 1' },
-    { id: 2, name: 'Disposal type 2', label: 'Disposal type 2' },
-    { id: 3, name: 'Disposal type 3', label: 'Disposal type 3' },
-  ]
 
   const editingProject = projects.find(
     (project) => project.id === editingProjectId,
@@ -372,9 +421,6 @@ const PCRSummaryOfKeyData = () => {
     closeDialog()
   }
 
-  const formatDate = (date: string | null | undefined) =>
-    date ? dayjs(date).format('DD/MM/YYYY') : ''
-
   const summaryTableColumnDefs = useMemo<ColDef<ProjectType>[]>(
     () => [
       {
@@ -407,82 +453,7 @@ const PCRSummaryOfKeyData = () => {
           )
         },
       },
-      {
-        headerName: 'Type',
-        minWidth: 160,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatProjectValue(params.data?.project_type),
-      },
-      {
-        headerName: 'Sector',
-        minWidth: 160,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatProjectValue(params.data?.sector),
-      },
-      {
-        headerName: 'Agency',
-        minWidth: 130,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatProjectValue(params.data?.agency),
-      },
-      {
-        headerName: 'Tranche(s)',
-        minWidth: 110,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatProjectValue(params.data?.tranche),
-      },
-      {
-        headerName: 'Date approved',
-        minWidth: 135,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatProjectValue(formatDate(params.data?.date_approved)),
-      },
-      {
-        headerName: 'Actual date of completion',
-        minWidth: 165,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatProjectValue(
-            formatDate(params.data?.actual_date_of_completion),
-          ),
-      },
-      {
-        headerName: 'Funds approved',
-        minWidth: 140,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatNumberProjectValue(params.data?.funds_approved, 0, 0),
-      },
-      {
-        headerName: 'ODP phase-out (Approved)',
-        minWidth: 170,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatNumberProjectValue(params.data?.odp_phase_out_approved, 1, 1),
-      },
-      {
-        headerName: 'ODP phase out (Actual)',
-        minWidth: 160,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatNumberProjectValue(params.data?.odp_phase_out_actual, 1, 1),
-      },
-      {
-        headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)',
-        minWidth: 230,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatNumberProjectValue(
-            params.data?.hfc_phase_down_co2_approved,
-            0,
-            0,
-          ),
-      },
-      {
-        headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)',
-        minWidth: 220,
-        valueGetter: (params: ValueGetterParams<ProjectType>) =>
-          formatNumberProjectValue(
-            params.data?.hfc_phase_down_co2_actual,
-            0,
-            0,
-          ),
-      },
+      ...getSummaryTableColumnDefs(),
     ],
     [openDialog, summaryOfKeyDataErrors],
   )
@@ -570,38 +541,10 @@ const PCRSummaryOfKeyData = () => {
     }))
   }
 
-  const computedFields = useMemo(() => {
-    if (!editingProject) {
-      return {
-        planned_duration: 0,
-        actual_duration: 0,
-        delay: 0,
-      }
-    }
-
-    const dateApproved = editingProject.date_approved ?? null
-    const actualCompletionDate =
-      editingProject.actual_date_of_completion ?? null
-    const plannedCompletionDate =
-      draftSummaryData?.planned_date_of_completion ?? null
-
-    const plannedDuration =
-      getProjectDuration({
-        project_start_date: dateApproved,
-        project_end_date: plannedCompletionDate,
-      }) ?? 0
-    const actualDuration =
-      getProjectDuration({
-        project_start_date: dateApproved,
-        project_end_date: actualCompletionDate,
-      }) ?? 0
-
-    return {
-      planned_duration: Number(plannedDuration),
-      actual_duration: Number(actualDuration),
-      delay: Number(actualDuration) - Number(plannedDuration),
-    }
-  }, [editingProject, draftSummaryData])
+  const computedFields = useMemo(
+    () => getComputedFields(editingProject, draftSummaryData),
+    [editingProject, draftSummaryData],
+  )
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -623,7 +566,7 @@ const PCRSummaryOfKeyData = () => {
 
       {editingProject && summaryData && (
         <Dialog
-          aria-labelledby="pcr-summary-edit-dialog-title"
+          aria-labelledby="pcr-summary-edit-dialog"
           fullWidth={true}
           maxWidth="xl"
           onClose={closeDialog}
@@ -852,7 +795,7 @@ const PCRSummaryOfKeyData = () => {
                     formattedErrors.enterprises.length > 0 && (
                       <ErrorsList errors={formattedErrors.enterprises} />
                     )}
-                  <FieldGroup>
+                  <FieldGroup title="Enterprises">
                     <div className="flex flex-col gap-y-4">
                       <div className="grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]">
                         <div>

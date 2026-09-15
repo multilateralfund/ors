@@ -1,4 +1,4 @@
-# pylint: disable=C0302,R0914,R0915
+# pylint: disable=C0302,R0914,R0915,W0212
 
 from datetime import datetime
 
@@ -228,15 +228,25 @@ def get_archive_reports_final_for_years(min_year, max_year, country=None):
         country_id=models.OuterRef("country_id"),
         year=models.OuterRef("year"),
         status=CPReport.CPReportStatus.FINAL,
+    ).prefetch_related(
+        "record_usages",
+        "record_usages__usage",
     )
 
     # get the max version for each archive report (country&yuear)
     # that does not have a final report
-    archive_reports_q = CPReportArchive.objects.filter(
-        year__gte=min_year,
-        year__lte=max_year,
-        status=CPReport.CPReportStatus.FINAL,
-    ).exclude(models.Exists(has_final_report))
+    archive_reports_q = (
+        CPReportArchive.objects.filter(
+            year__gte=min_year,
+            year__lte=max_year,
+            status=CPReport.CPReportStatus.FINAL,
+        )
+        .exclude(models.Exists(has_final_report))
+        .prefetch_related(
+            "record_usages",
+            "record_usages__usage",
+        )
+    )
 
     if country:
         archive_reports_q = archive_reports_q.filter(country_id=country.id)
@@ -277,7 +287,14 @@ def get_final_records_for_years(
             *filter_list,
         )
         .select_related(
-            "country_programme_report__country", "substance__group", "blend"
+            "country_programme_report",
+            "country_programme_report__country",
+            "substance__group",
+            "blend",
+        )
+        .prefetch_related(
+            "record_usages",
+            "record_usages__usage",
         )
     )
     if country:
@@ -304,7 +321,14 @@ def get_final_records_for_years(
                 _connector=models.Q.OR,
             )
             .select_related(
-                "country_programme_report__country", "substance__group", "blend"
+                "country_programme_report",
+                "country_programme_report__country",
+                "substance__group",
+                "blend",
+            )
+            .prefetch_related(
+                "record_usages",
+                "record_usages__usage",
             )
         )
 
@@ -320,24 +344,26 @@ def get_final_records_for_years(
             ),
         ).order_by("country_programme_report__year", "country_name", "sort_order")
 
-    final_iter = _annotate_ordering(final_records).iterator()
-    archive_iter = _annotate_ordering(archive_records).iterator()
+    final_iter = iter(_annotate_ordering(final_records))
+    archive_iter = iter(_annotate_ordering(archive_records))
 
     # merge two already-ordered iterators (linear time, low memory)
     def _merge_two(a_iter, b_iter, key_fn):
         try:
             a = next(a_iter)
+            a_key = key_fn(a)
         except StopIteration:
             yield from b_iter
             return
         try:
             b = next(b_iter)
+            b_key = key_fn(b)
         except StopIteration:
             yield a
             yield from a_iter
             return
         while True:
-            if key_fn(a) <= key_fn(b):
+            if a_key <= b_key:
                 yield a
                 try:
                     a = next(a_iter)
@@ -405,16 +431,17 @@ def get_final_records_for_years(
                 f"blend_{chemical.id}" if row.blend else f"substance_{chemical.id}"
             )
             if chemical_key not in added_chemical_keys:
+                cp_report = CPReport(country_id=country_entry, year=year, version=0)
+                cp_report._prefetched_objects_cache = {"record_usages": []}
                 cp_record_data = {
-                    "country_programme_report": CPReport(
-                        country_id=country_entry, year=year, version=0
-                    ),
+                    "country_programme_report": cp_report,
                     "substance": chemical if row.substance else None,
                     "blend": chemical if row.blend else None,
                     "id": 0,
                 }
-                final_list.append(CPRecord(**cp_record_data))
-
+                new_obj = CPRecord(**cp_record_data)
+                new_obj._prefetched_objects_cache = {"record_usages": []}
+                final_list.append(new_obj)
     if not list_sort:
         return final_list
 

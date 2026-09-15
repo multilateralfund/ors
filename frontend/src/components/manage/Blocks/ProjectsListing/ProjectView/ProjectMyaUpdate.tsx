@@ -123,7 +123,7 @@ const ProjectMyaUpdate = ({
 
     if (mode === 'view') {
       switch (fd.type) {
-        case 'DateTimeField':
+        case 'DateField':
           return (fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || 'N/A'
         case 'DecimalField':
           return fieldValue
@@ -134,7 +134,7 @@ const ProjectMyaUpdate = ({
       }
     } else {
       switch (fd.type) {
-        case 'DateTimeField':
+        case 'DateField':
           return (
             <DateInput
               id={fd.name}

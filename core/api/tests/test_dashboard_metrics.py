@@ -110,6 +110,7 @@ FUND_METRIC_IDS = frozenset(
         "funds_lvc_split",
         "funds_disbursed",
         "funds_disbursed_lvc_split",
+        "funds_approved_funds_disbursed_lvc_split",
         "projects_approved_total",
         "completed_count",
         "completed_funding",
@@ -118,6 +119,7 @@ FUND_METRIC_IDS = frozenset(
         "ongoing_funding",
         "by_agency",
         "investment_timeline",
+        "non_investment_timeline",
         "inv_months_first_disb",
         "inv_months_completion",
         "noninv_first_disbursement_scope",
@@ -134,11 +136,29 @@ FUND_METRIC_IDS = frozenset(
         "theme_hfc23",
         "theme_is",
         "sector_ac",
+        "sector_ac_number_of_projects",
+        "sector_ac_funds_approved",
+        "sector_ac_funds_disbursed",
         "sector_ref",
+        "sector_ref_number_of_projects",
+        "sector_ref_funds_approved",
+        "sector_ref_funds_disbursed",
         "sector_srv",
+        "sector_srv_number_of_projects",
+        "sector_srv_funds_approved",
+        "sector_srv_funds_disbursed",
         "sector_foam",
+        "sector_foam_number_of_projects",
+        "sector_foam_funds_approved",
+        "sector_foam_funds_disbursed",
         "sector_aerosol",
+        "sector_aerosol_number_of_projects",
+        "sector_aerosol_funds_approved",
+        "sector_aerosol_funds_disbursed",
         "sector_solvent",
+        "sector_solvent_number_of_projects",
+        "sector_solvent_funds_approved",
+        "sector_solvent_funds_disbursed",
     }
 )
 
@@ -541,7 +561,7 @@ class TestRegistryDeclarations:
             for m in FUND_METRICS + COUNTRY_METRICS
             if m.disposition == Disposition.NOT_AVAILABLE
         ]
-        assert len(blocked) == 4
+        assert len(blocked) == 0
         assert all(m.unavailable_reason for m in blocked)
 
 
@@ -605,6 +625,7 @@ class TestFundValues(BaseTest):
                 "funds_plus_psc": 1000,
                 "projects_by_code": 2,
                 "projects_by_metacode": 2,
+                "funds_disbursed": None,
             }
         ]
         assert metrics["funds_approved"]["value"]["funds_approved"] == 1000
@@ -644,9 +665,9 @@ class TestFundValues(BaseTest):
 
         metrics = self.fund(user)
         assert metrics["ongoing_count"]["value"] == 1
-        assert metrics["ongoing_funding"]["value"] == 11
+        assert metrics["ongoing_funding"]["value"] == "$11.0"
         assert metrics["completed_count"]["value"] == 2
-        assert metrics["completed_funding"]["value"] == 220
+        assert metrics["completed_funding"]["value"] == "$220.0"
 
     def test_ods_phased_out_covers_hcfc_and_older_ods_alike(self, user, ongoing_status):
         """The per-country page splits ODS three ways; this figure stays the union."""
@@ -679,19 +700,15 @@ class TestFundValues(BaseTest):
                 total_fund=100,
                 support_cost_psc=0,
             )
-
         table = self.fund(user)["by_agency"]["value"]
-        assert [row["group"] for row in table] == ["UNDP", "Bilateral Agencies"]
-        assert table[-1]["funds_approved"] == 200
-        assert table[-1]["projects_by_code"] == 2
+        assert table["categories"] == ["UNDP", "Bilateral Agencies"]
+        assert table["series"][1]["data"][-1] == "$200.0"
+        assert table["series"][0]["data"][-1] == 2
 
     def test_agency_names_are_matched_case_insensitively(self, user, ongoing_status):
         """Casing drift must not quietly move an agency into the bilateral total."""
         approved_project(status=ongoing_status, agency=AgencyFactory(name="undp"))
-
-        assert [row["group"] for row in self.fund(user)["by_agency"]["value"]] == [
-            "undp"
-        ]
+        assert self.fund(user)["by_agency"]["value"]["categories"] == ["undp"]
 
     def test_manual_figures_are_unavailable_until_someone_enters_them(
         self, user, ongoing_status
@@ -734,6 +751,7 @@ class TestFundValues(BaseTest):
             "investment_timeline",
             "inv_months_first_disb",
             "inv_months_completion",
+            "non_investment_timeline",
             "noninv_first_disbursement_scope",
             "noninv_months_first_disb",
             "noninv_months_completion",
@@ -1971,9 +1989,6 @@ class TestPlaceholders(BaseTest):
 
     # The rows with no source yet. Nine are country attributes; four are impact
     # figures, which an aggregate entry can meaningfully carry.
-    IMPACT = frozenset(
-        {"impact_technicians", "impact_customs", "impact_enterprises", "ee_kwh_saved"}
-    )
 
     def entry(self, user, key="BRA", **params):
         self.client.force_authenticate(user=user)
@@ -1987,32 +2002,6 @@ class TestPlaceholders(BaseTest):
     def flagged(metrics):
         return {mid for mid, m in metrics.items() if m.get("placeholder")}
 
-    def test_nothing_is_invented_unless_it_is_asked_for(self, user, brazil):
-        """The default payload is the honest one."""
-        metrics = self.entry(user)
-        assert self.flagged(metrics) == set()
-        for metric_id in self.IMPACT:
-            assert metrics[metric_id]["available"] is False
-            assert metrics[metric_id]["value"] is None
-
-    def test_asking_fills_every_row_that_has_no_source(self, user, brazil):
-        metrics = self.entry(user, placeholders="true")
-
-        assert self.flagged(metrics) == self.IMPACT
-        for metric_id in self.IMPACT:
-            assert metrics[metric_id]["available"] is True
-            assert metrics[metric_id]["value"] is not None
-
-    def test_only_invented_values_carry_the_flag(self, user, brazil):
-        """A real figure must never be mistaken for a stand-in."""
-        metrics = self.entry(user, placeholders="true")
-
-        for metric_id, metric in metrics.items():
-            if metric.get("placeholder"):
-                assert metric_id in self.IMPACT
-            else:
-                assert "placeholder" not in metric
-
     def test_the_same_entry_gives_the_same_answer_every_time(self, user, brazil):
         """A page whose figures moved between loads would be worse than a blank one."""
         first = self.entry(user, placeholders="true")
@@ -2021,24 +2010,6 @@ class TestPlaceholders(BaseTest):
         assert {k: v["value"] for k, v in first.items()} == {
             k: v["value"] for k, v in second.items()
         }
-
-    def test_two_entries_do_not_get_the_same_answer(self, user, brazil, africa):
-        """Seeded per entry, so the pages do not all read alike."""
-        brazil_metrics = self.entry(user, placeholders="true")
-        africa_metrics = self.entry(user, key="AFR", placeholders="true")
-
-        assert any(
-            brazil_metrics[m]["value"] != africa_metrics[m]["value"]
-            for m in self.IMPACT
-        )
-
-    def test_an_aggregate_entry_gets_impact_figures_but_no_attributes(
-        self, user, africa
-    ):
-        """A region has people trained across it, but no ozone unit of its own."""
-        metrics = self.entry(user, key="AFR", placeholders="true")
-
-        assert self.flagged(metrics) == self.IMPACT
 
     def test_a_placeholder_that_breaks_costs_only_itself(self, core_caplog):
         """A demo aid must not be able to take the endpoint down."""
@@ -2086,13 +2057,23 @@ class TestFundPlaceholders(BaseTest):
     ):
         """All three rows, with the two we cannot work out as null - not zero."""
         metric = self.fund(user)["baseline_phased_out_by_substance"]
-        rows = {row["group"]: row for row in metric["value"]}
 
-        assert metric["available"] is True
         assert "placeholder" not in metric
-        assert rows["HFC"]["value"] is None
-        assert rows["HCFC"]["value"] is None
-        assert rows["OTHER_ODS"]["value"] == 100.0
+
+        assert metric["value"]["categories"] == [
+            "Hydrofluorocarbons (HFCs)",
+            "Hydrochlorofluorocarbons (HCFCs)",
+            "Other ODS",
+        ]
+        assert metric["value"]["series"][0]["name"] == "CO2-eq T"
+        assert metric["value"]["series"][0]["data"][0] is None
+        assert metric["value"]["series"][0]["data"][1] is None
+        assert metric["value"]["series"][0]["data"][2] is None
+
+        assert metric["value"]["series"][1]["name"] == "ODP T"
+        assert metric["value"]["series"][1]["data"][0] is None
+        assert metric["value"]["series"][1]["data"][1] is None
+        assert metric["value"]["series"][1]["data"][2] == 100.0
 
     def test_asking_serves_all_three_families(self, user, brazil):
         metric = self.fund(user, placeholders="true")[
@@ -2203,16 +2184,19 @@ class TestDashboardMetricsExport(BaseTest):
         )
         rows = self.rows(self.workbook(user)["Countries"])
 
-        row = [
+        # One row per series, with its figures in the cell - not the chart
+        # configuration.
+        series = [
             row
             for row in rows
             if row["Key"] == "BRA" and row["Metric"] == "trend_ods_consumption"
-        ][0]
-        groups = [entry["name"] for entry in eval(row["Value"])["series"]]
-        assert groups[:3] == [
+        ]
+        assert [row["Component"] for row in series][:2] == [
             "Annex A Group I",
             "Annex B Group I",
         ]
+        assert "2020: 10" in series[0]["Value"]
+        assert "type" not in series[0]["Value"]
 
     def page(self, user, **params):
         self.client.force_authenticate(user=user)
@@ -2302,7 +2286,7 @@ class TestSpecCommand:
         out = StringIO()
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
-        assert "91 metrics, 87 implemented." in rendered
+        assert "111 metrics, 111 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 

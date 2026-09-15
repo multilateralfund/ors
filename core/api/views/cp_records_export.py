@@ -317,12 +317,12 @@ class CPCalculatedAmountExportView(CPRecordListByReportView):
             # convert data
             if "HFC" in substance_category:
                 # convert consumption value to CO₂ equivalent
-                consumption *= record.get_chemical_gwp() or 0
-                sectorial_total *= record.get_chemical_gwp() or 0
+                consumption *= record.get_chemical_gwp or 0
+                sectorial_total *= record.get_chemical_gwp or 0
             else:
                 # convert consumption value to ODP
-                consumption *= record.get_chemical_odp() or 0
-                sectorial_total *= record.get_chemical_odp() or 0
+                consumption *= record.get_chemical_odp or 0
+                sectorial_total *= record.get_chemical_odp or 0
 
             data[substance_category]["sectorial_total"] += sectorial_total
             data[substance_category]["consumption"] += consumption
@@ -906,8 +906,8 @@ class CPDataExtractionAllExport(views.APIView):
                     "substance_group": (
                         record.substance.group.group_id if record.substance else "F"
                     ),
-                    "substance_odp": record.get_chemical_odp(),
-                    "substance_gwp": record.get_chemical_gwp(),
+                    "substance_odp": record.get_chemical_odp,
+                    "substance_gwp": record.get_chemical_gwp,
                 }
                 for data_year in existent_reports.get(country_name, []):
                     cp_details[key][f"record_value_{data_year}"] = 0
@@ -1066,14 +1066,12 @@ class CPDataExtractionAllExport(views.APIView):
 
             # convert consumption value to CO₂ equivalent
             country_records[key][f"consumption_co2_{year}"] += (
-                consumption_value * record.get_chemical_gwp()
+                consumption_value * record.get_chemical_gwp
             )
-
             for rec_us in record.record_usages.all():
                 if "servicing" in rec_us.usage.full_name.lower():
                     country_records[key][f"servicing_{year}"] += rec_us.quantity
                 country_records[key][f"usages_total_{year}"] += rec_us.quantity
-
         return dict(sorted(country_records.items(), key=lambda x: x[0]))
 
     def _get_generations(self, min_year, max_year, archive_reports):

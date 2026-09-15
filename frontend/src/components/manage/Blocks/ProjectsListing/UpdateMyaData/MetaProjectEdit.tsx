@@ -215,7 +215,7 @@ export const MetaProjectEdit = (props: {
       isExtendedDateCOmpletionDisabled
 
     switch (fd.type) {
-      case 'DateTimeField':
+      case 'DateField':
         return (
           <DateInput
             id={fd.name}

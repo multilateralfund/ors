@@ -225,6 +225,11 @@ class DashboardMetricsExportView(views.APIView):
 
     @extend_schema(
         operation_id="dashboard_metrics_export",
+        description=(
+            "Both pages' figures as a workbook, or as a page with "
+            "`?format=html`.\n\n"
+            "**For HTML, open this URL directly rather to try it out.**"
+        ),
         parameters=APR_PARAMETERS + PLACEHOLDER_PARAMETERS + FORMAT_PARAMETERS,
         responses={200: OpenApiResponse(OpenApiTypes.BINARY, "Workbook or page")},
     )

@@ -1,3 +1,5 @@
+import { getProjectDuration } from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import {
   pcrFieldsMapping,
   pcrFieldsErrorsMapping,
@@ -19,6 +21,7 @@ import {
 import { useGetPCRDefaults } from './hooks/useGetPCRDefaults'
 import { ApiAgency } from '@ors/types/api_agencies'
 
+import dayjs from 'dayjs'
 import {
   filter,
   find,
@@ -499,4 +502,47 @@ export const isSubmitDisabled = (errors: Record<string, any>) => {
     hasSDGsDefaultErrors ||
     hasEvidencesDefaultErrors
   )
+}
+export const formatDate = (date: string | null | undefined) =>
+  date ? dayjs(date).format('DD/MM/YYYY') : ''
+
+export const formatNumberProjectValue = (
+  value: null | number | string | undefined,
+  minDigits?: number,
+  maxDigits?: number,
+) => formatNumberValue(value ?? null, minDigits, maxDigits) ?? ''
+
+export const getComputedFields = (
+  crtProject: Record<string, any> | undefined,
+  draftSummaryData: PCRSummaryOfKeyDataType | null,
+) => {
+  if (!crtProject) {
+    return {
+      planned_duration: 0,
+      actual_duration: 0,
+      delay: 0,
+    }
+  }
+
+  const dateApproved = crtProject.date_approved ?? null
+  const actualCompletionDate = crtProject.actual_date_of_completion ?? null
+  const plannedCompletionDate =
+    draftSummaryData?.planned_date_of_completion ?? null
+
+  const plannedDuration =
+    getProjectDuration({
+      project_start_date: dateApproved,
+      project_end_date: plannedCompletionDate,
+    }) ?? 0
+  const actualDuration =
+    getProjectDuration({
+      project_start_date: dateApproved,
+      project_end_date: actualCompletionDate,
+    }) ?? 0
+
+  return {
+    planned_duration: Number(plannedDuration),
+    actual_duration: Number(actualDuration),
+    delay: Number(actualDuration) - Number(plannedDuration),
+  }
 }

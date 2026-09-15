@@ -198,7 +198,7 @@ const ProjectsCreate = ({
   } = useStore((state) => state.mpData)
 
   useEffect(() => {
-    const formattedMpdata = formatMetaprojectData(metaprojectData, ["end_date"])
+    const formattedMpdata = formatMetaprojectData(metaprojectData, ['end_date'])
     setMpData(formattedMpdata)
   }, [metaprojectData])
 
@@ -367,7 +367,8 @@ const ProjectsCreate = ({
     }
   }, [myaAllErrors, allMpErrors])
 
-  const { canEditApprovedProjects } = useContext(PermissionsContext)
+  const { canEditApprovedProjects, canDeleteDraftProjects } =
+    useContext(PermissionsContext)
   const { altTechs } = useContext(ProjectsDataContext)
 
   const hasV3EditPermissions =
@@ -918,7 +919,8 @@ const ProjectsCreate = ({
         </Tabs>
         {mode === 'edit' &&
           project?.submission_status === 'Draft' &&
-          project?.version === 1 &&
+          (project?.version === 1 ||
+            (project?.version === 2 && canDeleteDraftProjects)) &&
           project?.editable && (
             <ProjectDelete {...{ project, hasComponents }} />
           )}

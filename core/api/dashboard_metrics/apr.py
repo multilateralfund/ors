@@ -140,6 +140,25 @@ class AprMetrics(APRSummaryTablesExportWriter):
         )
         return {code: data["total_funds_disbursed"] for code, data in grouped}
 
+    def disbursed_by_region(self) -> dict[str, float]:
+        """``{'region': funds disbursed}``, through the export's own grouping."""
+        grouped = self._compute_grouped_data(
+            self.records,
+            "main_region",
+            include_odp_co2=False,
+            sheet_type="cumulative",
+        )
+        return {code.name: data["total_funds_disbursed"] for code, data in grouped}
+
+    def disbursed_by_theme(self) -> dict[str, float]:
+        grouped = self._compute_grouped_data(
+            self.records,
+            "main_region",
+            include_odp_co2=False,
+            sheet_type="cumulative",
+        )
+        return {code.name: data["total_funds_disbursed"] for code, data in grouped}
+
 
 def apr_years_available() -> list[int]:
     """Every APR year on record, ascending - the ``?apr_year=`` domain."""
@@ -166,7 +185,7 @@ def resolve_apr_year(requested: int | None = None) -> int | None:
 
 
 def apr_records(
-    year: int | None, country: Country | None = None
+    year: int | None, country: Country | None, project_ids: list | None = None
 ) -> list[AnnualProjectReport]:
     """Every report in one cycle, on a project this dashboard counts.
 
@@ -186,4 +205,6 @@ def apr_records(
     ).select_related("project__project_type", "project__status", "project__country")
     if country is not None:
         records = records.filter(project__country=country)
+    if project_ids:
+        records = records.filter(project_id__in=project_ids)
     return list(records.order_by("id"))

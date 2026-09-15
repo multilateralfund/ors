@@ -65,7 +65,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   rating_explanation_other: 'Specify rating',
   rating_explanation: 'Please explain your rating',
   entity: 'Entity user inputting the comment on behalf',
-  comment: 'Add comment',
+  comment: 'Comment',
   completed_by: 'Completion report done by',
   funds_disbursed: 'Funds disbursed',
   planned_date_of_completion: 'Planned date of completion',
@@ -126,6 +126,12 @@ export const financialFiguresTypeOptions = [
   { id: 'Final', name: 'Final' },
 ]
 
+export const disposalTypeOptions = [
+  { id: 1, name: 'Disposal type 1', label: 'Disposal type 1' },
+  { id: 2, name: 'Disposal type 2', label: 'Disposal type 2' },
+  { id: 3, name: 'Disposal type 3', label: 'Disposal type 3' },
+]
+
 export const projectPhaseOptions = [
   { id: 'Project preparation', name: 'Project preparation' },
   { id: 'Planning/Formulation', name: 'Planning/Formulation' },
@@ -144,6 +150,15 @@ export const initialOverviewData = {
   rating_explanation: '',
   additional_comments: [],
   completed_by: null,
+}
+
+export const initialActivitiesData = {
+  activity_title: '',
+  type_of_activity: '',
+  type_of_sector: '',
+  planned_output: '',
+  actual_activity_output: '',
+  additional_remarks: '',
 }
 
 export const defaultSummaryOfKeyDataErrors = {

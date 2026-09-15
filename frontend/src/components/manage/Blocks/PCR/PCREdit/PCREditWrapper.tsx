@@ -12,26 +12,11 @@ import {
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
+  PCRResponse,
 } from '../interfaces'
 
 import { keys, pick } from 'lodash'
 import { useParams } from 'wouter'
-
-type PCRProjectResponse = {
-  project_id: number
-  funds_disbursed?: string | null
-  planned_date_of_completion?: string | null
-  alternative_technologies?: PCRAlternativeTechnologyType[]
-  enterprises?: PCREnterpriseType[]
-  equipments?: PCREquipmentType[]
-}
-
-type PCRResponse = {
-  id: number
-  meta_project_id: number
-  submission_date: string | null
-  pcr_projects: PCRProjectResponse[]
-}
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
   substance_from: null,

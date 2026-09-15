@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.functional import cached_property
 
 
 class BaseWTimeFrameManager(models.Manager):
@@ -57,11 +58,13 @@ class AbstractWChemical(models.Model):
         chemical = self.substance if self.substance else self.blend
         return list({usage.usage_id for usage in chemical.excluded_usages.all()})
 
+    @cached_property
     def get_chemical_gwp(self):
         # pylint: disable=E1101
         chemical = self.substance if self.substance else self.blend
         return chemical.gwp if chemical.gwp else 0
 
+    @cached_property
     def get_chemical_odp(self):
         # pylint: disable=E1101
         chemical = self.substance if self.substance else self.blend
@@ -71,14 +74,14 @@ class AbstractWChemical(models.Model):
         if value is None:
             return 0
 
-        odp_value = self.get_chemical_odp()
+        odp_value = self.get_chemical_odp
         return value * odp_value
 
     def mt_convert_to_gwp(self, value):
         if value is None:
             return 0
 
-        gwp_value = self.get_chemical_gwp()
+        gwp_value = self.get_chemical_gwp
         return value * gwp_value
 
     class Meta:
