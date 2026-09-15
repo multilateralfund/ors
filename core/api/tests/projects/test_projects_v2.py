@@ -13,6 +13,7 @@ from core.api.tests.factories import (
     BlendFactory,
     BusinessPlanFactory,
     BPActivityFactory,
+    MetaProjectFactory,
     ProjectOdsOdpFactory,
     ProjectFactory,
     ProjectTypeFactory,
@@ -1115,13 +1116,26 @@ class TestProjectsV2Update:
     )
     def test_delete_project_permissions(
         self,
-        project,
         user,
         test_user,
+        agency,
+        project_type,
+        project_status,
+        project_draft_status,
         expected_response_status,
         project_submitted_status,
         request,
     ):
+        meta_project = MetaProjectFactory()
+        project = ProjectFactory.create(
+            meta_project=meta_project,
+            title="Karma to Burn",
+            version=1.0,
+            agency=agency,
+            project_type=project_type,
+            status=project_status,
+            submission_status=project_draft_status,
+        )
         url = reverse("project-v2-detail", args=(project.id,))
         if test_user:
             user = request.getfixturevalue(test_user)
@@ -1136,6 +1150,45 @@ class TestProjectsV2Update:
         self.client.force_authenticate(user=user)
         response = self.client.delete(url)
         assert response.status_code in [403, 404]  # cannot delete submitted projects
+        meta_project.delete()
+
+    @pytest.mark.parametrize(
+        "test_user,expected_response_status",
+        [
+            (None, 403),
+            ("user", 403),
+            ("viewer_user", 403),
+            ("agency_user", 404),
+            ("agency_inputter_user", 404),
+            ("secretariat_viewer_user", 403),
+            ("secretariat_recommender_edit_access_user", 404),
+            ("secretariat_production_recommender_edit_access_user", 404),
+            ("secretariat_approver_edit_access_user", 403),
+            ("secretariat_production_approver_edit_access_user", 403),
+            ("mlfs_admin_user", 404),
+            ("admin_user", 204),
+        ],
+    )
+    def test_delete_project_sent_back_to_draft(
+        self,
+        project,
+        user,
+        test_user,
+        expected_response_status,
+        request,
+    ):
+        meta_project = MetaProjectFactory()
+        project.version = 2
+        project.meta_project = meta_project
+        project.save()
+        url = reverse("project-v2-detail", args=(project.id,))
+        if test_user:
+            user = request.getfixturevalue(test_user)
+        else:
+            user = None
+        self.client.force_authenticate(user=user)
+        response = self.client.delete(url)
+        assert response.status_code == expected_response_status
 
 
 class TestProjectFiles:
