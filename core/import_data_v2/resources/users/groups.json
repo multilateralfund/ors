@@ -271,6 +271,7 @@
             "has_project_statistics_view_access",
             "has_project_v2_view_access",
             "has_project_v2_edit_access",
+            "has_project_v2_delete_draft_v2_access",
             "has_project_v2_edit_post_excom",
             "has_project_v2_mya_view_access",
             "has_project_v2_mya_manage_access",
