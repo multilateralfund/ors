@@ -5177,6 +5177,56 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             == latest_version.total_fund
         )
 
+    def test_financial_adjustment_fields_for_transferred_project(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        # Transferred amounts are stored as positive values (funds taken away)
+        latest_version.status = ProjectStatusFactory(name="Transferred", code="TRF")
+        latest_version.fund_transferred = 20000.0
+        latest_version.psc_transferred = 1500.0
+        latest_version.save()
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == latest_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
+
+        latest_funding = latest_version.total_fund - latest_version.fund_transferred
+        assert project_data["approved_funding"] == version3.total_fund
+        assert project_data["adjustment"] == latest_funding - version3.total_fund
+        assert project_data["approved_funding_plus_adjustment"] == latest_funding
+
+        latest_psc = latest_version.support_cost_psc - latest_version.psc_transferred
+        assert (
+            project_data["support_cost_adjustment"]
+            == latest_psc - version3.support_cost_psc
+        )
+        assert project_data["support_cost_approved_plus_adjustment"] == latest_psc
+
     def test_financial_calculated_fields(
         self,
         apr_agency_viewer_user,

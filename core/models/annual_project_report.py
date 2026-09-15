@@ -743,8 +743,9 @@ class AnnualProjectReport(models.Model):
         if latest_version.total_fund is None:
             return None
 
-        # fund_transferred is negative when funds are taken away
-        latest_funding = latest_version.total_fund + (
+        # fund_transferred is stored as a positive amount (the funds taken away
+        # from this project), same as in the transfer flow and the inventory report
+        latest_funding = latest_version.total_fund - (
             latest_version.fund_transferred or 0
         )
 
@@ -761,7 +762,7 @@ class AnnualProjectReport(models.Model):
             # No fund_transferred on V3 projects, apparently (either null or 0)
             return self.project_version_3.total_fund
 
-        return (latest_version.total_fund or 0) + (latest_version.fund_transferred or 0)
+        return (latest_version.total_fund or 0) - (latest_version.fund_transferred or 0)
 
     @property
     def per_cent_funds_disbursed(self):
@@ -791,7 +792,7 @@ class AnnualProjectReport(models.Model):
     @cached_property
     def support_cost_adjustment(self):
         # Support cost in the latest version - Support cost in version 3
-        # But also including latest_version.psc_transferred
+        # But also subtracting latest_version.psc_transferred (stored as positive)
         latest_version = self.latest_project_version_for_year
 
         if not latest_version or latest_version.version <= 3:
@@ -799,7 +800,7 @@ class AnnualProjectReport(models.Model):
 
         return (
             (latest_version.support_cost_psc or 0)
-            + (latest_version.psc_transferred or 0)
+            - (latest_version.psc_transferred or 0)
             - (self.support_cost_approved or 0)
         )
 
