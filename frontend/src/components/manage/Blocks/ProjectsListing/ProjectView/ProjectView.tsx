@@ -111,7 +111,8 @@ const ProjectView = ({
   specificFieldsLoaded: boolean
   loadedFiles: boolean
 }) => {
-  const { canUpdatePostExcom } = useContext(PermissionsContext)
+  const { canUpdatePostExcom, canDeleteDraftProjects } =
+    useContext(PermissionsContext)
   const { inlineMessage, setInlineMessage } = useStore(
     (state) => state.inlineMessage,
   )
@@ -139,7 +140,8 @@ const ProjectView = ({
 
   const canDeleteProject =
     project.submission_status === 'Draft' &&
-    project.version === 1 &&
+    (project.version === 1 ||
+      (project.version === 2 && canDeleteDraftProjects)) &&
     project.editable
 
   useEffect(() => {
@@ -199,7 +201,7 @@ const ProjectView = ({
   const { setMpData } = useStore((state) => state.mpData)
 
   useEffect(() => {
-    const formattedMpdata = formatMetaprojectData(metaprojectData, ["end_date"])
+    const formattedMpdata = formatMetaprojectData(metaprojectData, ['end_date'])
     setMpData(formattedMpdata)
   }, [metaprojectData])
 

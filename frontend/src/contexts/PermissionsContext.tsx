@@ -24,6 +24,7 @@ export interface PermissionsContextProps {
   canDisassociateComponents: boolean
   canEditProjects: boolean
   canEditApprovedProjects: boolean
+  canDeleteDraftProjects: boolean
   canViewProductionProjects: boolean
   canUpdatePostExcom: boolean
   canTransferProjects: boolean
