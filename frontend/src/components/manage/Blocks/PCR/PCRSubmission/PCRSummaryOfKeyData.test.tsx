@@ -5,17 +5,6 @@ import { describe, expect, it, vi } from 'vitest'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 
-vi.mock('@ors/hooks/useApi', () => ({
-  default: () => ({
-    data: [
-      { id: 10, name: 'Substance from' },
-      { id: 20, name: 'Substance to' },
-    ],
-    loaded: true,
-    loading: false,
-  }),
-}))
-
 vi.mock('@ors/components/manage/Form/ViewTable', () => ({
   default: ({ columnDefs }: any) =>
     columnDefs[0].cellRenderer({
@@ -23,6 +12,11 @@ vi.mock('@ors/components/manage/Form/ViewTable', () => ({
       value: 'PCR-TEST-101',
     }),
 }))
+
+const substanceOptions = [
+  { id: 10, name: 'Substance from' },
+  { id: 20, name: 'Substance to' },
+]
 
 const createInitialPCRData = () => ({
   overview: {},
@@ -95,6 +89,7 @@ const renderSummary = (
             loaded: true,
             loading: false,
           },
+          substanceOptions,
         } as any
       }
     >

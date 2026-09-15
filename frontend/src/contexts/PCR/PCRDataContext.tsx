@@ -7,6 +7,7 @@ import {
   PCROverviewProps,
   OptionsType,
 } from '@ors/components/manage/Blocks/PCR/interfaces'
+import { ApiSubstance } from '@ors/types/api_substances'
 
 type PCRDataContextProps = PCRFormData & {
   errors: Record<string, any>
@@ -17,6 +18,7 @@ type PCRDataContextProps = PCRFormData & {
   ratingOptions: OptionsType[]
   entityOptions: OptionsType[]
   completionReportDoneByOptions: OptionsType[]
+  substanceOptions: (ApiSubstance & { label: string })[]
   projectComponentOptions: OptionsType[]
   causeOfDelayOptions: OptionsType[]
   lessonLearnedOptions: OptionsType[]

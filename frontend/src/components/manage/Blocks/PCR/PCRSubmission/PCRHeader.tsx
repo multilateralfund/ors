@@ -24,7 +24,7 @@ const PCRHeader = ({ mode, pcrMetaproject }: PCRHeaderType) => {
     if (updatedFields.size > 0) {
       setIsCancelModalOpen(true)
     } else {
-      setLocation('/pcr')
+      setLocation('/projects-listing/listing')
     }
   }
 
@@ -34,10 +34,14 @@ const PCRHeader = ({ mode, pcrMetaproject }: PCRHeaderType) => {
         <div className="flex flex-col">
           <RedirectBackButton withRedirect={false} onAction={onCancel} />
           <PageHeading>
-            {mode === 'edit' ? <>
-              <span className="font-medium text-[#4D4D4D]">Update PCR: </span>
-              <span>{pcrMetaproject?.umbrella_code}</span>
-            </> : 'New PCR submission'}
+            {mode === 'edit' ? (
+              <>
+                <span className="font-medium text-[#4D4D4D]">Update PCR: </span>
+                <span>{pcrMetaproject?.umbrella_code}</span>
+              </>
+            ) : (
+              'New PCR submission'
+            )}
           </PageHeading>
         </div>
         {isCancelModalOpen && (

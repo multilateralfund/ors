@@ -8,6 +8,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { TabLabel, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
+import { initialActivitiesData } from '../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, keys, map } from 'lodash'
@@ -33,15 +34,6 @@ const PCRResultsAssessment = () => {
 
   const agencyErrors = map(activitiesErrors[crtAgencyId], 'errors')
   const formattedAgencyErrors = formatErrors({ [activityField]: agencyErrors })
-
-  const initialActivitiesData = {
-    activity_title: '',
-    type_of_activity: '',
-    type_of_sector: '',
-    planned_output: '',
-    actual_activity_output: '',
-    additional_remarks: '',
-  }
 
   const onAddActivity = () => {
     setPCRData((prevData) => {
