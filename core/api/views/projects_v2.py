@@ -14,7 +14,6 @@ from core.api.permissions import (
     DenyAll,
     HasProjectV2ViewAccess,
     HasProjectV2EditAccess,
-    HasProjectV2DeleteDraftV2Access,
     HasProjectV2SubmitAccess,
     HasProjectV2AssociateProjectsAccess,
     HasProjectV2RemoveAssociationAccess,
@@ -271,10 +270,7 @@ class ProjectV2ViewSet(
             queryset = queryset.exclude(status__name__in=["Closed", "Transferred"])
 
         if self.action in ["destroy"]:
-            if HasProjectV2DeleteDraftV2Access().has_permission(self.request, self):
-                queryset = queryset.filter(submission_status__name="Draft")
-            else:
-                queryset = queryset.filter(submission_status__name="Draft", version=1)
+            queryset = queryset.filter(submission_status__name="Draft")
 
         user = self.request.user
         if user.is_superuser:
