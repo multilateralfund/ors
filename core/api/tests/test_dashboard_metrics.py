@@ -130,11 +130,29 @@ FUND_METRIC_IDS = frozenset(
         "portfolio_projects_rounded",
         "by_region",
         "theme_consumption",
+        "theme_consumption_number_of_projects",
+        "theme_consumption_funds_approved",
+        "theme_consumption_funds_disbursed",
         "theme_production",
+        "theme_production_number_of_projects",
+        "theme_production_funds_approved",
+        "theme_production_funds_disbursed",
         "theme_ee",
+        "theme_ee_number_of_projects",
+        "theme_ee_funds_approved",
+        "theme_ee_funds_disbursed",
         "theme_disposal",
+        "theme_disposal_number_of_projects",
+        "theme_disposal_funds_approved",
+        "theme_disposal_funds_disbursed",
         "theme_hfc23",
+        "theme_hfc23_number_of_projects",
+        "theme_hfc23_funds_approved",
+        "theme_hfc23_funds_disbursed",
         "theme_is",
+        "theme_is_number_of_projects",
+        "theme_is_funds_approved",
+        "theme_is_funds_disbursed",
         "sector_ac",
         "sector_ac_number_of_projects",
         "sector_ac_funds_approved",
@@ -2286,7 +2304,7 @@ class TestSpecCommand:
         out = StringIO()
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
-        assert "111 metrics, 111 implemented." in rendered
+        assert "129 metrics, 129 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 
