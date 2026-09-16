@@ -1,22 +1,22 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
-import { initialOverviewData } from '../constants'
-import useApi from '@ors/hooks/useApi'
-import useVisibilityChange from '@ors/hooks/useVisibilityChange'
+import { initialActivitiesData, initialOverviewData } from '../constants'
 import {
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
   PCRResponse,
 } from '../interfaces'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
+import useApi from '@ors/hooks/useApi'
 
-import { keys, pick } from 'lodash'
-import { useParams } from 'wouter'
+import { groupBy, keys, map, pick, uniq } from 'lodash'
+import { Redirect, useParams } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
   substance_from: null,
@@ -41,8 +41,9 @@ const ensureRows = <T,>(rows: T[] | undefined, fallback: () => T) =>
 
 const PCREditWrapper = () => {
   const { pcr_id } = useParams<Record<string, string>>()
-  const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
+  const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
+  const { data } = pcrMetaproject
 
   const pcr = useApi<PCRResponse>({
     options: {
@@ -53,11 +54,31 @@ const PCREditWrapper = () => {
     reactivePath: true,
   })
 
+  const loading = pcr.loading || pcrMetaproject.loading || !pcr.loaded
+
+  if (!loading && !data?.pcr_id) {
+    return <Redirect to="/pcr" />
+  }
+
+  const agencyIds = useMemo(
+    () => uniq(map(data?.projects, 'agency_id')),
+    [data],
+  )
+
   useEffect(() => {
     const pcrData = pcr.data
     if (!pcrData) {
       return
     }
+
+    const groupedActivities = groupBy(pcrData.activities, 'agency_id')
+
+    const resultsAssessment = map(agencyIds, (agency_id) => ({
+      agency_id,
+      activities: map(groupedActivities[agency_id], (activity) =>
+        pick(activity, keys(initialActivitiesData)),
+      ),
+    }))
 
     setPCRData((prevData) => ({
       ...prevData,
@@ -76,13 +97,12 @@ const PCREditWrapper = () => {
         enterprises: ensureRows(pcrProject.enterprises, emptyEnterprise),
         equipments: ensureRows(pcrProject.equipments, emptyEquipment),
       })),
+      results_assessment: resultsAssessment,
     }))
     clearUpdatedFields()
-  }, [clearUpdatedFields, pcr.data, setPCRData])
+  }, [clearUpdatedFields, pcr.data, agencyIds, setPCRData])
 
   useVisibilityChange(updatedFields.size > 0)
-
-  const loading = pcr.loading || pcrMetaproject.loading || !pcr.loaded
 
   return (
     <>
@@ -90,7 +110,7 @@ const PCREditWrapper = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <PCRHeader mode="edit" pcrMetaproject={pcrMetaproject.data} />
+      <PCRHeader mode="edit" />
       <PCRForm />
     </>
   )

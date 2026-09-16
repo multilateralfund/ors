@@ -255,11 +255,6 @@ export type FieldHandler = (
   subFields?: string[],
 ) => void
 
-export type PCRHeaderType = {
-  mode: string
-  pcrMetaproject?: PCRMetaProjectType | null
-}
-
 export type PCRActionButtons = { setIsLoading: (isLoading: boolean) => void }
 
 export type OptionsType = { id: number | string; name: string }
