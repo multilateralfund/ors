@@ -5,6 +5,8 @@ See ``docs/dashboard_metrics.md``.
 """
 
 import logging
+from copy import deepcopy
+
 from collections.abc import Iterator, Sequence
 from typing import Any
 
@@ -110,7 +112,7 @@ def _envelope(
         "apr_years_available": apr_years_available(),
         "scope": _scope(),
         "metrics": {
-            metric.metric_id: _render(metric, context, placeholders)
+            metric.metric_id: deepcopy(_render(metric, context, placeholders))
             for metric in metrics
         },
     }
