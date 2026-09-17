@@ -367,8 +367,7 @@ const ProjectsCreate = ({
     }
   }, [myaAllErrors, allMpErrors])
 
-  const { canEditApprovedProjects, canDeleteDraftProjects } =
-    useContext(PermissionsContext)
+  const { canEditApprovedProjects } = useContext(PermissionsContext)
   const { altTechs } = useContext(ProjectsDataContext)
 
   const hasV3EditPermissions =
@@ -919,8 +918,6 @@ const ProjectsCreate = ({
         </Tabs>
         {mode === 'edit' &&
           project?.submission_status === 'Draft' &&
-          (project?.version === 1 ||
-            (project?.version === 2 && canDeleteDraftProjects)) &&
           project?.editable && (
             <ProjectDelete {...{ project, hasComponents }} />
           )}

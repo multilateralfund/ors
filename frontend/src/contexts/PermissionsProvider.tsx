@@ -71,9 +71,6 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditApprovedProjects = user_permissions.includes(
     'has_project_v2_edit_approved_access',
   )
-  const canDeleteDraftProjects = user_permissions.includes(
-    'has_project_v2_delete_draft_v2_access',
-  )
   const canEditProjects =
     canViewProjects &&
     (canUpdateProjects ||
@@ -176,7 +173,6 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canDisassociateComponents,
         canEditProjects,
         canEditApprovedProjects,
-        canDeleteDraftProjects,
         canViewProductionProjects,
         canUpdatePostExcom,
         canTransferProjects,
