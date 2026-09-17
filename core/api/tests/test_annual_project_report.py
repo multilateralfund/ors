@@ -15,6 +15,7 @@ from rest_framework.test import APIClient
 
 from core.api.export.annual_project_report import APRExportWriter
 from core.api.export.projects_v2_dump import get_field_value
+from core.api.utils import latest_version_base_qs
 from core.api.tests.base import BaseTest
 from core.models import (
     AnnualProgressReport,
@@ -6926,3 +6927,184 @@ class TestAPRGenderPolicyNullable:
         )
         apr.refresh_from_db()
         assert apr.gender_policy is None
+
+
+@pytest.mark.django_db
+class TestLatestVersionForYearOrdering:
+    """
+    Among the versions a report year covers, the version in effect is the one with
+    the highest version number - not the one with the latest `effective_date`.
+
+    Versions supersede one another in archive-chain order, and each version's
+    total_fund is the running cumulative sum of every funding row applied so far
+    (core.import_data_v2.migrate_projects_2026.process_funding_fields_sheet adds
+    each row's allocation to the previous total).
+    
+    Picking by date therefore returns a partial sum whenever the dates do not line up
+    with the version numbers.
+    """
+
+    def _version(self, code, version, latest_project, **kwargs):
+        return ProjectFactory(
+            code=code,
+            version=version,
+            latest_project=latest_project,
+            post_excom_decision=None,
+            **kwargs,
+        )
+
+    def test_meeting_date_may_precede_the_version_it_supersedes(
+        self, agency, country_ro, sector, project_ongoing_status
+    ):
+        """
+        The v3 approval snapshot carries no meeting, so its effective_date falls back
+        to date_approved - the meeting's report date. An adjustment from the *same*
+        meeting does carry the meeting, whose date is the meeting's opening date, days
+        earlier. Ordering by date put the adjustment *before* the approval it
+        supersedes (production: SAU/HPMP1/30, LKA/HPMP2/56, LKA/HPMP2/58).
+        """
+        common = {
+            "agency": agency,
+            "country": country_ro,
+            "sector": sector,
+            "status": project_ongoing_status,
+        }
+        final = self._version(
+            "TEST/OOO/01",
+            4,
+            None,
+            date_approved=date(2020, 12, 3),
+            post_excom_meeting=MeetingFactory(date=date(2020, 11, 16)),
+            total_fund=196620.0,
+            **common,
+        )
+        self._version(
+            "TEST/OOO/01",
+            3,
+            final,
+            date_approved=date(2020, 12, 3),
+            post_excom_meeting=None,
+            total_fund=200800.0,
+            **common,
+        )
+
+        chosen = final.latest_version_for_year(2025)
+        assert chosen.version == 4
+        assert chosen.total_fund == 196620.0
+
+    def test_versions_numbered_out_of_meeting_order(
+        self, agency, country_ro, sector, project_ongoing_status
+    ):
+        """
+        The 2026 migration numbered versions in spreadsheet row order rather than
+        meeting order, so a project can carry a higher version whose meeting predates
+        the lower version's (production: TUR/CFCIND/12, TUR/CFCIND/13).
+        The cumulative total on the highest version is still correct, as addition is
+        commutative, so the highest version should always be taken into account
+        (while intermediate ones might be wrong).
+        """
+        common = {
+            "agency": agency,
+            "country": country_ro,
+            "sector": sector,
+            "status": project_ongoing_status,
+        }
+        final = self._version(
+            "TEST/OOO/02",
+            5,
+            None,
+            date_approved=date(2000, 3, 1),
+            post_excom_meeting=MeetingFactory(date=date(2000, 3, 29)),
+            total_fund=801568.0,
+            **common,
+        )
+        self._version(
+            "TEST/OOO/02",
+            4,
+            final,
+            date_approved=date(2000, 7, 1),
+            post_excom_meeting=MeetingFactory(date=date(2000, 7, 5)),
+            total_fund=819133.0,
+            **common,
+        )
+        self._version(
+            "TEST/OOO/02",
+            3,
+            final,
+            date_approved=date(1994, 12, 1),
+            post_excom_meeting=None,
+            total_fund=690903.0,
+            **common,
+        )
+
+        chosen = final.latest_version_for_year(2025)
+        assert chosen.version == 5
+        assert chosen.total_fund == 801568.0
+
+    def test_year_filter_still_excludes_later_versions(
+        self, agency, country_ro, sector, project_ongoing_status
+    ):
+        """
+        Ordering by version must not override eligibility: a version approved by a
+        meeting held after the report year stays out of that year's report.
+        """
+        common = {
+            "agency": agency,
+            "country": country_ro,
+            "sector": sector,
+            "status": project_ongoing_status,
+        }
+        final = self._version(
+            "TEST/OOO/03",
+            4,
+            None,
+            date_approved=date(2026, 6, 26),
+            post_excom_meeting=MeetingFactory(date=date(2026, 6, 22)),
+            total_fund=500000.0,
+            **common,
+        )
+        self._version(
+            "TEST/OOO/03",
+            3,
+            final,
+            date_approved=date(2025, 6, 26),
+            post_excom_meeting=None,
+            total_fund=400000.0,
+            **common,
+        )
+
+        chosen = final.latest_version_for_year(2025)
+        assert chosen.version == 3
+        assert final.latest_version_for_year(2026).version == 4
+
+    @pytest.mark.parametrize("code", ["TEST/OOO/01", "TEST/OOO/02", "TEST/OOO/03"])
+    def test_cached_and_uncached_paths_agree(
+        self,
+        code,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        annual_agency_report,
+        request,
+    ):
+        """
+        The APR's cached (sync/bulk) path must resolve the same version as the
+        queryset, since sync writes the denorm fields that the views then read back.
+        """
+        fixtures = {
+            "TEST/OOO/01": self.test_meeting_date_may_precede_the_version_it_supersedes,
+            "TEST/OOO/02": self.test_versions_numbered_out_of_meeting_order,
+            "TEST/OOO/03": self.test_year_filter_still_excludes_later_versions,
+        }
+        fixtures[code](agency, country_ro, sector, project_ongoing_status)
+
+        final = Project.objects.get(code=code, latest_project=None)
+        expected = final.latest_version_for_year(2025)
+
+        # Mirror core.tasks.sync_apr_from_projects: the cached list holds the single
+        # best row the base queryset resolved for this project.
+        cached = list(latest_version_base_qs(2025).filter(code=code)[:1])
+        apr = AnnualProjectReportFactory(project=final, report=annual_agency_report)
+
+        assert apr._latest_version_upto_year(cached, 2025).id == expected.id

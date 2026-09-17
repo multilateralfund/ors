@@ -1,5 +1,4 @@
 import logging
-from datetime import date as date_type
 
 from django.conf import settings
 from django.db import models
@@ -526,6 +525,14 @@ class AnnualProjectReport(models.Model):
 
         # Add the final version itself if it matches the year__lte criteria.
         # In case we can't compare by post_excom_decision, we use date_approved.
+        #
+        # NOTE: this eligibility check consults only post_excom_decision/date_approved,
+        # while the queryset (ProjectQuerySet.with_effective_date) also considers
+        # post_excom_meeting and the transfer relations, so the two can disagree about
+        # whether the final version is in scope.
+        #
+        # Left as-is deliberately: no production difference for now,
+        # and unifying the rule belongs in a wider cross-modul fix.
         if (
             self.project.post_excom_decision
             and self.project.post_excom_decision.meeting.date.year <= year
@@ -536,16 +543,12 @@ class AnnualProjectReport(models.Model):
         ):
             candidates.append(self.project)
 
-        def _version_sort_key(p):
-            # Some projects can be sorted by the decision, some by date_approved
-            if p.post_excom_decision:
-                return (p.post_excom_decision.meeting.date, p.version)
-            return (p.date_approved or date_type.min, p.version)
+        if not candidates:
+            return None
 
-        if candidates:
-            candidates.sort(key=_version_sort_key, reverse=True)
-            return candidates[0]
-        return None
+        # Among eligible versions, the highest version number is the current one.
+        # See Project.latest_version_for_year() for why ordering by date is wrong.
+        return max(candidates, key=lambda p: p.version)
 
     @cached_property
     def latest_project_version_for_year(self):

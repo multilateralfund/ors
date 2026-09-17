@@ -261,17 +261,19 @@ def get_previous_year_project_reports(agency_id, year):
 def latest_version_base_qs(year):
     """
     Base queryset for the latest archive-project version approved in or before `year`,
-    ordered by effective_date desc then version desc.
-    This way, the first result per project is the most recent.
+    ordered by version desc. This way, the first result per project is the most recent.
 
-    Mirrors Project.latest_version_for_year().
+    `effective_date` filters the versions for the given year. The highest version number
+    among those is the one in effect.
+
+    This mirrors `Project.latest_version_for_year()`.
     """
     return (
         Project.objects.really_all()
         .with_effective_date()
         .filter(effective_date__isnull=False, effective_date__year__lte=year)
         .select_related("status", "post_excom_decision__meeting")
-        .order_by("-effective_date", "-version")
+        .order_by("-version")
     )
 
 
