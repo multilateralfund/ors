@@ -45,7 +45,7 @@ from core.tasks import (
     auto_submit_empty_agency_reports,
 )
 
-# pylint: disable=W0221,W0613,C0302,R0913,R0914
+# pylint: disable=W0212,W0221,W0613,C0302,R0913,R0914
 
 
 @pytest.mark.django_db
@@ -6999,6 +6999,7 @@ class TestLatestVersionForYearOrdering:
         The 2026 migration numbered versions in spreadsheet row order rather than
         meeting order, so a project can carry a higher version whose meeting predates
         the lower version's (production: TUR/CFCIND/12, TUR/CFCIND/13).
+
         The cumulative total on the highest version is still correct, as addition is
         commutative, so the highest version should always be taken into account
         (while intermediate ones might be wrong).
