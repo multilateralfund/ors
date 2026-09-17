@@ -13,6 +13,7 @@ const LandingPage = () => {
     canEditReplenishment,
     canViewBp,
     canViewProjects,
+    canViewAPR,
   } = useContext(PermissionsContext)
 
   const cards = [
@@ -42,6 +43,13 @@ const LandingPage = () => {
       description:
         'Discover how Multilateral Fund projects are making a measurable impact in 144 countries. Access key data and performance metrics.',
       permissions: canViewProjects,
+    },
+    {
+      title: 'Annual progress reports',
+      href: '/apr',
+      description:
+        'Review how agencies performed against their Business Plan targets, with project implementation status reported annually.',
+      permissions: canViewAPR,
     },
   ]
 
