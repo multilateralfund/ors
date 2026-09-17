@@ -1731,12 +1731,17 @@ class Project(models.Model):
     def latest_version_for_year(self, year):
         """
         Gets the most recent version approved in or before a specific year.
-        Uses :
+
+        `effective_date` decides which versions correspond to the given year:
         - post_excom_decision__meeting date takes precedence; if null, falls back to
         - post_excom_meeting date; if null, falls back to
         - transfer_decision__meeting date; if null, falls back to
         - transfer_meeting date; if null, finally falls back to
         - date_approved.
+
+        However, among eligible versions, the highest version number should be considered
+        the latest: versions supersede one another in archive-chain order; each version's
+        `total_fund` is the running cumulative sum of every funding row.
 
         Returns None if there's no version fitting the criteria.
         """
@@ -1749,7 +1754,7 @@ class Project(models.Model):
             .with_effective_date()
             .filter(effective_date__isnull=False, effective_date__year__lte=year)
             .select_related("status", "post_excom_decision__meeting")
-            .order_by("-effective_date", "-version")
+            .order_by("-version")
             .first()
         )
 
