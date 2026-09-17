@@ -28,7 +28,7 @@ django.setup()
 
 
 from core.models import Project
-from core.api.export.projects_inventory_report import tz_naive
+from core.models.project_dates import tz_naive
 
 
 def formatted_date(d):
