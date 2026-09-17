@@ -3,7 +3,6 @@ from functools import partial
 from itertools import pairwise
 from operator import attrgetter
 from typing import Iterable
-import datetime
 
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.comments import Comment
@@ -22,7 +21,6 @@ from django.db.models.fields import DateTimeField
 from django.db.models.fields.related import ForeignKey
 from django.db.models.fields.related import ManyToManyField
 from django.db.models.fields.reverse_related import ForeignObjectRel
-from django.utils import timezone
 
 from core.api.export.base import BaseWriter
 from core.api.export.projects_v2_dump import get_choice_value
@@ -37,22 +35,14 @@ from core.models import Project
 from core.models import ProjectOdsOdp
 from core.models import Substance
 from core.models.project import OLD_FIELD_HELP_TEXT
+from core.models.project_dates import get_extended_date
+from core.models.project_dates import get_mya_completion_date
+from core.models.project_dates import tz_naive
 from core.models.project_metadata import ProjectField
 from core.models.utils import SUBSTANCE_GROUP_ID_TO_CATEGORY
 from core.models.utils import SubstancesType
 
 MIN_PROJECT_VERSION = 3
-
-
-def tz_naive(value: datetime.datetime | datetime.date | None):
-    # Convert date to datetime at midnight if it's not already a datetime
-    if isinstance(value, datetime.date) and not isinstance(value, datetime.datetime):
-        value = datetime.datetime.combine(value, datetime.time.min)
-
-    if isinstance(value, datetime.datetime) and timezone.is_aware(value):
-        return timezone.localtime(value).replace(tzinfo=None)
-
-    return value
 
 
 def trf_or_adj(project: Project | None):
@@ -85,12 +75,6 @@ def is_2026_imported_project(project: Project):
         else:
             result = created_by.username == "system"
     return result
-
-
-def is_same_month(first, second):
-    return bool(
-        first and second and first.year == second.year and first.month == second.month
-    )
 
 
 def get_latest_endorsed_apr(project):
@@ -645,42 +629,12 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return result
 
     def _get_extended_date(self, project):
-        if project.has_override_extended_date:
-            return project.override_extended_date
-
-        meta_project = project.meta_project
-
-        result = None
-
-        if project.status.code == "TRF":
-            return None
-
-        if meta_project:
-            mya_extended_date = tz_naive(meta_project.extended_date_of_completion)
-            mya_completion_date = self._get_mya_completion_date(project)
-
-            result = mya_extended_date
-
-            if project.meta_project_id not in self.mya_is_ongoing:
-                result = None
-
-            elif mya_extended_date is None:
-                result = None
-
-            elif is_same_month(mya_extended_date, mya_completion_date):
-                result = None
-
-        return result
+        return get_extended_date(
+            project, project.meta_project_id in self.mya_is_ongoing
+        )
 
     def _get_mya_completion_date(self, project):
-        result = None
-
-        meta_project = project.meta_project
-
-        if meta_project and meta_project.type == MetaProject.MetaProjectType.MYA:
-            result = tz_naive(meta_project.end_date)
-
-        return result
+        return get_mya_completion_date(project)
 
     def _get_substance(self, project):
         if is_legacy_project(project):
