@@ -4,7 +4,7 @@ from django.core.management import BaseCommand
 from django.db import transaction
 
 from core.models import Project
-from core.api.export.projects_inventory_report import is_same_month
+from core.models.project_dates import is_same_month
 
 
 TARGETS = (
