@@ -8,8 +8,6 @@ import LoginPage from '@ors/app/login/page'
 import ResetPasswordPage from '@ors/app/reset-password/page'
 import ForgotPasswordPage from '@ors/app/forgot-password/page'
 
-import LandingPage from '@ors/app/landing-page/page'
-
 import CountryProgrammePage from '@ors/app/country-programme/reports/page'
 
 import CPCreatePage from '@ors/app/country-programme/create/page'
@@ -223,7 +221,7 @@ export default function App() {
           <Redirect to="/country-programme/reports" replace />
         </Route>
         <Route path="/">
-          <LandingPage />
+          <RedirectToSection />
         </Route>
         <Route path="/replenishment" nest>
           <ReplenishmentLayout>
