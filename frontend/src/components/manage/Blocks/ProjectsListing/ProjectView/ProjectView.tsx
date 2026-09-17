@@ -111,8 +111,7 @@ const ProjectView = ({
   specificFieldsLoaded: boolean
   loadedFiles: boolean
 }) => {
-  const { canUpdatePostExcom, canDeleteDraftProjects } =
-    useContext(PermissionsContext)
+  const { canUpdatePostExcom } = useContext(PermissionsContext)
   const { inlineMessage, setInlineMessage } = useStore(
     (state) => state.inlineMessage,
   )
@@ -139,10 +138,7 @@ const ProjectView = ({
   )
 
   const canDeleteProject =
-    project.submission_status === 'Draft' &&
-    (project.version === 1 ||
-      (project.version === 2 && canDeleteDraftProjects)) &&
-    project.editable
+    project.submission_status === 'Draft' && project.editable
 
   useEffect(() => {
     fetchFieldHistory(project.id)

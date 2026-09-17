@@ -272,6 +272,25 @@ def theme(context: MetricContext, name: str) -> dict[str, Any]:
     return result
 
 
+def theme_count(context: MetricContext, name: str) -> dict[str, Any]:
+    """One funding theme's share of the portfolio."""
+    value = project_counts(context.where(lambda row: row.theme == name))
+    return value["projects_by_code"]
+
+
+def theme_funds_approved(context: MetricContext, name: str) -> dict[str, Any]:
+    """One funding theme's share of the portfolio."""
+    value = funds_pair(context.where(lambda row: row.theme == name))
+    return value["funds_plus_psc"]
+
+
+def theme_funds_disbursed(context: MetricContext, name: str) -> dict[str, Any]:
+    """One funding theme's share of the portfolio."""
+    projects = context.where(lambda row: row.theme == name)
+    disbursed = context.apr_where([p.project.id for p in projects])
+    return disbursed.funds_disbursed()["active_cycle"]
+
+
 def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
     """One sector's share of the portfolio, and what has been paid out against it."""
     value = totals(context.where(lambda row: row.sector_bucket == bucket))
@@ -993,6 +1012,42 @@ FUND_METRICS: tuple[Metric, ...] = (
         compute=partial(theme, name=classify.THEME_CONSUMPTION),
     ),
     Metric(
+        metric_id="theme_consumption_number_of_projects",
+        label="Consumption projects number of projects",
+        section="Consumption projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Consumption",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_count, name=classify.THEME_CONSUMPTION),
+    ),
+    Metric(
+        metric_id="theme_consumption_funds_approved",
+        label="Consumption projects funds approved",
+        section="Consumption projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Consumption",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_approved, name=classify.THEME_CONSUMPTION),
+    ),
+    Metric(
+        metric_id="theme_consumption_funds_disbursed",
+        label="Consumption projects funds disbursed",
+        section="Consumption projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Consumption",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_disbursed, name=classify.THEME_CONSUMPTION),
+    ),
+    Metric(
         metric_id="theme_production",
         label="Production projects",
         section="Production projects",
@@ -1003,6 +1058,42 @@ FUND_METRICS: tuple[Metric, ...] = (
         db_source="DB-COMPUTABLE",
         src_model_field="Project.production / cluster / sector",
         compute=partial(theme, name=classify.THEME_PRODUCTION),
+    ),
+    Metric(
+        metric_id="theme_production_number_of_projects",
+        label="Production projects number of projects",
+        section="Production projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Production",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_count, name=classify.THEME_PRODUCTION),
+    ),
+    Metric(
+        metric_id="theme_production_funds_approved",
+        label="Production projects funds approved",
+        section="Production projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Production",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_approved, name=classify.THEME_PRODUCTION),
+    ),
+    Metric(
+        metric_id="theme_production_funds_disbursed",
+        label="Production projects funds disbursed",
+        section="Production projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Production",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_disbursed, name=classify.THEME_PRODUCTION),
     ),
     Metric(
         metric_id="theme_ee",
@@ -1017,6 +1108,42 @@ FUND_METRICS: tuple[Metric, ...] = (
         compute=partial(theme, name=classify.THEME_ENERGY_EFFICIENCY),
     ),
     Metric(
+        metric_id="theme_ee_number_of_projects",
+        label="Energy efficiency projects number of projects",
+        section="Energy efficiency projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Energy efficiency",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_count, name=classify.THEME_ENERGY_EFFICIENCY),
+    ),
+    Metric(
+        metric_id="theme_ee_funds_approved",
+        label="Energy efficiency projects funds approved",
+        section="Energy efficiency projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Energy efficiency",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_approved, name=classify.THEME_ENERGY_EFFICIENCY),
+    ),
+    Metric(
+        metric_id="theme_ee_funds_disbursed",
+        label="Energy efficiency projects funds disbursed",
+        section="Energy efficiency projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Energy efficiency",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_disbursed, name=classify.THEME_ENERGY_EFFICIENCY),
+    ),
+    Metric(
         metric_id="theme_disposal",
         label="Disposal projects",
         section="Disposal projects",
@@ -1027,6 +1154,42 @@ FUND_METRICS: tuple[Metric, ...] = (
         db_source="DB-COMPUTABLE",
         src_model_field="Project.cluster/sector / Funding window",
         compute=partial(theme, name=classify.THEME_DISPOSAL),
+    ),
+    Metric(
+        metric_id="theme_disposal_number_of_projects",
+        label="Disposal projects number of projects",
+        section="Disposal projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Disposal",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_count, name=classify.THEME_DISPOSAL),
+    ),
+    Metric(
+        metric_id="theme_disposal_funds_approved",
+        label="Disposal projects funds approved",
+        section="Disposal projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Disposal",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_approved, name=classify.THEME_DISPOSAL),
+    ),
+    Metric(
+        metric_id="theme_disposal_funds_disbursed",
+        label="Disposal projects funds disbursed",
+        section="Disposal projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Disposal",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_disbursed, name=classify.THEME_DISPOSAL),
     ),
     Metric(
         metric_id="theme_hfc23",
@@ -1041,6 +1204,42 @@ FUND_METRICS: tuple[Metric, ...] = (
         compute=partial(theme, name=classify.THEME_HFC23),
     ),
     Metric(
+        metric_id="theme_hfc23_number_of_projects",
+        label="HFC-23 projects number of projects",
+        section="HFC-23 projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == HFC-23",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_count, name=classify.THEME_HFC23),
+    ),
+    Metric(
+        metric_id="theme_hfc23_funds_approved",
+        label="HFC-23 projects funds approved",
+        section="HFC-23 projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == HFC-23",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_approved, name=classify.THEME_HFC23),
+    ),
+    Metric(
+        metric_id="theme_hfc23_funds_disbursed",
+        label="HFC-23 projects funds disbursed",
+        section="HFC-23 projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == HFC-23",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_funds_disbursed, name=classify.THEME_HFC23),
+    ),
+    Metric(
         metric_id="theme_is",
         label="Institutional strengthening projects",
         section="Institutional strengthening projects",
@@ -1051,6 +1250,46 @@ FUND_METRICS: tuple[Metric, ...] = (
         db_source="DB-COMPUTABLE",
         src_model_field="Project.project_type (IS)",
         compute=partial(theme, name=classify.THEME_INSTITUTIONAL_STRENGTHENING),
+    ),
+    Metric(
+        metric_id="theme_is_number_of_projects",
+        label="Institutional strengthening projects number of projects",
+        section="Institutional strengthening projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Institutional strengthening",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(theme_count, name=classify.THEME_INSTITUTIONAL_STRENGTHENING),
+    ),
+    Metric(
+        metric_id="theme_is_funds_approved",
+        label="Institutional strengthening projects funds approved",
+        section="Institutional strengthening projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Institutional strengthening",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(
+            theme_funds_approved, name=classify.THEME_INSTITUTIONAL_STRENGTHENING
+        ),
+    ),
+    Metric(
+        metric_id="theme_is_funds_disbursed",
+        label="Institutional strengthening projects funds disbursed",
+        section="Institutional strengthening projects",
+        kind=Kind.SCALAR,
+        unit=None,
+        disposition=Disposition.COMPUTE,
+        formula="Type == Institutional strengthening",
+        db_source="DB-COMPUTABLE",
+        src_model_field="Project.project_type (IS)",
+        compute=partial(
+            theme_funds_disbursed, name=classify.THEME_INSTITUTIONAL_STRENGTHENING
+        ),
     ),
     Metric(
         metric_id="sector_ac",

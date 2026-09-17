@@ -111,14 +111,6 @@ class HasProjectV2EditAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_project_v2_edit_access")
 
 
-class HasProjectV2DeleteDraftV2Access(permissions.BasePermission):
-    def has_permission(self, request, view):
-        """
-        Check if the user has permission to delete projects that were returned to draft
-        """
-        return request.user.has_perm("core.has_project_v2_delete_draft_v2_access")
-
-
 class HasProjectV2EditPlusV3Access(permissions.BasePermission):
     def has_permission(self, request, view):
         """

@@ -4389,48 +4389,23 @@ class TestAPRMLFSExportView(BaseTest):
             == expected_sc_adjustment
         )
 
-        # Phase-out proposal fields should come from version 3
-        assert (
-            worksheet.cell(
-                first_data_row, columns["consumption_phased_out_odp_proposal"]
-            ).value
-            == version3.consumption_phase_out_odp
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["consumption_phased_out_co2_proposal"]
-            ).value
-            == version3.consumption_phase_out_co2
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["production_phased_out_odp_proposal"]
-            ).value
-            == version3.production_phase_out_odp
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["production_phased_out_co2_proposal"]
-            ).value
-            == version3.production_phase_out_co2
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["consumption_phased_out_mt_proposal"]
-            ).value
-            == version3.consumption_phase_out_mt
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["production_phased_out_mt_proposal"]
-            ).value
-            == version3.production_phase_out_mt
-        )
+        # Phase-out proposal totals come from version 3; not a production project,
+        # so they are all reported as consumption
+        totals = version3.phase_out_data_for_approval
+        for unit, total_key in (
+            ("odp", "total_phase_out_odp_tonnes"),
+            ("mt", "total_phase_out_metric_tonnes"),
+            ("co2", "total_phase_out_co2_tonnes"),
+        ):
+            assert worksheet.cell(
+                first_data_row, columns[f"consumption_phased_out_{unit}_proposal"]
+            ).value == pytest.approx(totals[total_key])
+            assert (
+                worksheet.cell(
+                    first_data_row, columns[f"production_phased_out_{unit}_proposal"]
+                ).value
+                is None
+            )
 
         # Date fields: date_approved and date_completion_proposal from version 3;
         # date_of_completion_per_agreement_or_decisions follows the master report:
@@ -5076,14 +5051,18 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             == date(2026, 7, 15).isoformat()
         )
 
+    @pytest.mark.parametrize("production", [False, True])
     def test_phaseout_proposal_derived_fields(
         self,
         apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
+        production,
     ):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
+        latest_version.production = production
+        latest_version.save()
 
         AnnualProjectReportFactory(
             report=annual_agency_report,
@@ -5108,31 +5087,23 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         )
         assert project_data is not None
 
-        # All phaseout proposal fields should come from version 3
-        assert (
-            project_data["consumption_phased_out_odp_proposal"]
-            == version3.consumption_phase_out_odp
+        # Phase-out proposal totals come from version 3, reported as production
+        # for production projects and as consumption otherwise
+        reported, empty = (
+            ("production", "consumption")
+            if production
+            else ("consumption", "production")
         )
-        assert (
-            project_data["consumption_phased_out_co2_proposal"]
-            == version3.consumption_phase_out_co2
-        )
-        assert (
-            project_data["production_phased_out_odp_proposal"]
-            == version3.production_phase_out_odp
-        )
-        assert (
-            project_data["production_phased_out_co2_proposal"]
-            == version3.production_phase_out_co2
-        )
-        assert (
-            project_data["consumption_phased_out_mt_proposal"]
-            == version3.consumption_phase_out_mt
-        )
-        assert (
-            project_data["production_phased_out_mt_proposal"]
-            == version3.production_phase_out_mt
-        )
+        totals = version3.phase_out_data_for_approval
+        for unit, total_key in (
+            ("odp", "total_phase_out_odp_tonnes"),
+            ("mt", "total_phase_out_metric_tonnes"),
+            ("co2", "total_phase_out_co2_tonnes"),
+        ):
+            assert project_data[
+                f"{reported}_phased_out_{unit}_proposal"
+            ] == pytest.approx(totals[total_key])
+            assert project_data[f"{empty}_phased_out_{unit}_proposal"] is None
 
     def test_financial_approved_and_adjustment_fields(
         self,
@@ -5176,6 +5147,56 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             project_data["approved_funding_plus_adjustment"]
             == latest_version.total_fund
         )
+
+    def test_financial_adjustment_fields_for_transferred_project(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        # Transferred amounts are stored as positive values (funds taken away)
+        latest_version.status = ProjectStatusFactory(name="Transferred", code="TRF")
+        latest_version.fund_transferred = 20000.0
+        latest_version.psc_transferred = 1500.0
+        latest_version.save()
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == latest_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
+
+        latest_funding = latest_version.total_fund - latest_version.fund_transferred
+        assert project_data["approved_funding"] == version3.total_fund
+        assert project_data["adjustment"] == latest_funding - version3.total_fund
+        assert project_data["approved_funding_plus_adjustment"] == latest_funding
+
+        latest_psc = latest_version.support_cost_psc - latest_version.psc_transferred
+        assert (
+            project_data["support_cost_adjustment"]
+            == latest_psc - version3.support_cost_psc
+        )
+        assert project_data["support_cost_approved_plus_adjustment"] == latest_psc
 
     def test_financial_calculated_fields(
         self,
