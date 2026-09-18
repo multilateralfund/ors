@@ -527,23 +527,8 @@ class AnnualProjectReport(models.Model):
         candidates = list(cached_versions) if cached_versions else []
 
         # Add the final version itself if it matches the year__lte criteria.
-        # In case we can't compare by post_excom_decision, we use date_approved.
-        #
-        # NOTE: this eligibility check consults only post_excom_decision/date_approved,
-        # while the queryset (ProjectQuerySet.with_effective_date) also considers
-        # post_excom_meeting and the transfer relations, so the two can disagree about
-        # whether the final version is in scope.
-        #
-        # Left as-is deliberately: no production difference for now,
-        # and unifying the rule belongs in a wider cross-modul fix.
-        if (
-            self.project.post_excom_decision
-            and self.project.post_excom_decision.meeting.date.year <= year
-        ) or (
-            not self.project.post_excom_decision
-            and self.project.date_approved
-            and self.project.date_approved.year <= year
-        ):
+        effective_date = self.project.get_effective_date()
+        if effective_date and effective_date.year <= year:
             candidates.append(self.project)
 
         if not candidates:

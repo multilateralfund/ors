@@ -7300,3 +7300,165 @@ class TestLatestVersionForYearOrdering:
         apr = AnnualProjectReportFactory(project=final, report=annual_agency_report)
 
         assert apr._latest_version_upto_year(cached, 2025).id == expected.id
+
+
+@pytest.mark.django_db
+class TestTransferredAfterReportYear:
+    """
+    A transfer must not reach back into an earlier year's report.
+
+    Transferring a project (ProjectV2TransferSerializer.save) mutates the *source*
+    project in place: it sets transfer_decision / transfer_meeting, fund_transferred,
+    psc_transferred and status=TRF, without bumping the version. That moves the row's
+    effective_date forward to the transfer meeting, so a project transferred in
+    June 2026 is no longer in scope for 2025.
+
+    ProjectQuerySet.with_effective_date already ranks the transfer relations above
+    date_approved, so the queryset drops such a row. The APR's in-Python eligibility
+    check has to apply the same rule to the final version, or it re-admits the row the
+    queryset just filtered out and subtracts a 2026 transfer from the 2025 figures
+    (production: IDN/KIP1/226, /227, /228 WB, transferred at the 98th meeting).
+    """
+
+    YEAR = 2025
+
+    @pytest.fixture
+    def report_2025(self, agency):
+        """An explicit 2025 report: the shared apr_year fixture is 2024."""
+        return AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=self.YEAR, endorsed=False),
+            agency=agency,
+        )
+
+    @pytest.fixture
+    def transferred_status(self):
+        return ProjectStatusFactory(code="TRF", name="Transferred")
+
+    def _transferred_project(self, transfer_date, **common):
+        """The production shape: a v3 final, fully transferred, never re-versioned."""
+        return ProjectFactory(
+            code="TEST/TRF/01",
+            version=3,
+            latest_project=None,
+            post_excom_decision=None,
+            post_excom_meeting=None,
+            date_approved=date(2025, 5, 1),
+            transfer_decision=DecisionFactory(
+                meeting=MeetingFactory(date=transfer_date)
+            ),
+            transfer_meeting=MeetingFactory(date=transfer_date),
+            total_fund=1089609.0,
+            support_cost_psc=76273.0,
+            fund_transferred=1089609.0,
+            psc_transferred=76273.0,
+            **common,
+        )
+
+    def _apr_for(self, project, report, cached_versions):
+        """Mirror how sync_apr_from_projects primes the cached version lists."""
+        apr = AnnualProjectReportFactory(
+            project=project, report=report, funds_disbursed=0, support_cost_disbursed=0
+        )
+        apr.project.cached_version_3_list = [project]
+        apr.project.cached_versions_for_year = cached_versions
+        return apr
+
+    def test_transfer_after_report_year_is_out_of_scope(
+        self, agency, country_ro, sector, transferred_status, report_2025
+    ):
+        """
+        The reported bug: approved funding stayed right (it comes from version 3) while
+        "Approved Funding plus Adjustments" and Balance collapsed to zero.
+        """
+        final = self._transferred_project(
+            date(2026, 6, 22),
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=transferred_status,
+        )
+
+        assert final.latest_version_for_year(self.YEAR) is None
+
+        apr = self._apr_for(final, report_2025, [])
+        assert apr._latest_version_upto_year([], self.YEAR) is None
+        assert apr.approved_funding == 1089609.0
+        assert apr.adjustment is None
+        assert apr.approved_funding_plus_adjustment == 1089609.0
+
+        apr.populate_derived_fields()
+        assert apr.approved_funding_plus_adjustment_denorm == 1089609.0
+        assert apr.balance == 1089609.0
+        assert apr.support_cost_approved_plus_adjustment_denorm == 76273.0
+        assert apr.support_cost_balance == 76273.0
+
+    def test_transfer_during_report_year_still_applies(
+        self, agency, country_ro, sector, transferred_status, report_2025
+    ):
+        """
+        The guard against over-correcting: a transfer that happened *within* the
+        report year stays in scope and still reduces the remaining funding.
+        """
+        final = self._transferred_project(
+            date(2025, 6, 22),
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=transferred_status,
+        )
+
+        assert final.latest_version_for_year(self.YEAR).id == final.id
+
+        apr = self._apr_for(final, report_2025, [])
+        assert apr._latest_version_upto_year([], self.YEAR).id == final.id
+        assert apr.approved_funding_plus_adjustment == 0
+
+    def test_post_excom_meeting_after_report_year_is_out_of_scope(
+        self, agency, country_ro, sector, project_ongoing_status, report_2025
+    ):
+        """
+        The same rule gap, reached through post_excom_meeting rather than a transfer:
+        date_approved alone would have admitted this version to 2025.
+        """
+        final = ProjectFactory(
+            code="TEST/TRF/02",
+            version=3,
+            latest_project=None,
+            post_excom_decision=None,
+            post_excom_meeting=MeetingFactory(date=date(2026, 6, 22)),
+            date_approved=date(2025, 5, 1),
+            total_fund=500000.0,
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+        )
+
+        apr = AnnualProjectReportFactory(project=final, report=report_2025)
+
+        assert final.latest_version_for_year(self.YEAR) is None
+        assert apr._latest_version_upto_year([], self.YEAR) is None
+        assert apr._latest_version_upto_year([], 2026).id == final.id
+
+    def test_cached_and_uncached_paths_agree(
+        self, agency, country_ro, sector, transferred_status, report_2025
+    ):
+        """
+        sync_apr_from_projects writes the denorm fields the views read back, so the
+        cached path must resolve the same version as the queryset. This shape is
+        exactly where the two used to disagree.
+        """
+        final = self._transferred_project(
+            date(2026, 6, 22),
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=transferred_status,
+        )
+
+        cached = list(latest_version_base_qs(self.YEAR).filter(code="TEST/TRF/01")[:1])
+        assert not cached
+
+        apr = self._apr_for(final, report_2025, cached)
+        assert apr._latest_version_upto_year(cached, self.YEAR) is None
+        assert final.latest_version_for_year(self.YEAR) is None

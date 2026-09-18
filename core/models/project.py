@@ -367,6 +367,9 @@ class ProjectQuerySet(models.QuerySet["Project"]):
 
         Used by all_versions_for_year() and latest_version_for_year() instance
         methods, and by the APR view/task helpers that do the same bulk lookups.
+
+        Project.get_effective_date() is the functional mirror of, for callers that
+        have an already-loaded instance. These two must be kept synchronized.
         """
         return self.annotate(
             effective_date=models.Case(
@@ -1727,6 +1730,27 @@ class Project(models.Model):
             .only("id", "version", "status")
             .order_by("version")
         )
+
+    def get_effective_date(self):
+        """
+        The "effective date" of this version, in Python.
+
+        Mirrors ProjectQuerySet.with_effective_date(), including its behaviour
+        when a relation is set but the date behind it is null.
+
+        Callers should have the four relations select_related.
+        """
+        if self.post_excom_decision_id:
+            meeting = self.post_excom_decision.meeting
+            return meeting.date if meeting else None
+        if self.post_excom_meeting_id:
+            return self.post_excom_meeting.date
+        if self.transfer_decision_id:
+            meeting = self.transfer_decision.meeting
+            return meeting.date if meeting else None
+        if self.transfer_meeting_id:
+            return self.transfer_meeting.date
+        return self.date_approved
 
     def latest_version_for_year(self, year):
         """
