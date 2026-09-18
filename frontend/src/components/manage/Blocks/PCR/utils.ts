@@ -7,20 +7,28 @@ import {
   validWordCountMessage,
 } from './constants'
 import {
-  OptionsType,
+  PCRData,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
   PCRSummaryOfKeyDataType,
+  PCRResultsAssessmentData,
   CauseOfDelayProjectComponent,
   LessonLearnedProjectComponent,
+  PCRGenderMainstreamingData,
+  PCRSupportingEvidencesData,
+  FormattedSupportingEvidencesData,
+  OptionsType,
 } from './interfaces'
+import { useGetPCRDefaults } from './hooks/useGetPCRDefaults'
 import { ApiAgency } from '@ors/types/api_agencies'
 
 import dayjs from 'dayjs'
 import {
+  filter,
   find,
   findIndex,
+  flatMap,
   forEach,
   lowerCase,
   map,
@@ -322,7 +330,7 @@ export const formatNestedPcErrors = (
   }
 }
 
-export const hasErrorMessage = (errors: Record<string, any>): boolean => {
+const hasErrorMessage = (errors: Record<string, any>): boolean => {
   if (typeof errors === 'string') {
     return errors === requiredMessage || errors === validWordCountMessage
   }
@@ -381,6 +389,144 @@ export const groupSummaryOfKeyDataErrors = (
   return groupedErrors
 }
 
+export const getFormData = (
+  pcrDefaultData: ReturnType<typeof useGetPCRDefaults>,
+  PCRData: PCRData,
+  metaProjectId: number,
+  ratingOptions: OptionsType[],
+) => {
+  const {
+    overview,
+    results_assessment,
+    causes_of_delay,
+    lessons_learned,
+    gender_mainstreaming,
+    sdgs_contribution,
+    supporting_evidences,
+  } = PCRData
+
+  const overviewPrefilledData = {
+    ...pick(pcrDefaultData.data, [
+      'project_date_approved',
+      'project_date_completion',
+      'phase_out_ods_actual',
+      'phase_out_ods_approved',
+      'phase_out_co2_eq_t_actual',
+      'phase_out_co2_eq_t_approved',
+    ]),
+    decision_ids: pcrDefaultData.data?.decisions,
+  }
+
+  const overviewData = {
+    ...overview,
+    rating_explanation_other:
+      overview.rating === getOtherOptionId(ratingOptions)
+        ? overview.rating_explanation_other
+        : null,
+  }
+
+  const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
+    results_assessment,
+    'activities',
+  )
+
+  const causesOfDelayProjectComponents = flatMap(
+    causes_of_delay,
+    ({ agency_id, project_components }) =>
+      map(
+        project_components,
+        ({ project_component_option_id, delay_causes }) => ({
+          agency_id,
+          project_component_option_id,
+          delay_causes,
+          learned_lessons: [],
+        }),
+      ),
+  )
+
+  const lessonsLearnedProjectComponents = flatMap(
+    lessons_learned,
+    ({ agency_id, project_components }) =>
+      map(
+        project_components,
+        ({ project_component_option_id, learned_lessons }) => ({
+          agency_id,
+          project_component_option_id,
+          delay_causes: [],
+          learned_lessons,
+        }),
+      ),
+  )
+
+  const projectComponentsData = [
+    ...causesOfDelayProjectComponents,
+    ...lessonsLearnedProjectComponents,
+  ]
+
+  const genderMainstreamingsData = formatAgencyData<PCRGenderMainstreamingData>(
+    gender_mainstreaming,
+    'gender_mainstreamings',
+  )
+
+  const sdgsContributionData = filter(
+    sdgs_contribution,
+    (sdg) => sdg.goals.length > 0,
+  )
+
+  const formattedSupportingEvidence =
+    formatAgencyData<PCRSupportingEvidencesData>(
+      supporting_evidences,
+      'evidences',
+    ) as FormattedSupportingEvidencesData[]
+
+  const supportingEvidencesData = map(formattedSupportingEvidence, (evidence) =>
+    omit(evidence, 'file'),
+  )
+
+  const payload = {
+    meta_project_id: metaProjectId,
+    ...overviewPrefilledData,
+    ...overviewData,
+    pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
+    activities: resultsAssessmentData,
+    project_components: projectComponentsData,
+    gender_mainstreamings: genderMainstreamingsData,
+    sustainable_development_goals: sdgsContributionData,
+    supporting_evidences: supportingEvidencesData,
+  }
+
+  const formData = new FormData()
+  formData.append('metadata', JSON.stringify(payload))
+  formattedSupportingEvidence.forEach((evidence) => {
+    formData.append('files', evidence.file)
+  })
+
+  return formData
+}
+
+export const isSubmitDisabled = (errors: Record<string, any>) => {
+  const hasOverviewDefaultErrors = hasErrorMessage(errors.overview)
+  const hasResultsAssessmentDefaultErrors = hasErrorMessage(
+    errors.results_assessment,
+  )
+  const hasCausesOfDelayDefaultErrors = hasErrorMessage(errors.causes_of_delay)
+  const hasLessonsLearnedDefaultErrors = hasErrorMessage(errors.lessons_learned)
+  const hasGenderMainstreamingDefaultErrors = hasErrorMessage(
+    errors.gender_mainstreaming,
+  )
+  const hasSDGsDefaultErrors = hasErrorMessage(errors.sdgs_contribution)
+  const hasEvidencesDefaultErrors = hasErrorMessage(errors.supporting_evidences)
+
+  return (
+    hasOverviewDefaultErrors ||
+    hasResultsAssessmentDefaultErrors ||
+    hasCausesOfDelayDefaultErrors ||
+    hasLessonsLearnedDefaultErrors ||
+    hasGenderMainstreamingDefaultErrors ||
+    hasSDGsDefaultErrors ||
+    hasEvidencesDefaultErrors
+  )
+}
 export const formatDate = (date: string | null | undefined) =>
   date ? dayjs(date).format('DD/MM/YYYY') : ''
 

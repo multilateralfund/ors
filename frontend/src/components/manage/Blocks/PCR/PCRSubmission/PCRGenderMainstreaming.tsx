@@ -43,7 +43,7 @@ const PCRGenderMainstreaming = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectPhaseData = {
-        project_preparation: null,
+        project_preparation: '',
         prefilled: false,
         qualitative_description: '',
       }

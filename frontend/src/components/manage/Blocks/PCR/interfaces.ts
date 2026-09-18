@@ -39,7 +39,7 @@ export interface PCRDefaultData {
   total_number_of_trainnes: string | null
 }
 
-type AdditionalCommentType = { entity: number | null; comment: string }
+type AdditionalCommentType = { entity: string; comment: string }
 
 export interface PCROverviewProps {
   mlf_funding_approved: Record<number, number>
@@ -52,16 +52,16 @@ export interface PCROverviewProps {
 }
 
 export interface PCROverviewData {
-  financial_figures_status: number | null
+  financial_figures_status: string
   financial_figures_status_explanation: string
   addresses: string
-  project_goal_achieved: number | null
+  project_goal_achieved: string
   project_goal_achieved_explanation: string
-  rating: number | null
+  rating: string
   rating_explanation_other: string
   rating_explanation: string
   additional_comments: AdditionalCommentType[]
-  completed_by: number | null
+  completed_by: string
 }
 
 export type Activity = {
@@ -86,6 +86,7 @@ export interface PCRAlternativeTechnologyType {
 export interface PCREnterpriseType {
   name: string
   address: string
+  isDefault?: boolean
 }
 
 export interface PCREquipmentType {
@@ -132,9 +133,18 @@ export type PCRResponse = {
   activities: (Activity & { agency_id: number })[]
   project_components: {
     agency_id: number
+    project_component_option_id: number | null
     project_component_option: { name: string }
-    delay_causes: { delay: { name: string }; description: string }[]
-    learned_lessons: { lesson: { name: string }; description: string }[]
+    delay_causes: {
+      delay_id: number | null
+      delay: { name: string }
+      description: string
+    }[]
+    learned_lessons: {
+      lesson_id: number | null
+      lesson: { name: string }
+      description: string
+    }[]
   }[]
   gender_mainstreamings: {
     agency_id: number
@@ -144,7 +154,7 @@ export type PCRResponse = {
   }[]
   sustainable_development_goals: {
     agency_id: number
-    goals: { goal: string; description: string }[]
+    goals: { goal_id: number; goal: string; description: string }[]
   }[]
   supporting_evidences: {
     agency_id: number
@@ -179,7 +189,7 @@ export interface PCRLessonsLearnedData {
 }
 
 export type ProjectPhase = {
-  project_preparation: number | null
+  project_preparation: string
   prefilled: boolean
   qualitative_description: string
 }
@@ -253,11 +263,6 @@ export type FieldHandler = (
   indexes?: number[],
   subFields?: string[],
 ) => void
-
-export type PCRHeaderType = {
-  mode: string
-  pcrMetaproject?: PCRMetaProjectType | null
-}
 
 export type PCRActionButtons = { setIsLoading: (isLoading: boolean) => void }
 
