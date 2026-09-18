@@ -3,19 +3,14 @@ import { useContext, useState } from 'react'
 import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/ProjectSubmission/CancelWarningModal'
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { formatAgencyData, formatPayload, isSubmitDisabled } from '../utils'
-import {
-  PCRActionButtons,
-  PCRSupportingEvidencesData,
-  FormattedSupportingEvidencesData,
-} from '../interfaces'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import { getFormData, isSubmitDisabled } from '../utils'
+import { PCRActionButtons } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
 
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
-import { map, omit } from 'lodash'
 import Cookies from 'js-cookie'
 
 const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
@@ -29,7 +24,6 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     ratingOptions,
   } = useContext(PCRDataContext)
   const metaProjectId = pcrMetaproject.data?.id
-  const { supporting_evidences } = PCRData
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
@@ -45,28 +39,12 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
         throw new Error('PCR metaproject data is not loaded.')
       }
 
-      const formattedSupportingEvidence =
-        formatAgencyData<PCRSupportingEvidencesData>(
-          supporting_evidences,
-          'evidences',
-        ) as FormattedSupportingEvidencesData[]
-
-      const supportingEvidencesData = map(
-        formattedSupportingEvidence,
-        (evidence) => omit(evidence, 'file'),
+      const formData = getFormData(
+        pcrDefaultData,
+        PCRData,
+        metaProjectId,
+        ratingOptions,
       )
-
-      const payload = {
-        meta_project_id: metaProjectId,
-        ...formatPayload(pcrDefaultData, PCRData, ratingOptions),
-        supporting_evidences: supportingEvidencesData,
-      }
-
-      const formData = new FormData()
-      formData.append('metadata', JSON.stringify(payload))
-      formattedSupportingEvidence.forEach((evidence) => {
-        formData.append('files', evidence.file)
-      })
 
       const csrftoken = Cookies.get('csrftoken')
 

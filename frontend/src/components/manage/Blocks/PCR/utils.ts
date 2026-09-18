@@ -16,6 +16,8 @@ import {
   CauseOfDelayProjectComponent,
   LessonLearnedProjectComponent,
   PCRGenderMainstreamingData,
+  PCRSupportingEvidencesData,
+  FormattedSupportingEvidencesData,
   OptionsType,
 } from './interfaces'
 import { useGetPCRDefaults } from './hooks/useGetPCRDefaults'
@@ -387,9 +389,10 @@ export const groupSummaryOfKeyDataErrors = (
   return groupedErrors
 }
 
-export const formatPayload = (
+export const getFormData = (
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>,
   PCRData: PCRData,
+  metaProjectId: number,
   ratingOptions: OptionsType[],
 ) => {
   const {
@@ -399,6 +402,7 @@ export const formatPayload = (
     lessons_learned,
     gender_mainstreaming,
     sdgs_contribution,
+    supporting_evidences,
   } = PCRData
 
   const overviewPrefilledData = {
@@ -469,7 +473,18 @@ export const formatPayload = (
     (sdg) => sdg.goals.length > 0,
   )
 
-  return {
+  const formattedSupportingEvidence =
+    formatAgencyData<PCRSupportingEvidencesData>(
+      supporting_evidences,
+      'evidences',
+    ) as FormattedSupportingEvidencesData[]
+
+  const supportingEvidencesData = map(formattedSupportingEvidence, (evidence) =>
+    omit(evidence, 'file'),
+  )
+
+  const payload = {
+    meta_project_id: metaProjectId,
     ...overviewPrefilledData,
     ...overviewData,
     pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
@@ -477,7 +492,16 @@ export const formatPayload = (
     project_components: projectComponentsData,
     gender_mainstreamings: genderMainstreamingsData,
     sustainable_development_goals: sdgsContributionData,
+    supporting_evidences: supportingEvidencesData,
   }
+
+  const formData = new FormData()
+  formData.append('metadata', JSON.stringify(payload))
+  formattedSupportingEvidence.forEach((evidence) => {
+    formData.append('files', evidence.file)
+  })
+
+  return formData
 }
 
 export const isSubmitDisabled = (errors: Record<string, any>) => {

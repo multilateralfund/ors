@@ -5,17 +5,18 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
-import { initialActivitiesData, initialOverviewData } from '../constants'
+import { initialOverviewData } from '../constants'
 import {
+  PCRResponse,
+  PCROverviewData,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
-  PCRResponse,
 } from '../interfaces'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import useApi from '@ors/hooks/useApi'
 
-import { groupBy, keys, map, pick, uniq } from 'lodash'
+import { filter, groupBy, keys, map, pick, uniq } from 'lodash'
 import { Redirect, useParams } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
@@ -65,27 +66,71 @@ const PCREditWrapper = () => {
     [data],
   )
 
+  const groupDataByAgency = (data: Record<string, any>) =>
+    groupBy(data, 'agency_id')
+
   useEffect(() => {
     const pcrData = pcr.data
     if (!pcrData) {
       return
     }
 
-    const groupedActivities = groupBy(pcrData.activities, 'agency_id')
-
+    const groupedActivities = groupDataByAgency(pcrData.activities)
     const resultsAssessment = map(agencyIds, (agency_id) => ({
       agency_id,
-      activities: map(groupedActivities[agency_id], (activity) =>
-        pick(activity, keys(initialActivitiesData)),
+      activities: groupedActivities[agency_id] ?? [],
+    }))
+
+    const groupedProjectComponents = groupDataByAgency(
+      pcrData.project_components,
+    )
+
+    const causesOfDelay = map(agencyIds, (agency_id) => ({
+      agency_id,
+      project_components: filter(
+        groupedProjectComponents[agency_id],
+        (pc) => pc.delay_causes.length > 0,
       ),
+    }))
+
+    const lessonsLearned = map(agencyIds, (agency_id) => ({
+      agency_id,
+      project_components: filter(
+        groupedProjectComponents[agency_id],
+        (pc) => pc.learned_lessons.length > 0,
+      ),
+    }))
+
+    const groupedGenderMainstreamings = groupDataByAgency(
+      pcrData.gender_mainstreamings,
+    )
+    const genderMainstreamings = map(agencyIds, (agency_id) => ({
+      agency_id,
+      gender_mainstreamings: groupedGenderMainstreamings[agency_id] ?? [],
+    }))
+
+    const groupedSdgsContribution = groupDataByAgency(
+      pcrData.sustainable_development_goals,
+    )
+    const sdgsContribution = map(agencyIds, (agency_id) => ({
+      agency_id,
+      goals: groupedSdgsContribution[agency_id]?.[0]?.goals ?? [],
+    }))
+
+    const groupedSupportingEvidences = groupDataByAgency(
+      pcrData.supporting_evidences,
+    )
+    const supportingEvidences = map(agencyIds, (agency_id) => ({
+      agency_id,
+      evidences: map(groupedSupportingEvidences[agency_id], (evidence) => ({
+        ...evidence,
+        link: evidence.file,
+      })),
     }))
 
     setPCRData((prevData) => ({
       ...prevData,
-      overview: {
-        ...prevData.overview,
-        ...pick(pcrData, keys(initialOverviewData)),
-      },
+      overview: pick(pcrData, keys(initialOverviewData)) as PCROverviewData,
       summary_of_key_data: pcrData.pcr_projects.map((pcrProject) => ({
         project_id: pcrProject.project_id,
         funds_disbursed: pcrProject.funds_disbursed ?? '',
@@ -98,6 +143,11 @@ const PCREditWrapper = () => {
         equipments: ensureRows(pcrProject.equipments, emptyEquipment),
       })),
       results_assessment: resultsAssessment,
+      causes_of_delay: causesOfDelay,
+      lessons_learned: lessonsLearned,
+      gender_mainstreaming: genderMainstreamings,
+      sdgs_contribution: sdgsContribution,
+      supporting_evidences: supportingEvidences,
     }))
     clearUpdatedFields()
   }, [clearUpdatedFields, pcr.data, agencyIds, setPCRData])

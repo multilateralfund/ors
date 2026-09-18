@@ -3,9 +3,9 @@ import { useContext, useState } from 'react'
 import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/ProjectSubmission/CancelWarningModal'
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { formatPayload, isSubmitDisabled } from '../utils'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import { getFormData, isSubmitDisabled } from '../utils'
 import { PCRActionButtons } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
 
@@ -16,30 +16,36 @@ import Cookies from 'js-cookie'
 const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
   const { pcr_id } = useParams<Record<string, string>>()
-  const { PCRData, errors, setErrors, pcrDefaultData, ratingOptions } =
-    useContext(PCRDataContext)
+  const {
+    PCRData,
+    errors,
+    setErrors,
+    pcrMetaproject,
+    pcrDefaultData,
+    ratingOptions,
+  } = useContext(PCRDataContext)
+  const metaProjectId = pcrMetaproject.data?.id
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
-  const isSaveDisabled = isSubmitDisabled(errors)
+  const isSaveDisabled = !metaProjectId || isSubmitDisabled(errors)
 
   const editPCR = async () => {
     setIsLoading(true)
 
     try {
-      if (!pcr_id) {
+      if (!pcr_id || !metaProjectId) {
         throw new Error('PCR id is not available.')
       }
 
-      const payload = {
-        ...formatPayload(pcrDefaultData, PCRData, ratingOptions),
-      }
-
-      const formData = new FormData()
-      formData.append('metadata', JSON.stringify(payload))
-
+      const formData = getFormData(
+        pcrDefaultData,
+        PCRData,
+        metaProjectId,
+        ratingOptions,
+      )
       const csrftoken = Cookies.get('csrftoken')
 
       const response = await fetch(
