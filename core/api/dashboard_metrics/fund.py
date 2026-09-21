@@ -132,7 +132,7 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
     fund. A project naming a region rather than one of its countries - Global
     among them - is charted under that region.
     """
-
+    results_to_dict = {}
     result = grouped(
         context.projects, lambda row: classify.region_bucket(row.project.country)
     )
@@ -141,7 +141,10 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
         entry["funds_disbursed"] = (
             round(disbursed[entry["group"]], 2) if entry["group"] in disbursed else None
         )
-    return result
+        results_to_dict[entry["group"].lower().replace(":", "").replace(" ", "_")] = (
+            entry
+        )
+    return results_to_dict
 
 
 def _prepare_horizontal_bar_structure(
