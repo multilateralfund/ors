@@ -46,6 +46,7 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
         metaProjectId,
         ratingOptions,
       )
+
       const csrftoken = Cookies.get('csrftoken')
 
       const response = await fetch(

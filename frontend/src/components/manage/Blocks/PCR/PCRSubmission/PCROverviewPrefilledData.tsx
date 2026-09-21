@@ -122,7 +122,7 @@ const PCROverviewPrefilledData = () => {
       : (fundsByAgency[field] as Record<number, number>)[crtAgencyId]
 
     return (
-      <div className="w-60">
+      <div className="w-full sm:w-60">
         <Label>{pcrFieldsMapping[field]} (US $)</Label>
         <FormattedNumberInput
           id={field}
@@ -195,13 +195,13 @@ const PCROverviewPrefilledData = () => {
           </div>
         </div>
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-          <div className="w-[280px]">
+          <div className="w-full sm:w-[280px]">
             <MetaprojectDateField field="project_date_approved" />
           </div>
           <MetaprojectDateField field="project_date_completion" />
         </div>
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-          <div className="w-[280px]">
+          <div className="w-full sm:w-[280px]">
             <MetaprojectNumberField field="phase_out_ods_actual" />
           </div>
           <MetaprojectNumberField field="phase_out_ods_approved" />
@@ -211,7 +211,7 @@ const PCROverviewPrefilledData = () => {
           <MetaprojectNumberField field="phase_out_co2_eq_t_approved" />
         </div>
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-          <div className="w-[280px]">
+          <div className="w-full sm:w-[280px]">
             <MetaprojectNumberField
               field="total_number_of_enterprises"
               fieldType="number"

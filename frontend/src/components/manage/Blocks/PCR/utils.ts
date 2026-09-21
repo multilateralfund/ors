@@ -30,6 +30,7 @@ import {
   findIndex,
   flatMap,
   forEach,
+  keys,
   lowerCase,
   map,
   omit,
@@ -425,6 +426,14 @@ export const getFormData = (
         : null,
   }
 
+  const summaryOfKeyData = PCRData.summary_of_key_data.map(
+    buildPCRProjectPayload,
+  )
+  const filteredSummaryOfKeyData = filter(
+    summaryOfKeyData,
+    (entry) => keys(entry).length > 1,
+  )
+
   const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
     results_assessment,
     'activities',
@@ -487,7 +496,7 @@ export const getFormData = (
     meta_project_id: metaProjectId,
     ...overviewPrefilledData,
     ...overviewData,
-    pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
+    pcr_projects: filteredSummaryOfKeyData,
     activities: resultsAssessmentData,
     project_components: projectComponentsData,
     gender_mainstreamings: genderMainstreamingsData,
