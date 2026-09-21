@@ -1,20 +1,21 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/ProjectSubmission/CancelWarningModal'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRCreateActionButtons from '../PCRCreate/PCRCreateActionButtons'
 import PCREditActionButtons from '../PCREdit/PCREditActionButtons'
-import { PCRHeaderType } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
 import { useLocation } from 'wouter'
 
-const PCRHeader = ({ mode, pcrMetaproject }: PCRHeaderType) => {
+const PCRHeader = ({ mode }: { mode: string }) => {
   const [_, setLocation] = useLocation()
 
+  const { pcrMetaproject } = useContext(PCRDataContext)
   const { updatedFields } = useUpdatedFields()
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -37,7 +38,7 @@ const PCRHeader = ({ mode, pcrMetaproject }: PCRHeaderType) => {
             {mode === 'edit' ? (
               <>
                 <span className="font-medium text-[#4D4D4D]">Update PCR: </span>
-                <span>{pcrMetaproject?.umbrella_code}</span>
+                <span>{pcrMetaproject?.data?.umbrella_code}</span>
               </>
             ) : (
               'New PCR submission'

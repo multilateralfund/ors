@@ -46,7 +46,7 @@ const PCRForm = () => {
   const tabMapping = {
     overview: { title: 'Overview', errors: errors.overview },
     summary_of_key_data: {
-      title: 'Summary of key data (tranches)',
+      title: 'Summary of key data',
       errors: errors.summary_of_key_data,
     },
     results_assessment: {
@@ -66,7 +66,7 @@ const PCRForm = () => {
       errors: errors.gender_mainstreaming,
     },
     sdgs_contribution: {
-      title: 'SDGs (optional)',
+      title: 'SDGs',
       errors: errors.sdgs_contribution,
     },
     supporting_evidences: {
