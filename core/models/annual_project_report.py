@@ -1,5 +1,4 @@
 import logging
-from datetime import date as date_type
 
 from django.conf import settings
 from django.db import models
@@ -10,6 +9,9 @@ from core.models.agency import Agency
 from core.models.country import Country
 from core.models.meeting import Meeting
 from core.models.project import Project
+from core.models.project_dates import as_report_date
+from core.models.project_dates import get_extended_date
+from core.models.project_dates import get_mya_completion_date
 
 logger = logging.getLogger(__name__)
 
@@ -525,27 +527,16 @@ class AnnualProjectReport(models.Model):
         candidates = list(cached_versions) if cached_versions else []
 
         # Add the final version itself if it matches the year__lte criteria.
-        # In case we can't compare by post_excom_decision, we use date_approved.
-        if (
-            self.project.post_excom_decision
-            and self.project.post_excom_decision.meeting.date.year <= year
-        ) or (
-            not self.project.post_excom_decision
-            and self.project.date_approved
-            and self.project.date_approved.year <= year
-        ):
+        effective_date = self.project.get_effective_date()
+        if effective_date and effective_date.year <= year:
             candidates.append(self.project)
 
-        def _version_sort_key(p):
-            # Some projects can be sorted by the decision, some by date_approved
-            if p.post_excom_decision:
-                return (p.post_excom_decision.meeting.date, p.version)
-            return (p.date_approved or date_type.min, p.version)
+        if not candidates:
+            return None
 
-        if candidates:
-            candidates.sort(key=_version_sort_key, reverse=True)
-            return candidates[0]
-        return None
+        # Among eligible versions, the highest version number is the current one.
+        # See Project.latest_version_for_year() for why ordering by date is wrong.
+        return max(candidates, key=lambda p: p.version)
 
     @cached_property
     def latest_project_version_for_year(self):
@@ -631,44 +622,43 @@ class AnnualProjectReport(models.Model):
         return self.project_version_3.date_approved if self.project_version_3 else None
 
     @property
+    def mya_has_ongoing_project(self):
+        """
+        Whether this project's multi-year agreement still has an ongoing project.
+        """
+        # Used by the projects -> APR sync.
+        annotated = self.__dict__.get("mya_has_ongoing_project_annotated")
+        if annotated is not None:
+            return annotated
+
+        if "_mya_has_ongoing_project" not in self.__dict__:
+            meta_project_id = self.project.meta_project_id if self.project_id else None
+            self.__dict__["_mya_has_ongoing_project"] = (
+                bool(meta_project_id)
+                and Project.objects.filter(
+                    meta_project_id=meta_project_id, status__code="ONG"
+                ).exists()
+            )
+
+        return self.__dict__["_mya_has_ongoing_project"]
+
+    @property
     def extended_date_of_completion(self):
         """
-        "Extended Date" as shown in the master/inventory report: the
-        MetaProject.extended_date_of_completion field (returned as a plain date
-        to match the DateField this feeds into).
-
-        This is the same stored field the inventory report renders under the
-        "Extended Date" column (ProjectsInventoryReportWriter, source
-        "meta_project", field "extended_date_of_completion").
+        "Extended Date" exactly as the master/inventory report computes it,
+        returned as a plain date to match the DateField.
         """
-        meta_project = self.project.meta_project
-        if meta_project and meta_project.extended_date_of_completion:
-            extended_date = meta_project.extended_date_of_completion
-            # MetaProject.extended_date_of_completion is a DateTimeField; normalize.
-            return (
-                extended_date.date()
-                if hasattr(extended_date, "date")
-                else extended_date
-            )
-        return None
+        return as_report_date(
+            get_extended_date(self.project, self.mya_has_ongoing_project)
+        )
 
     @property
     def mya_completion_date(self):
         """
-        "MYA Completion Date" as shown in the master/inventory report: the
-        end date of the project's MetaProject (returned as a plain date to match
-        the DateField this feeds into).
-
-        This is the same stored field the inventory report renders under the
-        "MYA Completion Date" column (ProjectsInventoryReportWriter, source
-        "meta_project", field "end_date").
+        "MYA Completion Date" exactly as the master/inventory report computes it,
+        returned as a plain date to match the DateField.
         """
-        meta_project = self.project.meta_project
-        if meta_project and meta_project.end_date:
-            end_date = meta_project.end_date
-            # MetaProject.end_date is a DateTimeField; normalize to a date.
-            return end_date.date() if hasattr(end_date, "date") else end_date
-        return None
+        return as_report_date(get_mya_completion_date(self.project))
 
     @property
     def date_of_completion_per_agreement_or_decisions(self):

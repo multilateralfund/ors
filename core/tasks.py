@@ -761,6 +761,18 @@ def sync_apr_from_projects(year, dry_run=False):
             "main_region",
             "report__progress_report",
         )
+        # For correctly computing date of completion per agreement/decision, we need to know
+        # whether each project's MYA still has any ongoing project.
+        # Annotating it here to avoid AnnualProjectReport.mya_has_ongoing_project()
+        # firing one query per row across a whole year's reports.
+        .annotate(
+            mya_has_ongoing_project_annotated=django_models.Exists(
+                Project.objects.filter(
+                    meta_project_id=django_models.OuterRef("project__meta_project_id"),
+                    status__code="ONG",
+                )
+            )
+        )
     )
 
     if not project_reports:

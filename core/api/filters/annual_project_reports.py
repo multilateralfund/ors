@@ -104,6 +104,10 @@ def build_filtered_project_reports_queryset(filter_params):
         "project__project_type",
         "project__status",
         "project__cluster",
+        "project__post_excom_decision__meeting",
+        "project__post_excom_meeting",
+        "project__transfer_decision__meeting",
+        "project__transfer_meeting",
         "main_region",
     )
 

@@ -8,22 +8,27 @@ from zipfile import ZipFile
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import Exists, OuterRef
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from core.api.export.annual_project_report import APRExportWriter
-from core.api.export.projects_v2_dump import get_field_value
+from core.api.utils import latest_version_base_qs
 from core.api.tests.base import BaseTest
 from core.models import (
     AnnualProgressReport,
     AnnualAgencyProjectReport,
     AnnualProjectReport,
     AnnualProjectReportFile,
+    MetaProject,
     Project,
     ProjectHistory,
 )
+from core.models.project_dates import as_report_date
+from core.models.project_dates import get_extended_date
+from core.models.project_dates import get_mya_completion_date
 from core.api.tests.factories import (
     AgencyFactory,
     AnnualProgressReportFactory,
@@ -44,7 +49,7 @@ from core.tasks import (
     auto_submit_empty_agency_reports,
 )
 
-# pylint: disable=W0221,W0613,C0302,R0913,R0914
+# pylint: disable=W0212,W0221,W0613,C0302,R0913,R0914
 
 
 @pytest.mark.django_db
@@ -5872,6 +5877,78 @@ class TestSyncAprFromProjectsTask:
         assert result["updated_count"] == 1
         assert result["changed_count"] == 0
 
+    def test_sync_writes_master_report_completion_date(
+        self,
+        annual_agency_report,
+        annual_project_report,
+        approved_project,
+    ):
+        """
+        Column AU must come out of the sync matching the master report - here a
+        transferred project, whose extended date the master suppresses, so the
+        agreement's own completion date is written instead.
+        """
+        meta_project = MetaProjectFactory(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=date(2026, 9, 30),
+            extended_date_of_completion=date(2026, 7, 15),
+        )
+        approved_project.meta_project = meta_project
+        approved_project.status = ProjectStatusFactory(name="Transferred", code="TRF")
+        approved_project.save(update_fields=["meta_project", "status"])
+
+        sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        annual_project_report.refresh_from_db()
+        assert (
+            annual_project_report.date_of_completion_per_agreement_or_decisions_denorm
+            == date(2026, 9, 30)
+        )
+
+    def test_sync_annotates_mya_ongoing_instead_of_querying_per_row(
+        self,
+        annual_agency_report,
+        annual_project_report,
+        approved_project,
+        django_assert_num_queries,
+    ):
+        """
+        The sync annotates `mya_has_ongoing_project` onto the queryset so column
+        AU does not fire one query per row. If the annotation name ever drifts
+        the values stay correct but the sync silently regresses to an N+1, so
+        assert the annotation is what actually gets used.
+        """
+        meta_project = MetaProjectFactory(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=date(2026, 9, 30),
+            extended_date_of_completion=date(2026, 7, 15),
+        )
+        approved_project.meta_project = meta_project
+        approved_project.save(update_fields=["meta_project"])
+
+        annotated = (
+            AnnualProjectReport.objects.filter(pk=annual_project_report.pk)
+            .annotate(
+                mya_has_ongoing_project_annotated=Exists(
+                    Project.objects.filter(
+                        meta_project_id=OuterRef("project__meta_project_id"),
+                        status__code="ONG",
+                    )
+                )
+            )
+            .first()
+        )
+
+        expected = annotated.__dict__["mya_has_ongoing_project_annotated"]
+
+        # The property must take the annotated answer without issuing its own query.
+        with django_assert_num_queries(0):
+            assert annotated.mya_has_ongoing_project == expected
+
+        # An un-annotated instance falls back to querying, and agrees.
+        unannotated = AnnualProjectReport.objects.get(pk=annual_project_report.pk)
+        assert unannotated.mya_has_ongoing_project == expected
+
     def test_changed_records_are_updated(
         self,
         annual_agency_report,
@@ -6822,13 +6899,27 @@ class TestWorkspaceFallbackAutoSubmit(BaseTest):
 class TestAPRDateOfCompletionDerivation:
     """
     date_of_completion_per_agreement_or_decisions mirrors the master/inventory
-    report's split of this column into two MetaProject fields:
-      - "Extended Date" -> MetaProject.extended_date_of_completion;
-      - "MYA Completion Date" -> MetaProject.end_date.
-    Use the Extended Date if present, otherwise the MYA Completion Date.
+    report: use the Extended Date if the master reports one, otherwise the MYA
+    Completion Date.
+
+    Both halves are now computed by core.models.project_dates, shared with the
+    inventory report. Reading the two MetaProject fields directly - which is what
+    this used to do - is *not* equivalent: the master suppresses an extended date
+    for transferred projects, for agreements that are no longer ongoing, and for
+    a date that falls in the same month as the agreement's own completion; it
+    honours a per-project override; and it reports a completion date only for
+    genuine multi-year agreements.
     """
 
-    def _make_apr(self, agency, country_ro, code, meta_project=None):
+    def _make_apr(
+        self,
+        agency,
+        country_ro,
+        code,
+        meta_project=None,
+        project_status=None,
+        **project_kwargs,
+    ):
         project = ProjectFactory(
             agency=agency,
             country=country_ro,
@@ -6837,14 +6928,31 @@ class TestAPRDateOfCompletionDerivation:
             latest_project=None,
             meta_project=meta_project,
             date_completion=date(2026, 5, 1),
+            **({"status": project_status} if project_status else {}),
+            **project_kwargs,
         )
         return AnnualProjectReportFactory(project=project)
 
-    def test_uses_extended_date_when_present(self, agency, country_ro):
-        meta_project = MetaProjectFactory(
-            end_date=timezone.make_aware(datetime(2026, 9, 30)),
-            extended_date_of_completion=timezone.make_aware(datetime(2026, 7, 15)),
+    def _mya(self, **kwargs):
+        kwargs.setdefault("end_date", date(2026, 9, 30))
+        kwargs.setdefault("extended_date_of_completion", date(2026, 7, 15))
+        return MetaProjectFactory(type=MetaProject.MetaProjectType.MYA, **kwargs)
+
+    def _make_ongoing_sibling(self, meta_project, agency, country_ro, code):
+        """An agreement only reports an extended date while it is still running."""
+        return ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            code=code,
+            version=3,
+            latest_project=None,
+            meta_project=meta_project,
+            status=ProjectStatusFactory(name="Ongoing", code="ONG"),
         )
+
+    def test_uses_extended_date_when_present(self, agency, country_ro):
+        meta_project = self._mya()
+        self._make_ongoing_sibling(meta_project, agency, country_ro, "TEST/APR/EXT/ONG")
         apr = self._make_apr(
             agency, country_ro, "TEST/APR/EXT/01", meta_project=meta_project
         )
@@ -6855,10 +6963,7 @@ class TestAPRDateOfCompletionDerivation:
         assert apr.date_of_completion_per_agreement_or_decisions == date(2026, 7, 15)
 
     def test_falls_back_to_mya_completion_date(self, agency, country_ro):
-        meta_project = MetaProjectFactory(
-            end_date=timezone.make_aware(datetime(2026, 9, 30)),
-            extended_date_of_completion=None,
-        )
+        meta_project = self._mya(extended_date_of_completion=None)
         apr = self._make_apr(
             agency, country_ro, "TEST/APR/MYA/01", meta_project=meta_project
         )
@@ -6876,41 +6981,128 @@ class TestAPRDateOfCompletionDerivation:
         assert apr.date_of_completion_per_agreement_or_decisions is None
 
     def test_none_when_meta_project_dates_empty(self, agency, country_ro):
-        meta_project = MetaProjectFactory(
-            end_date=None,
-            extended_date_of_completion=None,
-        )
+        meta_project = self._mya(end_date=None, extended_date_of_completion=None)
         apr = self._make_apr(
             agency, country_ro, "TEST/APR/EMPTY/01", meta_project=meta_project
         )
 
         assert apr.date_of_completion_per_agreement_or_decisions is None
 
-    def test_matches_inventory_report_extended_date(self, agency, country_ro):
-        """
-        The APR value must equal the master/inventory report's rendering of the
-        same MetaProject fields, so the two reports never disagree.
-        """
-        meta_project = MetaProjectFactory(
-            end_date=timezone.make_aware(datetime(2026, 9, 30)),
-            extended_date_of_completion=timezone.make_aware(datetime(2026, 7, 15)),
-        )
+    def test_per_project_override_wins(self, agency, country_ro):
+        """An MLFS-entered override beats the agreement's own extended date."""
+        meta_project = self._mya()
+        self._make_ongoing_sibling(meta_project, agency, country_ro, "TEST/APR/OVR/ONG")
         apr = self._make_apr(
-            agency, country_ro, "TEST/APR/PARITY/01", meta_project=meta_project
+            agency,
+            country_ro,
+            "TEST/APR/OVR/01",
+            meta_project=meta_project,
+            has_override_extended_date=True,
+            override_extended_date=date(2027, 3, 1),
         )
 
-        # Read the very same MetaProject fields the inventory report renders, via
-        # the same helper (get_field_value with source="meta_project").
-        inventory_extended = get_field_value(
-            apr.project,
-            {"id": "extended_date_of_completion", "source": "meta_project"},
+        assert apr.extended_date_of_completion == date(2027, 3, 1)
+        assert apr.date_of_completion_per_agreement_or_decisions == date(2027, 3, 1)
+
+    def test_transferred_project_reports_no_extended_date(self, agency, country_ro):
+        meta_project = self._mya()
+        self._make_ongoing_sibling(meta_project, agency, country_ro, "TEST/APR/TRF/ONG")
+        apr = self._make_apr(
+            agency,
+            country_ro,
+            "TEST/APR/TRF/01",
+            meta_project=meta_project,
+            status=ProjectStatusFactory(name="Transferred", code="TRF"),
         )
-        inventory_mya = get_field_value(
-            apr.project,
-            {"id": "end_date", "source": "meta_project"},
+
+        # Suppressed -> the column falls back to the MYA Completion Date.
+        assert apr.extended_date_of_completion is None
+        assert apr.date_of_completion_per_agreement_or_decisions == date(2026, 9, 30)
+
+    def test_extended_date_ignored_when_agreement_not_ongoing(self, agency, country_ro):
+        """No ongoing project in the agreement -> nothing is being extended."""
+        meta_project = self._mya()
+        apr = self._make_apr(
+            agency, country_ro, "TEST/APR/NOTONG/01", meta_project=meta_project
         )
-        expected = inventory_extended or inventory_mya
-        expected = expected.date() if hasattr(expected, "date") else expected
+
+        assert apr.extended_date_of_completion is None
+        assert apr.date_of_completion_per_agreement_or_decisions == date(2026, 9, 30)
+
+    def test_extended_date_ignored_when_same_month_as_completion(
+        self, agency, country_ro
+    ):
+        """Same month as the agreement's completion date is not an extension."""
+        meta_project = self._mya(
+            end_date=date(2026, 9, 30),
+            extended_date_of_completion=date(2026, 9, 1),
+        )
+        self._make_ongoing_sibling(
+            meta_project, agency, country_ro, "TEST/APR/SAME/ONG"
+        )
+        apr = self._make_apr(
+            agency, country_ro, "TEST/APR/SAME/01", meta_project=meta_project
+        )
+
+        assert apr.extended_date_of_completion is None
+        assert apr.date_of_completion_per_agreement_or_decisions == date(2026, 9, 30)
+
+    def test_individual_meta_project_has_no_mya_completion_date(
+        self, agency, country_ro
+    ):
+        """
+        Individual projects also carry a MetaProject, and many were given an
+        end_date by the 2026 migration - but they have no agreement, so the
+        column stays empty.
+        """
+        meta_project = MetaProjectFactory(
+            type=MetaProject.MetaProjectType.IND,
+            end_date=date(2026, 9, 30),
+            extended_date_of_completion=None,
+        )
+        apr = self._make_apr(
+            agency, country_ro, "TEST/APR/IND/01", meta_project=meta_project
+        )
+
+        assert apr.mya_completion_date is None
+        assert apr.date_of_completion_per_agreement_or_decisions is None
+
+    @pytest.mark.parametrize(
+        "status_code,has_ongoing,override",
+        [
+            ("FIN", True, False),
+            ("FIN", False, False),
+            ("TRF", True, False),
+            ("FIN", True, True),
+        ],
+    )
+    def test_matches_inventory_report(
+        self, agency, country_ro, status_code, has_ongoing, override
+    ):
+        """
+        The APR value must equal what the master/inventory report computes for
+        the same project, so the two reports never disagree again.
+        """
+        meta_project = self._mya()
+        if has_ongoing:
+            self._make_ongoing_sibling(
+                meta_project, agency, country_ro, f"TEST/APR/PAR/ONG/{status_code}"
+            )
+        apr = self._make_apr(
+            agency,
+            country_ro,
+            f"TEST/APR/PARITY/{status_code}/{override}/{has_ongoing}",
+            meta_project=meta_project,
+            status=ProjectStatusFactory(name=status_code, code=status_code),
+            has_override_extended_date=override,
+            override_extended_date=date(2027, 3, 1) if override else None,
+        )
+
+        # Drive the master report's own helpers, with the same "is this
+        # agreement ongoing" answer the inventory report would have built.
+        inventory_extended = get_extended_date(apr.project, has_ongoing)
+        inventory_mya = get_mya_completion_date(apr.project)
+        expected = as_report_date(inventory_extended or inventory_mya)
 
         assert apr.date_of_completion_per_agreement_or_decisions == expected
 
@@ -6926,3 +7118,347 @@ class TestAPRGenderPolicyNullable:
         )
         apr.refresh_from_db()
         assert apr.gender_policy is None
+
+
+@pytest.mark.django_db
+class TestLatestVersionForYearOrdering:
+    """
+    Among the versions a report year covers, the version in effect is the one with
+    the highest version number - not the one with the latest `effective_date`.
+
+    Versions supersede one another in archive-chain order, and each version's
+    total_fund is the running cumulative sum of every funding row applied so far
+    (core.import_data_v2.migrate_projects_2026.process_funding_fields_sheet adds
+    each row's allocation to the previous total).
+
+    Picking by date therefore returns a partial sum whenever the dates do not line up
+    with the version numbers.
+    """
+
+    def _version(self, code, version, latest_project, **kwargs):
+        return ProjectFactory(
+            code=code,
+            version=version,
+            latest_project=latest_project,
+            post_excom_decision=None,
+            **kwargs,
+        )
+
+    def test_meeting_date_may_precede_the_version_it_supersedes(
+        self, agency, country_ro, sector, project_ongoing_status
+    ):
+        """
+        The v3 approval snapshot carries no meeting, so its effective_date falls back
+        to date_approved - the meeting's report date. An adjustment from the *same*
+        meeting does carry the meeting, whose date is the meeting's opening date, days
+        earlier. Ordering by date put the adjustment *before* the approval it
+        supersedes (production: SAU/HPMP1/30, LKA/HPMP2/56, LKA/HPMP2/58).
+        """
+        common = {
+            "agency": agency,
+            "country": country_ro,
+            "sector": sector,
+            "status": project_ongoing_status,
+        }
+        final = self._version(
+            "TEST/OOO/01",
+            4,
+            None,
+            date_approved=date(2020, 12, 3),
+            post_excom_meeting=MeetingFactory(date=date(2020, 11, 16)),
+            total_fund=196620.0,
+            **common,
+        )
+        self._version(
+            "TEST/OOO/01",
+            3,
+            final,
+            date_approved=date(2020, 12, 3),
+            post_excom_meeting=None,
+            total_fund=200800.0,
+            **common,
+        )
+
+        chosen = final.latest_version_for_year(2025)
+        assert chosen.version == 4
+        assert chosen.total_fund == 196620.0
+
+    def test_versions_numbered_out_of_meeting_order(
+        self, agency, country_ro, sector, project_ongoing_status
+    ):
+        """
+        The 2026 migration numbered versions in spreadsheet row order rather than
+        meeting order, so a project can carry a higher version whose meeting predates
+        the lower version's (production: TUR/CFCIND/12, TUR/CFCIND/13).
+
+        The cumulative total on the highest version is still correct, as addition is
+        commutative, so the highest version should always be taken into account
+        (while intermediate ones might be wrong).
+        """
+        common = {
+            "agency": agency,
+            "country": country_ro,
+            "sector": sector,
+            "status": project_ongoing_status,
+        }
+        final = self._version(
+            "TEST/OOO/02",
+            5,
+            None,
+            date_approved=date(2000, 3, 1),
+            post_excom_meeting=MeetingFactory(date=date(2000, 3, 29)),
+            total_fund=801568.0,
+            **common,
+        )
+        self._version(
+            "TEST/OOO/02",
+            4,
+            final,
+            date_approved=date(2000, 7, 1),
+            post_excom_meeting=MeetingFactory(date=date(2000, 7, 5)),
+            total_fund=819133.0,
+            **common,
+        )
+        self._version(
+            "TEST/OOO/02",
+            3,
+            final,
+            date_approved=date(1994, 12, 1),
+            post_excom_meeting=None,
+            total_fund=690903.0,
+            **common,
+        )
+
+        chosen = final.latest_version_for_year(2025)
+        assert chosen.version == 5
+        assert chosen.total_fund == 801568.0
+
+    def test_year_filter_still_excludes_later_versions(
+        self, agency, country_ro, sector, project_ongoing_status
+    ):
+        """
+        Ordering by version must not override eligibility: a version approved by a
+        meeting held after the report year stays out of that year's report.
+        """
+        common = {
+            "agency": agency,
+            "country": country_ro,
+            "sector": sector,
+            "status": project_ongoing_status,
+        }
+        final = self._version(
+            "TEST/OOO/03",
+            4,
+            None,
+            date_approved=date(2026, 6, 26),
+            post_excom_meeting=MeetingFactory(date=date(2026, 6, 22)),
+            total_fund=500000.0,
+            **common,
+        )
+        self._version(
+            "TEST/OOO/03",
+            3,
+            final,
+            date_approved=date(2025, 6, 26),
+            post_excom_meeting=None,
+            total_fund=400000.0,
+            **common,
+        )
+
+        chosen = final.latest_version_for_year(2025)
+        assert chosen.version == 3
+        assert final.latest_version_for_year(2026).version == 4
+
+    @pytest.mark.parametrize("code", ["TEST/OOO/01", "TEST/OOO/02", "TEST/OOO/03"])
+    def test_cached_and_uncached_paths_agree(
+        self,
+        code,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        annual_agency_report,
+        request,
+    ):
+        """
+        The APR's cached (sync/bulk) path must resolve the same version as the
+        queryset, since sync writes the denorm fields that the views then read back.
+        """
+        fixtures = {
+            "TEST/OOO/01": self.test_meeting_date_may_precede_the_version_it_supersedes,
+            "TEST/OOO/02": self.test_versions_numbered_out_of_meeting_order,
+            "TEST/OOO/03": self.test_year_filter_still_excludes_later_versions,
+        }
+        fixtures[code](agency, country_ro, sector, project_ongoing_status)
+
+        final = Project.objects.get(code=code, latest_project=None)
+        expected = final.latest_version_for_year(2025)
+
+        # Mirror core.tasks.sync_apr_from_projects: the cached list holds the single
+        # best row the base queryset resolved for this project.
+        cached = list(latest_version_base_qs(2025).filter(code=code)[:1])
+        apr = AnnualProjectReportFactory(project=final, report=annual_agency_report)
+
+        assert apr._latest_version_upto_year(cached, 2025).id == expected.id
+
+
+@pytest.mark.django_db
+class TestTransferredAfterReportYear:
+    """
+    A transfer must not reach back into an earlier year's report.
+
+    Transferring a project (ProjectV2TransferSerializer.save) mutates the *source*
+    project in place: it sets transfer_decision / transfer_meeting, fund_transferred,
+    psc_transferred and status=TRF, without bumping the version. That moves the row's
+    effective_date forward to the transfer meeting, so a project transferred in
+    June 2026 is no longer in scope for 2025.
+
+    ProjectQuerySet.with_effective_date already ranks the transfer relations above
+    date_approved, so the queryset drops such a row. The APR's in-Python eligibility
+    check has to apply the same rule to the final version, or it re-admits the row the
+    queryset just filtered out and subtracts a 2026 transfer from the 2025 figures
+    (production: IDN/KIP1/226, /227, /228 WB, transferred at the 98th meeting).
+    """
+
+    YEAR = 2025
+
+    @pytest.fixture
+    def report_2025(self, agency):
+        """An explicit 2025 report: the shared apr_year fixture is 2024."""
+        return AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=self.YEAR, endorsed=False),
+            agency=agency,
+        )
+
+    @pytest.fixture
+    def transferred_status(self):
+        return ProjectStatusFactory(code="TRF", name="Transferred")
+
+    def _transferred_project(self, transfer_date, **common):
+        """The production shape: a v3 final, fully transferred, never re-versioned."""
+        return ProjectFactory(
+            code="TEST/TRF/01",
+            version=3,
+            latest_project=None,
+            post_excom_decision=None,
+            post_excom_meeting=None,
+            date_approved=date(2025, 5, 1),
+            transfer_decision=DecisionFactory(
+                meeting=MeetingFactory(date=transfer_date)
+            ),
+            transfer_meeting=MeetingFactory(date=transfer_date),
+            total_fund=1089609.0,
+            support_cost_psc=76273.0,
+            fund_transferred=1089609.0,
+            psc_transferred=76273.0,
+            **common,
+        )
+
+    def _apr_for(self, project, report, cached_versions):
+        """Mirror how sync_apr_from_projects primes the cached version lists."""
+        apr = AnnualProjectReportFactory(
+            project=project, report=report, funds_disbursed=0, support_cost_disbursed=0
+        )
+        apr.project.cached_version_3_list = [project]
+        apr.project.cached_versions_for_year = cached_versions
+        return apr
+
+    def test_transfer_after_report_year_is_out_of_scope(
+        self, agency, country_ro, sector, transferred_status, report_2025
+    ):
+        """
+        The reported bug: approved funding stayed right (it comes from version 3) while
+        "Approved Funding plus Adjustments" and Balance collapsed to zero.
+        """
+        final = self._transferred_project(
+            date(2026, 6, 22),
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=transferred_status,
+        )
+
+        assert final.latest_version_for_year(self.YEAR) is None
+
+        apr = self._apr_for(final, report_2025, [])
+        assert apr._latest_version_upto_year([], self.YEAR) is None
+        assert apr.approved_funding == 1089609.0
+        assert apr.adjustment is None
+        assert apr.approved_funding_plus_adjustment == 1089609.0
+
+        apr.populate_derived_fields()
+        assert apr.approved_funding_plus_adjustment_denorm == 1089609.0
+        assert apr.balance == 1089609.0
+        assert apr.support_cost_approved_plus_adjustment_denorm == 76273.0
+        assert apr.support_cost_balance == 76273.0
+
+    def test_transfer_during_report_year_still_applies(
+        self, agency, country_ro, sector, transferred_status, report_2025
+    ):
+        """
+        The guard against over-correcting: a transfer that happened *within* the
+        report year stays in scope and still reduces the remaining funding.
+        """
+        final = self._transferred_project(
+            date(2025, 6, 22),
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=transferred_status,
+        )
+
+        assert final.latest_version_for_year(self.YEAR).id == final.id
+
+        apr = self._apr_for(final, report_2025, [])
+        assert apr._latest_version_upto_year([], self.YEAR).id == final.id
+        assert apr.approved_funding_plus_adjustment == 0
+
+    def test_post_excom_meeting_after_report_year_is_out_of_scope(
+        self, agency, country_ro, sector, project_ongoing_status, report_2025
+    ):
+        """
+        The same rule gap, reached through post_excom_meeting rather than a transfer:
+        date_approved alone would have admitted this version to 2025.
+        """
+        final = ProjectFactory(
+            code="TEST/TRF/02",
+            version=3,
+            latest_project=None,
+            post_excom_decision=None,
+            post_excom_meeting=MeetingFactory(date=date(2026, 6, 22)),
+            date_approved=date(2025, 5, 1),
+            total_fund=500000.0,
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+        )
+
+        apr = AnnualProjectReportFactory(project=final, report=report_2025)
+
+        assert final.latest_version_for_year(self.YEAR) is None
+        assert apr._latest_version_upto_year([], self.YEAR) is None
+        assert apr._latest_version_upto_year([], 2026).id == final.id
+
+    def test_cached_and_uncached_paths_agree(
+        self, agency, country_ro, sector, transferred_status, report_2025
+    ):
+        """
+        sync_apr_from_projects writes the denorm fields the views read back, so the
+        cached path must resolve the same version as the queryset. This shape is
+        exactly where the two used to disagree.
+        """
+        final = self._transferred_project(
+            date(2026, 6, 22),
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=transferred_status,
+        )
+
+        cached = list(latest_version_base_qs(self.YEAR).filter(code="TEST/TRF/01")[:1])
+        assert not cached
+
+        apr = self._apr_for(final, report_2025, cached)
+        assert apr._latest_version_upto_year(cached, self.YEAR) is None
+        assert final.latest_version_for_year(self.YEAR) is None

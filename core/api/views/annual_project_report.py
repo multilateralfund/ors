@@ -249,6 +249,10 @@ class APRWorkspaceView(RetrieveAPIView):
                     "meeting",
                     "decision",
                     "meta_project",
+                    "post_excom_decision__meeting",
+                    "post_excom_meeting",
+                    "transfer_decision__meeting",
+                    "transfer_meeting",
                 )
                 .prefetch_related(
                     "subsectors",
