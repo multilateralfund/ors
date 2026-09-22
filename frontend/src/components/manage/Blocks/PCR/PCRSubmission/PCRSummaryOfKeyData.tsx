@@ -657,7 +657,7 @@ const PCRSummaryOfKeyData = () => {
                         <div className="flex items-center">
                           <DateInput
                             id={`planned-date-of-completion-${editingProject.id}`}
-                            className="!m-0 w-48"
+                            className="!m-0 w-40 grow-0"
                             value={summaryData.planned_date_of_completion}
                             formatValue={(value) =>
                               dayjs(value).format('DD/MM/YYYY')

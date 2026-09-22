@@ -24,7 +24,7 @@ const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
     },
     {
       id: 'summary_of_key_data',
-      label: 'Summary of key data (tranches)',
+      label: 'Summary of key data',
       component: <PCRSummaryOfKeyData {...{ pcr }} />,
     },
     {
@@ -49,7 +49,7 @@ const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
     },
     {
       id: 'sdgs_contribution',
-      label: 'SDGs (optional)',
+      label: 'SDGs',
       component: <PCRSdgs {...{ pcr }} />,
     },
     {

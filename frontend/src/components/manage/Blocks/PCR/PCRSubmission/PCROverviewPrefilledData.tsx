@@ -102,7 +102,7 @@ const PCROverviewPrefilledData = () => {
           withoutDefaultValue={true}
           decimalDigits={fieldType === 'number' ? 0 : 2}
           disabled={true}
-          {...getFieldDefaultProps('number')}
+          {...omit(getFieldDefaultProps('number'), ['containerClassName'])}
         />
       </div>
     )
@@ -130,7 +130,7 @@ const PCROverviewPrefilledData = () => {
           prefix="$"
           withoutDefaultValue={true}
           disabled={true}
-          {...getFieldDefaultProps('number')}
+          {...omit(getFieldDefaultProps('number'), ['containerClassName'])}
         />
       </div>
     )
@@ -239,8 +239,8 @@ const PCROverviewPrefilledData = () => {
           setCrtTab(newValue)
         }}
       >
-        {crtAgencies.map((agency) => (
-          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
+        {crtAgencies.map((agency, index) => (
+          <Tab key={index} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
