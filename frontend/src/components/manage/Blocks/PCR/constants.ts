@@ -187,3 +187,11 @@ export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
 export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
+
+export const borderedValueClassname =
+  'mt-1 rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'
+export const textareaClassname = {
+  containerClassname: 'bg-white !gap-20 !flex-row p-4 rounded-lg w-[65%]',
+  labelClassname: 'self-start whitespace-nowrap mt-0.5',
+  valueClassname: ' min-w-0 flex-1 !text-black !font-normal !text-lg',
+}

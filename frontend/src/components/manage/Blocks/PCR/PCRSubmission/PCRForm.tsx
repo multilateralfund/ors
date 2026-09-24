@@ -50,7 +50,7 @@ const PCRForm = () => {
       errors: errors.summary_of_key_data,
     },
     results_assessment: {
-      title: 'Project results overall assessment',
+      title: 'Project results',
       errors: errors.results_assessment,
     },
     causes_of_delay: {
