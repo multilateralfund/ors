@@ -25,7 +25,7 @@ export default function PExport({
 
   const firstLoadFilters = useMemo(() => {
     if (export_type === 'all') {
-      return { ...initialFilters, really_all: true }
+      return { ...initialFilters, projects_database: true }
     } else if (export_type === 'mya') {
       return { ...initialFilters, category: 'Multi-year agreement' }
     }

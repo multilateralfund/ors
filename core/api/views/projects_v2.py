@@ -361,11 +361,10 @@ class ProjectV2ViewSet(
         return queryset.none()
 
     def get_queryset(self, filter_permissions=True):
-        requests_really_all = (
-            self.request.query_params.get("really_all", "false") == "true"
-            or self.request.query_params.get("inventory_report", "false") == "true"
+        requests_inventory_report = (
+            self.request.query_params.get("inventory_report", "false") == "true"
         )
-        if self.action in ["retrieve"] or requests_really_all:
+        if self.action in ["retrieve"] or requests_inventory_report:
             queryset = Project.objects.really_all()
         else:
             queryset = Project.objects.all()
@@ -450,9 +449,9 @@ class ProjectV2ViewSet(
                 enum=Project.Category.values,
             ),
             OpenApiParameter(
-                name="really_all",
+                name="projects_database",
                 location=OpenApiParameter.QUERY,
-                description="Queries ALL projects.",
+                description="Request data for Projects database export.",
                 type=OpenApiTypes.BOOL,
             ),
             OpenApiParameter(

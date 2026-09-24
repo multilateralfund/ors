@@ -473,7 +473,7 @@ class ProjectsV2Dump:
             [("end_date", "End date (MYA)")]
         )
         queryset = (
-            Project.objects.really_all()
+            Project.objects.all()
             .select_related(
                 *self.get_fk_fields(self.project_fields),
                 "funding_window__decision",
