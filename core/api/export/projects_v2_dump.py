@@ -466,6 +466,9 @@ class ProjectsV2DumpWriter:
 class ProjectsV2Dump:
     """MYA Warehouse"""
 
+    def get_projects_queryset(self):
+        return Project.objects.all()
+
     def __init__(self, view: "ProjectV2ViewSet"):
         self.view = view
         self.project_fields = self.get_project_fields()
@@ -473,7 +476,7 @@ class ProjectsV2Dump:
             [("end_date", "End date (MYA)")]
         )
         queryset = (
-            Project.objects.all()
+            self.get_projects_queryset()
             .select_related(
                 *self.get_fk_fields(self.project_fields),
                 "funding_window__decision",

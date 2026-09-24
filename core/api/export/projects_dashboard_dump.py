@@ -22,6 +22,7 @@ from core.api.export.projects_v2_dump import (
 from core.api.utils import workbook_response
 from core.api.views.mya_export import HEADERS as MYA_HEADERS
 from core.api.views.mya_export import MyaExport
+from core.models.project import Project
 
 
 # Poisson rates for mock impact-metric filling, keyed by project class.
@@ -268,6 +269,9 @@ class ProjectsDashboardDump(ProjectsV2Dump):
       mock_types           — comma-separated substance types to mock (hfc,hcfc,cfc)
       mock_seed            — RNG seed for reproducibility (default 42, not exposed to Swagger UI)
     """
+
+    def get_projects_queryset(self):
+        return Project.objects.really_all()
 
     def __init__(self, view):
         super().__init__(view)
