@@ -636,14 +636,14 @@ class TestFundValues(BaseTest):
         )
 
         metrics = self.fund(user)
-        assert metrics["by_region"]["value"]['africa'] == {
-                "group": "Africa",
-                "funds_approved": 1000,
-                "funds_plus_psc": 1000,
-                "projects_by_code": 2,
-                "projects_by_metacode": 2,
-                "funds_disbursed": None,
-            }
+        assert metrics["by_region"]["value"]["africa"] == {
+            "group": "Africa",
+            "funds_approved": 1000,
+            "funds_plus_psc": 1000,
+            "projects_by_code": 2,
+            "projects_by_metacode": 2,
+            "funds_disbursed": None,
+        }
         assert metrics["funds_approved"]["value"]["funds_approved"] == 1000
 
     def test_counts_separate_multi_year_agreements_from_individual_projects(
