@@ -44,9 +44,9 @@ class ProjectExportMixin:
                 enum=Project.Category.values,
             ),
             OpenApiParameter(
-                name="really_all",
+                name="projects_database",
                 location=OpenApiParameter.QUERY,
-                description="Queries ALL projects.",
+                description="Request data for Projects database export.",
                 type=OpenApiTypes.BOOL,
             ),
             OpenApiParameter(
@@ -61,12 +61,14 @@ class ProjectExportMixin:
     def export(self, request, *args, **kwargs):
         project_id = request.query_params.get("project_id")
         output_format = request.query_params.get("output_format", "xlsx")
-        really_all = request.query_params.get("really_all", "false") == "true"
         is_mya = request.query_params.getlist("category", []) == [
             "Multi-year agreement"
         ]
         is_inventory_report = (
             request.query_params.get("inventory_report", "false") == "true"
+        )
+        is_projects_database_export = (
+            request.query_params.get("projects_database", "false") == "true"
         )
         if project_id:
             project = self.get_object()
@@ -74,7 +76,7 @@ class ProjectExportMixin:
                 return ProjectsV2ProjectExport(project, request.user).export_xls()
             if output_format == "docx":
                 return ProjectsV2ProjectExportDocx(project, request.user).export_docx()
-        if really_all:
+        if is_projects_database_export:
             return ProjectsV2Dump(self).export()
         if is_mya:
             return MyaExport(self).export_xls()
