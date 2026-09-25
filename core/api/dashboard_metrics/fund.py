@@ -19,7 +19,7 @@ from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
     count_project_grains,
     funds_pair,
-    format_money,
+    format_number,
     grouped,
     phase_out,
     totals,
@@ -49,12 +49,15 @@ def static(value: Any):
     return lambda _context: value
 
 
-def manual(key: str):
+def manual(key: str, use_format_number: bool = False, currency: str = ""):
     """A figure an administrator types in in constance, unavailable until someone does."""
 
     def read(_context: MetricContext) -> float | None:
         value = getattr(config, key, None)
-        return float(value) if value else None
+        result = float(value) if value else None
+        if use_format_number and result:
+            result = format_number(result, 0, currency)
+        return result
 
     return read
 
@@ -66,12 +69,23 @@ def _project_type_code(row) -> str | None:
 
 def ods_phased_out(context: MetricContext) -> float:
     """Ozone-depleting substances removed, consumption and production together."""
-    return phase_out(context.with_family(ODS), "total_phase_out_odp_tonnes")
+    return format_number(
+        phase_out(context.with_family(ODS), "total_phase_out_odp_tonnes")
+    )
 
 
 def hfc_phased_out(context: MetricContext) -> float:
     """Hydrofluorocarbons removed, in CO2 tonnes"""
-    return phase_out(context.with_family(HFC), "total_phase_out_co2_tonnes")
+    return format_number(
+        phase_out(context.with_family(HFC), "total_phase_out_co2_tonnes"), 0, ""
+    )
+
+
+def funds_approved(context: MetricContext) -> float:
+    """Funds approved of all the projects"""
+    funds = funds_pair(context.projects)
+    funds["funds_plus_psc"] = format_number(funds["funds_plus_psc"])
+    return funds
 
 
 def ods_funding_approved(context: MetricContext) -> float:
@@ -81,17 +95,17 @@ def ods_funding_approved(context: MetricContext) -> float:
         for row in context.with_family(ODS)
         if _project_type_code(row) not in ODS_FUNDING_EXCLUDED_TYPE_CODES
     ]
-    return funds_pair(rows)["funds_plus_psc"]
+    return format_number(funds_pair(rows)["funds_plus_psc"], 0, "$")
 
 
 def hfc_funding_approved(context: MetricContext) -> float:
     """What the phase-down of hydrofluorocarbons was funded at."""
-    return funds_pair(context.with_family(HFC))["funds_plus_psc"]
+    return format_number(funds_pair(context.with_family(HFC))["funds_plus_psc"], 0, "$")
 
 
 def grant_funding_pledged(context: MetricContext) -> float | None:
     """Everything contributors have pledged to the Fund since it began."""
-    return None if context.pledged is None else round(float(context.pledged), 2)
+    return None if context.pledged is None else format_number(context.pledged, 0, "$")
 
 
 def funds_for(context: MetricContext, *status_codes: str) -> float:
@@ -101,12 +115,14 @@ def funds_for(context: MetricContext, *status_codes: str) -> float:
 
 def count_for(context: MetricContext, *status_codes: str) -> int:
     """How many projects are in one set of statuses."""
-    return count_project_grains(context.with_status(*status_codes))["projects_by_code"]
+    return format_number(
+        count_project_grains(context.with_status(*status_codes))["projects_by_code"]
+    )
 
 
-def portfolio_projects(context: MetricContext) -> int:
+def portfolio_projects(context: MetricContext, use_format_number: bool = True) -> int:
     """Every project the Fund has approved."""
-    return count_project_grains(context.projects)["projects_by_code"]
+    return count_project_grains(context.projects, use_format_number)["projects_by_code"]
 
 
 def portfolio_projects_rounded(context: MetricContext) -> int:
@@ -114,8 +130,8 @@ def portfolio_projects_rounded(context: MetricContext) -> int:
 
     Render it with a trailing ``+`` - it is deliberately an understatement.
     """
-    return (
-        math.floor(portfolio_projects(context) / PORTFOLIO_ROUNDING)
+    return format_number(
+        math.floor(portfolio_projects(context, False) / PORTFOLIO_ROUNDING)
         * PORTFOLIO_ROUNDING
     )
 
@@ -139,8 +155,13 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
     disbursed = context.apr.disbursed_by_region() if context.apr else {}
     for entry in result:
         entry["funds_disbursed"] = (
-            round(disbursed[entry["group"]], 2) if entry["group"] in disbursed else None
+            format_number(disbursed[entry["group"]], 0, "$")
+            if entry["group"] in disbursed
+            else None
         )
+        entry["funds_plus_psc"] = format_number(entry["funds_plus_psc"], 0, "$")
+        entry["projects_by_code"] = format_number(entry["projects_by_code"])
+        entry["projects_by_metacode"] = format_number(entry["projects_by_metacode"])
         results_to_dict[entry["group"].lower().replace(":", "").replace(" ", "_")] = (
             entry
         )
@@ -187,12 +208,14 @@ def _prepare_vertical_bar_structure(
             {
                 "name": "Number of projects",
                 "color": "var(--deep-teal)",
-                "data": [entry["projects_by_code"] for entry in data],
+                "data": [format_number(entry["projects_by_code"]) for entry in data],
             },
             {
                 "name": "Funds approved",
                 "color": "var(--purple)",
-                "data": [format_money(entry["funds_plus_psc"]) for entry in data],
+                "data": [
+                    format_number(entry["funds_plus_psc"], 0, "$") for entry in data
+                ],
             },
         ],
         "meta": {"currency": "USD"},
@@ -216,17 +239,21 @@ def _lvc_bucket(row) -> str:
     return LVC_COMPONENTS[classify.lvc_status(row.project.country)]
 
 
-def funds_lvc_split(context: MetricContext) -> dict[str, Any]:
+def funds_lvc_split(
+    context: MetricContext, use_format_number: bool = True
+) -> dict[str, Any]:
     """Funding split by LVC classification.
 
     ``not_classified`` is a named component rather than a silent remainder.
     """
-    return {
+    results = {
         component: funds_pair(
-            context.where(lambda row, name=component: _lvc_bucket(row) == name)
+            context.where(lambda row, name=component: _lvc_bucket(row) == name),
+            use_format_number,
         )
         for component in LVC_COMPONENTS.values()
     }
+    return results
 
 
 def funds_disbursed_lvc_split(context: MetricContext) -> dict[str, Any] | None:
@@ -271,7 +298,12 @@ def theme(context: MetricContext, name: str) -> dict[str, Any]:
     projects = context.where(lambda row: row.theme == name)
     result = totals(projects)
     disbursed = context.apr_where([p.project.id for p in projects])
-    result["funds_disbursed"] = disbursed.funds_disbursed()["active_cycle"]
+    result["funds_disbursed"] = format_number(
+        disbursed.funds_disbursed()["active_cycle"], 0, "$"
+    )
+    result["funds_plus_psc"] = format_number(result["funds_plus_psc"], 0, "$")
+    result["projects_by_code"] = format_number(result["projects_by_code"])
+    result["projects_by_metacode"] = format_number(result["projects_by_metacode"])
     return result
 
 
@@ -303,8 +335,11 @@ def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
         else {}
     )
     value["funds_disbursed"] = (
-        round(disbursed[bucket], 2) if bucket in disbursed else None
+        format_number(disbursed[bucket], 0, "$") if bucket in disbursed else None
     )
+    value["funds_plus_psc"] = format_number(value["funds_plus_psc"], 0, "$")
+    value["projects_by_code"] = format_number(value["projects_by_code"])
+    value["projects_by_metacode"] = format_number(value["projects_by_metacode"])
     return value
 
 
@@ -332,19 +367,24 @@ def sector_funds_disbursed(context: MetricContext, bucket: str) -> dict[str, Any
 
 def funds_disbursed(context: MetricContext) -> dict[str, float] | None:
     """What has actually been paid out, in total and within the current cycle."""
-    return context.apr.funds_disbursed() if context.apr else None
+    result = context.apr.funds_disbursed() if context.apr else None
+    if result:
+        result["all_time"] = format_number(result["all_time"])
+        result["active_cycle"] = format_number(result["active_cycle"])
+    return result
 
 
 def funds_approved_funds_disbursed_lvc_split(
     context: MetricContext,
 ) -> dict[str, float] | None:
     """What has actually been paid out, in total and within the current cycle."""
-    funds_approved_lvc_split_result = funds_lvc_split(context)
+    funds_approved_lvc_split_result = funds_lvc_split(context, False)
     funds_approved_lvc = funds_approved_lvc_split_result["lvc"]["funds_plus_psc"]
     funds_approved_non_lvc = funds_approved_lvc_split_result["non_lvc"][
         "funds_plus_psc"
     ]
-    total_funds_approved = format_money(funds_approved_lvc + funds_approved_non_lvc)
+    sum_funds = funds_approved_lvc + funds_approved_non_lvc
+    total_funds_approved = format_number(sum_funds, 0, "$")
     funds_disbursed_lvc_split_result = funds_disbursed_lvc_split(context)
     try:
         funds_disbursed_lvc = funds_disbursed_lvc_split_result["lvc"]["all_time"]
@@ -354,7 +394,9 @@ def funds_approved_funds_disbursed_lvc_split(
     except (AttributeError, TypeError):
         funds_disbursed_lvc = 0
         funds_disbursed_non_lvc = 0
-    total_funds_disbursed = format_money(funds_disbursed_lvc + funds_disbursed_non_lvc)
+    total_funds_disbursed = format_number(
+        funds_disbursed_lvc + funds_disbursed_non_lvc, 0, "$"
+    )
     return (
         {
             "type": "donut",
@@ -368,13 +410,15 @@ def funds_approved_funds_disbursed_lvc_split(
                         {
                             "name": "Low-Volume Consuming (LVC) countries",
                             "value": funds_approved_lvc,
-                            "displayValue": format_money(funds_approved_lvc),
+                            "displayValue": format_number(funds_approved_lvc, 0, "$"),
                             "color": "var(--deep-teal)",
                         },
                         {
                             "name": "Non-LVC countries",
                             "value": funds_approved_non_lvc,
-                            "displayValue": format_money(funds_approved_non_lvc),
+                            "displayValue": format_number(
+                                funds_approved_non_lvc, 0, "$"
+                            ),
                             "color": "var(--purple)",
                         },
                     ],
@@ -386,13 +430,15 @@ def funds_approved_funds_disbursed_lvc_split(
                         {
                             "name": "Low-Volume Consuming (LVC) countries",
                             "value": funds_disbursed_lvc,
-                            "displayValue": format_money(funds_disbursed_lvc),
+                            "displayValue": format_number(funds_disbursed_lvc, 0, "$"),
                             "color": "var(--deep-teal)",
                         },
                         {
                             "name": "Non-LVC countries",
                             "value": funds_disbursed_non_lvc,
-                            "displayValue": format_money(funds_disbursed_non_lvc),
+                            "displayValue": format_number(
+                                funds_disbursed_non_lvc, 0, "$"
+                            ),
                             "color": "var(--purple)",
                         },
                     ],
@@ -485,7 +531,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field="constance config TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES",
-        compute=manual("TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES"),
+        compute=manual("TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES", True),
     ),
     Metric(
         metric_id="controlled_substances_avoided_emissions",
@@ -502,7 +548,7 @@ FUND_METRICS: tuple[Metric, ...] = (
             "(+EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES)"
         ),
         compute=manual(
-            "TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES"
+            "TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES", True
         ),
     ),
     Metric(
@@ -519,7 +565,7 @@ FUND_METRICS: tuple[Metric, ...] = (
             "TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES "
             "(+EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES)"
         ),
-        compute=manual("EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES"),
+        compute=manual("EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES", True),
     ),
     Metric(
         metric_id="savings_to_society",
@@ -531,7 +577,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field="constance TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR",
-        compute=manual("TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR"),
+        compute=manual("TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR", True, "$"),
     ),
     Metric(
         metric_id="grant_funding_pledged",
@@ -555,7 +601,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field="constance COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS",
-        compute=manual("COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS"),
+        compute=manual("COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS", True, "$"),
     ),
     Metric(
         metric_id="controlled_substances_cost_per_co2eq_tonne",
@@ -571,7 +617,9 @@ FUND_METRICS: tuple[Metric, ...] = (
             "COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_CONTROLLED_SUBSTANCES"
         ),
         compute=manual(
-            "COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_CONTROLLED_SUBSTANCES"
+            "COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_CONTROLLED_SUBSTANCES",
+            True,
+            "$",
         ),
     ),
     Metric(
@@ -586,7 +634,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         src_model_field=(
             "constance EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS"
         ),
-        compute=manual("EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS"),
+        compute=manual(
+            "EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS", True, "$"
+        ),
     ),
     Metric(
         metric_id="ods_phased_out",
@@ -709,7 +759,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="Sum (funds approved + PSC) over latest codes",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund + support_cost_psc",
-        compute=lambda context: funds_pair(context.projects),
+        compute=funds_approved,
     ),
     Metric(
         metric_id="funds_lvc_split",
@@ -772,7 +822,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="count(distinct code) where status not in {Transferred; Closed}",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.code, Project.status",
-        compute=lambda context: count_project_grains(context.projects),
+        compute=lambda context: count_project_grains(context.projects, True),
     ),
     Metric(
         metric_id="completed_count",
@@ -796,8 +846,8 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="Sum funding over the #22 completed set",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund+psc filtered completed",
-        compute=lambda context: format_money(
-            funds_for(context, *COMPLETED_STATUS_CODES)
+        compute=lambda context: format_number(
+            funds_for(context, *COMPLETED_STATUS_CODES), 0, "$"
         ),
     ),
     Metric(
@@ -834,7 +884,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="Sum funding over ongoing set",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund+psc filtered ongoing",
-        compute=lambda context: format_money(funds_for(context, *ONGOING_STATUS_CODES)),
+        compute=lambda context: format_number(
+            funds_for(context, *ONGOING_STATUS_CODES), 0, "$"
+        ),
     ),
     Metric(
         metric_id="by_agency",
