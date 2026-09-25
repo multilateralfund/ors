@@ -1,11 +1,19 @@
-import { Fragment, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
-import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { detailItem } from './ViewHelperComponents'
-import { llField, pcrFieldsMapping } from '../../constants'
+import {
+  SectionTitle,
+  SubSectionTitle,
+  detailItem,
+} from './ViewHelperComponents'
 import { PCRResponse } from '../../interfaces'
+import {
+  pcrFieldsMapping,
+  llField,
+  pcTitleClassname,
+  pcTextareaClassname,
+} from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
@@ -30,9 +38,10 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
 
   return (
     <>
+      <SectionTitle>Lessons learned</SectionTitle>
       <Tabs
         aria-label="lessons-learned-view-tabs"
-        className="sectionsTabs"
+        className="sectionsTabs mt-6"
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
@@ -49,43 +58,48 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        <SectionTitle>Project components</SectionTitle>
-        <div className="flex flex-col gap-y-4">
+      <div className="border-0 border-t border-solid border-primary py-6">
+        <SubSectionTitle>Project components</SubSectionTitle>
+        <div className="flex flex-col gap-y-6">
           {pcData.length > 0
             ? map(pcData, (pc, pcIndex) => {
                 const llData = pcData[pcIndex][llField] || []
 
                 return (
-                  <div key={pcIndex} className="flex items-center gap-2">
-                    <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+                  <div key={pcIndex}>
+                    <div className="rounded-t-lg bg-primary px-8 py-4">
                       {detailItem(
-                        pcrFieldsMapping.project_component_option_id,
+                        'Component',
                         pc.project_component_option?.name,
+                        pcTitleClassname,
                       )}
-                      <div className="mt-4">
-                        <SectionTitle>Lessons learned</SectionTitle>
-                        <div className="flex flex-col gap-y-4 px-5">
-                          {llData.length > 0
-                            ? map(llData, (ll, llIndex) => (
-                                <Fragment key={llIndex}>
-                                  {detailItem(
-                                    pcrFieldsMapping.lesson_id,
-                                    ll.lesson?.name,
-                                  )}
+                    </div>
+                    <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
+                      <SubSectionTitle>Lessons learned</SubSectionTitle>
+                      {llData.length > 0
+                        ? map(llData, (ll, llIndex) => (
+                            <div key={llIndex}>
+                              <div className="flex gap-5 pt-4">
+                                <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-[#EBFF00]">
+                                  {llIndex + 1}
+                                </div>
+                                <div>
+                                  <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
+                                    {ll.lesson?.name || '-'}
+                                  </h4>
                                   {detailItem(
                                     pcrFieldsMapping.description,
                                     ll.description,
-                                    'self-start whitespace-nowrap',
+                                    pcTextareaClassname,
                                   )}
-                                  {llIndex !== llData.length - 1 && (
-                                    <Divider className="my-1" />
-                                  )}
-                                </Fragment>
-                              ))
-                            : '-'}
-                        </div>
-                      </div>
+                                </div>
+                              </div>
+                              {llIndex !== llData.length - 1 && (
+                                <Divider className="my-4" />
+                              )}
+                            </div>
+                          ))
+                        : '-'}
                     </div>
                   </div>
                 )

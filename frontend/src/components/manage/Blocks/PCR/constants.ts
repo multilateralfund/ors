@@ -191,14 +191,29 @@ export const evidencesField = 'evidences'
 export const borderedValueClassname =
   'mt-1 rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'
 
+const valueClassname = 'min-w-0 flex-1 !text-black !font-normal !text-lg'
+const labelClassname = 'self-start mt-0.5'
+
 export const overviewTextareaClassname = {
   containerClassname: 'bg-white !gap-20 !flex-row p-4 rounded-lg w-[65%]',
-  labelClassname: 'self-start whitespace-nowrap mt-0.5',
-  valueClassname: 'min-w-0 flex-1 !text-black !font-normal !text-lg',
+  labelClassname: labelClassname + ' whitespace-nowrap',
+  valueClassname: valueClassname,
 }
 
 export const activitiesTextareaClassname = {
   containerClassname: '!gap-20 !flex-row p-4 w-[65%] pl-0',
-  labelClassname: 'self-start mt-0.5',
-  valueClassname: 'min-w-0 flex-1 !text-black !font-normal !text-lg',
+  labelClassname: labelClassname,
+  valueClassname: valueClassname,
+}
+
+export const pcTitleClassname = {
+  containerClassname: 'gap-2',
+  labelClassname: 'uppercase text-[#F5FF80]',
+  valueClassname: 'text-white !font-bold !text-3xl',
+}
+
+export const pcTextareaClassname = {
+  containerClassname: 'w-[65%] p-0',
+  labelClassname: labelClassname,
+  valueClassname: valueClassname,
 }
