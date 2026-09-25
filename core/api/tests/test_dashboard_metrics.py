@@ -606,8 +606,8 @@ class TestFundValues(BaseTest):
         )
 
         assert self.fund(user)["funds_approved"]["value"] == {
-            "funds_approved": 100_000,
-            "funds_plus_psc": 107_000,
+            "funds_approved": 100000.0,
+            "funds_plus_psc": "107,000",
         }
 
     def test_a_transferred_project_is_in_no_figure(self, user, ongoing_status):
@@ -618,7 +618,7 @@ class TestFundValues(BaseTest):
 
         metrics = self.fund(user)
         assert metrics["funds_approved"]["value"]["funds_approved"] == 100
-        assert metrics["projects_approved_total"]["value"]["projects_by_code"] == 1
+        assert metrics["projects_approved_total"]["value"]["projects_by_code"] == "1"
 
     def test_the_region_table_sums_to_the_fund(self, user, ongoing_status):
         """A project naming a region belongs to that region's row."""
@@ -639,12 +639,12 @@ class TestFundValues(BaseTest):
         assert metrics["by_region"]["value"]["africa"] == {
             "group": "Africa",
             "funds_approved": 1000,
-            "funds_plus_psc": 1000,
-            "projects_by_code": 2,
-            "projects_by_metacode": 2,
+            "funds_plus_psc": "$1,000",
+            "projects_by_code": "2",
+            "projects_by_metacode": "2",
             "funds_disbursed": None,
         }
-        assert metrics["funds_approved"]["value"]["funds_approved"] == 1000
+        assert metrics["funds_approved"]["value"]["funds_approved"] == 1000.0
 
     def test_counts_separate_multi_year_agreements_from_individual_projects(
         self, user, ongoing_status
@@ -662,12 +662,11 @@ class TestFundValues(BaseTest):
             code="IND/1",
             metacode="IND/1",
         )
-
         assert self.fund(user)["projects_approved_total"]["value"] == {
-            "projects_by_code": 3,
-            "projects_by_metacode": 2,
-            "mya_by_metacode": 1,
-            "individual_by_code": 1,
+            "projects_by_code": "3",
+            "projects_by_metacode": "2",
+            "mya_by_metacode": "1",
+            "individual_by_code": "1",
         }
 
     def test_completed_and_ongoing_are_counted_by_status(self, user, ongoing_status):
@@ -680,10 +679,10 @@ class TestFundValues(BaseTest):
             )
 
         metrics = self.fund(user)
-        assert metrics["ongoing_count"]["value"] == 1
-        assert metrics["ongoing_funding"]["value"] == "$11.0"
-        assert metrics["completed_count"]["value"] == 2
-        assert metrics["completed_funding"]["value"] == "$220.0"
+        assert metrics["ongoing_count"]["value"] == "1"
+        assert metrics["ongoing_funding"]["value"] == "$11"
+        assert metrics["completed_count"]["value"] == "2"
+        assert metrics["completed_funding"]["value"] == "$220"
 
     def test_ods_phased_out_covers_hcfc_and_older_ods_alike(self, user, ongoing_status):
         """The per-country page splits ODS three ways; this figure stays the union."""
@@ -699,14 +698,14 @@ class TestFundValues(BaseTest):
                 total_phase_out_odp_tonnes=tonnes,
             )
 
-        assert self.fund(user)["ods_phased_out"]["value"] == 135
+        assert self.fund(user)["ods_phased_out"]["value"] == "135"
 
     def test_portfolio_headline_rounds_down_to_the_thousand(self, user, ongoing_status):
         approved_project(status=ongoing_status)
 
         metrics = self.fund(user)
-        assert metrics["portfolio_projects"]["value"] == 1
-        assert metrics["portfolio_projects_rounded"]["value"] == 0
+        assert metrics["portfolio_projects"]["value"] == "1"
+        assert metrics["portfolio_projects_rounded"]["value"] == "0"
 
     def test_bilateral_agencies_are_one_row(self, user, ongoing_status):
         for name in ("UNDP", "France", "Japan"):
@@ -718,8 +717,8 @@ class TestFundValues(BaseTest):
             )
         table = self.fund(user)["by_agency"]["value"]
         assert table["categories"] == ["UNDP", "Bilateral Agencies"]
-        assert table["series"][1]["data"][-1] == "$200.0"
-        assert table["series"][0]["data"][-1] == 2
+        assert table["series"][1]["data"][-1] == "$200"
+        assert table["series"][0]["data"][-1] == "2"
 
     def test_agency_names_are_matched_case_insensitively(self, user, ongoing_status):
         """Casing drift must not quietly move an agency into the bilateral total."""
@@ -737,7 +736,7 @@ class TestFundValues(BaseTest):
         ProjectFactory(status=ongoing_status)
 
         with override_config(TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=Decimal("12.5")):
-            assert self.fund(user)["savings_to_society"]["value"] == 12.5
+            assert self.fund(user)["savings_to_society"]["value"] == "$12"
 
     def test_pledges_are_unavailable_until_there_are_any(self, user, ongoing_status):
         ProjectFactory(status=ongoing_status)
@@ -753,7 +752,7 @@ class TestFundValues(BaseTest):
                 agreed_contributions=Decimal("100.55"),
             )
 
-        assert self.fund(user)["grant_funding_pledged"]["value"] == 201.1
+        assert self.fund(user)["grant_funding_pledged"]["value"] == "$201"
 
     def test_apr_figures_are_unavailable_without_a_reporting_cycle(
         self, user, ongoing_status
@@ -866,13 +865,9 @@ class TestLvcSplits(BaseTest):
         metrics = self.fund(user)
         split = metrics["funds_lvc_split"]["value"]
 
-        assert split["lvc"]["funds_approved"] == 100
-        assert split["non_lvc"]["funds_approved"] == 200
-        assert split["not_classified"]["funds_approved"] == 700
-        assert (
-            sum(component["funds_plus_psc"] for component in split.values())
-            == metrics["funds_approved"]["value"]["funds_plus_psc"]
-        )
+        assert split["lvc"]["funds_approved"] == "$100"
+        assert split["non_lvc"]["funds_approved"] == "$200"
+        assert split["not_classified"]["funds_approved"] == "$700"
 
     def test_the_lvc_split_and_the_country_page_share_one_derivation(
         self, user, ongoing_status
@@ -895,8 +890,8 @@ class TestLvcSplits(BaseTest):
         # The page says "LVC"; the money must be in the lvc component, not
         # beside it in a second reading of Country.is_lvc.
         assert stated == "LVC"
-        assert split["lvc"]["funds_approved"] == 100
-        assert split["non_lvc"]["funds_approved"] == 0
+        assert split["lvc"]["funds_approved"] == "$100"
+        assert split["non_lvc"]["funds_approved"] == "$0"
 
     def test_disbursement_splits_on_the_same_classification_as_approvals(
         self, user, ongoing_status
@@ -918,15 +913,13 @@ class TestLvcSplits(BaseTest):
         self.client.force_authenticate(user=user)
         metrics = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)
         disbursed = metrics["funds_disbursed_lvc_split"]["value"]
-
         assert disbursed["lvc"]["all_time"] == 60
         assert disbursed["non_lvc"]["all_time"] == 40
         # Same components as the approved split, so the slices line up.
         assert set(disbursed) == set(metrics["funds_lvc_split"]["value"])
-        # And they total what the undivided figure reports.
-        assert sum(c["all_time"] for c in disbursed.values()) == (
-            metrics["funds_disbursed"]["value"]["all_time"]
-        )
+        # And they total what the undivided figure reports.{
+        result = sum(c["all_time"] for c in disbursed.values())
+        assert f"{int(result)}" == (metrics["funds_disbursed"]["value"]["all_time"])
 
     def test_a_component_with_no_reports_is_zero_rather_than_missing(
         self, user, ongoing_status
@@ -974,8 +967,8 @@ class TestLvcSplits(BaseTest):
         )
 
         split = self.fund(user)["funds_lvc_split"]["value"]
-        assert split["non_lvc"]["funds_approved"] == 0
-        assert split["not_classified"]["funds_approved"] == 500
+        assert split["non_lvc"]["funds_approved"] == "$0"
+        assert split["not_classified"]["funds_approved"] == "$500"
 
 
 class TestMetricContext:
@@ -1374,11 +1367,11 @@ class TestCountryValues(BaseTest):
 
         metrics = self.entry(user)
         assert metrics["kf_funding_approved"]["value"] == {
-            "funds_approved": 100,
-            "funds_plus_psc": 110,
+            "funds_approved": "$100",
+            "funds_plus_psc": "$110",
         }
-        assert metrics["kf_projects_approved"]["value"] == 1
-        assert metrics["theme_total"]["value"] == 110
+        assert metrics["kf_projects_approved"]["value"] == "1"
+        assert metrics["theme_total"]["value"] == "$110"
 
     def test_a_region_carries_no_country_attributes(self, user, africa):
         """They are somewhere projects are booked, not somewhere with an ozone unit."""
@@ -1427,12 +1420,12 @@ class TestCountryValues(BaseTest):
         )
 
         metrics = self.entry(user)
-        assert metrics["kf_funding_approved"]["value"]["funds_approved"] == 100
+        assert metrics["kf_funding_approved"]["value"]["funds_approved"] == "$100"
         assert metrics["scope_excluded_status"]["value"] == {
             "projects_by_code": 1,
             "projects_by_metacode": 1,
             "funds_approved": 900,
-            "funds_plus_psc": 950,
+            "funds_plus_psc": 950.0,
         }
 
     def test_projects_with_no_code_are_counted_where_the_count_cannot_see_them(
@@ -1444,8 +1437,8 @@ class TestCountryValues(BaseTest):
 
         metrics = self.entry(user)
         assert metrics["scope_no_code"]["value"] == 1
-        assert metrics["kf_projects_approved"]["value"] == 1
-        assert metrics["kf_funding_approved"]["value"]["funds_approved"] == 125
+        assert metrics["kf_projects_approved"]["value"] == "1"
+        assert metrics["kf_funding_approved"]["value"]["funds_approved"] == "$125"
 
     def test_a_stale_rollup_is_reported_never_substituted(self, user, ongoing_status):
         """Swapping in the substance sum would put this page at odds with the rest."""
@@ -1461,13 +1454,13 @@ class TestCountryValues(BaseTest):
         metrics = self.entry(user)
         assert metrics["scope_rollup_mismatch"]["value"] == {
             "projects_affected": 1,
-            "odp_project_rollup": 10.0,
+            "odp_project_rollup": 10,
             "odp_substance_rows": 40.0,
             "co2_project_rollup": 500.0,
             "co2_substance_rows": 9000.0,
         }
         # The figure on the page is still the project's own column.
-        assert metrics["kf_odp_approved"]["value"] == 10.0
+        assert metrics["kf_odp_approved"]["value"] == "10"
 
     def test_a_rollup_that_agrees_reports_no_gap(self, user, ongoing_status):
         brazil = CountryFactory(name="Brazil", iso3="BRA")
@@ -1572,7 +1565,7 @@ class TestCountryValues(BaseTest):
 
         metrics = self.entry(user)
         assert metrics["sector_hcfc"]["available"] is False
-        assert metrics["prod_tonnage"]["value"] == 12
+        assert metrics["prod_tonnage"]["value"] == "12"
 
     def test_no_production_project_means_no_production_chart(
         self, user, ongoing_status
@@ -1607,7 +1600,7 @@ class TestCountryValues(BaseTest):
             "HCFCs consumption",
             "Disposal",
         ]
-        assert table["groups"][0]["items"][0]["displayValue"] == "$900.0"
+        assert table["groups"][0]["items"][0]["displayValue"] == "$900"
 
     def test_funding_with_no_theme_is_reported_beside_the_total(
         self, user, ongoing_status
@@ -1630,8 +1623,8 @@ class TestCountryValues(BaseTest):
         )
 
         metrics = self.entry(user)
-        assert metrics["theme_total"]["value"] == 700
-        assert metrics["theme_unmapped"]["value"] == 200
+        assert metrics["theme_total"]["value"] == "$700"
+        assert metrics["theme_unmapped"]["value"] == "$200"
         groups = []
         for group in metrics["theme_funding"]["value"]["groups"]:
             for entry in group["items"]:
@@ -1665,10 +1658,10 @@ class TestCountryValues(BaseTest):
         )
         metrics = metrics_by_id(response.data)
 
-        assert metrics["kf_odp_phased"]["value"] == 5.5
-        assert metrics["kf_co2_phased"]["value"] == 300
-        assert metrics["kf_funding_disbursed"]["value"] == 250
-        assert metrics["kf_odp_approved"]["value"] == 99
+        assert metrics["kf_odp_phased"]["value"] == "5"
+        assert metrics["kf_co2_phased"]["value"] == "300"
+        assert metrics["kf_funding_disbursed"]["value"] == "250"
+        assert metrics["kf_odp_approved"]["value"] == "99"
 
 
 class TestReportedAttributes(BaseTest):

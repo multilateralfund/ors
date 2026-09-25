@@ -5,6 +5,7 @@ See ``docs/dashboard_metrics.md``.
 """
 
 # pylint: disable=R0911
+from decimal import Decimal, ROUND_DOWN
 import logging
 from collections.abc import Sequence
 from typing import Any, Callable
@@ -77,6 +78,27 @@ def _rows(projects: QuerySet[Project], country: Country | None) -> list[Project]
     )
 
 
+def format_number(num: float, decimals: int = 0, currency: str = "") -> str:
+    """Format large number and optionally include currency."""
+    sign = "-" if num < 0 else ""
+    num = abs(num)
+
+    if num >= 1_000_000_000:
+        if num % 1_000_000_000 == 0:
+            return f"{currency}{sign}{num // 1_000_000_000}B"
+        return f"{currency}{sign}{round(num / 1_000_000_000, 1)}B"
+
+    if num >= 1_000_000:
+        if num % 1_000_000 == 0:
+            return f"{currency}{sign}{num // 1_000_000}M"
+        return f"{currency}{sign}{round(num / 1_000_000, 1)}M"
+
+    value = Decimal(str(num))
+    quantizer = Decimal("1." + "0" * decimals)
+    value = value.quantize(quantizer, rounding=ROUND_DOWN)
+    return f"{currency}{sign}{value:,.{decimals}f}"
+
+
 def funds(row: Any) -> float:
     """Approved funding for one project.
 
@@ -96,12 +118,18 @@ def phase_out(rows: Sequence[Any], field: str) -> float:
     return round(float(sum(getattr(row.project, field) or 0 for row in rows)), 2)
 
 
-def funds_pair(rows: Sequence[Any]) -> dict[str, float]:
+def funds_pair(
+    rows: Sequence[Any], use_format_number: bool = False
+) -> dict[str, float]:
     """The two money totals that appear side by side all over both pages."""
-    return {
+    result = {
         "funds_approved": round(sum(funds(row) for row in rows), 2),
         "funds_plus_psc": round(sum(funds_plus_psc(row) for row in rows), 2),
     }
+    if use_format_number:
+        result["funds_approved"] = format_number(result["funds_approved"], 0, "$")
+        result["funds_plus_psc"] = format_number(result["funds_plus_psc"], 0, "$")
+    return result
 
 
 def _is_mya(row: Any) -> bool:
@@ -123,7 +151,9 @@ def _distinct(rows: Sequence[Any], attribute: str) -> int:
     )
 
 
-def count_project_grains(rows: Sequence[Any]) -> dict[str, int]:
+def count_project_grains(
+    rows: Sequence[Any], use_format_number: bool = False
+) -> dict[str, int]:
     """One project count per grain, because the page quotes more than one.
 
     A multi-year agreement is many components under one metacode; an individual
@@ -133,18 +163,24 @@ def count_project_grains(rows: Sequence[Any]) -> dict[str, int]:
     mya = [row for row in rows if _is_mya(row)]
     individual = [row for row in rows if not _is_mya(row)]
     return {
-        **project_counts(rows),
-        "mya_by_metacode": _distinct(mya, "metacode"),
-        "individual_by_code": _distinct(individual, "code"),
+        **project_counts(rows, use_format_number),
+        "mya_by_metacode": format_number(_distinct(mya, "metacode")),
+        "individual_by_code": format_number(_distinct(individual, "code")),
     }
 
 
-def project_counts(rows: Sequence[Any]) -> dict[str, int]:
+def project_counts(
+    rows: Sequence[Any], use_format_number: bool = False
+) -> dict[str, int]:
     """How many projects, counted by component and by agreement."""
-    return {
+    result = {
         "projects_by_code": _distinct(rows, "code"),
         "projects_by_metacode": _distinct(rows, "metacode"),
     }
+    if use_format_number:
+        result["projects_by_code"] = format_number(result["projects_by_code"])
+        result["projects_by_metacode"] = format_number(result["projects_by_metacode"])
+    return result
 
 
 def totals(rows: Sequence[Any]) -> dict[str, Any]:
@@ -288,26 +324,3 @@ def resolve_entry(key: str) -> tuple[Country, dict[str, Any]] | None:
         if entry["key"].upper() == wanted:
             return country, entry
     return None
-
-
-def format_money(num: float) -> str:
-    """Format a number as a money string with suffixes."""
-    sign = "-" if num < 0 else ""
-    num = abs(num)
-
-    if num >= 1_000_000_000:
-        if num % 1_000_000_000 == 0:
-            return f"${sign}{num // 1_000_000_000}B"
-        return f"${sign}{round(num / 1_000_000_000, 1)}B"
-
-    if num >= 1_000_000:
-        if num % 1_000_000 == 0:
-            return f"${sign}{num // 1_000_000}M"
-        return f"${sign}{round(num / 1_000_000, 1)}M"
-
-    if num >= 1_000:
-        if num % 1_000 == 0:
-            return f"${sign}{num // 1_000}K"
-        return f"${sign}{round(num / 1_000, 1)}K"
-
-    return f"${sign}{round(num, 0):,}"

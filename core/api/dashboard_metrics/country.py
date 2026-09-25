@@ -22,7 +22,7 @@ from core.api.dashboard_metrics.classify import (
 )
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
-    format_money,
+    format_number,
     funds_pair,
     grouped,
     grouped_row,
@@ -249,23 +249,30 @@ def _reported_by_any_project(context: MetricContext, fields: tuple[str, ...]) ->
 
 def kf_projects_approved(context: MetricContext) -> int:
     """How many projects the country has had approved."""
-    return project_counts(context.projects)["projects_by_code"]
+    return format_number(project_counts(context.projects)["projects_by_code"])
 
 
 def kf_projects_ongoing(context: MetricContext) -> int:
     """How many of them are still running."""
-    return project_counts(context.with_status(ONGOING_STATUS_CODE))["projects_by_code"]
+    return format_number(
+        project_counts(context.with_status(ONGOING_STATUS_CODE))["projects_by_code"]
+    )
 
 
 def kf_funding_disbursed(context: MetricContext) -> float | None:
     """What has actually been paid out to the country."""
-    return context.apr.funds_disbursed()["all_time"] if context.apr else None
+    result = context.apr.funds_disbursed()["all_time"] if context.apr else None
+    if result:
+        return format_number(result)
+    return
 
 
 def kf_phased_out(context: MetricContext, fields: tuple[str, ...]) -> float | None:
     """What the reporting cycle says was removed, as against what was approved."""
     response = context.apr.phased_out(fields) if context.apr else None
-    return response
+    if response:
+        return format_number(response)
+    return
 
 
 def trend_ods_consumption(context: MetricContext) -> dict | None:
@@ -305,16 +312,16 @@ def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
             try:
                 if not table[index]["group"] == item["label"]:
                     item["percent"] = 0
-                    item["displayValue"] = format_money(0)
+                    item["displayValue"] = format_number(0, 0, "$")
                     continue
             except (IndexError, TypeError):
                 item["percent"] = 0
-                item["displayValue"] = format_money(0)
+                item["displayValue"] = format_number(0, 0, "$")
                 continue
             item["percent"] = round(
-                table[index]["funds_plus_psc"] / theme_total(context) * 100, 2
+                table[index]["funds_plus_psc"] / theme_total(context, False) * 100, 2
             )
-            item["displayValue"] = format_money(table[index]["funds_plus_psc"])
+            item["displayValue"] = format_number(table[index]["funds_plus_psc"], 0, "$")
             index += 1
     return {
         "type": "bar_list",
@@ -324,14 +331,14 @@ def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
         "groups": groups,
         "total": {
             "label": "TOTAL APPROVED",
-            "displayValue": format_money(total_value),
+            "displayValue": total_value,
         },
     }
 
 
-def theme_total(context: MetricContext) -> float:
+def theme_total(context: MetricContext, use_format_number: bool = True) -> float:
     """Everything approved for the country, which is the chart's callout figure."""
-    return funds_pair(context.projects)["funds_plus_psc"]
+    return funds_pair(context.projects, use_format_number)["funds_plus_psc"]
 
 
 def theme_unmapped(context: MetricContext) -> float:
@@ -339,7 +346,7 @@ def theme_unmapped(context: MetricContext) -> float:
 
     It is inside the callout total and inside none of the bars.
     """
-    return funds_pair([row for row in context.projects if not _theme_of(row)])[
+    return funds_pair([row for row in context.projects if not _theme_of(row)], True)[
         "funds_plus_psc"
     ]
 
@@ -396,14 +403,14 @@ def sector_tonnage(
         "donuts": [
             {
                 "label": None,
-                "total": str(total),
+                "total": format_number(total),
                 "total_label": "TOTAL",
                 "total_position": "above",
                 "series": [
                     {
                         "name": row["group"],
                         "value": row["tonnage"],
-                        "displayValue": str(row["tonnage"]),
+                        "displayValue": format_number(row["tonnage"]),
                         "color": coloring["color"],
                         "icon": coloring["icon"],
                     }
@@ -422,46 +429,55 @@ def prod_tonnage(context: MetricContext) -> float | None:
     those countries.
     """
     rows = [row for row in context.projects if row.is_production]
-    return phase_out(rows, TOTAL_PHASE_OUT_ODP) if rows else None
+    return format_number(phase_out(rows, TOTAL_PHASE_OUT_ODP)) if rows else None
 
 
 def ee_kwh_saved(context: MetricContext) -> float | None:
     """Returns the sum of energy_savings_actual entries of all the projects in context"""
-    return sum(
+    result = sum(
         classified_project.project.energy_savings_actual or 0
         for classified_project in context.projects
     )
+    return format_number(result)
 
 
 def impact_technicians(context: MetricContext) -> int | None:
     """Returns the sum of total_number_of_technicians_trained_actual entries of all the projects in context"""
-    return sum(
-        classified_project.project.total_number_of_technicians_trained_actual or 0
-        for classified_project in context.projects
+    return format_number(
+        sum(
+            classified_project.project.total_number_of_technicians_trained_actual or 0
+            for classified_project in context.projects
+        )
     )
 
 
 def impact_customs(context: MetricContext) -> int | None:
     """Returns the sum of total_number_of_customs_officers_trained_actual entries of all the projects in context"""
-    return sum(
-        classified_project.project.total_number_of_customs_officers_trained_actual or 0
-        for classified_project in context.projects
+    return format_number(
+        sum(
+            classified_project.project.total_number_of_customs_officers_trained_actual
+            or 0
+            for classified_project in context.projects
+        )
     )
 
 
 def impact_enterprises(context: MetricContext) -> int | None:
     """Returns the sum of total_number_of_customs_officers_trained_actual entries of all the projects in context"""
-    return sum(
+    return format_number(
         sum(
-            [
-                classified_project.project.number_of_smes_directly_funded_actual or 0,
-                classified_project.project.number_of_non_sme_directly_funded_actual
-                or 0,
-                classified_project.project.number_of_both_sme_non_sme_not_directly_funded_actual
-                or 0,
-            ]
+            sum(
+                [
+                    classified_project.project.number_of_smes_directly_funded_actual
+                    or 0,
+                    classified_project.project.number_of_non_sme_directly_funded_actual
+                    or 0,
+                    classified_project.project.number_of_both_sme_non_sme_not_directly_funded_actual
+                    or 0,
+                ]
+            )
+            for classified_project in context.projects
         )
-        for classified_project in context.projects
     )
 
 
@@ -719,7 +735,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund + support_cost_psc",
-        compute=lambda context: funds_pair(context.projects),
+        compute=lambda context: funds_pair(context.projects, True),
     ),
     Metric(
         metric_id="kf_funding_disbursed",
@@ -761,7 +777,9 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="sum(Total phase-out (ODP tonnes)) - the approved/planned total",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_phase_out_odp_tonnes",
-        compute=lambda context: phase_out(context.projects, TOTAL_PHASE_OUT_ODP),
+        compute=lambda context: format_number(
+            phase_out(context.projects, TOTAL_PHASE_OUT_ODP)
+        ),
     ),
     Metric(
         metric_id="kf_co2_phased",
@@ -791,7 +809,9 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="sum(Total phase-out (CO2-eq tonnes)) - the approved/planned total",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_phase_out_co2_tonnes",
-        compute=lambda context: phase_out(context.projects, TOTAL_PHASE_OUT_CO2),
+        compute=lambda context: format_number(
+            phase_out(context.projects, TOTAL_PHASE_OUT_CO2)
+        ),
     ),
     Metric(
         metric_id="trend_ods_consumption",
