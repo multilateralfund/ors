@@ -61,50 +61,54 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
       <div className="border-0 border-t border-solid border-primary py-6">
         <SubSectionTitle>Project components</SubSectionTitle>
         <div className="flex flex-col gap-y-6">
-          {pcData.length > 0
-            ? map(pcData, (pc, pcIndex) => {
-                const llData = pcData[pcIndex][llField] || []
+          {pcData.length > 0 ? (
+            map(pcData, (pc, pcIndex) => {
+              const llData = pcData[pcIndex][llField] || []
 
-                return (
-                  <div key={pcIndex}>
-                    <div className="rounded-t-lg bg-primary px-8 py-4">
-                      {detailItem(
-                        'Component',
-                        pc.project_component_option?.name,
-                        pcTitleClassname,
-                      )}
-                    </div>
-                    <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                      <SubSectionTitle>Lessons learned</SubSectionTitle>
-                      {llData.length > 0
-                        ? map(llData, (ll, llIndex) => (
-                            <div key={llIndex}>
-                              <div className="flex gap-5 pt-4">
-                                <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-[#EBFF00]">
-                                  {llIndex + 1}
-                                </div>
-                                <div>
-                                  <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
-                                    {ll.lesson?.name || '-'}
-                                  </h4>
-                                  {detailItem(
-                                    pcrFieldsMapping.description,
-                                    ll.description,
-                                    pcTextareaClassname,
-                                  )}
-                                </div>
-                              </div>
-                              {llIndex !== llData.length - 1 && (
-                                <Divider className="my-4" />
+              return (
+                <div key={pcIndex}>
+                  <div className="rounded-t-lg bg-primary px-8 py-4">
+                    {detailItem(
+                      'Component',
+                      pc.project_component_option?.name,
+                      pcTitleClassname,
+                    )}
+                  </div>
+                  <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
+                    <SubSectionTitle>Lessons learned</SubSectionTitle>
+                    {llData.length > 0 ? (
+                      map(llData, (ll, llIndex) => (
+                        <div key={llIndex}>
+                          <div className="flex gap-5 pt-4">
+                            <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-[#EBFF00]">
+                              {llIndex + 1}
+                            </div>
+                            <div>
+                              <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
+                                {ll.lesson?.name || '-'}
+                              </h4>
+                              {detailItem(
+                                pcrFieldsMapping.description,
+                                ll.description,
+                                pcTextareaClassname,
                               )}
                             </div>
-                          ))
-                        : '-'}
-                    </div>
+                          </div>
+                          {llIndex !== llData.length - 1 && (
+                            <Divider className="my-4" />
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-3xl text-primary">-</div>
+                    )}
                   </div>
-                )
-              })
-            : '-'}
+                </div>
+              )
+            })
+          ) : (
+            <div className="text-3xl text-primary">-</div>
+          )}
         </div>
       </div>
     </>

@@ -33,14 +33,16 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
 
   const updatedClassname = {
     ...activitiesTextareaClassname,
-    labelClassname: activitiesTextareaClassname.labelClassname + ' w-28',
+    containerClassname:
+      activitiesTextareaClassname.containerClassname +
+      ' md:!flex-row !gap-2 md:!gap-20',
+    labelClassname: activitiesTextareaClassname.labelClassname + ' md:w-28',
   }
 
   const outputFieldsClassname = {
     ...activitiesTextareaClassname,
     containerClassname:
-      activitiesTextareaClassname.containerClassname +
-      ' !flex-col !gap-0 !p-0 w-auto',
+      activitiesTextareaClassname.containerClassname + ' !gap-0 !p-0 w-auto',
     labelClassname: activitiesTextareaClassname.labelClassname + ' !mt-0',
   }
 
@@ -69,49 +71,51 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
       <div className="border-0 border-t border-solid border-primary py-6">
         <SubSectionTitle>Activities</SubSectionTitle>
         <div className="flex flex-col gap-y-6">
-          {activitesData.length > 0
-            ? map(activitesData, (activity, activityIndex) => (
-                <div key={activityIndex}>
-                  <div className="rounded-t-lg bg-primary px-8 py-4">
-                    {detailItem('', activity.activity_title, {
-                      valueClassname: 'text-white !font-bold !text-3xl',
-                    })}
-                  </div>
-                  <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                    {detailItem(
-                      pcrFieldsMapping.type_of_activity,
-                      activity.type_of_activity,
-                      updatedClassname,
-                    )}
-                    <Divider className="my-4 w-[65%]" />
-                    {detailItem(
-                      pcrFieldsMapping.type_of_sector,
-                      activity.type_of_sector,
-                      updatedClassname,
-                    )}
-                    <div className="my-2 grid grid-cols-1 gap-6 rounded-lg bg-[#F5F5F5] p-6 lg:grid-cols-2">
-                      {detailItem(
-                        pcrFieldsMapping.planned_output,
-                        activity.planned_output,
-                        outputFieldsClassname,
-                        true,
-                      )}
-                      {detailItem(
-                        pcrFieldsMapping.actual_activity_output,
-                        activity.actual_activity_output,
-                        outputFieldsClassname,
-                        true,
-                      )}
-                    </div>
-                    {detailItem(
-                      pcrFieldsMapping.additional_remarks,
-                      activity.additional_remarks,
-                      updatedClassname,
-                    )}
-                  </div>
+          {activitesData.length > 0 ? (
+            map(activitesData, (activity, activityIndex) => (
+              <div key={activityIndex}>
+                <div className="rounded-t-lg bg-primary px-8 py-4">
+                  {detailItem('', activity.activity_title, {
+                    valueClassname: 'text-white !font-bold !text-3xl',
+                  })}
                 </div>
-              ))
-            : '-'}
+                <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
+                  {detailItem(
+                    pcrFieldsMapping.type_of_activity,
+                    activity.type_of_activity,
+                    updatedClassname,
+                  )}
+                  <Divider className="my-4 w-[65%]" />
+                  {detailItem(
+                    pcrFieldsMapping.type_of_sector,
+                    activity.type_of_sector,
+                    updatedClassname,
+                  )}
+                  <div className="my-2 grid grid-cols-1 gap-6 rounded-lg bg-[#F5F5F5] p-6 lg:grid-cols-2">
+                    {detailItem(
+                      pcrFieldsMapping.planned_output,
+                      activity.planned_output,
+                      outputFieldsClassname,
+                      true,
+                    )}
+                    {detailItem(
+                      pcrFieldsMapping.actual_activity_output,
+                      activity.actual_activity_output,
+                      outputFieldsClassname,
+                      true,
+                    )}
+                  </div>
+                  {detailItem(
+                    pcrFieldsMapping.additional_remarks,
+                    activity.additional_remarks,
+                    updatedClassname,
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-3xl text-primary">-</div>
+          )}
         </div>
       </div>
     </>

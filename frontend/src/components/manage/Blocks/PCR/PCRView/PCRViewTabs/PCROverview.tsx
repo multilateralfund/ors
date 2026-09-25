@@ -74,21 +74,23 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
         <div className="flex flex-col">
           <SubSectionTitle>Additional comments</SubSectionTitle>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {pcr.additional_comments.length > 0
-              ? map(pcr.additional_comments, (comment, commentIndex) => (
-                  <div
-                    key={commentIndex}
-                    className="flex flex-col rounded-lg bg-white p-6"
-                  >
-                    {detailItem(pcrFieldsMapping.entity, comment.entity)}
-                    <Divider className="my-6" />
-                    {detailItem(pcrFieldsMapping.comment, comment.comment, {
-                      containerClassname: 'w-[85%]',
-                      valueClassname: '!text-black !font-normal !text-lg',
-                    })}
-                  </div>
-                ))
-              : '-'}
+            {pcr.additional_comments.length > 0 ? (
+              map(pcr.additional_comments, (comment, commentIndex) => (
+                <div
+                  key={commentIndex}
+                  className="flex flex-col rounded-lg bg-white p-6"
+                >
+                  {detailItem(pcrFieldsMapping.entity, comment.entity)}
+                  <Divider className="my-6" />
+                  {detailItem(pcrFieldsMapping.comment, comment.comment, {
+                    containerClassname: 'w-[85%]',
+                    valueClassname: '!text-black !font-normal !text-lg',
+                  })}
+                </div>
+              ))
+            ) : (
+              <div className="text-3xl text-primary">-</div>
+            )}
           </div>
         </div>
         <Divider />

@@ -91,6 +91,12 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   section_id: 'Section',
 }
 
+export const viewPcrFieldsMapping: { [key: string]: string } = {
+  total_mlf_funding_approved: 'MLF funding approved',
+  total_mlf_funding_disbursed: 'MLF funding disbursed',
+  total_mlf_funding_returned: 'MLF funding returned',
+}
+
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   financial_figures_status_explanation: 'Financial figures status explanation',
   addresses: 'Address(es) of enterprise(s) and project site(s)',
@@ -201,7 +207,7 @@ export const overviewTextareaClassname = {
 }
 
 export const activitiesTextareaClassname = {
-  containerClassname: '!gap-20 !flex-row p-4 w-[65%] pl-0',
+  containerClassname: 'p-4 w-[65%] pl-0',
   labelClassname: labelClassname,
   valueClassname: valueClassname,
 }

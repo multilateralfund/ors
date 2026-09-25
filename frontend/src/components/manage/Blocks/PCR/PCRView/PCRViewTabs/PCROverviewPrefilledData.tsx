@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { Fragment, useContext } from 'react'
 
 import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
@@ -9,8 +9,8 @@ import {
   dateDetailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
+import { pcrFieldsMapping, viewPcrFieldsMapping } from '../../constants'
 import { PCROverviewProps, PCRResponse } from '../../interfaces'
-import { pcrFieldsMapping } from '../../constants'
 import { useStore } from '@ors/store'
 
 import { find, keys, map, uniq } from 'lodash'
@@ -146,6 +146,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
 
         return (
           <div
+            key={index}
             className={cx(
               'rounded-lg border-0 border-b-[3px] border-solid border-[#e5e7eb] bg-white p-4',
               {
@@ -162,17 +163,23 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
               <div className="self-center text-3xl font-medium uppercase text-primary">
                 {agency}
               </div>
-              {map(fundingFields, (field) => {
+              {map(fundingFields, (field, fieldIndex) => {
                 const formattedField = isTotal ? `total_${field}` : field
 
-                return numberDetailItem(
-                  pcrFieldsMapping[formattedField],
-                  formatAgencyFundFields(
-                    formattedField as keyof PCROverviewProps,
-                    !isTotal ? Number(agencyIds[index]) : undefined,
-                  ),
-                  'decimal',
-                  '!text-3xl',
+                return (
+                  <Fragment key={fieldIndex}>
+                    {numberDetailItem(
+                      { ...pcrFieldsMapping, ...viewPcrFieldsMapping }[
+                        formattedField
+                      ],
+                      formatAgencyFundFields(
+                        formattedField as keyof PCROverviewProps,
+                        !isTotal ? Number(agencyIds[index]) : undefined,
+                      ),
+                      'decimal',
+                      '!text-3xl',
+                    )}
+                  </Fragment>
                 )
               })}
             </div>
