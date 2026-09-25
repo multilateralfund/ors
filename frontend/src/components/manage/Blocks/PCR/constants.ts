@@ -190,8 +190,15 @@ export const evidencesField = 'evidences'
 
 export const borderedValueClassname =
   'mt-1 rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'
-export const textareaClassname = {
+
+export const overviewTextareaClassname = {
   containerClassname: 'bg-white !gap-20 !flex-row p-4 rounded-lg w-[65%]',
   labelClassname: 'self-start whitespace-nowrap mt-0.5',
-  valueClassname: ' min-w-0 flex-1 !text-black !font-normal !text-lg',
+  valueClassname: 'min-w-0 flex-1 !text-black !font-normal !text-lg',
+}
+
+export const activitiesTextareaClassname = {
+  containerClassname: '!gap-20 !flex-row p-4 w-[65%] pl-0',
+  labelClassname: 'self-start mt-0.5',
+  valueClassname: 'min-w-0 flex-1 !text-black !font-normal !text-lg',
 }

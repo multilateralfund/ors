@@ -4,7 +4,7 @@ import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
-  SectionTitle,
+  SubSectionTitle,
   detailItem,
   dateDetailItem,
   numberDetailItem,
@@ -140,7 +140,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
         </div>
       </div>
       <Divider className="my-6" />
-      <SectionTitle>Funding</SectionTitle>
+      <SubSectionTitle>Funding</SubSectionTitle>
       {agencyEntries.map((agency, index) => {
         const isTotal = agency === 'total'
 
