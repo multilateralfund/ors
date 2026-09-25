@@ -60,6 +60,7 @@ class Country(models.Model):
     is_a2 = models.BooleanField(default=False)
     consumption_category = models.CharField(max_length=100, blank=True)
     consumption_group = models.CharField(max_length=100, blank=True)
+
     ods_licensing = models.BooleanField(
         default=False,
         verbose_name="ODS import/export licensing system exists",
@@ -76,7 +77,13 @@ class Country(models.Model):
         default=False,
         verbose_name="HFC-specific quota system exists",
     )
-
+    competence_certification_system = models.BooleanField(
+        default=False, verbose_name="Competence Certification System Established"
+    )
+    meps = models.BooleanField(
+        default=False,
+        verbose_name="MEPS (Estabslished/Improved/Enforced) from Funded Projects",
+    )
     # APR-specific fields
     abbr_for_apr = models.CharField(
         max_length=10, null=True, blank=True, verbose_name="Abbrevation for APR"
