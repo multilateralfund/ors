@@ -1,11 +1,19 @@
-import { Fragment, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
-import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { detailItem } from './ViewHelperComponents'
-import { cdField, pcrFieldsMapping } from '../../constants'
+import {
+  SectionTitle,
+  SubSectionTitle,
+  detailItem,
+} from './ViewHelperComponents'
 import { PCRResponse } from '../../interfaces'
+import {
+  pcrFieldsMapping,
+  cdField,
+  pcTitleClassname,
+  pcTextareaClassname,
+} from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
@@ -30,9 +38,10 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
 
   return (
     <>
+      <SectionTitle>Causes of delay</SectionTitle>
       <Tabs
         aria-label="causes-of-delay-view-tabs"
-        className="sectionsTabs"
+        className="sectionsTabs mt-6"
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
@@ -49,48 +58,57 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        <SectionTitle>Project components</SectionTitle>
-        <div className="flex flex-col gap-y-4">
-          {pcData.length > 0
-            ? map(pcData, (pc, pcIndex) => {
-                const cdData = pcData[pcIndex][cdField] || []
+      <div className="border-0 border-t border-solid border-primary py-6">
+        <SubSectionTitle>Project components</SubSectionTitle>
+        <div className="flex flex-col gap-y-6">
+          {pcData.length > 0 ? (
+            map(pcData, (pc, pcIndex) => {
+              const cdData = pcData[pcIndex][cdField] || []
 
-                return (
-                  <div key={pcIndex} className="flex items-center gap-2">
-                    <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-                      {detailItem(
-                        pcrFieldsMapping.project_component_option_id,
-                        pc.project_component_option?.name,
-                      )}
-                      <div className="mt-4">
-                        <SectionTitle>Causes of delay</SectionTitle>
-                        <div className="flex flex-col gap-y-4 px-5">
-                          {cdData.length > 0
-                            ? map(cdData, (cd, cdIndex) => (
-                                <Fragment key={cdIndex}>
-                                  {detailItem(
-                                    pcrFieldsMapping.delay_id,
-                                    cd.delay?.name,
-                                  )}
-                                  {detailItem(
-                                    pcrFieldsMapping.description,
-                                    cd.description,
-                                    'self-start whitespace-nowrap',
-                                  )}
-                                  {cdIndex !== cdData.length - 1 && (
-                                    <Divider className="my-1" />
-                                  )}
-                                </Fragment>
-                              ))
-                            : '-'}
-                        </div>
-                      </div>
-                    </div>
+              return (
+                <div key={pcIndex}>
+                  <div className="rounded-t-lg bg-primary px-8 py-4">
+                    {detailItem(
+                      'Component',
+                      pc.project_component_option?.name,
+                      pcTitleClassname,
+                    )}
                   </div>
-                )
-              })
-            : '-'}
+                  <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
+                    <SubSectionTitle>Causes of delay</SubSectionTitle>
+                    {cdData.length > 0 ? (
+                      map(cdData, (cd, cdIndex) => (
+                        <div key={cdIndex}>
+                          <div className="flex gap-5 pt-4">
+                            <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-[#EBFF00]">
+                              {cdIndex + 1}
+                            </div>
+                            <div>
+                              <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
+                                {cd.delay?.name || '-'}
+                              </h4>
+                              {detailItem(
+                                pcrFieldsMapping.description,
+                                cd.description,
+                                pcTextareaClassname,
+                              )}
+                            </div>
+                          </div>
+                          {cdIndex !== cdData.length - 1 && (
+                            <Divider className="my-4" />
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-3xl text-primary">-</div>
+                    )}
+                  </div>
+                </div>
+              )
+            })
+          ) : (
+            <div className="text-3xl text-primary">-</div>
+          )}
         </div>
       </div>
     </>

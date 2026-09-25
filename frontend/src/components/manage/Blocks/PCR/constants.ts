@@ -91,6 +91,12 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   section_id: 'Section',
 }
 
+export const viewPcrFieldsMapping: { [key: string]: string } = {
+  total_mlf_funding_approved: 'MLF funding approved',
+  total_mlf_funding_disbursed: 'MLF funding disbursed',
+  total_mlf_funding_returned: 'MLF funding returned',
+}
+
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   financial_figures_status_explanation: 'Financial figures status explanation',
   addresses: 'Address(es) of enterprise(s) and project site(s)',
@@ -187,3 +193,33 @@ export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
 export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
+
+export const borderedValueClassname =
+  'mt-1 rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'
+
+const valueClassname = 'min-w-0 flex-1 !text-black !font-normal !text-lg'
+const labelClassname = 'self-start mt-0.5'
+
+export const overviewTextareaClassname = {
+  containerClassname: 'bg-white !gap-20 !flex-row p-4 rounded-lg w-[65%]',
+  labelClassname: labelClassname + ' whitespace-nowrap',
+  valueClassname: valueClassname,
+}
+
+export const activitiesTextareaClassname = {
+  containerClassname: 'p-4 w-[65%] pl-0',
+  labelClassname: labelClassname,
+  valueClassname: valueClassname,
+}
+
+export const pcTitleClassname = {
+  containerClassname: 'gap-2',
+  labelClassname: 'uppercase text-[#F5FF80]',
+  valueClassname: 'text-white !font-bold !text-3xl',
+}
+
+export const pcTextareaClassname = {
+  containerClassname: 'w-[65%] p-0',
+  labelClassname: labelClassname,
+  valueClassname: valueClassname,
+}

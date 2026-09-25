@@ -1,11 +1,14 @@
-import { Fragment, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
-import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { detailItem } from './ViewHelperComponents'
-import { initialActivitiesData, pcrFieldsMapping } from '../../constants'
-import { PCRResponse, Activity } from '../../interfaces'
+import {
+  SectionTitle,
+  SubSectionTitle,
+  detailItem,
+} from './ViewHelperComponents'
+import { pcrFieldsMapping, activitiesTextareaClassname } from '../../constants'
+import { PCRResponse } from '../../interfaces'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
@@ -28,11 +31,27 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
     ({ agency_id }) => agency_id === Number(crtAgencyId),
   )
 
+  const updatedClassname = {
+    ...activitiesTextareaClassname,
+    containerClassname:
+      activitiesTextareaClassname.containerClassname +
+      ' md:!flex-row !gap-2 md:!gap-20',
+    labelClassname: activitiesTextareaClassname.labelClassname + ' md:w-28',
+  }
+
+  const outputFieldsClassname = {
+    ...activitiesTextareaClassname,
+    containerClassname:
+      activitiesTextareaClassname.containerClassname + ' !gap-0 !p-0 w-auto',
+    labelClassname: activitiesTextareaClassname.labelClassname + ' !mt-0',
+  }
+
   return (
     <>
+      <SectionTitle>Project results overall assessment</SectionTitle>
       <Tabs
         aria-label="results-assessment-view-tabs"
-        className="sectionsTabs"
+        className="sectionsTabs mt-6"
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
@@ -49,35 +68,54 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        <SectionTitle>Activities</SectionTitle>
-        <div className="flex flex-col gap-y-4 px-5">
-          {activitesData.length > 0
-            ? map(activitesData, (activity, activityIndex) => (
-                <Fragment key={activityIndex}>
+      <div className="border-0 border-t border-solid border-primary py-6">
+        <SubSectionTitle>Activities</SubSectionTitle>
+        <div className="flex flex-col gap-y-6">
+          {activitesData.length > 0 ? (
+            map(activitesData, (activity, activityIndex) => (
+              <div key={activityIndex}>
+                <div className="rounded-t-lg bg-primary px-8 py-4">
+                  {detailItem('', activity.activity_title, {
+                    valueClassname: 'text-white !font-bold !text-3xl',
+                  })}
+                </div>
+                <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
                   {detailItem(
-                    pcrFieldsMapping.activity_title,
-                    activity.activity_title,
-                    'self-start whitespace-nowrap',
+                    pcrFieldsMapping.type_of_activity,
+                    activity.type_of_activity,
+                    updatedClassname,
                   )}
-                  {map(
-                    keys(initialActivitiesData).slice(1),
-                    (field: keyof Activity, fieldIndex) => (
-                      <Fragment key={fieldIndex}>
-                        {detailItem(
-                          pcrFieldsMapping[field],
-                          activity[field],
-                          'self-start whitespace-nowrap',
-                        )}
-                      </Fragment>
-                    ),
+                  <Divider className="my-4 w-[65%]" />
+                  {detailItem(
+                    pcrFieldsMapping.type_of_sector,
+                    activity.type_of_sector,
+                    updatedClassname,
                   )}
-                  {activityIndex !== activitesData.length - 1 && (
-                    <Divider className="my-1" />
+                  <div className="my-2 grid grid-cols-1 gap-6 rounded-lg bg-[#F5F5F5] p-6 lg:grid-cols-2">
+                    {detailItem(
+                      pcrFieldsMapping.planned_output,
+                      activity.planned_output,
+                      outputFieldsClassname,
+                      true,
+                    )}
+                    {detailItem(
+                      pcrFieldsMapping.actual_activity_output,
+                      activity.actual_activity_output,
+                      outputFieldsClassname,
+                      true,
+                    )}
+                  </div>
+                  {detailItem(
+                    pcrFieldsMapping.additional_remarks,
+                    activity.additional_remarks,
+                    updatedClassname,
                   )}
-                </Fragment>
-              ))
-            : '-'}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-3xl text-primary">-</div>
+          )}
         </div>
       </div>
     </>
