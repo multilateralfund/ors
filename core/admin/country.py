@@ -1,3 +1,5 @@
+from admin_auto_filters.filters import AutocompleteFilterFactory
+
 from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
@@ -15,7 +17,11 @@ class CountryAdmin(admin.ModelAdmin):
         "abbr",
         "abbr_alt",
     ]
-    list_filter = ["location_type", "modules"]
+    list_filter = [
+        "location_type",
+        "modules",
+        AutocompleteFilterFactory("parent", "parent"),
+    ]
 
     def get_list_display(self, request):
         exclude = [

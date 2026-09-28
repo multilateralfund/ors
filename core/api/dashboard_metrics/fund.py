@@ -310,20 +310,20 @@ def theme(context: MetricContext, name: str) -> dict[str, Any]:
 def theme_count(context: MetricContext, name: str) -> dict[str, Any]:
     """One funding theme's share of the portfolio."""
     value = project_counts(context.where(lambda row: row.theme == name))
-    return value["projects_by_code"]
+    return format_number(value["projects_by_code"])
 
 
 def theme_funds_approved(context: MetricContext, name: str) -> dict[str, Any]:
     """One funding theme's share of the portfolio."""
     value = funds_pair(context.where(lambda row: row.theme == name))
-    return value["funds_plus_psc"]
+    return format_number(value["funds_plus_psc"], 0, "$")
 
 
 def theme_funds_disbursed(context: MetricContext, name: str) -> dict[str, Any]:
     """One funding theme's share of the portfolio."""
     projects = context.where(lambda row: row.theme == name)
     disbursed = context.apr_where([p.project.id for p in projects])
-    return disbursed.funds_disbursed()["active_cycle"]
+    return format_number(disbursed.funds_disbursed()["active_cycle"], 0, "$")
 
 
 def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
@@ -346,13 +346,13 @@ def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
 def sector_count(context: MetricContext, bucket: str) -> dict[str, Any]:
     """Number of projects for the given sector"""
     value = project_counts(context.where(lambda row: row.sector_bucket == bucket))
-    return value["projects_by_code"]
+    return format_number(value["projects_by_code"])
 
 
 def sector_funds_approved(context: MetricContext, bucket: str) -> dict[str, Any]:
     """One sector's share of the portfolio, and what has been paid out against it."""
     value = funds_pair(context.where(lambda row: row.sector_bucket == bucket))
-    return value["funds_plus_psc"]
+    return format_number(value["funds_plus_psc"], 0, "$")
 
 
 def sector_funds_disbursed(context: MetricContext, bucket: str) -> dict[str, Any]:
@@ -362,7 +362,7 @@ def sector_funds_disbursed(context: MetricContext, bucket: str) -> dict[str, Any
         if context.apr
         else {}
     )
-    return round(disbursed[bucket], 2) if bucket in disbursed else None
+    return format_number(disbursed[bucket], 0, "$")
 
 
 def funds_disbursed(context: MetricContext) -> dict[str, float] | None:
