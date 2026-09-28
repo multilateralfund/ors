@@ -204,6 +204,7 @@ def grouped(rows: Sequence[Any], key: Callable[[Any], Any]) -> list[dict[str, An
         group = key(row)
         if group:
             buckets.setdefault(str(group), []).append(row)
+
     table = [grouped_row(group, members) for group, members in buckets.items()]
     return sorted(table, key=lambda entry: -entry["projects_by_code"])
 
