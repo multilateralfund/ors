@@ -39,7 +39,13 @@ const PCRViewWrapper = () => {
           <HeaderTitle>
             <div className="align-center flex flex-wrap justify-between gap-4">
               <div className="flex flex-col">
-                <RedirectBackButton />
+                <div className="flex flex-row flex-wrap gap-2">
+                  <RedirectBackButton />
+                  <div className="mb-3 flex gap-2 text-lg uppercase tracking-[0.05em] text-[#4D4D4D]">
+                    <span>/</span>
+                    <span>View PCR</span>
+                  </div>
+                </div>
                 <PageHeading>
                   <span className="font-medium text-[#4D4D4D]">View PCR: </span>
                   <span>{pcrMetaproject?.data?.umbrella_code}</span>

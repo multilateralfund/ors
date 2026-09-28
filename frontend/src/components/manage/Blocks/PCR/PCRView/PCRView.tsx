@@ -29,7 +29,7 @@ const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
     },
     {
       id: 'results_assessment',
-      label: 'Project results overall assessment',
+      label: 'Project results',
       component: <PCRResultsAssessment {...{ pcr }} />,
     },
     {
