@@ -201,13 +201,14 @@ const valueClassname = 'min-w-0 flex-1 !text-black !font-normal !text-lg'
 const labelClassname = 'self-start mt-0.5'
 
 export const overviewTextareaClassname = {
-  containerClassname: 'bg-white !gap-20 !flex-row p-4 rounded-lg w-[65%]',
-  labelClassname: labelClassname + ' whitespace-nowrap',
+  containerClassname:
+    'bg-white !gap-2 lg:!gap-20 lg:!flex-row p-4 rounded-lg w-full lg:w-[65%]',
+  labelClassname: labelClassname + ' lg:w-36',
   valueClassname: valueClassname,
 }
 
 export const activitiesTextareaClassname = {
-  containerClassname: 'p-4 w-[65%] pl-0',
+  containerClassname: 'p-4 w-full lg:w-[65%] pl-0',
   labelClassname: labelClassname,
   valueClassname: valueClassname,
 }
@@ -219,7 +220,7 @@ export const pcTitleClassname = {
 }
 
 export const pcTextareaClassname = {
-  containerClassname: 'w-[65%] p-0',
+  containerClassname: 'w-full lg:w-[65%] p-0',
   labelClassname: labelClassname,
   valueClassname: valueClassname,
 }

@@ -39,12 +39,12 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
           pcr.financial_figures_status_explanation,
           overviewTextareaClassname,
         )}
-        <Divider className="w-[65%]" />
+        <Divider className="w-full lg:w-[65%]" />
         {detailItem(pcrFieldsMapping.addresses, pcr.addresses, {
-          containerClassname: '!gap-2 w-[65%]',
+          containerClassname: '!gap-2 w-full lg:w-[65%]',
           valueClassname: '!text-black !font-normal !text-lg',
         })}
-        <Divider className="w-[65%]" />
+        <Divider className="w-full lg:w-[65%]" />
         {detailItem(
           pcrFieldsMapping.project_goal_achieved,
           pcr.project_goal_achieved,
@@ -55,7 +55,7 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
           pcr.project_goal_achieved_explanation,
           overviewTextareaClassname,
         )}
-        <Divider className="w-[65%]" />
+        <Divider className="w-full lg:w-[65%]" />
         {detailItem(pcrFieldsMapping.rating, pcr.rating, {
           valueClassname: borderedValueClassname,
         })}
@@ -70,7 +70,7 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
           pcr.rating_explanation,
           overviewTextareaClassname,
         )}
-        <Divider className="w-[65%]" />
+        <Divider className="w-full lg:w-[65%]" />
         <div className="flex flex-col">
           <SubSectionTitle>Additional comments</SubSectionTitle>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -95,7 +95,7 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
         </div>
         <Divider />
         {detailItem(pcrFieldsMapping.completed_by, pcr.completed_by, {
-          containerClassname: '!flex-row !gap-4',
+          containerClassname: '!gap-2 sm:!flex-row sm:!gap-4',
           labelClassname: 'content-center',
         })}
       </div>

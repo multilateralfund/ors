@@ -35,8 +35,8 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
     ...activitiesTextareaClassname,
     containerClassname:
       activitiesTextareaClassname.containerClassname +
-      ' md:!flex-row !gap-2 md:!gap-20',
-    labelClassname: activitiesTextareaClassname.labelClassname + ' md:w-28',
+      ' lg:!flex-row !gap-2 lg:!gap-20',
+    labelClassname: activitiesTextareaClassname.labelClassname + ' lg:w-28',
   }
 
   const outputFieldsClassname = {
@@ -85,7 +85,7 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
                     activity.type_of_activity,
                     updatedClassname,
                   )}
-                  <Divider className="my-4 w-[65%]" />
+                  <Divider className="my-4 w-full lg:w-[65%]" />
                   {detailItem(
                     pcrFieldsMapping.type_of_sector,
                     activity.type_of_sector,

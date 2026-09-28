@@ -65,7 +65,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
   return (
     <>
       <div className="mb-4 flex flex-col gap-4">
-        <div className="mb-4 grid grid-cols-3 gap-x-8">
+        <div className="mb-4 grid grid-cols-1 gap-x-8 md:grid-cols-2 lg:grid-cols-3">
           <div>
             {detailItem(pcrFieldsMapping.country, countryValue?.name ?? '')}
             <Divider className="my-4" />
@@ -74,9 +74,9 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
             {detailItem(pcrFieldsMapping.metacode, umbrella_code ?? '')}
             <Divider className="my-4" />
           </div>
-          <div>
+          <div className="md:col-span-2 lg:col-span-1">
             {detailItem(pcrFieldsMapping.decisions, decisionsValues ?? '')}
-            <Divider className="my-4" />
+            <Divider className="my-4 md:w-[calc(50%-16px)] lg:w-full" />
           </div>
           <div>
             {dateDetailItem(
@@ -92,7 +92,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
             )}
             <Divider className="my-4" />
           </div>
-          <div />
+          <div className="hidden lg:block" />
           <div>
             {numberDetailItem(
               pcrFieldsMapping.phase_out_ods_actual,
@@ -109,7 +109,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
             )}
             <Divider className="my-4" />
           </div>
-          <div />
+          <div className="hidden lg:block" />
           <div>
             {numberDetailItem(
               formatFieldLabel(pcrFieldsMapping.phase_out_co2_eq_t_actual),
@@ -126,12 +126,15 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
             )}
             <Divider className="my-4" />
           </div>
-          <div />
-          {numberDetailItem(
-            pcrFieldsMapping.total_number_of_enterprises,
-            pcr.total_number_of_enterprises,
-            'number',
-          )}
+          <div className="hidden lg:block" />
+          <div>
+            {numberDetailItem(
+              pcrFieldsMapping.total_number_of_enterprises,
+              pcr.total_number_of_enterprises,
+              'number',
+            )}
+            <Divider className="my-4 block md:hidden" />
+          </div>
           {numberDetailItem(
             pcrFieldsMapping.total_number_of_trainnes,
             defaultData?.total_number_of_trainnes as string,
@@ -159,7 +162,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
               },
             )}
           >
-            <div className="grid grid-cols-4 gap-x-8 gap-y-4">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="self-center text-3xl font-medium uppercase text-primary">
                 {agency}
               </div>
