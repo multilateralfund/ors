@@ -20,6 +20,7 @@ THEME_ORDER = (
     "Disposal",
     "Emission Control",
     "Institutional Strengthening",
+    "Atmospheric Monitoring",
 )
 
 THEME_STRUCTURE = [
@@ -40,6 +41,7 @@ THEME_STRUCTURE = [
     {"items": [{"label": "Disposal", "color": "#7ACBEA"}]},
     {"items": [{"label": "Emission control", "color": "#9AD8EF"}]},
     {"items": [{"label": "Institutional strengthening", "color": "#DEF1FA"}]},
+    {"items": [{"label": "Atmospheric Monitoring", "color": "#DEF1FA"}]},
 ]
 
 SECTOR_HFC_COLORING = [
@@ -121,6 +123,7 @@ THEME_BY_CLUSTER_CODE = {
     "OOI": "Other ODS consumption",
     "OOPPP": "Other ODS production",
     "OOSP": "Other ODS consumption",
+    "ATMON": "Atmospheric Monitoring",
 }
 
 # Clusters that deliberately have no theme. Their funding is reported as

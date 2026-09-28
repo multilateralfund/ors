@@ -7,7 +7,7 @@ narrowed to one country, so these read the same primitives the fund-wide
 figures do and get a country's worth of answer back.
 """
 
-# pylint: disable=C0302,R1710
+# pylint: disable=C0302,R1710,W0702
 
 from functools import partial
 from typing import Any
@@ -321,24 +321,28 @@ def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
     order = {theme: rank for rank, theme in enumerate(taxonomy.THEME_ORDER)}
     table.sort(key=lambda row: order.get(row["group"], len(order)))
     groups = taxonomy.THEME_STRUCTURE
-    index = 0
+
     total_value = theme_total(context)
     for group in groups:
         for item in group["items"]:
-            try:
-                if not table[index]["group"] == item["label"]:
-                    item["percent"] = 0
-                    item["displayValue"] = format_number(0, 0, "$")
-                    continue
-            except (IndexError, TypeError):
+            found = False
+            for entry in table:
+                if entry["group"] == item["label"]:
+                    found = True
+                    try:
+                        item["percent"] = round(
+                            entry["funds_plus_psc"] / theme_total(context, False) * 100,
+                            2,
+                        )
+                        item["displayValue"] = format_number(
+                            entry["funds_plus_psc"], 0, "$"
+                        )
+                    except:
+                        item["percent"] = 0
+                        item["displayValue"] = format_number(0, 0, "$")
+            if not found:
                 item["percent"] = 0
                 item["displayValue"] = format_number(0, 0, "$")
-                continue
-            item["percent"] = round(
-                table[index]["funds_plus_psc"] / theme_total(context, False) * 100, 2
-            )
-            item["displayValue"] = format_number(table[index]["funds_plus_psc"], 0, "$")
-            index += 1
     return {
         "type": "bar_list",
         "title": "Funding by project theme",
