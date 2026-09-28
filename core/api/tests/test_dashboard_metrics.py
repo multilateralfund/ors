@@ -1717,7 +1717,7 @@ class TestReportedAttributes(BaseTest):
 
     def test_the_same_fact_shown_twice_cannot_disagree(self, user, ongoing_status):
         """Registered in two sections, answered by one function."""
-        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        brazil = CountryFactory(name="Brazil", iso3="BRA", meps=True, competence_certification_system=True)
         approved_project(
             country=brazil,
             status=ongoing_status,

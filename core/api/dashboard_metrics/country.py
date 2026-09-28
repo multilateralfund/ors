@@ -192,6 +192,22 @@ def attr_ods_licensing(context: MetricContext) -> str | None:
     return "Yes" if country.ods_licensing else "No"
 
 
+def attr_competence_certification_system(context: MetricContext) -> str | None:
+    """Competence Certification System Established, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.competence_certification_system else "No"
+
+
+def attr_meps(context: MetricContext) -> str | None:
+    """MEPS (Estabslished/Improved/Enforced) from Funded Projects, for the country."""
+    country = _country(context)
+    if country is None:
+        return None
+    return "Yes" if country.meps else "No"
+
+
 def attr_ods_quota(context: MetricContext) -> str | None:
     """ODS quota system exist, for the country."""
     country = _country(context)
@@ -1059,10 +1075,10 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Yes if any project in scope reports it, else No",
+        formula="country attribute - Competence Certification System Established",
         db_source="DB-COMPUTABLE",
-        src_model_field="Project.establishment_of_technician_certification_actual, any project",
-        compute=partial(_reported_by_any_project, fields=CERTIFICATION_FIELDS),
+        src_model_field="Country.competence_certification_system",
+        compute=attr_competence_certification_system,
     ),
     Metric(
         metric_id="impact_meps",
@@ -1071,10 +1087,10 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Yes if any project in scope reports it, else No",
+        formula="country attribute - MEPS (Estabslished/Improved/Enforced) from Funded Projects",
         db_source="DB-COMPUTABLE",
-        src_model_field="Project.meps_developed_* (four actual columns), any project",
-        compute=partial(_reported_by_any_project, fields=MEPS_FIELDS),
+        src_model_field="Country.meps",
+        compute=attr_meps,
     ),
 )
 
