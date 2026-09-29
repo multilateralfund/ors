@@ -1,9 +1,13 @@
 import { Fragment, useContext, useState } from 'react'
 
-import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { detailItem, booleanDetailItem } from './ViewHelperComponents'
+import {
+  SectionTitle,
+  SubSectionTitle,
+  detailItem,
+  booleanDetailItem,
+} from './ViewHelperComponents'
 import { pcrFieldsMapping } from '../../constants'
 import { PCRResponse } from '../../interfaces'
 
@@ -30,9 +34,10 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
 
   return (
     <>
+      <SectionTitle>Gender mainstreaming</SectionTitle>
       <Tabs
         aria-label="gender-mainstreaming-view-tabs"
-        className="sectionsTabs"
+        className="sectionsTabs mt-6"
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
@@ -49,8 +54,8 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        <SectionTitle>Gender mainstreamings</SectionTitle>
+      <div className="border-0 border-t border-solid border-primary py-6">
+        <SubSectionTitle>Project cycle phases</SubSectionTitle>
         <div className="flex flex-col gap-y-4 px-5">
           {ppData.length > 0
             ? map(ppData, (pp, ppIndex) => (
