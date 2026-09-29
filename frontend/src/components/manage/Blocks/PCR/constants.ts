@@ -224,3 +224,9 @@ export const pcTextareaClassname = {
   labelClassname: labelClassname,
   valueClassname: valueClassname,
 }
+
+export const fundingFields = [
+  'mlf_funding_approved',
+  'mlf_funding_disbursed',
+  'mlf_funding_returned',
+]

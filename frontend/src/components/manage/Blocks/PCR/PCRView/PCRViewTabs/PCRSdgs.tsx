@@ -1,9 +1,12 @@
 import { Fragment, useContext, useState } from 'react'
 
-import { SectionTitle } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { detailItem } from './ViewHelperComponents'
+import {
+  SectionTitle,
+  SubSectionTitle,
+  detailItem,
+} from './ViewHelperComponents'
 import { pcrFieldsMapping } from '../../constants'
 import { PCRResponse } from '../../interfaces'
 
@@ -31,9 +34,10 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
 
   return (
     <>
+      <SectionTitle>SDGs</SectionTitle>
       <Tabs
         aria-label="sdgs-view-tabs"
-        className="sectionsTabs"
+        className="sectionsTabs mt-6"
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
@@ -50,8 +54,8 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        <SectionTitle>SDGs</SectionTitle>
+      <div className="border-0 border-t border-solid border-primary py-6">
+        <SubSectionTitle>Goals</SubSectionTitle>
         <div className="flex flex-col gap-y-4 px-5">
           {sdgsData.length > 0
             ? map(sdgsData, (sdg, sdgIndex) => (

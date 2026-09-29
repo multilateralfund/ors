@@ -9,13 +9,17 @@ import {
   dateDetailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
-import { pcrFieldsMapping, viewPcrFieldsMapping } from '../../constants'
 import { PCROverviewProps, PCRResponse } from '../../interfaces'
+import { getFundingClassname } from '../../utils'
+import {
+  pcrFieldsMapping,
+  viewPcrFieldsMapping,
+  fundingFields,
+} from '../../constants'
 import { useStore } from '@ors/store'
 
 import { find, keys, map, uniq } from 'lodash'
 import { Divider } from '@mui/material'
-import cx from 'classnames'
 
 const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
   const { countries, agencies } = useContext(ProjectsDataContext)
@@ -44,12 +48,6 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
     (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
   )
   const agencyEntries = [...crtAgencies, 'total']
-
-  const fundingFields = [
-    'mlf_funding_approved',
-    'mlf_funding_disbursed',
-    'mlf_funding_returned',
-  ]
 
   const formatAgencyFundFields = (
     field: keyof PCROverviewProps,
@@ -148,20 +146,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
         const isTotal = agency === 'total'
 
         return (
-          <div
-            key={index}
-            className={cx(
-              'rounded-lg border-0 border-b-[3px] border-solid border-[#e5e7eb] bg-white p-4',
-              {
-                'shadow-[-3px_0_4px_-1px_#00000022,3px_0_4px_-1px_#00000022]':
-                  index === 0,
-                'shadow-[-3px_0_12px_-1px_#00000022,3px_0_12px_-1px_#00000022]':
-                  index !== 0 && !isTotal,
-                '!bg-[#F5FF8033] shadow-[-3px_0_7px_-1px_#00000015,3px_0_7px_-1px_#00000015,0_8px_24px_-2px_#00000044]':
-                  isTotal,
-              },
-            )}
-          >
+          <div key={index} className={getFundingClassname(index, isTotal)}>
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="self-center text-3xl font-medium uppercase text-primary">
                 {agency}

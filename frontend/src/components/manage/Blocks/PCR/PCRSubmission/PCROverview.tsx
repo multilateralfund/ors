@@ -2,6 +2,7 @@ import { Fragment, useContext } from 'react'
 
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
 import { financialFiguresTypeOptions, booleanFieldsOpts } from '../constants'
@@ -36,7 +37,7 @@ const PCROverview = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const subsectionData = sectionData[additionalCommentsField] || []
-      const initialAdditionalComment = { entity: null, comment: '' }
+      const initialAdditionalComment = { entity: '', comment: '' }
 
       return {
         ...prevData,
@@ -80,6 +81,7 @@ const PCROverview = () => {
     <>
       <PCROverviewPrefilledData />
       <Divider className="my-6" />
+      <SubSectionTitle>Indicators</SubSectionTitle>
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
           <PCRSelectWidget
@@ -136,44 +138,49 @@ const PCROverview = () => {
             errors={overviewErrors}
           />
         </div>
-        <div className="flex flex-col gap-y-4">
-          {map(additionalCommentsData, (_, commentIndex) => (
-            <Fragment key={commentIndex}>
-              <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                <PCRSelectWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="entity"
-                  options={entityOptions}
-                  errors={additionalCommentsErrors}
-                  indexes={[commentIndex]}
-                  subFields={[additionalCommentsField]}
-                />
-                <PCRTextAreaWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="comment"
-                  errors={additionalCommentsErrors}
-                  indexes={[commentIndex]}
-                  subFields={[additionalCommentsField]}
-                />
-                <IoTrash
-                  className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                  size={16}
-                  onClick={() => {
-                    onRemoveAdditionalComments(commentIndex)
-                  }}
-                />
-              </div>
-              {commentIndex !== additionalCommentsData.length - 1 && (
-                <Divider className="my-5" />
-              )}
-            </Fragment>
-          ))}
+        <div>
+          <Divider className="mb-6 mt-2" />
+          <SubSectionTitle>Additional comments</SubSectionTitle>
+          <div className="flex flex-col gap-y-4">
+            {map(additionalCommentsData, (_, commentIndex) => (
+              <Fragment key={commentIndex}>
+                <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                  <PCRSelectWidget
+                    {...{ PCRData, setPCRData, sectionIdentifier }}
+                    field="entity"
+                    options={entityOptions}
+                    errors={additionalCommentsErrors}
+                    indexes={[commentIndex]}
+                    subFields={[additionalCommentsField]}
+                  />
+                  <PCRTextAreaWidget
+                    {...{ PCRData, setPCRData, sectionIdentifier }}
+                    field="comment"
+                    errors={additionalCommentsErrors}
+                    indexes={[commentIndex]}
+                    subFields={[additionalCommentsField]}
+                  />
+                  <IoTrash
+                    className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
+                    size={16}
+                    onClick={() => {
+                      onRemoveAdditionalComments(commentIndex)
+                    }}
+                  />
+                </div>
+                {commentIndex !== additionalCommentsData.length - 1 && (
+                  <Divider className="my-5" />
+                )}
+              </Fragment>
+            ))}
+          </div>
+          <SubmitButton
+            title="Add additional comment"
+            onSubmit={onAddAdditionalComment}
+            className="mr-auto h-8"
+          />
+          <Divider className="mb-2 mt-6" />
         </div>
-        <SubmitButton
-          title="Add additional comment"
-          onSubmit={onAddAdditionalComment}
-          className="mr-auto h-8"
-        />
         <PCRSelectWidget
           {...{ PCRData, setPCRData, sectionIdentifier }}
           field="completed_by"

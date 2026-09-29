@@ -33,7 +33,13 @@ const PCRHeader = ({ mode }: { mode: string }) => {
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-4">
         <div className="flex flex-col">
-          <RedirectBackButton withRedirect={false} onAction={onCancel} />
+          <div className="flex flex-row flex-wrap gap-2">
+            <RedirectBackButton withRedirect={false} onAction={onCancel} />
+            <div className="mb-3 flex gap-2 text-lg uppercase tracking-[0.05em] text-[#4D4D4D]">
+              <span>/</span>
+              <span>{mode === 'edit' ? 'Edit' : 'Create'} PCR</span>
+            </div>
+          </div>
           <PageHeading>
             {mode === 'edit' ? (
               <>

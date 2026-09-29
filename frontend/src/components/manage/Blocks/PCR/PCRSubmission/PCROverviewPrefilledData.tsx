@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -20,12 +20,18 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { pcrFieldsMapping } from '../constants'
-import { PCRDefaultData } from '../interfaces'
+import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import {
+  pcrFieldsMapping,
+  viewPcrFieldsMapping,
+  fundingFields,
+} from '../constants'
+import { PCRDefaultData, PCROverviewProps } from '../interfaces'
+import { getFundingClassname } from '../utils'
 import { useStore } from '@ors/store'
 
 import { find, keys, map, omit, uniq } from 'lodash'
-import { Tabs, Tab, Divider } from '@mui/material'
+import { Divider } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -50,13 +56,12 @@ const PCROverviewPrefilledData = () => {
     (decision) => find(allDecisions, (d) => d.id === decision)?.title,
   ).join(', ')
 
-  const [crtTab, setCrtTab] = useState(0)
-
   const agencyIds = keys(fundsByAgency.mlf_funding_approved)
   const crtAgencies = map(
     agencyIds,
     (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
   )
+  const agencyEntries = [...crtAgencies, 'total']
 
   const getFieldDefaultProps = (fieldType: string) => ({
     ...defaultPropsSimpleField,
@@ -110,12 +115,14 @@ const PCROverviewPrefilledData = () => {
 
   const AgencyFundField = ({
     field,
+    agencyIndex,
     isTotalField = false,
   }: {
     field: keyof typeof fundsByAgency
+    agencyIndex: number
     isTotalField?: boolean
   }) => {
-    const crtAgencyId = Number(agencyIds[crtTab])
+    const crtAgencyId = Number(agencyIds[agencyIndex])
 
     const value = isTotalField
       ? (fundsByAgency[field] as number)
@@ -123,7 +130,9 @@ const PCROverviewPrefilledData = () => {
 
     return (
       <div className="w-full sm:w-60">
-        <Label>{pcrFieldsMapping[field]} (US $)</Label>
+        <Label>
+          {{ ...pcrFieldsMapping, ...viewPcrFieldsMapping }[field]} (US $)
+        </Label>
         <FormattedNumberInput
           id={field}
           value={value ?? ''}
@@ -149,7 +158,9 @@ const PCROverviewPrefilledData = () => {
               getOptionLabel={(option) => getOptionLabel(countries, option)}
               disabled={true}
               {...defaultProps}
-              {...formatClassName('min-w-56 md:min-w-[370px]')}
+              {...formatClassName(
+                '!w-40 sm:!w-[12rem] min-w-full sm:min-w-56 md:min-w-[370px]',
+              )}
             />
           </div>
           <div>
@@ -168,7 +179,8 @@ const PCROverviewPrefilledData = () => {
                 ),
               }}
               containerClassName={
-                defaultPropsSimpleField.containerClassName + ' !min-w-56'
+                defaultPropsSimpleField.containerClassName +
+                ' !min-w-full sm:!min-w-56'
               }
             />
           </div>
@@ -189,7 +201,7 @@ const PCROverviewPrefilledData = () => {
               }}
               containerClassName={
                 defaultPropsSimpleField.containerClassName +
-                ' !min-w-56 md:!min-w-[370px]'
+                ' !min-w-full sm:!min-w-56 md:!min-w-[370px]'
               }
             />
           </div>
@@ -224,46 +236,32 @@ const PCROverviewPrefilledData = () => {
         </div>
       </div>
       <Divider className="my-6" />
-      <Tabs
-        aria-label="overview-tabs"
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        value={crtTab}
-        onChange={(_, newValue) => {
-          setCrtTab(newValue)
-        }}
-      >
-        {crtAgencies.map((agency, index) => (
-          <Tab key={index} aria-controls={agency} id={agency} label={agency} />
-        ))}
-      </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-          <AgencyFundField field="mlf_funding_approved" />
-          <AgencyFundField field="mlf_funding_disbursed" />
-          <AgencyFundField field="mlf_funding_returned" />
-        </div>
-      </div>
-      <div className="mt-4 flex flex-row flex-wrap gap-x-7 gap-y-4 pl-6">
-        <AgencyFundField
-          field="total_mlf_funding_approved"
-          isTotalField={true}
-        />
-        <AgencyFundField
-          field="total_mlf_funding_disbursed"
-          isTotalField={true}
-        />
-        <AgencyFundField
-          field="total_mlf_funding_returned"
-          isTotalField={true}
-        />
-      </div>
+      <SubSectionTitle>Funding</SubSectionTitle>
+      {agencyEntries.map((agency, index) => {
+        const isTotal = agency === 'total'
+
+        return (
+          <div key={index} className={getFundingClassname(index, isTotal)}>
+            <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="self-center text-3xl font-medium uppercase text-primary">
+                {agency}
+              </div>
+              {map(fundingFields, (field, fieldIndex) => {
+                const formattedField = isTotal ? `total_${field}` : field
+
+                return (
+                  <AgencyFundField
+                    key={fieldIndex}
+                    field={formattedField as keyof PCROverviewProps}
+                    agencyIndex={index}
+                    isTotalField={isTotal}
+                  />
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
     </>
   )
 }
