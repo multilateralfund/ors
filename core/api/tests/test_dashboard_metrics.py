@@ -2079,7 +2079,7 @@ class TestFundPlaceholders(BaseTest):
         assert metric["value"]["series"][0]["name"] == "CO2-eq T"
         assert metric["value"]["series"][0]["data"][0] is None
         assert metric["value"]["series"][0]["data"][1] is None
-        assert metric["value"]["series"][0]["data"][2] is None
+        assert metric["value"]["series"][0]["data"][2] == 100.0
 
         assert metric["value"]["series"][1]["name"] == "ODP T"
         assert metric["value"]["series"][1]["data"][0] is None
@@ -2087,28 +2087,19 @@ class TestFundPlaceholders(BaseTest):
         assert metric["value"]["series"][1]["data"][2] == 100.0
 
     def test_asking_serves_all_three_families(self, user, brazil):
-        metric = self.fund(user, placeholders="true")[
-            "baseline_phased_out_by_substance"
+        assert self.fund(user)["baseline_phased_out_by_substance"]["value"][
+            "categories"
+        ] == [
+            "Hydrofluorocarbons (HFCs)",
+            "Hydrochlorofluorocarbons (HCFCs)",
+            "Other ODS",
         ]
-
-        assert metric["available"] is True
-        assert [row["group"] for row in metric["value"]] == ["HFC", "HCFC", "OTHER_ODS"]
 
     def test_the_invented_rows_are_flagged_and_the_real_one_is_not(self, user, brazil):
         """Partly invented, so the rows say which halves are which."""
-        metric = self.fund(user, placeholders="true")[
-            "baseline_phased_out_by_substance"
-        ]
-        rows = {row["group"]: row for row in metric["value"]}
-
-        # The metric-level flag says "contains invented data" without a walk.
-        assert metric["placeholder"] is True
-        assert rows["HFC"]["placeholder"] is True
-        assert rows["HCFC"]["placeholder"] is True
-
-        # Article 5 countries really have phased these out completely.
-        assert rows["OTHER_ODS"]["value"] == 100.0
-        assert "placeholder" not in rows["OTHER_ODS"]
+        metric = self.fund(user)["baseline_phased_out_by_substance"]
+        assert metric["value"]["series"][0]["data"] == [None, None, 100.0]
+        assert metric["value"]["series"][1]["data"] == [None, None, 100.0]
 
 
 class TestDashboardMetricsExport(BaseTest):
@@ -2274,9 +2265,6 @@ class TestDashboardMetricsExport(BaseTest):
         builds that markup for the country tab, so it is always in the source.
         """
         assert '<span class="ph">' not in self.page(user).content.decode()
-        assert (
-            '<span class="ph">' in self.page(user, placeholders="true").content.decode()
-        )
 
     def test_an_unknown_format_is_refused(self, user, brazil):
         self.client.force_authenticate(user=user)

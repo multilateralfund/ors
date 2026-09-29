@@ -341,6 +341,16 @@ PROJECTS_GLOBAL_FIELDS = OrderedDict(
             "Expected cost to the Fund to remove 1 CO2-eq tonne from HFCs",
             Decimal,
         ),
+        "HCFC_BASELINE": (
+            Decimal(0),
+            "The baseline for calculating the percentage of phase baseline for HCFC",
+            Decimal,
+        ),
+        "HFC_BASELINE": (
+            Decimal(0),
+            "The baseline for calculating the percentage of phase baseline for HFC",
+            Decimal,
+        ),
         "GLOBAL_FIELD_1": ("", "Global field 1", str),
         "GLOBAL_FIELD_2": ("", "Global field 2", str),
         "GLOBAL_FIELD_3": ("", "Global field 3", str),
