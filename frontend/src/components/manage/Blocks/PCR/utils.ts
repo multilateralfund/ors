@@ -23,6 +23,7 @@ import {
 import { useGetPCRDefaults } from './hooks/useGetPCRDefaults'
 import { ApiAgency } from '@ors/types/api_agencies'
 
+import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
   filter,
@@ -579,3 +580,16 @@ export const getComputedFields = (
     delay: Number(actualDuration) - Number(plannedDuration),
   }
 }
+
+export const getFundingClassname = (index: number, isTotal: boolean) =>
+  cx(
+    'rounded-lg border-0 border-b-[3px] border-solid border-[#e5e7eb] bg-white p-4',
+    {
+      'shadow-[-3px_0_4px_-1px_#00000022,3px_0_4px_-1px_#00000022]':
+        index === 0,
+      'shadow-[-3px_0_12px_-1px_#00000022,3px_0_12px_-1px_#00000022]':
+        index !== 0 && !isTotal,
+      '!bg-[#F5FF8033] shadow-[-3px_0_7px_-1px_#00000015,3px_0_7px_-1px_#00000015,0_8px_24px_-2px_#00000044]':
+        isTotal,
+    },
+  )
