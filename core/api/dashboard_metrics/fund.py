@@ -5,7 +5,7 @@ Every ``compute`` takes the request's :class:`MetricContext` and returns a
 value, or ``None`` when there is nothing behind the figure.
 """
 
-# pylint: disable=C0302
+# pylint: disable=C0302,R1728
 
 import math
 from functools import partial
@@ -13,7 +13,7 @@ from typing import Any
 
 from constance import config
 
-from core.api.dashboard_metrics import classify, placeholders
+from core.api.dashboard_metrics import classify
 from core.api.dashboard_metrics.classify import HCFC, HFC, ODS, OTHER_ODS
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
@@ -67,18 +67,24 @@ def _project_type_code(row) -> str | None:
     return project_type.code if project_type else None
 
 
-def ods_phased_out(context: MetricContext) -> float:
+def ods_phased_out(
+    context: MetricContext, family: str = ODS, use_format_number: bool = True
+) -> float:
     """Ozone-depleting substances removed, consumption and production together."""
-    return format_number(
-        phase_out(context.with_family(ODS), "total_phase_out_odp_tonnes")
-    )
+    result = phase_out(context.with_family(family), "total_phase_out_odp_tonnes")
+    if use_format_number:
+        result = format_number(result)
+    return result
 
 
-def hfc_phased_out(context: MetricContext) -> float:
+def hfc_phased_out(
+    context: MetricContext, family: str = HFC, use_format_number: bool = True
+) -> float:
     """Hydrofluorocarbons removed, in CO2 tonnes"""
-    return format_number(
-        phase_out(context.with_family(HFC), "total_phase_out_co2_tonnes"), 0, ""
-    )
+    result = phase_out(context.with_family(family), "total_phase_out_co2_tonnes")
+    if use_format_number:
+        result = format_number(result, 0, "")
+    return result
 
 
 def funds_approved(context: MetricContext) -> float:
@@ -169,11 +175,11 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
 
 
 def _prepare_horizontal_bar_structure(
-    data: list[dict[str, Any]],
+    data: dict[list[dict[str, Any]]],
 ) -> list[dict[str, Any]]:
     return {
         "type": "bar_horizontal",
-        "title": "Percentage of phase out from baseline (%)",
+        "title": "Percentage of baseline consumption phased out by substance (%)",
         "subtitle": None,
         "categories": [
             "Hydrofluorocarbons (HFCs)",
@@ -184,12 +190,20 @@ def _prepare_horizontal_bar_structure(
             {
                 "name": "CO2-eq T",
                 "color": "var(--deep-teal)",
-                "data": [data[0]["value"], None, None],
+                "data": [
+                    data["co2_tonnes"][0]["value"],
+                    data["co2_tonnes"][1]["value"],
+                    data["co2_tonnes"][2]["value"],
+                ],
             },
             {
                 "name": "ODP T",
                 "color": "var(--mlf-blue)",
-                "data": [None, data[1]["value"], data[2]["value"]],
+                "data": [
+                    data["ods"][0]["value"],
+                    data["ods"][1]["value"],
+                    data["ods"][2]["value"],
+                ],
             },
         ],
         "meta": {"unit": "%"},
@@ -273,24 +287,102 @@ def funds_disbursed_lvc_split(context: MetricContext) -> dict[str, Any] | None:
 OTHER_ODS_PCT_PHASED_OUT = 100.0
 
 
-def baseline_rows() -> list[dict[str, Any]]:
+def baseline_rows(_context: MetricContext) -> list[dict[str, Any]]:
     """The baseline table's three rows, in chart order.
 
-    HFC and HCFC are ``null``: the Protocol sets a baseline per country per
-    substance group and ORS holds neither, so the percentage cannot be worked
-    out. The rows are still served, so the chart keeps its shape and says
-    "unknown" rather than disappearing - and ``null`` is not zero.
+    HFC and HCFC are calculated using a defined baseline in the Constance model.
+    The total approved phase out is the sum of either total_phase_out_odp_tonnes or
+    total_phase_out_co2_tonnes values from all the projects in the intended family.
     """
-    return [
-        {"group": HFC, "value": None},
-        {"group": HCFC, "value": None},
-        {"group": OTHER_ODS, "value": OTHER_ODS_PCT_PHASED_OUT},
-    ]
+    hfc_projects = _context.with_family(HFC)
+    hcfc_projects = _context.with_family(HCFC)
+    apr_hfc = _context.apr_where([p.project.id for p in hfc_projects])
+    apr_hcfc = _context.apr_where([p.project.id for p in hcfc_projects])
+    hcfc_baseline = float(getattr(config, "HCFC_BASELINE", 0))
+    hfc_baseline = float(getattr(config, "HFC_BASELINE", 0))
+    co2_tonnes_hfc = sum(
+        [
+            sum(
+                [
+                    entry.consumption_phased_out_co2 or 0,
+                    entry.production_phased_out_co2 or 0,
+                ]
+            )
+            for entry in getattr(apr_hfc, "records", [])
+        ],
+        0,
+    )
+    co2_tonnes_hcfc = sum(
+        [
+            sum(
+                [
+                    entry.consumption_phased_out_co2 or 0,
+                    entry.production_phased_out_co2 or 0,
+                ]
+            )
+            for entry in getattr(apr_hcfc, "records", [])
+        ],
+        0,
+    )
+    ods_hfc = sum(
+        [
+            sum(
+                [
+                    entry.consumption_phased_out_odp or 0,
+                    entry.production_phased_out_odp or 0,
+                ]
+            )
+            for entry in getattr(apr_hfc, "records", [])
+        ],
+        0,
+    )
+    ods_hcfc = sum(
+        [
+            sum(
+                [
+                    entry.consumption_phased_out_odp or 0,
+                    entry.production_phased_out_odp or 0,
+                ]
+            )
+            for entry in getattr(apr_hcfc, "records", [])
+        ],
+        0,
+    )
+    return {
+        "co2_tonnes": [
+            {
+                "group": HFC,
+                "value": (
+                    round(hfc_baseline / co2_tonnes_hfc, 2) if co2_tonnes_hfc else None
+                ),
+            },
+            {
+                "group": HCFC,
+                "value": (
+                    round(hcfc_baseline / co2_tonnes_hcfc, 2)
+                    if co2_tonnes_hcfc
+                    else None
+                ),
+            },
+            {"group": OTHER_ODS, "value": OTHER_ODS_PCT_PHASED_OUT},
+        ],
+        "ods": [
+            {
+                "group": HFC,
+                "value": round(hfc_baseline / ods_hfc, 2) if ods_hfc else None,
+            },
+            {
+                "group": HCFC,
+                "value": round(hcfc_baseline / ods_hcfc, 2) if ods_hcfc else None,
+            },
+            {"group": OTHER_ODS, "value": OTHER_ODS_PCT_PHASED_OUT},
+        ],
+    }
 
 
 def baseline_phased_out_by_substance(_context: MetricContext) -> list[dict[str, Any]]:
     """Percentage of baseline consumption phased out, per substance family."""
-    return _prepare_horizontal_bar_structure(baseline_rows())
+    return _prepare_horizontal_bar_structure(baseline_rows(_context))
 
 
 def theme(context: MetricContext, name: str) -> dict[str, Any]:
@@ -701,15 +793,20 @@ FUND_METRICS: tuple[Metric, ...] = (
         section="Percentage of baseline consumption phased out by substance (%)",
         kind=Kind.TABLE,
         unit=Unit.PERCENT,
-        disposition=Disposition.COMPUTE_PARTIAL,
+        disposition=Disposition.COMPUTE,
         formula=(
             "phased_out / baseline per family; Other ODS is a real 100%, HFC and "
-            "HCFC do not have baselines yet"
+            "HCFC have their baseline calculated using the total_phase_out_co2_tonnes and"
+            "total_phase_out_odp_tonnes and baseline are defined in HCFC_BASELINE and HFC_BASELINE"
         ),
         db_source="EXTERNAL",
-        src_model_field=("numerator ProjectOdsOdp.odp by family; denominator not held"),
+        src_model_field=(
+            "numerator Project.total_phase_out_odp_tonnes by family; "
+            "numerator Project.total_phase_out_co2_tonnes by family; "
+            "constance config HCFC_BASELINE"
+            "constance config HFC_BASELINE"
+        ),
         compute=baseline_phased_out_by_substance,
-        placeholder=partial(placeholders.fill_baseline, rows=baseline_rows),
     ),
     Metric(
         metric_id="pct_countries_met",
