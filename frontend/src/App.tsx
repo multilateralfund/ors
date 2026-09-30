@@ -223,7 +223,7 @@ export default function App() {
           <Redirect to="/country-programme/reports" replace />
         </Route>
         <Route path="/">
-          <LandingPage />
+          <RedirectToSection />
         </Route>
         <Route path="/replenishment" nest>
           <ReplenishmentLayout>
