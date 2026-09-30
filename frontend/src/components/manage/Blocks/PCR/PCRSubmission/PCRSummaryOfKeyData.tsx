@@ -400,13 +400,21 @@ const PCRSummaryOfKeyData = () => {
         (entry) => entry.project_id === editingProjectId,
       )
 
+      const formattedDraftSummaryData = {
+        ...draftSummaryData,
+        enterprises: map(draftSummaryData.enterprises, (enterprise) => ({
+          ...enterprise,
+          isDefault: false,
+        })),
+      }
+
       return {
         ...previousData,
         summary_of_key_data:
           projectDataIndex === -1
-            ? [...sectionData, draftSummaryData]
+            ? [...sectionData, formattedDraftSummaryData]
             : sectionData.map((entry, index) =>
-                index === projectDataIndex ? draftSummaryData : entry,
+                index === projectDataIndex ? formattedDraftSummaryData : entry,
               ),
       }
     }, 'summary_of_key_data')
@@ -649,7 +657,7 @@ const PCRSummaryOfKeyData = () => {
                         <div className="flex items-center">
                           <DateInput
                             id={`planned-date-of-completion-${editingProject.id}`}
-                            className="!m-0 w-48"
+                            className="!m-0 w-40 grow-0"
                             value={summaryData.planned_date_of_completion}
                             formatValue={(value) =>
                               dayjs(value).format('DD/MM/YYYY')

@@ -8,10 +8,15 @@ import PCRForm from '../PCRSubmission/PCRForm'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
 import { map, uniq } from 'lodash'
+import { Redirect } from 'wouter'
 
 const PCRCreateWrapper = () => {
   const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
+
+  if (data?.pcr_id) {
+    return <Redirect to="/pcr" />
+  }
 
   const agencyIds = useMemo(
     () => uniq(map(data?.projects, 'agency_id')),
