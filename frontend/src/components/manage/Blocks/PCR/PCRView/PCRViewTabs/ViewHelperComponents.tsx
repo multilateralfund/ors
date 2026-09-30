@@ -10,8 +10,19 @@ export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="text-[28px] font-medium text-[#002A3C]">{children}</div>
 )
 
-export const SubSectionTitle = ({ children }: { children: ReactNode }) => (
-  <div className="mb-6 text-lg uppercase tracking-[1px] text-typography-sectionTitle">
+export const SubSectionTitle = ({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) => (
+  <div
+    className={cx(
+      'mb-6 text-lg uppercase tracking-[1px] text-typography-sectionTitle',
+      className,
+    )}
+  >
     {children}
   </div>
 )

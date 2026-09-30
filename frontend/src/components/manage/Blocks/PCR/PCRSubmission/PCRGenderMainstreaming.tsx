@@ -6,6 +6,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import {
   TabLabel,
   PCRSelectWidget,
@@ -127,10 +128,11 @@ const PCRGenderMainstreaming = () => {
           />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+      <div className="border-0 border-t border-solid border-primary py-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
         )}
+        <SubSectionTitle>Project cycle phases</SubSectionTitle>
         <div className="flex flex-col gap-y-4">
           {map(ppData, (_, ppIndex) => (
             <Fragment key={ppIndex}>

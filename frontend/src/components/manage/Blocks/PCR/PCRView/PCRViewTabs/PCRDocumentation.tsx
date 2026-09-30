@@ -1,9 +1,8 @@
 import { useContext, useState } from 'react'
 
-import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { detailItem } from './ViewHelperComponents'
+import { SubSectionTitle, detailItem } from './ViewHelperComponents'
 import { pcrFieldsMapping } from '../../constants'
 import { PCRResponse } from '../../interfaces'
 import { formatApiUrl } from '@ors/helpers'
@@ -11,7 +10,6 @@ import { formatApiUrl } from '@ors/helpers'
 import { IoDownloadOutline } from 'react-icons/io5'
 import { filter, find, keys, map } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
-import { TbFiles } from 'react-icons/tb'
 
 const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
   const { fundsByAgency } = useContext(PCRDataContext)
@@ -53,8 +51,8 @@ const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        <SubSectionTitle className="!mb-2">Attachments</SubSectionTitle>
         <div className="flex flex-col">
-          <HeaderWithIcon title="File attachments" Icon={TbFiles} />
           <div className="mt-3">
             {evidencesData.length === 0 ? (
               <p className="m-1 ml-0 text-lg text-gray-500">
