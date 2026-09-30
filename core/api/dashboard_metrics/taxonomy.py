@@ -24,24 +24,24 @@ THEME_ORDER = (
 )
 
 THEME_STRUCTURE = [
-    {"items": [{"label": "HFCs consumption", "color": "#012A3C"}]},
+    {"items": [{"label": "HFCs consumption", "color": "#025B80"}]},
     {
         "items": [
-            {"label": "HCFCs consumption", "color": "#0B4C66"},
-            {"label": "HCFCs production", "color": "#0E6E8C"},
+            {"label": "HCFCs consumption", "color": "#026F9E"},
+            {"label": "HCFCs production", "color": "#026F9E"},
         ]
     },
     {
         "items": [
-            {"label": "Other ODS consumption", "color": "#0095D5"},
-            {"label": "Other ODS production", "color": "#2CA9DD"},
+            {"label": "Other ODS consumption", "color": "#0082BA"},
+            {"label": "Other ODS production", "color": "#0082BA"},
         ]
     },
-    {"items": [{"label": "Energy efficiency", "color": "#57BEE4"}]},
-    {"items": [{"label": "Disposal", "color": "#7ACBEA"}]},
-    {"items": [{"label": "Emission control", "color": "#9AD8EF"}]},
-    {"items": [{"label": "Institutional strengthening", "color": "#DEF1FA"}]},
-    {"items": [{"label": "Atmospheric Monitoring", "color": "#DEF1FA"}]},
+    {"items": [{"label": "Energy efficiency", "color": "#0698D7"}]},
+    {"items": [{"label": "Disposal", "color": "#43B4E4"}]},
+    {"items": [{"label": "Emission control", "color": "#6AC5EC"}]},
+    {"items": [{"label": "Atmospheric Monitoring", "color": "#94D9F6"}]},
+    {"items": [{"label": "Institutional strengthening", "color": "#BFECFF"}]},
 ]
 
 SECTOR_HFC_COLORING = [
