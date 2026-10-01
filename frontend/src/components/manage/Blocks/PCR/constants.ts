@@ -200,6 +200,8 @@ export const borderedValueClassname =
 const valueClassname = 'min-w-0 flex-1 !text-black !font-normal !text-lg'
 const labelClassname = 'self-start mt-0.5'
 
+const commonClassnames = { labelClassname, valueClassname }
+
 export const overviewTextareaClassname = {
   containerClassname:
     'bg-white !gap-2 lg:!gap-20 lg:!flex-row p-4 rounded-lg w-full lg:w-[65%]',
@@ -209,8 +211,7 @@ export const overviewTextareaClassname = {
 
 export const activitiesTextareaClassname = {
   containerClassname: 'p-4 w-full lg:w-[65%] pl-0',
-  labelClassname: labelClassname,
-  valueClassname: valueClassname,
+  ...commonClassnames,
 }
 
 export const pcTitleClassname = {
@@ -221,8 +222,12 @@ export const pcTitleClassname = {
 
 export const pcTextareaClassname = {
   containerClassname: 'w-full lg:w-[65%] p-0',
-  labelClassname: labelClassname,
-  valueClassname: valueClassname,
+  ...commonClassnames,
+}
+
+export const sdgsTextareaClassname = {
+  containerClassname: 'w-full p-0',
+  ...commonClassnames,
 }
 
 export const fundingFields = [
