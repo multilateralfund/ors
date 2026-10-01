@@ -56,22 +56,24 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
       </Tabs>
       <div className="border-0 border-t border-solid border-primary py-6">
         <SubSectionTitle>Goals</SubSectionTitle>
-        <div className="flex flex-col gap-y-4 px-5">
-          {sdgsData.length > 0
-            ? map(sdgsData, (sdg, sdgIndex) => (
-                <Fragment key={sdgIndex}>
-                  {detailItem(pcrFieldsMapping.goal_id, sdg.goal)}
-                  {detailItem(
-                    pcrFieldsMapping.description,
-                    sdg.description,
-                    'self-start whitespace-nowrap',
-                  )}
-                  {sdgIndex !== sdgsData.length - 1 && (
-                    <Divider className="my-1" />
-                  )}
-                </Fragment>
-              ))
-            : '-'}
+        <div className="flex flex-col gap-y-6">
+          {sdgsData.length > 0 ? (
+            map(sdgsData, (sdg, sdgIndex) => (
+              <Fragment key={sdgIndex}>
+                {detailItem(pcrFieldsMapping.goal_id, sdg.goal)}
+                {detailItem(
+                  pcrFieldsMapping.description,
+                  sdg.description,
+                  'self-start whitespace-nowrap',
+                )}
+                {sdgIndex !== sdgsData.length - 1 && (
+                  <Divider className="my-1" />
+                )}
+              </Fragment>
+            ))
+          ) : (
+            <div className="text-3xl text-primary">-</div>
+          )}
         </div>
       </div>
     </>
