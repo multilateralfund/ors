@@ -186,6 +186,15 @@ def secretariat_production_approver_edit_access_user():
     return user
 
 
+@pytest.fixture(autouse=True)
+def disable_cache(settings):
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        }
+    }
+
+
 @pytest.fixture(scope="session", autouse=True)
 def load_groups_and_permissions(django_db_setup, django_db_blocker):
     """

@@ -145,12 +145,18 @@ class DashboardMetricsFundView(views.APIView):
         responses=DashboardMetricsEnvelopeSerializer,
     )
     def get(self, request: Request, *args, **kwargs) -> Response:
-        return Response(
-            get_fund_metrics(
-                apr_year=parse_apr_year(request),
-                placeholders=parse_placeholders(request),
-            )
+
+        cache_key = "dashboard:fund"
+
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+        payload = get_fund_metrics(
+            apr_year=parse_apr_year(request),
+            placeholders=parse_placeholders(request),
         )
+        cache.set(cache_key, payload, timeout=60 * 60)
+        return Response(payload)
 
 
 class DashboardMetricsCountryIndexView(views.APIView):

@@ -202,7 +202,14 @@ def apr_records(
     records = AnnualProjectReport.objects.filter(
         report__progress_report__year=year,
         project__in=dashboard_projects(),
-    ).select_related("project__project_type", "project__status", "project__country")
+    ).select_related(
+        "project__project_type",
+        "project__status",
+        "project__country",
+        "project__country__parent",
+        "project__country__parent__parent",
+        "main_region",
+    )
     if country is not None:
         records = records.filter(project__country=country)
     if project_ids:

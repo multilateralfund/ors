@@ -33,12 +33,20 @@ def dashboard_projects() -> QuerySet[Project]:
     Latest version only - ``Project.objects`` filters ``latest_project=None``,
     unlike ``Project.objects.really_all()``.
     """
-    return Project.objects.exclude(status__code__in=EXCLUDED_STATUS_CODES)
+    return Project.objects.exclude(
+        status__code__in=EXCLUDED_STATUS_CODES
+    ).select_related(
+        "country",
+        "country__parent",
+        "country__parent__parent",
+    )
 
 
 def excluded_projects() -> QuerySet[Project]:
     """The complement, reported by the ``scope_excluded_status`` metric."""
-    return Project.objects.filter(status__code__in=EXCLUDED_STATUS_CODES)
+    return Project.objects.filter(
+        status__code__in=EXCLUDED_STATUS_CODES
+    ).select_related("country", "country__parent", "country__parent__parent")
 
 
 def excluded_status_labels() -> list[str]:
@@ -215,9 +223,11 @@ def entry_countries() -> QuerySet[Country]:
     Countries and the aggregate ``Region`` rows share this table, discriminated
     by ``location_type``.
     """
-    return Country.objects.filter(
-        id__in=dashboard_projects().values("country_id")
-    ).order_by("location_type", "name")
+    return (
+        Country.objects.filter(id__in=dashboard_projects().values("country_id"))
+        .order_by("location_type", "name")
+        .select_related("parent", "parent__parent")
+    )
 
 
 def entry_key(country: Country) -> str | None:
