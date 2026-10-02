@@ -3,6 +3,7 @@ import { useContext, useState } from 'react'
 import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import PCRFilesViewer from './PCRFilesViewer'
 import PCRFilesInput from './PCRFilesInput'
 import { TabLabel } from './PCRWidgets'
@@ -62,10 +63,11 @@ const PCRDocumentation = () => {
           />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+      <div className="border-0 border-t border-solid border-primary py-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
         )}
+        <SubSectionTitle className="!mb-2">Attachments</SubSectionTitle>
         <div className="flex w-full flex-col gap-4">
           <PCRFilesViewer errors={agencyErrors} {...{ crtTab, crtAgencyId }} />
           <PCRFilesInput {...{ crtTab }} />

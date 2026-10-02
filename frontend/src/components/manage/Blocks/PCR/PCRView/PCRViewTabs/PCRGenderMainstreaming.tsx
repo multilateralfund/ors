@@ -1,15 +1,20 @@
-import { Fragment, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { PCRResponse } from '../../interfaces'
 import {
   SectionTitle,
   SubSectionTitle,
   detailItem,
   booleanDetailItem,
 } from './ViewHelperComponents'
-import { pcrFieldsMapping } from '../../constants'
-import { PCRResponse } from '../../interfaces'
+import {
+  pcrFieldsMapping,
+  pcTitleClassname,
+  borderedValueClassname,
+  pcTextareaClassname,
+} from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
@@ -56,31 +61,35 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
       </Tabs>
       <div className="border-0 border-t border-solid border-primary py-6">
         <SubSectionTitle>Project cycle phases</SubSectionTitle>
-        <div className="flex flex-col gap-y-4 px-5">
-          {ppData.length > 0
-            ? map(ppData, (pp, ppIndex) => (
-                <Fragment key={ppIndex}>
-                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                    {detailItem(
-                      pcrFieldsMapping.project_preparation,
-                      pp.project_preparation,
-                    )}
-                    {booleanDetailItem(
-                      pcrFieldsMapping.prefilled,
-                      pp.prefilled,
-                    )}
-                  </div>
+        <div className="flex flex-col gap-y-6">
+          {ppData.length > 0 ? (
+            map(ppData, (pp, ppIndex) => (
+              <div key={ppIndex}>
+                <div className="rounded-t-lg bg-primary px-8 py-4">
+                  {detailItem(
+                    pcrFieldsMapping.project_preparation,
+                    pp.project_preparation,
+                    pcTitleClassname,
+                  )}
+                </div>
+                <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
+                  {booleanDetailItem(
+                    pcrFieldsMapping.prefilled,
+                    pp.prefilled,
+                    borderedValueClassname,
+                  )}
+                  <Divider className="my-4" />
                   {detailItem(
                     pcrFieldsMapping.qualitative_description,
                     pp.qualitative_description,
-                    'self-start whitespace-nowrap',
+                    pcTextareaClassname,
                   )}
-                  {ppIndex !== ppData.length - 1 && (
-                    <Divider className="my-1" />
-                  )}
-                </Fragment>
-              ))
-            : '-'}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-3xl text-primary">-</div>
+          )}
         </div>
       </div>
     </>

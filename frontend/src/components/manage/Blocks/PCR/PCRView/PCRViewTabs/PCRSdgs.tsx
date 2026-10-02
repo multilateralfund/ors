@@ -1,4 +1,4 @@
-import { Fragment, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
@@ -7,7 +7,7 @@ import {
   SubSectionTitle,
   detailItem,
 } from './ViewHelperComponents'
-import { pcrFieldsMapping } from '../../constants'
+import { pcrFieldsMapping, sdgsTextareaClassname } from '../../constants'
 import { PCRResponse } from '../../interfaces'
 
 import { Tabs, Tab, Divider } from '@mui/material'
@@ -56,22 +56,34 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
       </Tabs>
       <div className="border-0 border-t border-solid border-primary py-6">
         <SubSectionTitle>Goals</SubSectionTitle>
-        <div className="flex flex-col gap-y-4 px-5">
-          {sdgsData.length > 0
-            ? map(sdgsData, (sdg, sdgIndex) => (
-                <Fragment key={sdgIndex}>
-                  {detailItem(pcrFieldsMapping.goal_id, sdg.goal)}
-                  {detailItem(
-                    pcrFieldsMapping.description,
-                    sdg.description,
-                    'self-start whitespace-nowrap',
-                  )}
-                  {sdgIndex !== sdgsData.length - 1 && (
-                    <Divider className="my-1" />
-                  )}
-                </Fragment>
-              ))
-            : '-'}
+        <div className="flex flex-col rounded-lg border border-solid border-[#e5e7eb] bg-white p-5">
+          {sdgsData.length > 0 ? (
+            map(sdgsData, (sdg, sdgIndex) => (
+              <div key={sdgIndex}>
+                <div className="flex flex-wrap gap-x-7 gap-y-6">
+                  <img
+                    src={`/images/pcr/sdgs/goal${sdg.goal_id}.png`}
+                    className="mt-1 h-32 w-32"
+                  />
+                  <div className="md:w-[70%]">
+                    {detailItem('', sdg.goal, {
+                      containerClassname: '!gap-0 mb-3',
+                    })}
+                    {detailItem(
+                      pcrFieldsMapping.description,
+                      sdg.description,
+                      sdgsTextareaClassname,
+                    )}
+                  </div>
+                </div>
+                {sdgIndex !== sdgsData.length - 1 && (
+                  <Divider className="my-4" />
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="text-3xl text-primary">-</div>
+          )}
         </div>
       </div>
     </>

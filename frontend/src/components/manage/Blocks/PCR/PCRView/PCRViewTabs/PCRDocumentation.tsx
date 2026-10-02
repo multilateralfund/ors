@@ -1,17 +1,19 @@
 import { useContext, useState } from 'react'
 
-import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { detailItem } from './ViewHelperComponents'
+import {
+  SectionTitle,
+  SubSectionTitle,
+  detailItem,
+} from './ViewHelperComponents'
 import { pcrFieldsMapping } from '../../constants'
 import { PCRResponse } from '../../interfaces'
 import { formatApiUrl } from '@ors/helpers'
 
 import { IoDownloadOutline } from 'react-icons/io5'
+import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
-import { Tabs, Tab } from '@mui/material'
-import { TbFiles } from 'react-icons/tb'
 
 const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
   const { fundsByAgency } = useContext(PCRDataContext)
@@ -33,9 +35,10 @@ const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
 
   return (
     <>
+      <SectionTitle>Other supporting evidence</SectionTitle>
       <Tabs
         aria-label="supporting-evidences-view-tabs"
-        className="sectionsTabs"
+        className="sectionsTabs mt-6"
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
@@ -52,38 +55,38 @@ const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        <div className="flex flex-col">
-          <HeaderWithIcon title="File attachments" Icon={TbFiles} />
-          <div className="mt-3">
-            {evidencesData.length === 0 ? (
-              <p className="m-1 ml-0 text-lg text-gray-500">
-                No files available
-              </p>
-            ) : (
-              evidencesData.map((file, index) => {
-                const fileName = file.filename
-                const downloadUrl = file.file
+      <div className="border-0 border-t border-solid border-primary py-6">
+        <SubSectionTitle className="!mb-2">Attachments</SubSectionTitle>
+        <div className="flex flex-col rounded-lg border border-solid border-[#e5e7eb] bg-white p-5">
+          {evidencesData.length === 0 ? (
+            <p className="m-1 ml-0 text-lg text-gray-500">No files available</p>
+          ) : (
+            evidencesData.map((file, index) => {
+              const fileName = file.filename
+              const downloadUrl = file.file
 
-                return (
-                  <div
-                    key={index}
-                    className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-2"
-                  >
+              return (
+                <div key={index}>
+                  <div className="flex flex-wrap gap-x-7 gap-y-3">
                     <a
-                      className="flex gap-2.5 text-secondary no-underline"
+                      className="flex gap-2.5 text-secondary no-underline md:w-[45%]"
                       download={fileName}
                       href={formatApiUrl(downloadUrl)}
                     >
-                      <IoDownloadOutline className="mb-1 min-h-5 min-w-5" />
+                      <IoDownloadOutline className="min-h-5 min-w-5" />
                       <span className="text-lg font-medium">{fileName}</span>
                     </a>
-                    {detailItem(pcrFieldsMapping.section_id, file.section)}
+                    <div className="md:w-[45%]">
+                      {detailItem(pcrFieldsMapping.section_id, file.section)}
+                    </div>
                   </div>
-                )
-              })
-            )}
-          </div>
+                  {index !== evidencesData.length - 1 && (
+                    <Divider className="my-4" />
+                  )}
+                </div>
+              )
+            })
+          )}
         </div>
       </div>
     </>
