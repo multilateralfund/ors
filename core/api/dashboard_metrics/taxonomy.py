@@ -19,7 +19,7 @@ THEME_ORDER = (
     "Energy efficiency",
     "Disposal",
     "Emission Control",
-    "Institutional Strengthening",
+    "Institutional strengthening",
     "Atmospheric Monitoring",
 )
 
@@ -108,7 +108,7 @@ THEME_BY_CLUSTER_CODE = {
     "EC 2": "Emission Control",
     "EC IND": "Emission Control",
     "EE": "Energy efficiency",
-    "GOV": "Institutional Strengthening",
+    "GOV": "Institutional strengthening",
     "HCFCIND": "HCFCs consumption",
     "HPMP1": "HCFCs consumption",
     "HPMP2": "HCFCs consumption",
