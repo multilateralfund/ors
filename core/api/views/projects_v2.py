@@ -377,6 +377,10 @@ class ProjectV2ViewSet(
         queryset = (
             queryset.select_related(
                 "agency",
+                "bp_activity",
+                "bp_activity__agency",
+                "bp_activity__business_plan__meeting",
+                "bp_activity__business_plan__decision",
                 "cluster",
                 "country",
                 "project_type",
@@ -386,6 +390,7 @@ class ProjectV2ViewSet(
                 "meeting",
                 "meeting_transf",
                 "meta_project",
+                "post_excom_meeting",
             )
             .prefetch_related(
                 "submission_amounts",
@@ -395,7 +400,9 @@ class ProjectV2ViewSet(
                 "files",
                 "subsectors__sector",
                 "rbm_measures__measure",
-                "ods_odp",
+                "bp_activity__values",
+                "ods_odp__ods_blend",
+                "ods_odp__ods_substance",
             )
             .annotate(
                 filtered_code=Case(

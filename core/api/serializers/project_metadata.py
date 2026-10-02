@@ -91,10 +91,9 @@ class ProjectSectorSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "sort_order",
-            "allowed_types",
             "obsolete",
         ]
-        read_only_fields = ["id", "allowed_types"]
+        read_only_fields = ["id"]
 
 
 class ProjectSectorIncludingSubsectorsSerializer(ProjectSectorSerializer):
@@ -157,10 +156,9 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "sort_order",
-            "allowed_sectors",
             "obsolete",
         ]
-        read_only_fields = ["id", "allowed_sectors"]
+        read_only_fields = ["id"]
 
 
 class ProjectFieldListSerializer(serializers.ModelSerializer):

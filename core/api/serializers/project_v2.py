@@ -4,6 +4,7 @@ from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
 
+from core.api.dashboard_metrics.primitives import format_number
 from core.api.serializers import AgencySerializer
 from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.api.serializers.meeting import DecisionSerializer
@@ -206,6 +207,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
         queryset=Decision.objects.all().values_list("id", flat=True),
     )
     umbrella_code = serializers.SerializerMethodField()
+    project_funding_display = serializers.SerializerMethodField()
 
     def get_editable(self, obj):
         """
@@ -240,6 +242,11 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if obj.post_excom_decision:
             return obj.post_excom_decision.number
         return None
+
+    def get_project_funding_display(self, obj):
+        return format_number(
+            (obj.total_fund or 0) + (obj.support_cost_psc or 0), 0, "$"
+        )
 
     class Meta:
         model = Project
@@ -305,6 +312,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "post_excom_meeting_id",
             "post_excom_decision",
             "post_excom_decision_id",
+            "project_funding_display",
             "mya_code",
             "number_of_non_sme_directly_funded",
             "number_of_smes_directly_funded",

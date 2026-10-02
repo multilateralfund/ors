@@ -155,7 +155,7 @@ class DashboardMetricsFundView(views.APIView):
             apr_year=parse_apr_year(request),
             placeholders=parse_placeholders(request),
         )
-        cache.set(cache_key, payload, timeout=60 * 60)
+        cache.set(cache_key, payload, timeout=60 * 60 * 24)
         return Response(payload)
 
 
@@ -212,7 +212,7 @@ class DashboardMetricsCountryView(views.APIView):
                 f"countries and abbr for regions; see /countries/."
             )
 
-        cache.set(cache_key, payload, timeout=60 * 60)
+        cache.set(cache_key, payload, timeout=60 * 60 * 24)
 
         return Response(payload)
 

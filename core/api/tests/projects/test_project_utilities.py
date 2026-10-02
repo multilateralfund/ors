@@ -103,7 +103,6 @@ class TestProjectSectorList(BaseTest):
             "name": sector.name,
             "code": sector.code,
             "sort_order": sector.sort_order,
-            "allowed_types": [],
             "subsectors": [],
             "obsolete": sector.obsolete,
         }
@@ -185,7 +184,6 @@ class TestProjectSectorCreate(BaseTest):
             "name": sector.name,
             "code": sector.code,
             "sort_order": sector.sort_order,
-            "allowed_types": [],
             "subsectors": [],
             "obsolete": sector.obsolete,
         }
@@ -324,7 +322,6 @@ class TestProjectType(BaseTest):
             "name": project_type.name,
             "code": project_type.code,
             "sort_order": project_type.sort_order,
-            "allowed_sectors": [],
             "obsolete": project_type.obsolete,
         }
 

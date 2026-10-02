@@ -457,7 +457,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def get_substance_name(self, obj):
         if not obj.ods_odp.count():
             return None
-        first_ods = obj.ods_odp.first()
+        first_ods = obj.ods_odp.all()[0]
         if first_ods.ods_substance:
             return first_ods.ods_substance.name
         if first_ods.ods_blend:
