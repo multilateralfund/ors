@@ -390,21 +390,17 @@ def sector_tonnage(
     for row in rows:
         buckets.setdefault(classify.country_sector_bucket(row.project), []).append(row)
 
-    table = sorted(
-        [
-            {
-                **grouped_row(bucket, buckets.get(bucket, [])),
-                "tonnage": phase_out(buckets.get(bucket, []), field),
-            }
-            for bucket in classify.COUNTRY_SECTOR_ORDER
-        ],
-        key=lambda row: row["tonnage"],
-        reverse=True,
-    )
+    table = [
+        {
+            **grouped_row(bucket, buckets.get(bucket, [])),
+            "tonnage": phase_out(buckets.get(bucket, []), field),
+        }
+        for bucket in classify.COUNTRY_SECTOR_ORDER
+    ]
+
     if not any(row["tonnage"] for row in table):
         return
     total = sum(row["tonnage"] for row in table)
-
     coloration = (
         taxonomy.SECTOR_HFC_COLORING if family == HFC else taxonomy.SECTOR_HCFC_COLORING
     )

@@ -1502,11 +1502,11 @@ class TestCountryValues(BaseTest):
                 by_bucket.update({entry["name"]: entry["value"]})
         assert groups == [
             "Air-conditioning",
-            "Other sectors",
             "Refrigeration",
             "Foam",
             "Aerosol",
             "Servicing",
+            "Other sectors",
         ]
         assert by_bucket[classify.SECTOR_AIR_CONDITIONING] == 30
         assert by_bucket[classify.SECTOR_OTHER] == 7
