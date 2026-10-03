@@ -2,14 +2,11 @@ export const initialFilters = { offset: 0, limit: 50 }
 
 export const initialParams = {
   search: '',
-  region_id: [],
   country_id: [],
   lead_agency_id: [],
-  cooperating_agency_id: [],
   cluster_id: [],
   project_type_id: [],
   sector_id: [],
-  subsectors: [],
   category: [],
   status_id: [],
   pcr_due: [],

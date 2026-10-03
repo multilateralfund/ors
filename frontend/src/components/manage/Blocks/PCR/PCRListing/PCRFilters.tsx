@@ -15,30 +15,19 @@ const PCRFilters = ({
   handleFilterChange,
   handleParamsChange,
 }: PCRFiltersProps) => {
-  const getDefaultProps = (field: string) => {
-    const filterWidth =
-      field === 'cooperating_agency' ? 'w-[11rem]' : 'w-[8.5rem]'
-
-    return {
-      multiple: true,
-      value: [],
-      getOptionLabel: (option: any) => option?.name,
-      popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
-      FieldProps: { className: `mb-0 ${filterWidth} BPList` },
-      componentsProps: {
-        popupIndicator: { sx: { transform: 'none !important' } },
-      },
-    }
+  const defaultProps = {
+    multiple: true,
+    value: [],
+    getOptionLabel: (option: any) => option?.name,
+    popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
+    FieldProps: { className: 'mb-0 w-[8.5rem] BPList' },
+    componentsProps: {
+      popupIndicator: { sx: { transform: 'none !important' } },
+    },
   }
 
   const FieldFilter = ({ field }: { field: string }) => {
-    const simpleFields = [
-      'subsectors',
-      'category',
-      'pcr_due',
-      'ad_hoc_pcr',
-      'pcr_submitted',
-    ]
+    const simpleFields = ['category', 'pcr_due', 'ad_hoc_pcr', 'pcr_submitted']
 
     const filterField = simpleFields.includes(field) ? field : field + '_id'
 
@@ -61,7 +50,7 @@ const PCRFilters = ({
             offset: 0,
           })
         }}
-        {...getDefaultProps(field)}
+        {...defaultProps}
       />
     )
   }
@@ -86,14 +75,11 @@ const PCRFilters = ({
           {...{ form, filters, handleFilterChange, handleParamsChange }}
         />
       </form>
-      <FieldFilter field="region" />
       <FieldFilter field="country" />
       <FieldFilter field="lead_agency" />
-      <FieldFilter field="cooperating_agency" />
       <FieldFilter field="cluster" />
       <FieldFilter field="project_type" />
       <FieldFilter field="sector" />
-      <FieldFilter field="subsectors" />
       <FieldFilter field="category" />
       <FieldFilter field="status" />
       <FieldFilter field="pcr_due" />

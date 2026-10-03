@@ -136,14 +136,14 @@ const getColumnDefs = (
       field: 'status',
       tooltipField: 'status',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 150,
+      minWidth: 80,
     },
     {
       headerName: pcrFieldsMapping.country,
       field: 'country',
       tooltipField: 'country',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 180,
+      minWidth: 170,
     },
     {
       headerName: pcrFieldsMapping.metacode,
@@ -167,7 +167,7 @@ const getColumnDefs = (
       headerName: pcrFieldsMapping.tranche,
       field: 'tranche',
       tooltipField: 'tranche',
-      minWidth: 70,
+      minWidth: 60,
     },
     {
       headerName: pcrFieldsMapping.agency,
