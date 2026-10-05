@@ -1,7 +1,9 @@
 import { useMemo, useRef, useState, useContext } from 'react'
 
+import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import {
   RedirectBackButton,
@@ -27,12 +29,25 @@ const PCRListingWrapper = () => {
     ['Completed', 'Financially completed'].includes(status.name),
   )
 
+  const updatedInitialFilters = {
+    ...initialFilters,
+    pcr_due: [booleanFieldsOpts[0]],
+    pcr_submitted: [booleanFieldsOpts[1]],
+  }
+
+  const updatedInitialParams = {
+    ...initialFilters,
+    pcr_due: ['Yes'],
+    pcr_submitted: ['No'],
+  }
+
+  const [view, setView] = useState<ViewSelectorValuesType | null>('list')
   const [projectId, setProjectId] = useState<number | null>(null)
   const [pcrId, setPcrId] = useState<number | null>(null)
-  const [filters, setFilters] = useState(initialFilters)
+  const [filters, setFilters] = useState(updatedInitialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const pcrProjects = useGetPCRProjects(initialFilters)
+  const pcrProjects = useGetPCRProjects(updatedInitialParams)
   const { loading, setParams } = pcrProjects
 
   const fieldToOptionsMapping: Record<string, any[]> = {
@@ -62,6 +77,22 @@ const PCRListingWrapper = () => {
     fieldToOptionsMapping,
     handleFilterChange,
     handleParamsChange,
+  }
+
+  const handleChangeViewSelector = (value: ViewSelectorValuesType) => {
+    setView(value)
+
+    const isDue = value === 'list'
+    const pcrDue = booleanFieldsOpts[isDue ? 0 : 1]
+    const pcrSubmitted = booleanFieldsOpts[isDue ? 1 : 0]
+
+    handleFilterChange({ pcr_due: [pcrDue], pcr_submitted: [pcrSubmitted] })
+
+    handleParamsChange({
+      pcr_due: pcrDue.id,
+      pcr_submitted: pcrSubmitted.id,
+      offset: 0,
+    })
   }
 
   return (
@@ -94,8 +125,20 @@ const PCRListingWrapper = () => {
       </HeaderTitle>
       <div className="flex flex-col gap-6" key={key}>
         <div className="flex flex-col gap-2.5">
-          <PCRFilters {...filtersProps} />
-          <PCRFiltersSelectedOpts {...filtersProps} />
+          <div className="flex flex-col gap-4 md:flex-row">
+            <PCRFilters {...filtersProps} />
+            <TableViewSelector
+              value={view as ViewSelectorValuesType}
+              reverseViewOrder={true}
+              tooltipText={['Due PCRs', 'Completed PCRs']}
+              changeHandler={(_, value) => {
+                if (value) {
+                  handleChangeViewSelector(value)
+                }
+              }}
+            />
+          </div>
+          <PCRFiltersSelectedOpts {...filtersProps} setView={setView} />
         </div>
         <PCRTable
           {...{ pcrProjects, projectId, setProjectId, setPcrId, filters }}

@@ -1,3 +1,4 @@
+import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import {
   displaySearchTerm,
   displaySelectedOption,
@@ -20,7 +21,10 @@ const PCRFiltersSelectedOpts = ({
   fieldToOptionsMapping,
   handleFilterChange,
   handleParamsChange,
-}: PCRFiltersProps) => {
+  setView,
+}: PCRFiltersProps & {
+  setView: (view: ViewSelectorValuesType | null) => void
+}) => {
   const areFiltersApplied =
     getAreFiltersApplied(filters) ||
     filters?.search ||
@@ -127,6 +131,7 @@ const PCRFiltersSelectedOpts = ({
             }
             handleFilterChange({ ...initialFilters, ...initialParams })
             handleParamsChange({ offset: 0, ...initialParams })
+            setView(null)
           }}
         >
           Clear All
