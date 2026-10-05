@@ -6630,14 +6630,23 @@ class TestAPRExportNumberFormats:
         request.cls.ws = writer.worksheet
         request.cls.col_map = col_map
 
-    def test_funding_fields_have_no_decimal_format(self):
+    def test_funding_fields_have_two_decimal_format(self):
         row = APRExportWriter.FIRST_DATA_ROW
         for field in ["approved_funding", "funds_disbursed", "balance"]:
             col = self.col_map[field]
             fmt = self.ws.cell(row, col).number_format
             assert (
-                fmt == "#,##0"
-            ), f"Funding field '{field}' expected '#,##0', got '{fmt}'"
+                fmt == "#,##0.00"
+            ), f"Funding field '{field}' expected '#,##0.00', got '{fmt}'"
+
+    def test_date_fields_have_day_month_year_format(self):
+        row = APRExportWriter.FIRST_DATA_ROW
+        for field in APRExportWriter.DATE_FIELDS:
+            col = self.col_map[field]
+            fmt = self.ws.cell(row, col).number_format
+            assert (
+                fmt == "[$-409]DD-MMM-YY"
+            ), f"Date field '{field}' expected '[$-409]DD-MMM-YY', got '{fmt}'"
 
     def test_odp_mt_fields_have_one_decimal_format(self):
         row = APRExportWriter.FIRST_DATA_ROW

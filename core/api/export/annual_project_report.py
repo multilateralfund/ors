@@ -43,7 +43,9 @@ class APRExportWriter:
     HEADER_ROW = 1
     FIRST_DATA_ROW = 2
 
-    DATE_FORMAT = 'MMM"-"YY'
+    # Locale-fixed so month names stay English (and pasteable) in any Excel
+    DATE_FORMAT = "[$-409]DD-MMM-YY"
+    FUNDING_FORMAT = "#,##0.00"
 
     DATE_FIELDS = {
         "date_approved",
@@ -399,7 +401,7 @@ class APRExportWriter:
             elif field_name in self.FUNDING_FIELDS:
                 for row in range(first_row, last_row + 1):
                     cell = self.worksheet.cell(row, col_idx)
-                    cell.number_format = "#,##0"
+                    cell.number_format = self.FUNDING_FORMAT
 
             elif field_name in self.PHASEOUT_ODP_MT_FIELDS:
                 for row in range(first_row, last_row + 1):
