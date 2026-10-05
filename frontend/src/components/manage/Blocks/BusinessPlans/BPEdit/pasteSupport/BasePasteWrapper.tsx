@@ -21,22 +21,9 @@ function cleanValue(value: string, decimalSep: string, thousandSep: string) {
   return value
 }
 
-export type PasteIssue = 'unreadable'
-
-const PASTE_ISSUE_MESSAGES: Record<PasteIssue, (count: number) => string> = {
-  unreadable: (count) =>
-    `${count} date value(s) could not be read and were left unchanged. Accepted formats: 31-Jan-24, 31/01/2024, 2024-01-31.`,
-}
-
-const MAX_LISTED_ISSUES = 5
-
 interface BasePasteWrapperProps {
   label: string
-  mutator: (
-    row: any,
-    value: any,
-    field?: APRTableFieldProps,
-  ) => PasteIssue | void
+  mutator: (row: any, value: any, field?: APRTableFieldProps) => void
   form: any[] | undefined
   setForm: (state: any[]) => void
   rowIdField?: string
@@ -101,7 +88,6 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
       let numInserted = 0
       let numColsInserted = 0
-      const issues: Record<PasteIssue, string[]> = { unreadable: [] }
 
       if (numEntries === 0) {
         enqueueSnackbar(
@@ -199,12 +185,7 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                   const finalValue = isTextField
                     ? value
                     : cleanValue(value, decimalSep, thousandSep)
-                  const issue = mutator(nextForm[i], finalValue, crtFieldObj)
-                  if (issue) {
-                    issues[issue].push(
-                      `${rowId} – ${crtFieldObj.label} ('${value}')`,
-                    )
-                  }
+                  mutator(nextForm[i], finalValue, crtFieldObj)
                   numColsInserted++
                 })
 
@@ -235,19 +216,6 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
           }
         }
         setForm(nextForm)
-
-        for (const [issue, items] of Object.entries(issues)) {
-          if (items.length === 0) continue
-          const listed = items.slice(0, MAX_LISTED_ISSUES).join('; ')
-          const more =
-            items.length > MAX_LISTED_ISSUES
-              ? ` and ${items.length - MAX_LISTED_ISSUES} more`
-              : ''
-          enqueueSnackbar(
-            `${PASTE_ISSUE_MESSAGES[issue as PasteIssue](items.length)} ${listed}${more}.`,
-            { variant: 'warning', autoHideDuration: null },
-          )
-        }
 
         if (numInserted > 0) {
           const successMessage = isMultiple
