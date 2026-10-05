@@ -497,6 +497,10 @@ class ProjectsV2Dump:
         if view.request.user.has_perm("core.is_mlfs_user"):
             queryset = queryset.exclude(submission_status__name="Draft")
 
+        # The dashboard export has its own exclude_production query parameter.
+        queryset = self.view.filter_permissions_queryset(
+            queryset, include_production=self.view.action == "dashboards_all"
+        )
         self.queryset = self.view.filter_queryset(queryset)
         self.setup_workbook()
 

@@ -366,6 +366,34 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
 
+    @pytest.mark.parametrize("filter_lead_agency", [False, True])
+    def test_projects_database_respects_agency_visibility(
+        self, agency_inputter_user, filter_lead_agency
+    ):
+        agency = agency_inputter_user.agency
+        own_project = ProjectFactory(agency=agency, production=False)
+        lead_project = ProjectFactory(
+            country=own_project.country, lead_agency=agency, production=False
+        )
+        ProjectFactory(country=own_project.country, production=False)
+        production_project = ProjectFactory(
+            country=own_project.country, agency=agency, production=True
+        )
+        ProjectFactory(agency=agency, production=False)
+        self.client.force_authenticate(user=agency_inputter_user)
+        params = {"country_id": own_project.country_id}
+        expected_ids = {own_project.id, lead_project.id, production_project.id}
+        if filter_lead_agency:
+            params["lead_agency_id"] = agency.id
+            expected_ids = {lead_project.id}
+
+        response = self.client.get(self.url, {**params, "projects_database": "true"})
+        assert response.status_code == HTTPStatus.OK
+        workbook = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        for sheet_name in ("Projects", "Funds"):
+            rows = list(workbook[sheet_name].iter_rows(values_only=True))
+            assert {row[0] for row in rows[1:]} == expected_ids
+
     def test_export_projects_secretariat(
         self, project, secretariat_viewer_user, project_approved_status
     ):
