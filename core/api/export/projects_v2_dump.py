@@ -497,6 +497,7 @@ class ProjectsV2Dump:
         if view.request.user.has_perm("core.is_mlfs_user"):
             queryset = queryset.exclude(submission_status__name="Draft")
 
+        queryset = self.view.filter_permissions_queryset(queryset)
         self.queryset = self.view.filter_queryset(queryset)
         self.setup_workbook()
 
