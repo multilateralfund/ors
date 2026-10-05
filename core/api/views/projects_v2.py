@@ -246,7 +246,11 @@ class ProjectV2ViewSet(
         return [DenyAll]
 
     def filter_permissions_queryset(
-        self, queryset, results_for_edit=False, results_for_edit_actual_fields=False
+        self,
+        queryset,
+        results_for_edit=False,
+        results_for_edit_actual_fields=False,
+        include_production=False,
     ):
         """
         Filter the queryset based on the user's permissions.
@@ -347,7 +351,9 @@ class ProjectV2ViewSet(
             ):
                 return queryset.none()
 
-        if not user.has_perm("core.can_view_production_projects"):
+        if not include_production and not user.has_perm(
+            "core.can_view_production_projects"
+        ):
             queryset = queryset.filter(production=False)
 
         if user.has_perm("core.can_view_all_agencies"):

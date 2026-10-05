@@ -376,11 +376,13 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             country=own_project.country, lead_agency=agency, production=False
         )
         ProjectFactory(country=own_project.country, production=False)
-        ProjectFactory(country=own_project.country, agency=agency, production=True)
+        production_project = ProjectFactory(
+            country=own_project.country, agency=agency, production=True
+        )
         ProjectFactory(agency=agency, production=False)
         self.client.force_authenticate(user=agency_inputter_user)
         params = {"country_id": own_project.country_id}
-        expected_ids = {own_project.id, lead_project.id}
+        expected_ids = {own_project.id, lead_project.id, production_project.id}
         if filter_lead_agency:
             params["lead_agency_id"] = agency.id
             expected_ids = {lead_project.id}
