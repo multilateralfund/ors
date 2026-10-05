@@ -16,21 +16,15 @@ import {
   ValidatorMixin,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
-import {
-  BasePasteWrapper,
-  PasteIssue,
-} from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
+import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
 import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
 import SelectionCheckbox, {
   APRSelectAllCheckbox,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/SelectionCheckbox.tsx'
 import dayjs from 'dayjs'
 
-const DATE_PASTE_FORMATS = ['DD-MMM-YY', 'D-MMM-YY', 'MMM-YY', 'MMM/YY', 'MMM.YY', 'DD/MM/YYYY', 'DD.MM.YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD']
-// Strict parsing is slow on large pastes, so only try formats of the value's kind
-const DATE_PASTE_FORMATS_TEXT = DATE_PASTE_FORMATS.filter((f) => f.includes('MMM'))
-const DATE_PASTE_FORMATS_NUMERIC = DATE_PASTE_FORMATS.filter((f) => !f.includes('MMM'))
-const DATE_PASTE_FORMATS_HINT = 'Accepted formats: 31-Jan-24, 31/01/2024, 31.01.2024, 31-01-2024, 2024-01-31, Jan-24 (saved as the 1st)'
+const DATE_PASTE_FORMATS = ['MMM-YY', 'MMM/YY', 'MMM.YY', 'DD/MM/YYYY', 'DD.MM.YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD']
+const DATE_PASTE_FORMATS_HINT = 'Accepted formats: Jan-24, Jan/24, Jan.24, 31/01/2024, 31.01.2024, 31-01-2024, 2024-01-31'
 
 export const checkboxColumnDef = {
   headerComponent: APRSelectAllCheckbox,
@@ -55,8 +49,8 @@ export const dataTypeDefinitions: Record<
     extendsDataType: 'dateString',
     // From date picker to our ISO format (YYYY-MM-DD)
     dateFormatter: (value) => formatDate(value, 'YYYY-MM-DD'),
-    // Format stored ISO value to display format (DD-MMM-YY, e.g. 31-Jan-24)
-    valueFormatter: (params) => formatDate(params.value, 'DD-MMM-YY'),
+    // Format stored ISO value to display format (MMM-YY, e.g. Jan-24)
+    valueFormatter: (params) => formatDate(params.value, 'MMM-YY'),
     // Parse to date from ISO format
     dateParser: (value) => parseDate(value),
     validators: [validateDate],
@@ -742,28 +736,21 @@ export default function useGetColumnDefs({
                   const { fieldName, overrideOptions } = field ?? {}
                   const cellDataType = overrideOptions?.cellDataType
                   let toBeAdded = value
-                  let issue: PasteIssue | undefined
 
                   if (cellDataType === 'dateString') {
                     if (!value || (typeof value === 'string' && value.trim() === '')) {
                       toBeAdded = null
                     } else {
-                      // Convert from display/Excel format (DD-MMM-YY) or other
-                      // accepted formats to ISO before calling API.
-                      // Day-less dates (e.g. MMM-YY) default to day 1 of the month.
+                      // Convert from display/Excel format (MMM-YY, MMM/YY, MMM.YY)
+                      // or legacy DD/MM/YYYY format to ISO before calling API.
+                      // The default for "MMM-YY" dates is day 1 of the given month.
                       let parsed = null
-                      const formats = /[a-z]/i.test(value)
-                        ? DATE_PASTE_FORMATS_TEXT
-                        : DATE_PASTE_FORMATS_NUMERIC
-                      for (const fmt of formats) {
+                      for (const fmt of DATE_PASTE_FORMATS) {
                         const d = dayjs(value as string, fmt, true)
                         if (d.isValid()) {
                           parsed = d
                           break
                         }
-                      }
-                      if (!parsed) {
-                        issue = 'unreadable'
                       }
                       toBeAdded = parsed ? parsed.format('YYYY-MM-DD') : row[fieldName!]
                     }
@@ -800,7 +787,6 @@ export default function useGetColumnDefs({
                   }
 
                   row[fieldName!] = toBeAdded
-                  return issue
                 }}
                 form={rows}
                 label={props.displayName}
