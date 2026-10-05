@@ -325,7 +325,10 @@ def _grouped_series(
 
 
 def _prepare_line_chart_grouped_trend(
-    grouped_series: GroupedSeries, title: str, subtitle: str, y_axis_label: str,
+    grouped_series: GroupedSeries,
+    title: str,
+    subtitle: str,
+    y_axis_label: str,
 ) -> dict[str, Any]:
     """Prepare the grouped series data for line chart visualization."""
 
