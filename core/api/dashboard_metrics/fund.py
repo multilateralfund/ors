@@ -221,12 +221,12 @@ def _prepare_vertical_bar_structure(
         "series": [
             {
                 "name": "Number of projects",
-                "color": "var(--deep-teal)",
+                "color": "var(--deep-teal-tint)",
                 "data": [format_number(entry["projects_by_code"]) for entry in data],
             },
             {
                 "name": "Funds approved",
-                "color": "var(--purple)",
+                "color": "var(--data-purple)",
                 "data": [
                     format_number(entry["funds_plus_psc"], 0, "$") for entry in data
                 ],

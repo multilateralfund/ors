@@ -89,6 +89,7 @@ class CountryProgrammeTrends:
             _grouped_series(self.ods_consumption.get(country_name)),
             "ODS Consumption",
             "",
+            "ODP",
         )
         return result
 
@@ -98,6 +99,7 @@ class CountryProgrammeTrends:
             _series(self.hfc_consumption.get(country_name)),
             "HFC Consumption",
             "",
+            "CO2",
         )
 
     def production_odp_by_group(self, country_name: str) -> GroupedSeries | None:
@@ -111,6 +113,7 @@ class CountryProgrammeTrends:
                 _grouped_series(by_group),
                 "ODS Production",
                 "",
+                "ODP",
             )
             if produced
             else None
@@ -322,7 +325,7 @@ def _grouped_series(
 
 
 def _prepare_line_chart_grouped_trend(
-    grouped_series: GroupedSeries, title: str, subtitle: str
+    grouped_series: GroupedSeries, title: str, subtitle: str, y_axis_label: str,
 ) -> dict[str, Any]:
     """Prepare the grouped series data for line chart visualization."""
 
@@ -374,11 +377,12 @@ def _prepare_line_chart_grouped_trend(
             }
             for i, series in enumerate(grouped_series["values"])
         ],
+        "meta": {"y_axis_label": y_axis_label},
     }
 
 
 def _prepare_line_chart_trend(
-    series: Series, title: str, subtitle: str
+    series: Series, title: str, subtitle: str, y_axis_label: str
 ) -> dict[str, Any]:
     """Prepare the grouped series data for line chart visualization."""
 
@@ -402,6 +406,7 @@ def _prepare_line_chart_trend(
                 "data": series["values"],
             }
         ],
+        "meta": {"y_axis_label": y_axis_label},
     }
 
 
