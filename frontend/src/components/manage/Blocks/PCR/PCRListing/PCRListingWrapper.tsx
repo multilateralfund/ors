@@ -8,7 +8,6 @@ import {
   CreateButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import PCRListingContext from '@ors/contexts/PCR/PCRListingContext'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
 import PCRTable from './PCRTable'
@@ -21,8 +20,7 @@ import { filter } from 'lodash'
 const PCRListingWrapper = () => {
   const form = useRef<any>()
 
-  const { regions } = useContext(PCRListingContext)
-  const { countries, agencies, clusters, project_types, sectors, subsectors } =
+  const { countries, agencies, clusters, project_types, sectors } =
     useContext(ProjectsDataContext)
   const projectsSlice = useStore((state) => state.projects)
   const statuses = filter(projectsSlice.statuses.data, (status) =>
@@ -38,14 +36,11 @@ const PCRListingWrapper = () => {
   const { loading, setParams } = pcrProjects
 
   const fieldToOptionsMapping: Record<string, any[]> = {
-    region: regions,
     country: countries,
     lead_agency: agencies,
-    cooperating_agency: agencies,
     cluster: clusters,
     project_type: project_types,
     sector: sectors,
-    subsectors: subsectors,
     category: categoryOpts,
     status: statuses,
     pcr_due: booleanFieldsOpts,

@@ -29,20 +29,12 @@ const PCRFiltersSelectedOpts = ({
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(fieldToOptionsMapping.region),
-      entityIdentifier: 'region_id',
-    },
-    {
       entities: formatEntity(fieldToOptionsMapping.country),
       entityIdentifier: 'country_id',
     },
     {
       entities: formatEntity(fieldToOptionsMapping.lead_agency),
       entityIdentifier: 'lead_agency_id',
-    },
-    {
-      entities: formatEntity(fieldToOptionsMapping.cooperating_agency),
-      entityIdentifier: 'cooperating_agency_id',
     },
     {
       entities: formatEntity(fieldToOptionsMapping.cluster),
@@ -55,10 +47,6 @@ const PCRFiltersSelectedOpts = ({
     {
       entities: formatEntity(fieldToOptionsMapping.sector),
       entityIdentifier: 'sector_id',
-    },
-    {
-      entities: formatEntity(fieldToOptionsMapping.subsectors),
-      entityIdentifier: 'subsectors',
     },
     {
       entities: formatEntity(fieldToOptionsMapping.category),
