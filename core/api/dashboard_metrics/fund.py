@@ -489,56 +489,50 @@ def funds_approved_funds_disbursed_lvc_split(
     total_funds_disbursed = format_number(
         funds_disbursed_lvc + funds_disbursed_non_lvc, 0, "$"
     )
-    return (
-        {
-            "type": "donut",
-            "title": None,
-            "subtitle": None,
-            "donuts": [
-                {
-                    "label": "Funds approved",
-                    "total": total_funds_approved,
-                    "series": [
-                        {
-                            "name": "Low-Volume Consuming (LVC) countries",
-                            "value": funds_approved_lvc,
-                            "displayValue": format_number(funds_approved_lvc, 0, "$"),
-                            "color": "var(--deep-teal)",
-                        },
-                        {
-                            "name": "Non-LVC countries",
-                            "value": funds_approved_non_lvc,
-                            "displayValue": format_number(
-                                funds_approved_non_lvc, 0, "$"
-                            ),
-                            "color": "var(--purple)",
-                        },
-                    ],
-                },
-                {
-                    "label": "Funds disbursed",
-                    "total": total_funds_disbursed,
-                    "series": [
-                        {
-                            "name": "Low-Volume Consuming (LVC) countries",
-                            "value": funds_disbursed_lvc,
-                            "displayValue": format_number(funds_disbursed_lvc, 0, "$"),
-                            "color": "var(--deep-teal)",
-                        },
-                        {
-                            "name": "Non-LVC countries",
-                            "value": funds_disbursed_non_lvc,
-                            "displayValue": format_number(
-                                funds_disbursed_non_lvc, 0, "$"
-                            ),
-                            "color": "var(--purple)",
-                        },
-                    ],
-                },
-            ],
-            "meta": {"currency": "USD"},
-        },
-    )
+    return {
+        "type": "donut",
+        "title": None,
+        "subtitle": None,
+        "donuts": [
+            {
+                "label": "Funds approved",
+                "total": total_funds_approved,
+                "series": [
+                    {
+                        "name": "Low-Volume Consuming (LVC) countries",
+                        "value": funds_approved_lvc,
+                        "displayValue": format_number(funds_approved_lvc, 0, "$"),
+                        "color": "var(--deep-teal)",
+                    },
+                    {
+                        "name": "Non-LVC countries",
+                        "value": funds_approved_non_lvc,
+                        "displayValue": format_number(funds_approved_non_lvc, 0, "$"),
+                        "color": "var(--data-purple)",
+                    },
+                ],
+            },
+            {
+                "label": "Funds disbursed",
+                "total": total_funds_disbursed,
+                "series": [
+                    {
+                        "name": "Low-Volume Consuming (LVC) countries",
+                        "value": funds_disbursed_lvc,
+                        "displayValue": format_number(funds_disbursed_lvc, 0, "$"),
+                        "color": "var(--deep-teal)",
+                    },
+                    {
+                        "name": "Non-LVC countries",
+                        "value": funds_disbursed_non_lvc,
+                        "displayValue": format_number(funds_disbursed_non_lvc, 0, "$"),
+                        "color": "var(--data-purple)",
+                    },
+                ],
+            },
+        ],
+        "meta": {"currency": "USD"},
+    }
 
 
 def investment_timeline(context: MetricContext) -> dict[str, float | int | None] | None:
