@@ -2070,36 +2070,37 @@ class TestFundPlaceholders(BaseTest):
         metric = self.fund(user)["baseline_phased_out_by_substance"]
 
         assert "placeholder" not in metric
-
         assert metric["value"]["categories"] == [
+            "Other ODS",
             "Hydrofluorocarbons (HFCs)",
             "Hydrochlorofluorocarbons (HCFCs)",
-            "Other ODS",
         ]
-        assert metric["value"]["series"][0]["name"] == "CO2-eq T"
-        assert metric["value"]["series"][0]["data"][0] is None
-        assert metric["value"]["series"][0]["data"][1] is None
-        assert metric["value"]["series"][0]["data"][2] == 100.0
+        assert metric["value"]["series"][0]["name"] == "Other ODS"
+        assert metric["value"]["series"][0]["data"][0] == 100.0
 
-        assert metric["value"]["series"][1]["name"] == "ODP T"
+        assert metric["value"]["series"][1]["name"] == "Hydrofluorocarbons (HFCs)"
         assert metric["value"]["series"][1]["data"][0] is None
-        assert metric["value"]["series"][1]["data"][1] is None
-        assert metric["value"]["series"][1]["data"][2] == 100.0
+
+        assert (
+            metric["value"]["series"][2]["name"] == "Hydrochlorofluorocarbons (HCFCs)"
+        )
+        assert metric["value"]["series"][2]["data"][0] is None
 
     def test_asking_serves_all_three_families(self, user, brazil):
         assert self.fund(user)["baseline_phased_out_by_substance"]["value"][
             "categories"
         ] == [
+            "Other ODS",
             "Hydrofluorocarbons (HFCs)",
             "Hydrochlorofluorocarbons (HCFCs)",
-            "Other ODS",
         ]
 
     def test_the_invented_rows_are_flagged_and_the_real_one_is_not(self, user, brazil):
         """Partly invented, so the rows say which halves are which."""
         metric = self.fund(user)["baseline_phased_out_by_substance"]
-        assert metric["value"]["series"][0]["data"] == [None, None, 100.0]
-        assert metric["value"]["series"][1]["data"] == [None, None, 100.0]
+        metric["value"]["series"][1]["data"] == [100]
+        metric["value"]["series"][0]["data"] == [None]
+        metric["value"]["series"][2]["data"] == [None]
 
 
 class TestDashboardMetricsExport(BaseTest):

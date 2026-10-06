@@ -175,35 +175,32 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
 
 
 def _prepare_horizontal_bar_structure(
-    data: dict[list[dict[str, Any]]],
+    data: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     return {
         "type": "bar_horizontal",
         "title": "Percentage of baseline consumption phased out by substance (%)",
         "subtitle": None,
         "categories": [
+            "Other ODS",
             "Hydrofluorocarbons (HFCs)",
             "Hydrochlorofluorocarbons (HCFCs)",
-            "Other ODS",
         ],
         "series": [
             {
-                "name": "CO2-eq T",
+                "name": "Other ODS",
                 "color": "var(--deep-teal)",
-                "data": [
-                    data["co2_tonnes"][0]["value"],
-                    data["co2_tonnes"][1]["value"],
-                    data["co2_tonnes"][2]["value"],
-                ],
+                "data": [data[0]["value"]],
             },
             {
-                "name": "ODP T",
+                "name": "Hydrofluorocarbons (HFCs)",
                 "color": "var(--mlf-blue)",
-                "data": [
-                    data["ods"][0]["value"],
-                    data["ods"][1]["value"],
-                    data["ods"][2]["value"],
-                ],
+                "data": [data[1]["value"]],
+            },
+            {
+                "name": "Hydrochlorofluorocarbons (HCFCs)",
+                "color": "var(--mlf-blue)",
+                "data": [data[2]["value"]],
             },
         ],
         "meta": {"unit": "%"},
@@ -312,30 +309,6 @@ def baseline_rows(_context: MetricContext) -> list[dict[str, Any]]:
         ],
         0,
     )
-    co2_tonnes_hcfc = sum(
-        [
-            sum(
-                [
-                    entry.consumption_phased_out_co2 or 0,
-                    entry.production_phased_out_co2 or 0,
-                ]
-            )
-            for entry in getattr(apr_hcfc, "records", [])
-        ],
-        0,
-    )
-    ods_hfc = sum(
-        [
-            sum(
-                [
-                    entry.consumption_phased_out_odp or 0,
-                    entry.production_phased_out_odp or 0,
-                ]
-            )
-            for entry in getattr(apr_hfc, "records", [])
-        ],
-        0,
-    )
     ods_hcfc = sum(
         [
             sum(
@@ -348,36 +321,19 @@ def baseline_rows(_context: MetricContext) -> list[dict[str, Any]]:
         ],
         0,
     )
-    return {
-        "co2_tonnes": [
-            {
-                "group": HFC,
-                "value": (
-                    round(hfc_baseline / co2_tonnes_hfc, 2) if co2_tonnes_hfc else None
-                ),
-            },
-            {
-                "group": HCFC,
-                "value": (
-                    round(hcfc_baseline / co2_tonnes_hcfc, 2)
-                    if co2_tonnes_hcfc
-                    else None
-                ),
-            },
-            {"group": OTHER_ODS, "value": OTHER_ODS_PCT_PHASED_OUT},
-        ],
-        "ods": [
-            {
-                "group": HFC,
-                "value": round(hfc_baseline / ods_hfc, 2) if ods_hfc else None,
-            },
-            {
-                "group": HCFC,
-                "value": round(hcfc_baseline / ods_hcfc, 2) if ods_hcfc else None,
-            },
-            {"group": OTHER_ODS, "value": OTHER_ODS_PCT_PHASED_OUT},
-        ],
-    }
+    return [
+        {"group": OTHER_ODS, "value": OTHER_ODS_PCT_PHASED_OUT},
+        {
+            "group": HFC,
+            "value": (
+                round(co2_tonnes_hfc / hfc_baseline, 2) if co2_tonnes_hfc else None
+            ),
+        },
+        {
+            "group": HCFC,
+            "value": round(hcfc_baseline / ods_hcfc, 2) if ods_hcfc else None,
+        },
+    ]
 
 
 def baseline_phased_out_by_substance(_context: MetricContext) -> list[dict[str, Any]]:
