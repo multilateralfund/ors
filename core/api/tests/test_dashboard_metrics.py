@@ -607,7 +607,7 @@ class TestFundValues(BaseTest):
 
         assert self.fund(user)["funds_approved"]["value"] == {
             "funds_approved": 100000.0,
-            "funds_plus_psc": "107,000",
+            "funds_plus_psc": "107.0K",
         }
 
     def test_a_transferred_project_is_in_no_figure(self, user, ongoing_status):
