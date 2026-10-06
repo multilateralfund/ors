@@ -1,10 +1,11 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import {
   SectionTitle,
   SubSectionTitle,
+  getCollapseIcon,
   detailItem,
 } from './ViewHelperComponents'
 import { getOtherOptionId } from '../../utils'
@@ -21,6 +22,22 @@ import { map } from 'lodash'
 const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
   const { ratingOptions } = useContext(PCRDataContext)
 
+  const [isAddressesSectionExpanded, setIsAddressesSectionExpanded] =
+    useState(false)
+  const [isGoalsSectionExpanded, setIsGoalsSectionExpanded] = useState(false)
+  const [isRatingSectionExpanded, setIsRatingSectionExpanded] = useState(false)
+
+  const collapseAddressesSection = () => {
+    setIsAddressesSectionExpanded(!isAddressesSectionExpanded)
+  }
+
+  const collapseGoalsSection = () => {
+    setIsGoalsSectionExpanded(!isGoalsSectionExpanded)
+  }
+
+  const collapseRatingSection = () => {
+    setIsRatingSectionExpanded(!isRatingSectionExpanded)
+  }
   return (
     <>
       <SectionTitle>PCR Overview</SectionTitle>
@@ -29,46 +46,60 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
       <Divider className="my-6" />
       <SubSectionTitle>Indicators</SubSectionTitle>
       <div className="flex flex-col gap-y-4">
-        {detailItem(
-          pcrFieldsMapping.financial_figures_status,
-          pcr.financial_figures_status,
-          { valueClassname: borderedValueClassname },
-        )}
-        {detailItem(
-          pcrFieldsMapping.financial_figures_status_explanation,
-          pcr.financial_figures_status_explanation,
-          overviewTextareaClassname,
-        )}
+        <span className="flex w-full flex-col gap-2 lg:w-[65%]">
+          <div className="flex flex-wrap items-center gap-x-4">
+            <span className="text-[#4D4D4D]">{pcrFieldsMapping.addresses}</span>
+            {getCollapseIcon(
+              isAddressesSectionExpanded,
+              collapseAddressesSection,
+            )}
+          </div>
+          {isAddressesSectionExpanded && (
+            <h4 className="m-0 text-lg font-normal text-black">
+              {pcr.addresses || '-'}
+            </h4>
+          )}
+        </span>
         <Divider className="w-full lg:w-[65%]" />
-        {detailItem(pcrFieldsMapping.addresses, pcr.addresses, {
-          containerClassname: '!gap-2 w-full lg:w-[65%]',
-          valueClassname: '!text-black !font-normal !text-lg',
-        })}
-        <Divider className="w-full lg:w-[65%]" />
-        {detailItem(
-          pcrFieldsMapping.project_goal_achieved,
-          pcr.project_goal_achieved,
-          { valueClassname: borderedValueClassname },
-        )}
-        {detailItem(
-          pcrFieldsMapping.project_goal_achieved_explanation,
-          pcr.project_goal_achieved_explanation,
-          overviewTextareaClassname,
-        )}
-        <Divider className="w-full lg:w-[65%]" />
-        {detailItem(pcrFieldsMapping.rating, pcr.rating, {
-          valueClassname: borderedValueClassname,
-        })}
-        {pcr.rating === getOtherOptionId(ratingOptions) &&
+        <div className="flex gap-4">
+          {detailItem(
+            pcrFieldsMapping.project_goal_achieved,
+            pcr.project_goal_achieved,
+            {
+              containerClassname: '!flex-row gap-4 items-center',
+              valueClassname: borderedValueClassname,
+            },
+          )}
+          {getCollapseIcon(isGoalsSectionExpanded, collapseGoalsSection)}
+        </div>
+        {isGoalsSectionExpanded &&
           detailItem(
-            pcrFieldsMapping.rating_explanation_other,
-            pcr.rating_explanation_other,
+            pcrFieldsMapping.project_goal_achieved_explanation,
+            pcr.project_goal_achieved_explanation,
             overviewTextareaClassname,
           )}
-        {detailItem(
-          pcrFieldsMapping.rating_explanation,
-          pcr.rating_explanation,
-          overviewTextareaClassname,
+        <Divider className="w-full lg:w-[65%]" />
+        <div className="flex gap-4">
+          {detailItem(pcrFieldsMapping.rating, pcr.rating, {
+            containerClassname: '!flex-row gap-4 items-center',
+            valueClassname: borderedValueClassname,
+          })}
+          {getCollapseIcon(isRatingSectionExpanded, collapseRatingSection)}
+        </div>
+        {isRatingSectionExpanded && (
+          <>
+            {pcr.rating === getOtherOptionId(ratingOptions) &&
+              detailItem(
+                pcrFieldsMapping.rating_explanation_other,
+                pcr.rating_explanation_other,
+                overviewTextareaClassname,
+              )}
+            {detailItem(
+              pcrFieldsMapping.rating_explanation,
+              pcr.rating_explanation,
+              overviewTextareaClassname,
+            )}
+          </>
         )}
         <Divider className="w-full lg:w-[65%]" />
         <div className="flex flex-col">
