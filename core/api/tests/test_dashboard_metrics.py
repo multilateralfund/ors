@@ -2098,9 +2098,9 @@ class TestFundPlaceholders(BaseTest):
     def test_the_invented_rows_are_flagged_and_the_real_one_is_not(self, user, brazil):
         """Partly invented, so the rows say which halves are which."""
         metric = self.fund(user)["baseline_phased_out_by_substance"]
-        metric["value"]["series"][1]["data"] == [100]
-        metric["value"]["series"][0]["data"] == [None]
-        metric["value"]["series"][2]["data"] == [None]
+        assert metric["value"]["series"][0]["data"] == [100]
+        assert metric["value"]["series"][1]["data"] == [None]
+        assert metric["value"]["series"][2]["data"] == [None]
 
 
 class TestDashboardMetricsExport(BaseTest):

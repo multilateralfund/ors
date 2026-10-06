@@ -145,6 +145,11 @@ COUNTRY_SECTOR_ORDER = (
 IMPLEMENTING_AGENCY_NAMES = ("UNDP", "UNEP", "UNIDO", "World Bank", "WMO")
 BILATERAL_LABEL = "Bilateral Agencies"
 
+EUROPE_ABBR = "EUR"
+EUROPE_AND_CENTRAL_ASIA_NAME = "Region: Europe and Central Asia"
+WEST_ASIA_ABBR = "WA"
+ASIA_AND_PACIFIC_NAME = "Region: Asia and the Pacific"
+
 
 class ClassifiedProject(NamedTuple):
     """One project with the buckets it belongs to, worked out once."""
@@ -313,6 +318,10 @@ def region_of(country: Country | None) -> str | None:
     node = country.parent if country else None
     while node:
         if node.location_type == Country.LocationType.REGION:
+            if node.abbr == EUROPE_ABBR:
+                return EUROPE_AND_CENTRAL_ASIA_NAME
+            if node.abbr == WEST_ASIA_ABBR:
+                return ASIA_AND_PACIFIC_NAME
             return node.name
         node = node.parent
     return None
@@ -328,6 +337,10 @@ def region_bucket(country: Country | None) -> str | None:
     if country is None:
         return None
     if country.location_type == Country.LocationType.REGION:
+        if country.abbr == EUROPE_ABBR:
+            return EUROPE_AND_CENTRAL_ASIA_NAME
+        if country.abbr == WEST_ASIA_ABBR:
+            return ASIA_AND_PACIFIC_NAME
         return country.name
     return region_of(country)
 

@@ -148,7 +148,15 @@ class AprMetrics(APRSummaryTablesExportWriter):
             include_odp_co2=False,
             sheet_type="cumulative",
         )
-        return {code.name: data["total_funds_disbursed"] for code, data in grouped}
+        result = {}
+        for code, data in grouped:
+            code_name = code.name
+            if code_name == "Europe":
+                code_name = "Region: Europe and Central Asia"
+            elif code_name == "West Asia":
+                code_name = "Region: Asia and the Pacific"
+            result[code_name] = data["total_funds_disbursed"]
+        return result
 
     def disbursed_by_theme(self) -> dict[str, float]:
         grouped = self._compute_grouped_data(
