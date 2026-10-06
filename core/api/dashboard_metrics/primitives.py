@@ -100,7 +100,8 @@ def format_number(num: float, decimals: int = 0, currency: str = "") -> str:
         if num % 1_000_000 == 0:
             return f"{currency}{sign}{num // 1_000_000}M"
         return f"{currency}{sign}{round(num / 1_000_000, 1)}M"
-
+    if num >= 100_000:
+        return f"{currency}{sign}{round(num / 1_000, 1)}K"
     value = Decimal(str(num))
     quantizer = Decimal("1." + "0" * decimals)
     value = value.quantize(quantizer, rounding=ROUND_DOWN)
