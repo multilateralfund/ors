@@ -1,4 +1,4 @@
-import { Fragment, useContext } from 'react'
+import { Fragment, useContext, useState } from 'react'
 
 import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
@@ -8,6 +8,7 @@ import {
   detailItem,
   dateDetailItem,
   numberDetailItem,
+  getCollapseIcon,
 } from './ViewHelperComponents'
 import { PCROverviewProps, PCRResponse } from '../../interfaces'
 import { getFundingClassname } from '../../utils'
@@ -15,16 +16,21 @@ import {
   pcrFieldsMapping,
   viewPcrFieldsMapping,
   fundingFields,
+  borderedValueClassname,
+  overviewTextareaClassname,
 } from '../../constants'
 import { useStore } from '@ors/store'
 
 import { find, keys, map, uniq } from 'lodash'
 import { Divider } from '@mui/material'
+import cx from 'classnames'
 
 const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
   const { countries, agencies } = useContext(ProjectsDataContext)
   const { pcrMetaproject, pcrDefaultData, fundsByAgency } =
     useContext(PCRDataContext)
+
+  const [isFundingExpanded, setIsFundingExpanded] = useState(false)
 
   const { data: defaultData } = pcrDefaultData
   const { country, decisions } = defaultData || {}
@@ -58,6 +64,10 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
       : (fundsByAgency[field] as number)
 
     return (value ? String(value) : null) as string
+  }
+
+  const collapseFunding = () => {
+    setIsFundingExpanded(!isFundingExpanded)
   }
 
   return (
@@ -141,39 +151,59 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
         </div>
       </div>
       <Divider className="my-6" />
-      <SubSectionTitle>Funding</SubSectionTitle>
+      <div className="mb-6 flex gap-4">
+        <SubSectionTitle className="!mb-0 content-center">
+          Funding
+        </SubSectionTitle>
+        {detailItem('', pcr.financial_figures_status, {
+          containerClassname: '!gap-0',
+          valueClassname: cx(borderedValueClassname, '!mt-0'),
+        })}
+        {getCollapseIcon(isFundingExpanded, collapseFunding)}
+      </div>
       {agencyEntries.map((agency, index) => {
         const isTotal = agency === 'total'
 
         return (
-          <div key={index} className={getFundingClassname(index, isTotal)}>
-            <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="self-center text-3xl font-medium uppercase text-primary">
-                {agency}
-              </div>
-              {map(fundingFields, (field, fieldIndex) => {
-                const formattedField = isTotal ? `total_${field}` : field
+          (isFundingExpanded || isTotal) && (
+            <div key={index} className={getFundingClassname(index, isTotal)}>
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="self-center text-3xl font-medium uppercase text-primary">
+                  {agency}
+                </div>
+                {map(fundingFields, (field, fieldIndex) => {
+                  const formattedField = isTotal ? `total_${field}` : field
 
-                return (
-                  <Fragment key={fieldIndex}>
-                    {numberDetailItem(
-                      { ...pcrFieldsMapping, ...viewPcrFieldsMapping }[
-                        formattedField
-                      ],
-                      formatAgencyFundFields(
-                        formattedField as keyof PCROverviewProps,
-                        !isTotal ? Number(agencyIds[index]) : undefined,
-                      ),
-                      'decimal',
-                      '!text-3xl',
-                    )}
-                  </Fragment>
-                )
-              })}
+                  return (
+                    <Fragment key={fieldIndex}>
+                      {numberDetailItem(
+                        { ...pcrFieldsMapping, ...viewPcrFieldsMapping }[
+                          formattedField
+                        ],
+                        formatAgencyFundFields(
+                          formattedField as keyof PCROverviewProps,
+                          !isTotal ? Number(agencyIds[index]) : undefined,
+                        ),
+                        'decimal',
+                        '!text-3xl',
+                      )}
+                    </Fragment>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )
         )
       })}
+      {isFundingExpanded && (
+        <div className="mt-6">
+          {detailItem(
+            pcrFieldsMapping.financial_figures_status_explanation,
+            pcr.financial_figures_status_explanation,
+            overviewTextareaClassname,
+          )}
+        </div>
+      )}
     </>
   )
 }

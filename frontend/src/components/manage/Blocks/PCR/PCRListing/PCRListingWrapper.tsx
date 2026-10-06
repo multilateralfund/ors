@@ -32,14 +32,8 @@ const PCRListingWrapper = () => {
   const updatedInitialFilters = {
     ...initialFilters,
     pcr_due: [booleanFieldsOpts[0]],
-    pcr_submitted: [booleanFieldsOpts[1]],
   }
-
-  const updatedInitialParams = {
-    ...initialFilters,
-    pcr_due: ['Yes'],
-    pcr_submitted: ['No'],
-  }
+  const updatedInitialParams = { ...initialFilters, pcr_due: ['Yes'] }
 
   const [view, setView] = useState<ViewSelectorValuesType | null>('list')
   const [projectId, setProjectId] = useState<number | null>(null)
@@ -83,14 +77,16 @@ const PCRListingWrapper = () => {
     setView(value)
 
     const isDue = value === 'list'
-    const pcrDue = booleanFieldsOpts[isDue ? 0 : 1]
-    const pcrSubmitted = booleanFieldsOpts[isDue ? 1 : 0]
+    const selectedOption = [booleanFieldsOpts[0]]
 
-    handleFilterChange({ pcr_due: [pcrDue], pcr_submitted: [pcrSubmitted] })
+    const pcrDue = isDue ? selectedOption : null
+    const pcrSubmitted = isDue ? null : selectedOption
+
+    handleFilterChange({ pcr_due: pcrDue, pcr_submitted: pcrSubmitted })
 
     handleParamsChange({
-      pcr_due: pcrDue.id,
-      pcr_submitted: pcrSubmitted.id,
+      pcr_due: pcrDue ? pcrDue[0].id : null,
+      pcr_submitted: pcrSubmitted ? pcrSubmitted[0].id : null,
       offset: 0,
     })
   }
