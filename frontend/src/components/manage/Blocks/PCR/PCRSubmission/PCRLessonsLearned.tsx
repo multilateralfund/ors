@@ -244,15 +244,24 @@ const PCRLessonsLearned = () => {
 
             return (
               <div key={pcIndex} className="flex items-center gap-2">
-                <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-                  <PCRSelectWidget
-                    {...{ PCRData, setPCRData, sectionIdentifier }}
-                    field="project_component_option_id"
-                    options={projectComponentOptions}
-                    errors={agencyErrors}
-                    indexes={[crtTab, pcIndex]}
-                    subFields={['', pcField]}
-                  />
+                <div className="flex flex-1 flex-col gap-y-4">
+                  <div className="flex gap-6">
+                    <PCRSelectWidget
+                      {...{ PCRData, setPCRData, sectionIdentifier }}
+                      field="project_component_option_id"
+                      options={projectComponentOptions}
+                      errors={agencyErrors}
+                      indexes={[crtTab, pcIndex]}
+                      subFields={['', pcField]}
+                    />
+                    <IoTrash
+                      className="mt-11 min-h-6 min-w-6 cursor-pointer fill-gray-400"
+                      size={16}
+                      onClick={() => {
+                        onRemoveProjectComponent(pcIndex)
+                      }}
+                    />
+                  </div>
                   {llData.length > 0 && <Divider className="my-5" />}
                   <div className="flex flex-col gap-y-4">
                     {map(llData, (_, llIndex) => (
@@ -293,14 +302,8 @@ const PCRLessonsLearned = () => {
                     onSubmit={() => onAddLessonLearned(pcIndex)}
                     className="mr-auto mt-5 h-8"
                   />
+                  <Divider className="my-5" />
                 </div>
-                <IoTrash
-                  className="min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                  size={16}
-                  onClick={() => {
-                    onRemoveProjectComponent(pcIndex)
-                  }}
-                />
               </div>
             )
           })}
