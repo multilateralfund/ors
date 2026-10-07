@@ -108,7 +108,11 @@ const PCRCausesOfDelay = () => {
   const onAddCauseOfDelay = (pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
-      const initialCauseOfDelay = { delay_id: null, description: '' }
+      const initialCauseOfDelay = {
+        delay_id: null,
+        description: '',
+        action_taken: '',
+      }
 
       return {
         ...prevData,
@@ -252,6 +256,15 @@ const PCRCausesOfDelay = () => {
                             errors={delayCausesErrors}
                             indexes={[crtTab, pcIndex, cdIndex]}
                             subFields={['', pcField, cdField]}
+                            rows={2}
+                          />
+                          <PCRTextAreaWidget
+                            {...{ PCRData, setPCRData, sectionIdentifier }}
+                            field="action_taken"
+                            errors={delayCausesErrors}
+                            indexes={[crtTab, pcIndex, cdIndex]}
+                            subFields={['', pcField, cdField]}
+                            rows={2}
                           />
                           <IoTrash
                             className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"

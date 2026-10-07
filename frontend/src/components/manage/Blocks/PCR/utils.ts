@@ -327,6 +327,12 @@ export const formatNestedPcErrors = (
         entry.description,
       )
 
+      entryErrors = validateWordCount(
+        entryErrors,
+        'action_taken',
+        entry.action_taken ?? '',
+      )
+
       return entryErrors
     })
   }

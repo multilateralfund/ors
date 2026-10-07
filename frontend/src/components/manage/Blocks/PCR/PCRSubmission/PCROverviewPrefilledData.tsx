@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -20,14 +20,19 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import {
+  SubSectionTitle,
+  getCollapseIcon,
+} from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import { PCRDefaultData, PCROverviewProps } from '../interfaces'
+import { financialFiguresTypeOptions } from '../constants'
+import { getFundingClassname } from '../utils'
 import {
   pcrFieldsMapping,
   viewPcrFieldsMapping,
   fundingFields,
 } from '../constants'
-import { PCRDefaultData, PCROverviewProps } from '../interfaces'
-import { getFundingClassname } from '../utils'
 import { useStore } from '@ors/store'
 
 import { find, keys, map, omit, uniq } from 'lodash'
@@ -36,9 +41,17 @@ import cx from 'classnames'
 import dayjs from 'dayjs'
 
 const PCROverviewPrefilledData = () => {
+  const sectionIdentifier = 'overview'
+
   const { countries, agencies } = useContext(ProjectsDataContext)
-  const { pcrMetaproject, pcrDefaultData, fundsByAgency } =
-    useContext(PCRDataContext)
+  const {
+    PCRData,
+    setPCRData,
+    errors,
+    pcrMetaproject,
+    pcrDefaultData,
+    fundsByAgency,
+  } = useContext(PCRDataContext)
 
   const { data: defaultData } = pcrDefaultData
   const { country, decisions } = defaultData || {}
@@ -47,6 +60,10 @@ const PCROverviewPrefilledData = () => {
 
   const { data: metaprojectData } = pcrMetaproject
   const { umbrella_code } = metaprojectData || {}
+
+  const { overview: overviewErrors } = errors
+
+  const [isFundingExpanded, setIsFundingExpanded] = useState(false)
 
   const bpSlice = useStore((state) => state.businessPlans)
   const allDecisions = bpSlice.decisions.data
@@ -145,6 +162,10 @@ const PCROverviewPrefilledData = () => {
     )
   }
 
+  const collapseFunding = () => {
+    setIsFundingExpanded(!isFundingExpanded)
+  }
+
   return (
     <>
       <div className="mb-4 flex flex-col gap-4">
@@ -236,32 +257,52 @@ const PCROverviewPrefilledData = () => {
         </div>
       </div>
       <Divider className="my-6" />
-      <SubSectionTitle>Funding</SubSectionTitle>
+      <div className="mb-6 flex gap-4">
+        <SubSectionTitle className="!mb-0 content-center">
+          Funding
+        </SubSectionTitle>
+        {getCollapseIcon(isFundingExpanded, collapseFunding)}
+      </div>
       {agencyEntries.map((agency, index) => {
         const isTotal = agency === 'total'
 
         return (
-          <div key={index} className={getFundingClassname(index, isTotal)}>
-            <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="self-center text-3xl font-medium uppercase text-primary">
-                {agency}
-              </div>
-              {map(fundingFields, (field, fieldIndex) => {
-                const formattedField = isTotal ? `total_${field}` : field
+          (isFundingExpanded || isTotal) && (
+            <div key={index} className={getFundingClassname(index, isTotal)}>
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="self-center text-3xl font-medium uppercase text-primary">
+                  {agency}
+                </div>
+                {map(fundingFields, (field, fieldIndex) => {
+                  const formattedField = isTotal ? `total_${field}` : field
 
-                return (
-                  <AgencyFundField
-                    key={fieldIndex}
-                    field={formattedField as keyof PCROverviewProps}
-                    agencyIndex={index}
-                    isTotalField={isTotal}
-                  />
-                )
-              })}
+                  return (
+                    <AgencyFundField
+                      key={fieldIndex}
+                      field={formattedField as keyof PCROverviewProps}
+                      agencyIndex={index}
+                      isTotalField={isTotal}
+                    />
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )
         )
       })}
+      <div className="mt-6 flex flex-row flex-wrap gap-x-7 gap-y-4">
+        <PCRSelectWidget
+          {...{ PCRData, setPCRData, sectionIdentifier }}
+          field="financial_figures_status"
+          options={financialFiguresTypeOptions}
+          errors={overviewErrors}
+        />
+        <PCRTextAreaWidget
+          {...{ PCRData, setPCRData, sectionIdentifier }}
+          field="financial_figures_status_explanation"
+          errors={overviewErrors}
+        />
+      </div>
     </>
   )
 }

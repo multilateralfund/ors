@@ -355,6 +355,7 @@ export const PCRTextAreaWidget = ({
   errors,
   indexes,
   subFields,
+  rows,
 }: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
@@ -378,10 +379,11 @@ export const PCRTextAreaWidget = ({
           }
           className={cx(
             textAreaClassname,
-            '!min-w-56 !pb-[5px] md:!min-w-[600px]',
+            '!min-w-56 !pb-[8px] md:!min-w-[600px]',
           )}
           style={STYLE}
-          minRows={7}
+          minRows={rows ?? 7}
+          {...(rows ? { maxRows: rows } : {})}
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>

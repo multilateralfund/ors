@@ -139,6 +139,7 @@ export type PCRResponse = {
       delay_id: number | null
       delay: { name: string }
       description: string
+      action_taken: string
     }[]
     learned_lessons: {
       lesson_id: number | null
@@ -251,6 +252,7 @@ export type WidgetPprops = {
   errors: ErrorType
   indexes?: number[]
   subFields?: string[]
+  rows?: number
 }
 
 export type FieldType = 'drop_down' | 'text' | 'boolean'

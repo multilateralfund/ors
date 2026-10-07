@@ -210,11 +210,9 @@ const PCRForm = () => {
         let updatedErrors = { ...existingErrors }
 
         const activitiesField = [
+          'planned_output',
           'actual_activity_output',
           'additional_remarks',
-          'planned_output',
-          'type_of_activity',
-          'type_of_sector',
         ]
 
         activitiesField.forEach((field) => {

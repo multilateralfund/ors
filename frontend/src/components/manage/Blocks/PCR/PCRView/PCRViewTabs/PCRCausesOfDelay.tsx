@@ -92,6 +92,11 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
                                 cd.description,
                                 pcTextareaClassname,
                               )}
+                              {detailItem(
+                                pcrFieldsMapping.action_taken,
+                                cd.action_taken,
+                                pcTextareaClassname,
+                              )}
                             </div>
                           </div>
                           {cdIndex !== cdData.length - 1 && (

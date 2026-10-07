@@ -272,6 +272,7 @@ const PCRLessonsLearned = () => {
                             errors={learnedLessonsErrors}
                             indexes={[crtTab, pcIndex, llIndex]}
                             subFields={['', pcField, llField]}
+                            rows={2}
                           />
                           <IoTrash
                             className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
