@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useContext } from 'react'
+import { useMemo, useRef, useState, useContext, useEffect } from 'react'
 
 import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -38,7 +38,9 @@ const PCRListingWrapper = () => {
   const [view, setView] = useState<ViewSelectorValuesType | null>('list')
   const [projectId, setProjectId] = useState<number | null>(null)
   const [pcrId, setPcrId] = useState<number | null>(null)
-  const [filters, setFilters] = useState(updatedInitialFilters)
+  const [filters, setFilters] = useState<Record<string, any>>(
+    updatedInitialFilters,
+  )
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
   const pcrProjects = useGetPCRProjects(updatedInitialParams)
@@ -74,8 +76,6 @@ const PCRListingWrapper = () => {
   }
 
   const handleChangeViewSelector = (value: ViewSelectorValuesType) => {
-    setView(value)
-
     const isDue = value === 'list'
     const selectedOption = [booleanFieldsOpts[0]]
 
@@ -83,13 +83,27 @@ const PCRListingWrapper = () => {
     const pcrSubmitted = isDue ? null : selectedOption
 
     handleFilterChange({ pcr_due: pcrDue, pcr_submitted: pcrSubmitted })
-
     handleParamsChange({
       pcr_due: pcrDue ? pcrDue[0].id : null,
       pcr_submitted: pcrSubmitted ? pcrSubmitted[0].id : null,
       offset: 0,
     })
   }
+
+  useEffect(() => {
+    const isDue =
+      filters.pcr_due?.length === 1 && filters.pcr_due[0].id === 'Yes'
+    const isSubmitted =
+      filters.pcr_submitted?.length === 1 &&
+      filters.pcr_submitted[0].id === 'Yes'
+
+    if (isDue === isSubmitted) {
+      setView(null)
+      return
+    }
+
+    setView(isDue ? 'list' : 'table')
+  }, [filters.pcr_due, filters.pcr_submitted])
 
   return (
     <>
@@ -134,7 +148,7 @@ const PCRListingWrapper = () => {
               }}
             />
           </div>
-          <PCRFiltersSelectedOpts {...filtersProps} setView={setView} />
+          <PCRFiltersSelectedOpts {...filtersProps} />
         </div>
         <PCRTable
           {...{ pcrProjects, projectId, setProjectId, setPcrId, filters }}
