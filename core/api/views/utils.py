@@ -396,6 +396,7 @@ def get_final_records_for_years(
     for r in _merge_two(final_iter, archive_iter, _record_key):
         country_year = (
             r.country_programme_report.country_id,
+            r.country_programme_report.country,
             r.country_programme_report.year,
         )
         chemical_key = (
@@ -419,9 +420,11 @@ def get_final_records_for_years(
     # if the country does not have the display_substance for the year,
     # then include a 0 value record
     final_list = []
-    for country_entry, year in existent_records:
+    for country_entry, country_obj, year in existent_records:
         added_chemical_keys = set()
-        for chemical_key, record in existent_records[(country_entry, year)].items():
+        for chemical_key, record in existent_records[
+            (country_entry, country_obj, year)
+        ].items():
             added_chemical_keys.add(chemical_key)
             final_list.append(record)
 
@@ -433,6 +436,7 @@ def get_final_records_for_years(
             if chemical_key not in added_chemical_keys:
                 cp_report = CPReport(country_id=country_entry, year=year, version=0)
                 cp_report._prefetched_objects_cache = {"record_usages": []}
+                cp_report._state.fields_cache["country"] = country_obj
                 cp_record_data = {
                     "country_programme_report": cp_report,
                     "substance": chemical if row.substance else None,
