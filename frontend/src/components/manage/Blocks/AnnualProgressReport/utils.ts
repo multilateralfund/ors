@@ -68,8 +68,7 @@ export function formatOneDecimal(value: any) {
 export function formatPercent(value: any) {
   return formatNumber(value, {
     maximumFractionDigits: 2,
-    style: 'unit',
-    unit: 'percent',
+    style: 'percent',
   })
 }
 
