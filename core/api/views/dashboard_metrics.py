@@ -155,7 +155,7 @@ class DashboardMetricsFundView(views.APIView):
             apr_year=parse_apr_year(request),
             placeholders=parse_placeholders(request),
         )
-        cache.set(cache_key, payload, timeout=60 * 60 * 24)
+        cache.set(cache_key, payload, timeout=60 * 60 * 24 * 3) # once every 3 days
         return Response(payload)
 
 
@@ -194,7 +194,7 @@ class DashboardMetricsCountryView(views.APIView):
 
         # short stable cache key; include placeholders / apr_year so different requests cache separately
         cache_key = (
-            f"dashboard:country:{key}:apr={apr_year}:ph={int(bool(placeholders))}"
+            f"dashboard:country:{key.lower()}:apr={apr_year}:ph={int(bool(placeholders))}"
         )
 
         cached = cache.get(cache_key)
@@ -212,7 +212,7 @@ class DashboardMetricsCountryView(views.APIView):
                 f"countries and abbr for regions; see /countries/."
             )
 
-        cache.set(cache_key, payload, timeout=60 * 60 * 24)
+        cache.set(cache_key, payload, timeout=60 * 60 * 24 * 3) # once every 3 days
 
         return Response(payload)
 
