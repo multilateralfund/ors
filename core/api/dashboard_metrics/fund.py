@@ -199,7 +199,7 @@ def _prepare_horizontal_bar_structure(
             },
             {
                 "name": "Hydrochlorofluorocarbons (HCFCs)",
-                "color": "var(--mlf-blue)",
+                "color": "var(--deep-teal)",
                 "data": [data[2]["value"]],
             },
         ],
