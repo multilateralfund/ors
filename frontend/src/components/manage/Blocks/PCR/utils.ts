@@ -280,10 +280,10 @@ export const getErrorIndex = (
   )
 }
 
-export const hasValidWordCount = (text: string) => {
+const hasValidWordCount = (text: string) => {
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length
 
-  return wordCount >= 150 && wordCount <= 250
+  return wordCount === 0 || (wordCount >= 150 && wordCount <= 250)
 }
 
 export const validateWordCount = (

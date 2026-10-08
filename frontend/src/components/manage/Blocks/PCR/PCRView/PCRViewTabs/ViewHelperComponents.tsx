@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 
 import { getFormattedNumericValue } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 
+import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -19,7 +20,7 @@ export const SubSectionTitle = ({
 }) => (
   <div
     className={cx(
-      'mb-6 text-lg uppercase tracking-[1px] text-typography-sectionTitle',
+      'mb-6 text-lg font-bold uppercase tracking-[1px] text-typography-sectionTitle',
       className,
     )}
   >
@@ -83,3 +84,23 @@ export const dateDetailItem = (fieldName: string, fieldValue: string) => (
     </h4>
   </span>
 )
+
+export const getCollapseIcon = (
+  isSectionExpanded: boolean,
+  collapseSection: () => void,
+) =>
+  isSectionExpanded ? (
+    <IoChevronUp
+      className="cursor-pointer"
+      color="#002B3D"
+      size="36"
+      onClick={collapseSection}
+    />
+  ) : (
+    <IoChevronDown
+      className="cursor-pointer"
+      color="#002B3D"
+      size="36"
+      onClick={collapseSection}
+    />
+  )

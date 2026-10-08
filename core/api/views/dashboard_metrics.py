@@ -192,10 +192,10 @@ class DashboardMetricsCountryView(views.APIView):
         apr_year = parse_apr_year(request)
         placeholders = parse_placeholders(request)
 
-        # include user identity/perm-relevant bits if output varies by user
-        user_part = f"user:{getattr(request.user, 'id', 'anon')}"
         # short stable cache key; include placeholders / apr_year so different requests cache separately
-        cache_key = f"dashboard:country:{key}:apr={apr_year}:ph={int(bool(placeholders))}:{user_part}"
+        cache_key = (
+            f"dashboard:country:{key}:apr={apr_year}:ph={int(bool(placeholders))}"
+        )
 
         cached = cache.get(cache_key)
         if cached is not None:
