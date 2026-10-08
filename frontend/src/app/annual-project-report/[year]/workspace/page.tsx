@@ -138,7 +138,9 @@ export default function APRWorkspace() {
     apr?.project_reports?.forEach((report) => {
       if (report.country_name) uniqueCountries.add(report.country_name)
     })
-    return Array.from(uniqueCountries).map((c) => ({ id: c, name: c }))
+    return Array.from(uniqueCountries)
+      .sort((a, b) => a.localeCompare(b))
+      .map((c) => ({ id: c, name: c }))
   }, [apr?.project_reports])
 
   const clusters = useMemo(() => {

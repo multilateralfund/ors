@@ -194,10 +194,12 @@ export default function APRMLFSWorkspace() {
         uniqueCountries.add(report.country_name)
       }
     })
-    return Array.from(uniqueCountries).map((country) => ({
-      id: country,
-      name: country,
-    }))
+    return Array.from(uniqueCountries)
+      .sort((a, b) => a.localeCompare(b))
+      .map((country) => ({
+        id: country,
+        name: country,
+      }))
   }, [allProjectReports])
 
   const clusters = useMemo(() => {
