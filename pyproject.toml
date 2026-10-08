@@ -117,6 +117,7 @@ django-settings-module = "multilateralfund.settings"
 
 [tool.pylint."MESSAGES CONTROL"]
 disable = [
+  "cyclic-import",
   "missing-docstring",
   "too-few-public-methods",
   "wrong-import-order",
