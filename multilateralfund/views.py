@@ -1,3 +1,5 @@
+# pylint: disable=cyclic-import
+
 from django.http import HttpResponse
 
 

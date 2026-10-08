@@ -44,7 +44,7 @@ from multilateralfund.celery import app
 
 logger = get_task_logger(__name__)
 User = get_user_model()
-# pylint: disable=W0718
+# pylint: disable=W0718,C0415
 
 APR_VERSIONING_START_YEAR = 2025
 
@@ -1041,6 +1041,7 @@ def refresh_dashboard_metrics_cache():
         get_country_metrics,
         get_fund_metrics,
     )
+
     logger.info("Refreshing dashboard metrics funds cache...")
     cache_key = "dashboard:fund"
     payload = get_fund_metrics()
@@ -1048,7 +1049,7 @@ def refresh_dashboard_metrics_cache():
     logger.info("Refreshing dashboard metrics funds cache...")
 
     logger.info("Refreshing dashboard metrics countries cache...")
-    countries = get_country_index()['entries']
+    countries = get_country_index()["entries"]
     for country in countries:
         key = country["key"]
         cache_key = f"dashboard:country:{key.lower()}:apr={None}:ph={int(False)}"
