@@ -26,7 +26,7 @@ import {
 } from '../interfaces'
 import { ApiAgency } from '@ors/types/api_agencies'
 
-import { Checkbox, TextareaAutosize } from '@mui/material'
+import { TextareaAutosize } from '@mui/material'
 import { find, map } from 'lodash'
 import cx from 'classnames'
 
@@ -38,6 +38,7 @@ const additionalProperties: Record<string, Record<string, unknown>> = {
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
   project_preparation: formatClassName('min-w-56 md:min-w-60'),
+  prefilled: formatClassName('!w-32'),
 }
 
 const getValue = (
@@ -239,9 +240,6 @@ export const changeHandler: Record<FieldType, FieldHandler> = {
     const formattedVal = event.target.value
     onFieldChange(formattedVal, section, field, setState, indexes, subFields)
   },
-  boolean: (value, section, field, setState, indexes, subFields) => {
-    onFieldChange(value, section, field, setState, indexes, subFields)
-  },
 }
 
 export const formatErrors = (errors: ErrorType, indexes?: number[]) => {
@@ -270,6 +268,7 @@ export const PCRSelectWidget = ({
   errors,
   indexes,
   subFields,
+  disabled,
 }: WidgetPprops & { options: OptionsType[] }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedValue = find(options, { id: value }) || null
@@ -294,6 +293,7 @@ export const PCRSelectWidget = ({
             )
           }
           getOptionLabel={(option) => getOptionLabel(options, option)}
+          disabled={disabled}
           {...defaultProps}
           {...formatClassName('min-w-56 md:min-w-[370px]')}
           {...(additionalProperties[field] ?? {})}
@@ -384,49 +384,6 @@ export const PCRTextAreaWidget = ({
           style={STYLE}
           minRows={rows ?? 7}
           {...(rows ? { maxRows: rows } : {})}
-        />
-        <FieldErrorIndicator errors={formattedErrors} field={field} />
-      </div>
-    </div>
-  )
-}
-
-export const PCRBooleanWidget = ({
-  PCRData,
-  setPCRData,
-  sectionIdentifier,
-  field,
-  errors,
-  indexes,
-  subFields,
-}: WidgetPprops) => {
-  const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
-  const formattedErrors = formatErrors(errors, indexes)
-
-  return (
-    <div>
-      <Label>{pcrFieldsMapping[field]}</Label>
-      <div className="flex items-center">
-        <Checkbox
-          className="pb-1 pl-2 pt-0"
-          checked={Boolean(value)}
-          onChange={(_, value) =>
-            changeHandler['boolean'](
-              value,
-              sectionIdentifier,
-              field,
-              setPCRData,
-              indexes,
-              subFields,
-            )
-          }
-          inputProps={{ tabIndex: 0 }}
-          sx={{
-            '&.Mui-focusVisible': {
-              backgroundColor: 'rgba(0, 0, 0, 0.03)',
-            },
-            color: 'black',
-          }}
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>

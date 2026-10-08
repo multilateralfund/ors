@@ -147,12 +147,7 @@ export type PCRResponse = {
       description: string
     }[]
   }[]
-  gender_mainstreamings: {
-    agency_id: number
-    project_preparation: string
-    prefilled: boolean
-    qualitative_description: string
-  }[]
+  gender_mainstreamings: (ProjectPhase & { agency_id: number })[]
   sustainable_development_goals: {
     agency_id: number
     goals: { goal_id: number; goal: string; description: string }[]
@@ -191,7 +186,7 @@ export interface PCRLessonsLearnedData {
 
 export type ProjectPhase = {
   project_preparation: string
-  prefilled: boolean
+  prefilled: string
   qualitative_description: string
 }
 
@@ -253,9 +248,10 @@ export type WidgetPprops = {
   indexes?: number[]
   subFields?: string[]
   rows?: number
+  disabled?: boolean
 }
 
-export type FieldType = 'drop_down' | 'text' | 'boolean'
+export type FieldType = 'drop_down' | 'text'
 
 export type FieldHandler = (
   value: any,

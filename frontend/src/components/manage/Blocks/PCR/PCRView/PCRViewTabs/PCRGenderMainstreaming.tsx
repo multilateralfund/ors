@@ -7,13 +7,12 @@ import {
   SectionTitle,
   SubSectionTitle,
   detailItem,
-  booleanDetailItem,
 } from './ViewHelperComponents'
 import {
   pcrFieldsMapping,
   pcTitleClassname,
-  borderedValueClassname,
   pcTextareaClassname,
+  borderedValueContainerClassname,
 } from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
@@ -73,10 +72,10 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
                   )}
                 </div>
                 <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                  {booleanDetailItem(
+                  {detailItem(
                     pcrFieldsMapping.prefilled,
                     pp.prefilled,
-                    borderedValueClassname,
+                    borderedValueContainerClassname,
                   )}
                   <Divider className="my-4" />
                   {detailItem(

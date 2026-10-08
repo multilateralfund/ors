@@ -84,7 +84,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   lesson_id: 'Lesson learned',
   project_preparation: 'Project cycle phase',
   qualitative_description: 'Qualitative description',
-  prefilled: 'Gender policy for all projects approved from 85th meeting',
+  prefilled: 'Gender policy implemented',
   goal_id: 'SDG',
   section_id: 'Section',
 }
@@ -193,7 +193,11 @@ export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
 
 export const borderedValueClassname =
-  'mt-1 rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'
+  'rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'
+export const borderedValueContainerClassname = {
+  containerClassname: '!flex-row gap-4 items-center',
+  valueClassname: borderedValueClassname,
+}
 
 const valueClassname = 'min-w-0 flex-1 !text-black !font-normal !text-lg'
 const labelClassname = 'self-start mt-0.5'

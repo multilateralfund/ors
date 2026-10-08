@@ -286,17 +286,10 @@ const PCRForm = () => {
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
       [ppField]: map(ppData, (pp, index) => {
-        const ppIdField = 'project_preparation'
         const ppTextField = 'qualitative_description'
 
         const existingErrors = prev[ppField]?.[index] ?? {}
         let updatedErrors = { ...existingErrors }
-
-        if (!pp[ppIdField]) {
-          updatedErrors[ppIdField] = [requiredMessage]
-        } else if (updatedErrors[ppIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [ppIdField])
-        }
 
         updatedErrors = validateWordCount(
           updatedErrors,

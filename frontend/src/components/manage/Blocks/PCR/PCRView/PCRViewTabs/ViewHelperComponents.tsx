@@ -63,19 +63,6 @@ export const numberDetailItem = (
   </span>
 )
 
-export const booleanDetailItem = (
-  fieldName: string,
-  fieldValue: boolean | null | undefined,
-  className?: string,
-) => (
-  <span className="flex flex-col gap-1">
-    <span className="text-[#4D4D4D]">{fieldName}</span>
-    <h4 className={cx('m-0 text-xl font-semibold text-primary', className)}>
-      {fieldValue == null ? '-' : fieldValue ? 'Yes' : 'No'}
-    </h4>
-  </span>
-)
-
 export const dateDetailItem = (fieldName: string, fieldValue: string) => (
   <span className="flex flex-col gap-1">
     <span className="text-[#4D4D4D]">{fieldName}</span>

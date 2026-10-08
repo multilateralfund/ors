@@ -83,8 +83,8 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
                             <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-[#EBFF00]">
                               {cdIndex + 1}
                             </div>
-                            <div>
-                              <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
+                            <div className="flex flex-col gap-3">
+                              <h4 className="m-0 text-lg font-semibold text-primary">
                                 {cd.delay?.name || '-'}
                               </h4>
                               {detailItem(
