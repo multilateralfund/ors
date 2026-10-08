@@ -547,6 +547,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "core.tasks.synchronize_decisions",
         "schedule": crontab(minute="0"),
     },
+    "refresh_dashboard_metrics_cache": {
+        "task": "core.tasks.refresh_dashboard_metrics_cache",
+        "schedule": crontab(minute="0", hour="0", day_of_month="*/2"),
+    },
 }
 
 # Sentry
