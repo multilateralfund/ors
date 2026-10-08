@@ -404,7 +404,7 @@ def _prepare_line_chart_trend(
         "categories": series["years"],
         "series": [
             {
-                "name": "",
+                "name": "Annex F",
                 "color": "var(--deep-teal)",
                 "data": series["values"],
             }
