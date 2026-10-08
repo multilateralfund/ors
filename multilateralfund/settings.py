@@ -110,8 +110,8 @@ MIDDLEWARE = [
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": "/var/tmp/django_cache",
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": env("REDIS_HOST", default="redis://redis:6379"),
     }
 }
 
@@ -546,6 +546,10 @@ CELERY_BEAT_SCHEDULE = {
     "synchronize_decisions": {
         "task": "core.tasks.synchronize_decisions",
         "schedule": crontab(minute="0"),
+    },
+    "refresh_dashboard_metrics_cache": {
+        "task": "core.tasks.refresh_dashboard_metrics_cache",
+        "schedule": crontab(minute="0", hour="0", day_of_month="*/2"),
     },
 }
 

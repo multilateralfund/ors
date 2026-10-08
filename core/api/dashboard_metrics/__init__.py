@@ -25,6 +25,8 @@ from core.api.dashboard_metrics.primitives import (
 )
 from core.api.dashboard_metrics.registry import Metric
 
+# pylint: disable=R0401
+
 logger = logging.getLogger(__name__)
 
 

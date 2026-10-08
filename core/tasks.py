@@ -7,6 +7,7 @@ import requests
 from celery.utils.log import get_task_logger
 from constance import config
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -43,7 +44,7 @@ from multilateralfund.celery import app
 
 logger = get_task_logger(__name__)
 User = get_user_model()
-# pylint: disable=W0718
+# pylint: disable=W0718,C0415
 
 APR_VERSIONING_START_YEAR = 2025
 
@@ -1025,3 +1026,34 @@ def sync_apr_from_projects(year, dry_run=False):
             f"{deleted_count} stale record(s) deleted."
         ),
     }
+
+
+@app.task()
+def refresh_dashboard_metrics_cache():
+    """
+    Refresh the cached dashboard metrics for all years and countries.
+
+    This is a potentially expensive operation, so it should be run asynchronously
+    in a background task.
+    """
+    from core.api.dashboard_metrics import (
+        get_country_index,
+        get_country_metrics,
+        get_fund_metrics,
+    )
+
+    logger.info("Refreshing dashboard metrics funds cache...")
+    cache_key = "dashboard:fund"
+    payload = get_fund_metrics()
+    cache.set(cache_key, payload, timeout=60 * 60 * 24 * 3)
+    logger.info("Refreshing dashboard metrics funds cache...")
+
+    logger.info("Refreshing dashboard metrics countries cache...")
+    countries = get_country_index()["entries"]
+    for country in countries:
+        key = country["key"]
+        cache_key = f"dashboard:country:{key.lower()}:apr={None}:ph={int(False)}"
+        logger.info("Refreshing dashboard metrics for country %s...", key)
+        payload = get_country_metrics(key)
+        cache.set(cache_key, payload, timeout=60 * 60 * 24 * 3)
+        logger.info("Refreshed dashboard metrics for country %s...", key)
