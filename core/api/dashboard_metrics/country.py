@@ -406,7 +406,7 @@ def sector_tonnage(
     )
     title = "Tonnage approved - HFCs" if family == HFC else "Tonnage approved - HCFCs"
     subtitle = (
-        "CO2-EQ-Tonnes, breakdown by sector"
+        "CO₂-EQ-Tonnes, breakdown by sector"
         if family == "HFC"
         else "ODP-Tonnes, breakdown by sector"
     )

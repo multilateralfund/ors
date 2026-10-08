@@ -189,12 +189,12 @@ def _prepare_horizontal_bar_structure(
         "series": [
             {
                 "name": "Other ODS",
-                "color": "var(--deep-teal)",
+                "color": "var(--mlf-blue)",
                 "data": [data[0]["value"]],
             },
             {
                 "name": "Hydrofluorocarbons (HFCs)",
-                "color": "var(--mlf-blue)",
+                "color": "var(--deep-teal)",
                 "data": [data[1]["value"]],
             },
             {
