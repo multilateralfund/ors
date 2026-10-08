@@ -29,8 +29,9 @@ import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_statuses.ts'
 import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
 
-import { scopes } from '@ors/config/msalConfig'
-import { useMsal } from '@azure/msal-react'
+import msalInstance from '@ors/config/msalConfig'
+import { loginWithMsal } from '@ors/helpers/Api/msalLogin'
+import { formatApiUrl } from '@ors/helpers/Api/utils'
 import Cookies from 'js-cookie'
 
 async function fetchAppBootstrapData() {
@@ -204,8 +205,8 @@ function ClientAppGate({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams()
   const user = useStore((state) => state.user)
   const getUser = useStore((state) => state.user.getUser)
+  const msalLoginFailed = useStore((state) => state.user.msalLoginFailed)
   const appBootstrapped = useAppBootstrap(user.data?.pk)
-  const { instance } = useMsal()
 
   const currentView = getCurrentView(pathname || '')
   const isLoginPath = pathname === '/login'
@@ -214,8 +215,31 @@ function ClientAppGate({ children }: { children: React.ReactNode }) {
     currentView.layout === 'print'
 
   useEffect(() => {
-    getUser()
-  }, [getUser])
+    let active = true
+    const initializeUser = async () => {
+      const account =
+        msalInstance.getActiveAccount() || msalInstance.getAllAccounts()[0]
+
+      // A browser download may have sent us here with an expired Django cookie.
+      // Do not leave /login until its replacement has actually been issued.
+      if (account && (isLoginPath || !Cookies.get('orsauth'))) {
+        try {
+          await loginWithMsal()
+        } catch (error) {
+          console.error(error)
+          if (isLoginPath && active) {
+            msalLoginFailed()
+            return
+          }
+        }
+      }
+      if (active) await getUser()
+    }
+    void initializeUser()
+    return () => {
+      active = false
+    }
+  }, [getUser, isLoginPath, msalLoginFailed])
 
   useEffect(() => {
     if (!user.loaded) {
@@ -223,7 +247,13 @@ function ClientAppGate({ children }: { children: React.ReactNode }) {
     }
 
     if (isLoginPath && user.data) {
-      setLocation(getPostLoginPath(searchParams), { replace: true })
+      const returnTo = getPostLoginPath(searchParams)
+      if (returnTo.startsWith('/api/')) {
+        // A file response requires a real navigation, not a client-side route.
+        window.location.replace(formatApiUrl(returnTo))
+      } else {
+        setLocation(returnTo, { replace: true })
+      }
       return
     }
 
@@ -259,28 +289,6 @@ function ClientAppGate({ children }: { children: React.ReactNode }) {
     },
     [appBootstrapped, isLoginPath, isProtectedPath, user.data, user.loaded],
   )
-
-  useEffect(() => {
-    const initializeUser = async () => {
-      const authToken = Cookies.get('orsauth')
-
-      if (!authToken) {
-        const account =
-          instance.getActiveAccount() || instance.getAllAccounts()[0]
-
-        if (account) {
-          const token = await instance.acquireTokenSilent({ account, scopes })
-
-          await api('/api/auth/adfs-login/', {
-            headers: { Authorization: `Bearer ${token.accessToken}` },
-            method: 'POST',
-          })
-        }
-      }
-    }
-
-    initializeUser().catch(console.error)
-  }, [instance])
 
   return <View>{shouldRenderView ? children : null}</View>
 }

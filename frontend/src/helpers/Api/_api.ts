@@ -1,5 +1,3 @@
-import msalInstance, { scopes } from '@ors/config/msalConfig'
-
 import Cookies from 'js-cookie'
 import { includes, omit } from 'lodash'
 import hash from 'object-hash'
@@ -10,6 +8,7 @@ import { debounce, removeEmptyValues } from '@ors/helpers/Utils/Utils'
 import { REMOVE_CACHE_TIMEOUT, defaultHeaders } from './constants'
 import { IApi } from './types'
 import { delayExecution, formatApiUrl } from './utils'
+import { authenticatedFetch } from './authenticatedFetch'
 
 export default async function api<T = any>(
   path: IApi['path'],
@@ -115,30 +114,13 @@ export default async function api<T = any>(
   }
 
   async function fetcher() {
-    const account =
-      msalInstance.getActiveAccount() || msalInstance.getAllAccounts()[0]
-
-    let authHeaders = {}
-
-    if (account) {
-      const tokenResponse = await msalInstance.acquireTokenSilent({
-        scopes,
-        account,
-      })
-
-      authHeaders = {
-        Authorization: `Bearer ${tokenResponse.accessToken}`,
-      }
-    }
-
-    return await fetch(fullPath, {
+    return await authenticatedFetch(fullPath, {
       credentials: 'include',
       headers: {
         ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
         ...defaultHeaders['common'],
         ...defaultHeaders[method.toLowerCase()],
         ...headers,
-        ...authHeaders,
       },
       method: method.toUpperCase(),
       ...(data ? { body: JSON.stringify(data) } : {}),

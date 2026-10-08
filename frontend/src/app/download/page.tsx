@@ -8,6 +8,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 import useSearchParams from '@ors/hooks/useSearchParams'
 import { formatApiUrl } from '@ors/helpers'
+import { authenticatedFetch } from '@ors/helpers/Api/authenticatedFetch'
 import Button from '@mui/material/Button'
 
 type DownloadState = 'preparing' | 'ready' | 'error'
@@ -36,10 +37,19 @@ export default function DownloadPage() {
 
   const searchParams = useSearchParams()
   const target = searchParams.get('target')
-  const targetUrl = useMemo(
-    () => (target ? formatApiUrl(target) : null),
-    [target],
-  )
+  const targetUrl = useMemo(() => {
+    if (!target) return null
+    try {
+      const apiBase = new URL(formatApiUrl('/api/'), window.location.origin)
+      const url = new URL(formatApiUrl(target), window.location.origin)
+      return url.origin === apiBase.origin &&
+        url.pathname.startsWith(apiBase.pathname)
+        ? url.href
+        : null
+    } catch {
+      return null
+    }
+  }, [target])
 
   const [state, setState] = useState<DownloadState>('preparing')
   const [error, setError] = useState('')
@@ -52,7 +62,11 @@ export default function DownloadPage() {
   useEffect(() => {
     if (!targetUrl) {
       setState('error')
-      setError('No download target was provided.')
+      setError(
+        target
+          ? 'The download target is not permitted.'
+          : 'No download target was provided.',
+      )
       return
     }
 
@@ -65,8 +79,7 @@ export default function DownloadPage() {
       setDownload(null)
 
       try {
-        const response = await fetch(targetUrl as string, {
-          credentials: 'include',
+        const response = await authenticatedFetch(targetUrl as string, {
           signal: controller.signal,
         })
 
@@ -99,7 +112,7 @@ export default function DownloadPage() {
         URL.revokeObjectURL(objectUrl)
       }
     }
-  }, [targetUrl, retryCount])
+  }, [target, targetUrl, retryCount])
 
   const saveFile = () => {
     if (!download) {

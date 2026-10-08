@@ -5,6 +5,7 @@ import Cookies from 'js-cookie'
 
 import { formatApiUrl } from '@ors/helpers'
 import api from './_api'
+import { authenticatedFetch } from './authenticatedFetch'
 
 import { keys, values } from 'lodash'
 
@@ -92,7 +93,7 @@ export async function uploadFiles(
   }
 
   const csrftoken = Cookies.get('csrftoken')
-  const fileUploadResponse = await fetch(formatApiUrl(path), {
+  const fileUploadResponse = await authenticatedFetch(formatApiUrl(path), {
     body: formData,
     credentials: 'include',
     headers: {

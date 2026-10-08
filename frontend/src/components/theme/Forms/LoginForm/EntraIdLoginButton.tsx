@@ -1,8 +1,10 @@
 import { hasMsalConfig, scopes } from '@ors/config/msalConfig'
+import { loginWithMsal } from '@ors/helpers/Api/msalLogin'
 import UNSigninButton from './un-signin-button-6.png'
 
 import { enqueueSnackbar } from 'notistack'
 import { useMsal } from '@azure/msal-react'
+import { InteractionRequiredAuthError } from '@azure/msal-browser'
 import cx from 'classnames'
 import { useStore } from '@ors/store'
 
@@ -17,6 +19,7 @@ const EntraIdLoginButton = () => {
 
       if (account) {
         instance.setActiveAccount(account)
+        await loginWithMsal()
 
         const apiUser = await user.getUser()
 
@@ -30,8 +33,18 @@ const EntraIdLoginButton = () => {
         return
       }
 
-      await instance.loginRedirect({ scopes })
+      await instance.loginRedirect({
+        scopes,
+        redirectStartPage: window.location.href,
+      })
     } catch (err) {
+      if (err instanceof InteractionRequiredAuthError) {
+        await instance.loginRedirect({
+          scopes,
+          redirectStartPage: window.location.href,
+        })
+        return
+      }
       enqueueSnackbar(
         <>An error occurred during sign in. Please try again.</>,
         { variant: 'error' },
