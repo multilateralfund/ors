@@ -26,7 +26,7 @@ import {
 } from '../interfaces'
 import { ApiAgency } from '@ors/types/api_agencies'
 
-import { Checkbox, TextareaAutosize } from '@mui/material'
+import { TextareaAutosize, Checkbox } from '@mui/material'
 import { find, map } from 'lodash'
 import cx from 'classnames'
 
@@ -38,6 +38,7 @@ const additionalProperties: Record<string, Record<string, unknown>> = {
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
   project_preparation: formatClassName('min-w-56 md:min-w-60'),
+  prefilled: formatClassName('!w-32'),
 }
 
 const getValue = (
@@ -73,6 +74,10 @@ const getValue = (
 
   if (indexesLength === 1 && subfieldsLength === 1) {
     return subSectionData[dataIndex][field]
+  }
+
+  if (indexesLength === 1) {
+    return sectionData[dataIndex][field]
   }
 
   return sectionData[field]
@@ -115,6 +120,24 @@ const changeSubsectionField: FieldHandler = (
         [subField]: subSectionData,
       },
     }
+  }, field)
+}
+
+const changeSectionField: FieldHandler = (
+  value,
+  section,
+  field,
+  setState,
+  indexes,
+) => {
+  const [dataIndex] = indexes ?? []
+
+  setState((prevData) => {
+    const sectionData = prevData[section] as Record<string, any>
+
+    sectionData[dataIndex] = { ...sectionData[dataIndex], [field]: value }
+
+    return { ...prevData, [section]: sectionData }
   }, field)
 }
 
@@ -226,6 +249,11 @@ const onFieldChange: FieldHandler = (
     return
   }
 
+  if (indexesLength === 1) {
+    changeSectionField(value, section, field, setState, indexes)
+    return
+  }
+
   changeField(value, section, field, setState)
   return
 }
@@ -270,6 +298,7 @@ export const PCRSelectWidget = ({
   errors,
   indexes,
   subFields,
+  disabled,
 }: WidgetPprops & { options: OptionsType[] }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedValue = find(options, { id: value }) || null
@@ -294,6 +323,7 @@ export const PCRSelectWidget = ({
             )
           }
           getOptionLabel={(option) => getOptionLabel(options, option)}
+          disabled={disabled}
           {...defaultProps}
           {...formatClassName('min-w-56 md:min-w-[370px]')}
           {...(additionalProperties[field] ?? {})}
@@ -355,6 +385,7 @@ export const PCRTextAreaWidget = ({
   errors,
   indexes,
   subFields,
+  rows,
 }: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
@@ -378,10 +409,11 @@ export const PCRTextAreaWidget = ({
           }
           className={cx(
             textAreaClassname,
-            '!min-w-56 !pb-[5px] md:!min-w-[600px]',
+            '!min-w-56 !pb-[8px] md:!min-w-[600px]',
           )}
           style={STYLE}
-          minRows={7}
+          minRows={rows ?? 7}
+          {...(rows ? { maxRows: rows } : {})}
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>
@@ -402,11 +434,11 @@ export const PCRBooleanWidget = ({
   const formattedErrors = formatErrors(errors, indexes)
 
   return (
-    <div>
-      <Label>{pcrFieldsMapping[field]}</Label>
+    <div className="flex gap-2">
       <div className="flex items-center">
         <Checkbox
-          className="pb-1 pl-2 pt-0"
+          id={`${field}-${indexes?.join('-')}`}
+          className="p-0"
           checked={Boolean(value)}
           onChange={(_, value) =>
             changeHandler['boolean'](
@@ -428,6 +460,12 @@ export const PCRBooleanWidget = ({
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>
+      <Label
+        htmlFor={`${field}-${indexes?.join('-')}`}
+        className="cursor-pointer"
+      >
+        {pcrFieldsMapping[field]}
+      </Label>
     </div>
   )
 }

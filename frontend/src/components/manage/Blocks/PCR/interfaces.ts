@@ -139,6 +139,7 @@ export type PCRResponse = {
       delay_id: number | null
       delay: { name: string }
       description: string
+      action_taken: string
     }[]
     learned_lessons: {
       lesson_id: number | null
@@ -146,14 +147,10 @@ export type PCRResponse = {
       description: string
     }[]
   }[]
-  gender_mainstreamings: {
-    agency_id: number
-    project_preparation: string
-    prefilled: boolean
-    qualitative_description: string
-  }[]
+  gender_mainstreamings: (ProjectPhase & { agency_id: number })[]
   sustainable_development_goals: {
     agency_id: number
+    sdg_not_applying: boolean
     goals: { goal_id: number; goal: string; description: string }[]
   }[]
   supporting_evidences: {
@@ -190,7 +187,7 @@ export interface PCRLessonsLearnedData {
 
 export type ProjectPhase = {
   project_preparation: string
-  prefilled: boolean
+  prefilled: string
   qualitative_description: string
 }
 
@@ -203,6 +200,7 @@ type Sdgs = { goal_id: number | null; description: string }
 
 export interface PCRSdgsData {
   agency_id: number
+  sdg_not_applying: boolean
   goals: Sdgs[]
 }
 
@@ -251,6 +249,8 @@ export type WidgetPprops = {
   errors: ErrorType
   indexes?: number[]
   subFields?: string[]
+  rows?: number
+  disabled?: boolean
 }
 
 export type FieldType = 'drop_down' | 'text' | 'boolean'

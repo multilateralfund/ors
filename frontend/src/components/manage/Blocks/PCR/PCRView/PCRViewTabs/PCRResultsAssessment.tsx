@@ -10,8 +10,8 @@ import {
 import { pcrFieldsMapping, activitiesTextareaClassname } from '../../constants'
 import { PCRResponse } from '../../interfaces'
 
-import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
+import { Tabs, Tab } from '@mui/material'
 
 const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
   const { fundsByAgency } = useContext(PCRDataContext)
@@ -80,17 +80,20 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
                   })}
                 </div>
                 <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                  {detailItem(
-                    pcrFieldsMapping.type_of_activity,
-                    activity.type_of_activity,
-                    updatedClassname,
-                  )}
-                  <Divider className="my-4 w-full lg:w-[65%]" />
-                  {detailItem(
-                    pcrFieldsMapping.type_of_sector,
-                    activity.type_of_sector,
-                    updatedClassname,
-                  )}
+                  <div className="my-2 grid grid-cols-1 gap-6 rounded-lg p-6 lg:grid-cols-2">
+                    {detailItem(
+                      pcrFieldsMapping.type_of_activity,
+                      activity.type_of_activity,
+                      outputFieldsClassname,
+                      true,
+                    )}
+                    {detailItem(
+                      pcrFieldsMapping.type_of_sector,
+                      activity.type_of_sector,
+                      outputFieldsClassname,
+                      true,
+                    )}
+                  </div>
                   <div className="my-2 grid grid-cols-1 gap-6 rounded-lg bg-[#F5F5F5] p-6 lg:grid-cols-2">
                     {detailItem(
                       pcrFieldsMapping.planned_output,

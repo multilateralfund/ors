@@ -71,19 +71,21 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   address: 'Address of enterprise',
   disposal_type: 'Disposal type',
   disposal_date: 'Date of disposal',
-  activity_title: 'Activity title',
-  type_of_activity: 'Type of activity',
-  type_of_sector: 'Type of sector',
+  activity_title: 'Activity component',
+  type_of_activity: 'Activity',
+  type_of_sector: 'Sector',
   planned_output: 'Planned output(s)',
   actual_activity_output: 'Actual activity output(s)',
   additional_remarks: 'Additional remarks, if applicable',
   project_component_option_id: 'Project component',
   delay_id: 'Cause of delay',
   description: 'Description',
+  action_taken: 'Action taken',
   lesson_id: 'Lesson learned',
   project_preparation: 'Project cycle phase',
   qualitative_description: 'Qualitative description',
-  prefilled: 'Gender policy for all projects approved from 85th meeting',
+  prefilled: 'Gender policy implemented',
+  sdg_not_applying: 'SDG reporting does not apply for this agency',
   goal_id: 'SDG',
   section_id: 'Section',
 }
@@ -143,16 +145,16 @@ export const projectPhaseOptions = [
 ]
 
 export const initialOverviewData = {
-  financial_figures_status: null,
+  financial_figures_status: '',
   financial_figures_status_explanation: '',
   addresses: '',
-  project_goal_achieved: null,
+  project_goal_achieved: '',
   project_goal_achieved_explanation: '',
-  rating: null,
+  rating: '',
   rating_explanation_other: '',
   rating_explanation: '',
   additional_comments: [],
-  completed_by: null,
+  completed_by: '',
 }
 
 export const initialActivitiesData = {
@@ -192,7 +194,11 @@ export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
 
 export const borderedValueClassname =
-  'mt-1 rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'
+  'rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'
+export const borderedValueContainerClassname = {
+  containerClassname: '!flex-row gap-4 items-center',
+  valueClassname: borderedValueClassname,
+}
 
 const valueClassname = 'min-w-0 flex-1 !text-black !font-normal !text-lg'
 const labelClassname = 'self-start mt-0.5'

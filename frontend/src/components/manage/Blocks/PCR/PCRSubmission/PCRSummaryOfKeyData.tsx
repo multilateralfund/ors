@@ -28,6 +28,7 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import Field from '@ors/components/manage/Form/Field'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ProjectType } from '@ors/types/api_projects'
 import {
@@ -62,6 +63,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
   Tab,
   Tabs,
@@ -144,13 +146,21 @@ export const FieldGroup = ({
   children: ReactNode
   title?: string
 }) => (
-  <div className="flex flex-col gap-y-4">
-    {title && <h3 className="text-xl font-medium">{title}</h3>}
+  <div className="flex flex-col">
+    {title && <SubSectionTitle>{title}</SubSectionTitle>}
     {children}
   </div>
 )
 
-const ComputedField = ({ label, value }: { label: string; value: number }) => (
+const ComputedField = ({
+  label,
+  value,
+  digits,
+}: {
+  label: string
+  value: number
+  digits?: number
+}) => (
   <div>
     <Label>{label}</Label>
     <FormattedNumberInput
@@ -158,7 +168,26 @@ const ComputedField = ({ label, value }: { label: string; value: number }) => (
       className={cx('!m-0 w-40', disabledClassName)}
       value={value}
       withoutDefaultValue={true}
-      decimalDigits={0}
+      decimalDigits={digits ?? 0}
+      disabled={true}
+    />
+  </div>
+)
+
+const ComputedDateField = ({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) => (
+  <div>
+    <Label>{label}</Label>
+    <DateInput
+      id={label}
+      className={cx('!m-0 w-40 grow-0', disabledClassName)}
+      value={value}
+      formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
       disabled={true}
     />
   </div>
@@ -567,19 +596,29 @@ const PCRSummaryOfKeyData = () => {
       {editingProject && summaryData && (
         <Dialog
           aria-labelledby="pcr-summary-edit-dialog"
+          PaperProps={{
+            sx: {
+              backgroundColor: 'var(--color-primary)',
+              borderRadius: '8px !important',
+              border: 'none !important',
+            },
+          }}
           fullWidth={true}
           maxWidth="xl"
           onClose={closeDialog}
           open={true}
           scroll="paper"
         >
-          <DialogTitle id="pcr-summary-edit-dialog-title">
-            Project {editingProject.code}
+          <DialogTitle
+            id="pcr-summary-edit-dialog-title"
+            className="p-6 pt-5 text-3xl text-white"
+          >
+            {editingProject.code}
           </DialogTitle>
-          <DialogContent dividers={true}>
+          <DialogContent className="p-0">
             <Tabs
               aria-label="summary-of-key-data-tabs"
-              className="sectionsTabs"
+              className="sectionsTabs summaryOfKeyDataTabs px-6"
               variant="scrollable"
               scrollButtons="auto"
               allowScrollButtonsMobile
@@ -616,7 +655,7 @@ const PCRSummaryOfKeyData = () => {
                 label={<TabLabel field="equipments" label="Equipment" />}
               />
             </Tabs>
-            <div className="flex flex-col gap-y-6 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+            <div className="flex flex-col gap-y-6 bg-white p-6">
               {currentTab === 0 && (
                 <div>
                   {!!formattedErrors.general &&
@@ -624,7 +663,13 @@ const PCRSummaryOfKeyData = () => {
                       <ErrorsList errors={formattedErrors.general} />
                     )}
                   <FieldGroup>
-                    <div className="flex flex-wrap gap-x-7 gap-y-4">
+                    <SubSectionTitle className="!mb-3">Funding</SubSectionTitle>
+                    <div className="grid grid-cols-3 gap-x-7 gap-y-4">
+                      <ComputedField
+                        label="Funds approved"
+                        value={editingProject.funds_approved as number}
+                        digits={2}
+                      />
                       <div>
                         <Label htmlFor={`funds-disbursed-${editingProject.id}`}>
                           Funds disbursed
@@ -648,6 +693,16 @@ const PCRSummaryOfKeyData = () => {
                           />
                         </div>
                       </div>
+                    </div>
+                    <Divider className="my-5" />
+                    <SubSectionTitle className="!mb-3">
+                      Schedule
+                    </SubSectionTitle>
+                    <div className="grid grid-cols-3 gap-x-7 gap-y-4">
+                      <ComputedDateField
+                        label="Date approved"
+                        value={editingProject.date_approved as string}
+                      />
                       <div>
                         <Label
                           htmlFor={`planned-date-of-completion-${editingProject.id}`}
@@ -675,6 +730,14 @@ const PCRSummaryOfKeyData = () => {
                           />
                         </div>
                       </div>
+                      <ComputedDateField
+                        label="Actual date of completion"
+                        value={
+                          editingProject.actual_date_of_completion as string
+                        }
+                      />
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-x-7 gap-y-4">
                       <ComputedField
                         label="Planned duration (months)"
                         value={computedFields.planned_duration}
@@ -783,7 +846,7 @@ const PCRSummaryOfKeyData = () => {
                           ],
                         }))
                       }
-                      className="mr-auto h-8"
+                      className="mr-auto mt-4 h-8"
                     />
                   </FieldGroup>
                 </div>
@@ -887,7 +950,7 @@ const PCRSummaryOfKeyData = () => {
                           ],
                         }))
                       }
-                      className="mr-auto h-8"
+                      className="mr-auto mt-4 h-8"
                     />
                   </FieldGroup>
                 </div>
@@ -1046,26 +1109,24 @@ const PCRSummaryOfKeyData = () => {
                           ],
                         }))
                       }
-                      className="mr-auto h-8"
+                      className="mr-auto mt-4 h-8"
                     />
                   </FieldGroup>
                 </div>
               )}
             </div>
           </DialogContent>
-          <DialogActions>
-            <Button
-              className="border border-solid border-primary text-primary hover:bg-white"
-              onClick={closeDialog}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-primary text-white hover:text-mlfs-hlYellow"
-              onClick={saveSummaryData}
-            >
-              Done
-            </Button>
+          <DialogActions className="px-6 py-3">
+            <SubmitButton
+              title="Cancel"
+              onSubmit={closeDialog}
+              className="!border-white bg-white !text-primary hover:border-white hover:bg-white hover:text-primary"
+            />
+            <SubmitButton
+              title="Done"
+              onSubmit={saveSummaryData}
+              className="hover:border-secondary hover:bg-secondary hover:text-white"
+            />
           </DialogActions>
         </Dialog>
       )}

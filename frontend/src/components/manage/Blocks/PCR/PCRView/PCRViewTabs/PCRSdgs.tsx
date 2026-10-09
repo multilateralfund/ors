@@ -6,6 +6,7 @@ import {
   SectionTitle,
   SubSectionTitle,
   detailItem,
+  booleanDetailItem,
 } from './ViewHelperComponents'
 import { pcrFieldsMapping, sdgsTextareaClassname } from '../../constants'
 import { PCRResponse } from '../../interfaces'
@@ -30,6 +31,8 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
     pcr.sustainable_development_goals,
     ({ agency_id }) => agency_id === Number(crtAgencyId),
   )
+  const sdgNotApplying =
+    agencySdgsData.length > 0 ? agencySdgsData[0].sdg_not_applying : null
   const sdgsData = agencySdgsData.length > 0 ? agencySdgsData[0].goals : []
 
   return (
@@ -55,6 +58,8 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
         ))}
       </Tabs>
       <div className="border-0 border-t border-solid border-primary py-6">
+        {booleanDetailItem(pcrFieldsMapping.sdg_not_applying, sdgNotApplying)}
+        <Divider className="my-2" />
         <SubSectionTitle>Goals</SubSectionTitle>
         <div className="flex flex-col rounded-lg border border-solid border-[#e5e7eb] bg-white p-5">
           {sdgsData.length > 0 ? (
