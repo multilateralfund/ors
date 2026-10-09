@@ -451,7 +451,9 @@ def prod_tonnage(context: MetricContext) -> float | None:
 def ee_kwh_saved(context: MetricContext) -> float | None:
     """Returns the sum of energy_savings_actual entries of all the projects in context"""
     result = sum(
-        classified_project.project.energy_savings_actual or 0
+        classified_project.project.energy_savings_actual
+        or classified_project.project.energy_savings
+        or 0
         for classified_project in context.projects
     )
     return format_number(result)
@@ -461,7 +463,9 @@ def impact_technicians(context: MetricContext) -> int | None:
     """Returns the sum of total_number_of_technicians_trained_actual entries of all the projects in context"""
     return format_number(
         sum(
-            classified_project.project.total_number_of_technicians_trained_actual or 0
+            classified_project.project.total_number_of_technicians_trained_actual
+            or classified_project.project.total_number_of_technicians_trained
+            or 0
             for classified_project in context.projects
         )
     )
@@ -472,6 +476,7 @@ def impact_customs(context: MetricContext) -> int | None:
     return format_number(
         sum(
             classified_project.project.total_number_of_customs_officers_trained_actual
+            or classified_project.project.total_number_of_customs_officers_trained
             or 0
             for classified_project in context.projects
         )
@@ -485,10 +490,13 @@ def impact_enterprises(context: MetricContext) -> int | None:
             sum(
                 [
                     classified_project.project.number_of_smes_directly_funded_actual
+                    or classified_project.project.number_of_smes_directly_funded
                     or 0,
                     classified_project.project.number_of_non_sme_directly_funded_actual
+                    or classified_project.project.number_of_non_sme_directly_funded
                     or 0,
                     classified_project.project.number_of_both_sme_non_sme_not_directly_funded_actual
+                    or classified_project.project.number_of_both_sme_non_sme_not_directly_funded
                     or 0,
                 ]
             )
@@ -1000,7 +1008,8 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=Unit.KWH_PER_YEAR,
         disposition=Disposition.COMPUTE,
         formula=(
-            "sum(Projects sheet 'Energy savings - actual (kWh/year)') over the "
+            "sum(Projects sheet 'Energy savings - actual (kWh/year)') or ,if not avaialble,"
+            "sum(Projects sheet 'Energy savings - (kWh/year)') over the "
             "country's projects"
         ),
         db_source="DB-COMPUTABLE",
@@ -1018,13 +1027,16 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=Unit.COUNT,
         disposition=Disposition.COMPUTE,
         formula=(
-            "sum(Projects sheet 'Total number of technicians trained - actual') over "
+            "sum(Projects sheet 'Total number of technicians trained - actual') or ,if not avaialble,"
+            "sum(Projects sheet 'Total number of technicians trained') over "
             "the country's projects"
         ),
         db_source="DB-COMPUTABLE",
         src_model_field=(
-            "Project.total_number_of_technicians_trained_actual  [export column: "
+            "Project.total_number_of_technicians_trained_actual or"
+            "Project.total_number_of_technicians_trained [export column: "
             '"Total number of technicians trained - actual"]'
+            '"Total number of technicians trained"]'
         ),
         compute=impact_technicians,
     ),
@@ -1036,13 +1048,16 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         unit=Unit.COUNT,
         disposition=Disposition.COMPUTE,
         formula=(
-            "sum(Projects sheet 'Total number of customs officers trained - actual') "
+            "sum(Projects sheet 'Total number of customs officers trained - actual') or ,if not avaialble,"
+            "sum(Projects sheet 'Total number of customs officers trained') "
             "over the country's projects"
         ),
         db_source="DB-COMPUTABLE",
         src_model_field=(
-            "Project.total_number_of_customs_officers_trained_actual  [export column: "
+            "Project.total_number_of_customs_officers_trained_actual  or  "
+            "Project.total_number_of_customs_officers_trained [export column: "
             '"Total number of customs officers trained - actual"]'
+            '"Total number of customs officers trained"]'
         ),
         compute=impact_customs,
     ),
@@ -1055,13 +1070,16 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         disposition=Disposition.COMPUTE,
         formula=(
             "sum of the three 'directly funded' actual columns (SMEs + non-SMEs + "
-            "both-not-directly-funded)"
+            "both-not-directly-funded) or planned values if the actual ones are not available"
         ),
         db_source="DB-COMPUTABLE",
         src_model_field=(
-            "Project.number_of_smes_directly_funded_actual + "
-            "number_of_non_sme_directly_funded_actual + "
-            "number_of_both_sme_non_sme_not_directly_funded_actual  [export columns: "
+            "Project.number_of_smes_directly_funded_actual or "
+            "Project.number_of_smes_directly_funded or + "
+            "number_of_non_sme_directly_funded_actual or "
+            "number_of_non_sme_directly_funded + "
+            "number_of_both_sme_non_sme_not_directly_funded_actual or"
+            "number_of_both_sme_non_sme_not_directly_funded [export columns: "
             '"Number of SMEs directly funded - actual", "Number of non-SMEs directly '
             'funded - actual", "Number of both SMEs and non-SMEs included in the '
             'project but not directly funded - actual"]'
