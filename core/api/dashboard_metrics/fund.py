@@ -291,8 +291,8 @@ def baseline_rows(_context: MetricContext) -> list[dict[str, Any]]:
     The total approved phase out is the sum of either total_phase_out_odp_tonnes or
     total_phase_out_co2_tonnes values from all the projects in the intended family.
     """
-    hfc_projects = _context.with_family(HFC)
-    hcfc_projects = _context.with_family(HCFC)
+    hfc_projects = _context.with_family_detail(HFC)
+    hcfc_projects = _context.with_family_detail(HCFC)
     apr_hfc = _context.apr_where([p.project.id for p in hfc_projects])
     apr_hcfc = _context.apr_where([p.project.id for p in hcfc_projects])
     hcfc_baseline = float(getattr(config, "HCFC_BASELINE", 0))
