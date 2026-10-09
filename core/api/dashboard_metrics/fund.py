@@ -182,13 +182,37 @@ def _prepare_horizontal_bar_structure(
         "title": "Percentage of baseline consumption phased out by substance (%)",
         "subtitle": None,
         "categories": [
-            "Other ODS",
+            "Methyl Bromide",
+            "Methyl Chloroform",
+            "Chlorofluorocarbons (CFCs)",
+            "Carbon Tetrachloride (CTC)",
+            "Halons",
             "Hydrofluorocarbons (HFCs)",
             "Hydrochlorofluorocarbons (HCFCs)",
         ],
         "series": [
             {
-                "name": "Other ODS",
+                "name": "Methyl Bromide",
+                "color": "var(--mlf-blue)",
+                "data": [data[0]["value"]],
+            },
+            {
+                "name": "Methyl Chloroform",
+                "color": "var(--mlf-blue)",
+                "data": [data[0]["value"]],
+            },
+            {
+                "name": "Chlorofluorocarbons (CFCs)",
+                "color": "var(--mlf-blue)",
+                "data": [data[0]["value"]],
+            },
+            {
+                "name": "Carbon Tetrachloride (CTC)",
+                "color": "var(--mlf-blue)",
+                "data": [data[0]["value"]],
+            },
+            {
+                "name": "Halons",
                 "color": "var(--mlf-blue)",
                 "data": [data[0]["value"]],
             },
