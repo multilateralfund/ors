@@ -108,18 +108,18 @@ const PCREditWrapper = () => {
     const genderMainstreamings = map(agencyIds, (agency_id) => ({
       agency_id,
       gender_mainstreamings: map(projectPhaseOptions, (phase) => {
+        const initialPpEntry = {
+          project_preparation: phase.id,
+          prefilled: '',
+          qualitative_description: '',
+        }
+
         const phaseData = find(
           groupedGenderMainstreamings[agency_id],
           (mainstreaming) => mainstreaming.project_preparation === phase.name,
         )
 
-        return (
-          phaseData ?? {
-            project_preparation: phase.id,
-            prefilled: '',
-            qualitative_description: '',
-          }
-        )
+        return phaseData ?? initialPpEntry
       }),
     }))
 
@@ -128,6 +128,8 @@ const PCREditWrapper = () => {
     )
     const sdgsContribution = map(agencyIds, (agency_id) => ({
       agency_id,
+      sdg_not_applying:
+        groupedSdgsContribution[agency_id]?.[0]?.sdg_not_applying,
       goals: groupedSdgsContribution[agency_id]?.[0]?.goals ?? [],
     }))
 

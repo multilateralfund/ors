@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
 import { getFormattedNumericValue } from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import { borderedValueClassname } from '../../constants'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Divider } from '@mui/material'
@@ -59,6 +60,23 @@ export const numberDetailItem = (
     <span className="text-[#4D4D4D]">{fieldName}</span>
     <h4 className={cx('m-0 text-xl font-semibold text-primary', className)}>
       {getFormattedNumericValue(fieldValue, dataType === 'decimal' ? 2 : 0)}
+    </h4>
+  </span>
+)
+
+export const booleanDetailItem = (
+  fieldName: string,
+  fieldValue: boolean | null | undefined,
+) => (
+  <span className="flex flex-row items-center gap-4">
+    <span className="text-[#4D4D4D]">{fieldName}</span>
+    <h4
+      className={cx(
+        'm-0 text-xl font-semibold text-primary',
+        borderedValueClassname,
+      )}
+    >
+      {fieldValue ? 'Yes' : 'No'}
     </h4>
   </span>
 )

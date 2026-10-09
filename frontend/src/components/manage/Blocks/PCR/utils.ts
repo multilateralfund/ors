@@ -486,7 +486,7 @@ export const getFormData = (
 
   const sdgsContributionData = filter(
     sdgs_contribution,
-    (sdg) => sdg.goals.length > 0,
+    (sdg) => sdg.goals.length > 0 || sdg.sdg_not_applying,
   )
 
   const formattedSupportingEvidence =

@@ -26,7 +26,7 @@ import {
 } from '../interfaces'
 import { ApiAgency } from '@ors/types/api_agencies'
 
-import { TextareaAutosize } from '@mui/material'
+import { TextareaAutosize, Checkbox } from '@mui/material'
 import { find, map } from 'lodash'
 import cx from 'classnames'
 
@@ -76,6 +76,10 @@ const getValue = (
     return subSectionData[dataIndex][field]
   }
 
+  if (indexesLength === 1) {
+    return sectionData[dataIndex][field]
+  }
+
   return sectionData[field]
 }
 
@@ -116,6 +120,24 @@ const changeSubsectionField: FieldHandler = (
         [subField]: subSectionData,
       },
     }
+  }, field)
+}
+
+const changeSectionField: FieldHandler = (
+  value,
+  section,
+  field,
+  setState,
+  indexes,
+) => {
+  const [dataIndex] = indexes ?? []
+
+  setState((prevData) => {
+    const sectionData = prevData[section] as Record<string, any>
+
+    sectionData[dataIndex] = { ...sectionData[dataIndex], [field]: value }
+
+    return { ...prevData, [section]: sectionData }
   }, field)
 }
 
@@ -227,6 +249,11 @@ const onFieldChange: FieldHandler = (
     return
   }
 
+  if (indexesLength === 1) {
+    changeSectionField(value, section, field, setState, indexes)
+    return
+  }
+
   changeField(value, section, field, setState)
   return
 }
@@ -239,6 +266,9 @@ export const changeHandler: Record<FieldType, FieldHandler> = {
   text: (event, section, field, setState, indexes, subFields) => {
     const formattedVal = event.target.value
     onFieldChange(formattedVal, section, field, setState, indexes, subFields)
+  },
+  boolean: (value, section, field, setState, indexes, subFields) => {
+    onFieldChange(value, section, field, setState, indexes, subFields)
   },
 }
 
@@ -387,6 +417,49 @@ export const PCRTextAreaWidget = ({
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>
+    </div>
+  )
+}
+
+export const PCRBooleanWidget = ({
+  PCRData,
+  setPCRData,
+  sectionIdentifier,
+  field,
+  errors,
+  indexes,
+  subFields,
+}: WidgetPprops) => {
+  const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+  const formattedErrors = formatErrors(errors, indexes)
+
+  return (
+    <div className="flex gap-2">
+      <div className="flex items-center">
+        <Checkbox
+          className="p-0"
+          checked={Boolean(value)}
+          onChange={(_, value) =>
+            changeHandler['boolean'](
+              value,
+              sectionIdentifier,
+              field,
+              setPCRData,
+              indexes,
+              subFields,
+            )
+          }
+          inputProps={{ tabIndex: 0 }}
+          sx={{
+            '&.Mui-focusVisible': {
+              backgroundColor: 'rgba(0, 0, 0, 0.03)',
+            },
+            color: 'black',
+          }}
+        />
+        <FieldErrorIndicator errors={formattedErrors} field={field} />
+      </div>
+      <Label>{pcrFieldsMapping[field]}</Label>
     </div>
   )
 }

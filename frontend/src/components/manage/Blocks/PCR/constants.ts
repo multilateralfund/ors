@@ -85,6 +85,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   project_preparation: 'Project cycle phase',
   qualitative_description: 'Qualitative description',
   prefilled: 'Gender policy implemented',
+  sdg_not_applying: 'SDG reporting does not apply for this agency',
   goal_id: 'SDG',
   section_id: 'Section',
 }
@@ -144,16 +145,16 @@ export const projectPhaseOptions = [
 ]
 
 export const initialOverviewData = {
-  financial_figures_status: null,
+  financial_figures_status: '',
   financial_figures_status_explanation: '',
   addresses: '',
-  project_goal_achieved: null,
+  project_goal_achieved: '',
   project_goal_achieved_explanation: '',
-  rating: null,
+  rating: '',
   rating_explanation_other: '',
   rating_explanation: '',
   additional_comments: [],
-  completed_by: null,
+  completed_by: '',
 }
 
 export const initialActivitiesData = {

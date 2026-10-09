@@ -10,6 +10,7 @@ import {
 } from './ViewHelperComponents'
 import {
   pcrFieldsMapping,
+  projectPhaseOptions,
   pcTitleClassname,
   pcTextareaClassname,
   borderedValueContainerClassname,
@@ -31,10 +32,24 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
     (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
   )
 
-  const ppData = filter(
+  const initialPpData = filter(
     pcr.gender_mainstreamings,
     ({ agency_id }) => agency_id === Number(crtAgencyId),
   )
+  const ppData = map(projectPhaseOptions, (phase) => {
+    const initialPpEntry = {
+      project_preparation: phase.id,
+      prefilled: '',
+      qualitative_description: '',
+    }
+
+    const phaseData = find(
+      initialPpData,
+      (entry) => entry.project_preparation === phase.name,
+    )
+
+    return phaseData ?? initialPpEntry
+  })
 
   return (
     <>

@@ -150,7 +150,10 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
   const formatSDGsErrors = (errors: Record<string, any[]>) => {
     const pcrSdgs = PCRData.sdgs_contribution || []
-    const filteredSdgs = filter(pcrSdgs, (sdg) => sdg.goals.length > 0)
+    const filteredSdgs = filter(
+      pcrSdgs,
+      (sdg) => sdg.goals.length > 0 || sdg.sdg_not_applying,
+    )
 
     const formattedErrors = reduce(
       filteredSdgs,

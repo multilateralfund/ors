@@ -150,6 +150,7 @@ export type PCRResponse = {
   gender_mainstreamings: (ProjectPhase & { agency_id: number })[]
   sustainable_development_goals: {
     agency_id: number
+    sdg_not_applying: boolean
     goals: { goal_id: number; goal: string; description: string }[]
   }[]
   supporting_evidences: {
@@ -199,6 +200,7 @@ type Sdgs = { goal_id: number | null; description: string }
 
 export interface PCRSdgsData {
   agency_id: number
+  sdg_not_applying: boolean
   goals: Sdgs[]
 }
 
@@ -251,7 +253,7 @@ export type WidgetPprops = {
   disabled?: boolean
 }
 
-export type FieldType = 'drop_down' | 'text'
+export type FieldType = 'drop_down' | 'text' | 'boolean'
 
 export type FieldHandler = (
   value: any,

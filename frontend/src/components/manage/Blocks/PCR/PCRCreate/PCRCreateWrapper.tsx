@@ -45,7 +45,12 @@ const PCRCreateWrapper = () => {
     [agencyIds],
   )
   const initialSdgsData = useMemo(
-    () => map(agencyIds, (agency_id) => ({ agency_id, goals: [] })),
+    () =>
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        sdg_not_applying: false,
+        goals: [],
+      })),
     [agencyIds],
   )
   const initialSupportingEvidencesData = useMemo(

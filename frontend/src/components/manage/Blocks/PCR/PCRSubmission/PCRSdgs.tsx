@@ -7,7 +7,12 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
-import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import {
+  TabLabel,
+  PCRSelectWidget,
+  PCRTextAreaWidget,
+  PCRBooleanWidget,
+} from './PCRWidgets'
 import { sdgsContributionField, sdgsField } from '../constants'
 import { getSectionAgencies, formatErrors } from '../utils'
 
@@ -146,6 +151,13 @@ const PCRSdgs = () => {
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
         )}
+        <PCRBooleanWidget
+          {...{ PCRData, setPCRData, sectionIdentifier }}
+          field="sdg_not_applying"
+          errors={agencyErrors}
+          indexes={[crtTab]}
+        />
+        <Divider className="my-2" />
         <SubSectionTitle>Goals</SubSectionTitle>
         <div className="flex flex-col gap-y-4">
           {map(sdgsData, (_, sdgIndex) => (
