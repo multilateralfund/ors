@@ -437,6 +437,7 @@ export const PCRBooleanWidget = ({
     <div className="flex gap-2">
       <div className="flex items-center">
         <Checkbox
+          id={`${field}-${indexes?.join('-')}`}
           className="p-0"
           checked={Boolean(value)}
           onChange={(_, value) =>
@@ -459,7 +460,12 @@ export const PCRBooleanWidget = ({
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>
-      <Label>{pcrFieldsMapping[field]}</Label>
+      <Label
+        htmlFor={`${field}-${indexes?.join('-')}`}
+        className="cursor-pointer"
+      >
+        {pcrFieldsMapping[field]}
+      </Label>
     </div>
   )
 }

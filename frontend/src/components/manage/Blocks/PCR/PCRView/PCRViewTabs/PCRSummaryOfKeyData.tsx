@@ -4,6 +4,8 @@ import ViewTable from '@ors/components/manage/Form/ViewTable'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
+  SectionTitle,
+  SubSectionTitle,
   detailItem,
   dateDetailItem,
   numberDetailItem,
@@ -23,6 +25,7 @@ import {
 import { ProjectType } from '@ors/types/api_projects'
 
 import { ColDef, ICellRendererParams } from 'ag-grid-community'
+import { HiArrowLongRight } from 'react-icons/hi2'
 import { FiEye } from 'react-icons/fi'
 import {
   Dialog,
@@ -31,6 +34,7 @@ import {
   IconButton,
   Tabs,
   Tab,
+  Divider,
 } from '@mui/material'
 
 const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
@@ -115,6 +119,7 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <SectionTitle>Summary of key data</SectionTitle>
       <ViewTable<ProjectType>
         columnDefs={summaryTableColumnDefs}
         defaultColDef={{
@@ -134,19 +139,29 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
       {crtProject && summaryData && (
         <Dialog
           aria-labelledby="pcr-summary-view-dialog"
+          PaperProps={{
+            sx: {
+              backgroundColor: 'var(--color-primary)',
+              borderRadius: '8px !important',
+              border: 'none !important',
+            },
+          }}
           fullWidth={true}
           maxWidth="xl"
           onClose={closeDialog}
           open={true}
           scroll="paper"
         >
-          <DialogTitle id="pcr-summary-view-dialog-title">
-            Project {crtProject.code}
+          <DialogTitle
+            id="pcr-summary-view-dialog-title"
+            className="p-6 pt-5 text-3xl text-white"
+          >
+            {crtProject.code}
           </DialogTitle>
-          <DialogContent dividers={true}>
+          <DialogContent className="p-0">
             <Tabs
               aria-label="summary-of-key-data-view-tabs"
-              className="sectionsTabs"
+              className="sectionsTabs summaryOfKeyDataTabs px-6"
               variant="scrollable"
               scrollButtons="auto"
               allowScrollButtonsMobile
@@ -170,10 +185,18 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
               />
               <Tab id="equipment" aria-controls="equipment" label="Equipment" />
             </Tabs>
-            <div className="flex flex-col gap-y-6 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+            <div className="flex flex-col gap-y-6 bg-white p-6">
               {currentTab === 0 && (
                 <FieldGroup>
-                  <div className="flex flex-wrap gap-x-7 gap-y-4">
+                  <SubSectionTitle className="!mb-4">Funding</SubSectionTitle>
+                  <div className="grid grid-cols-3 gap-x-7 gap-y-4">
+                    {numberDetailItem(
+                      'Funds approved',
+                      (crtProject.funds_approved
+                        ? String(crtProject.funds_approved)
+                        : null) as string,
+                      'decimal',
+                    )}
                     {numberDetailItem(
                       'Funds disbursed',
                       (summaryData.funds_disbursed
@@ -181,10 +204,24 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                         : null) as string,
                       'decimal',
                     )}
+                  </div>
+                  <Divider className="my-5" />
+                  <SubSectionTitle className="!mb-4">Schedule</SubSectionTitle>
+                  <div className="grid grid-cols-3 gap-x-7 gap-y-4">
+                    {dateDetailItem(
+                      'Date approved',
+                      (crtProject.date_approved as string) ?? '',
+                    )}
                     {dateDetailItem(
                       'Planned date of completion',
                       (summaryData.planned_date_of_completion as string) ?? '',
                     )}
+                    {dateDetailItem(
+                      'Actual date of completion',
+                      (crtProject.actual_date_of_completion as string) ?? '',
+                    )}
+                  </div>
+                  <div className="mt-4 grid grid-cols-3 gap-x-7 gap-y-5">
                     {numberDetailItem(
                       'Planned duration (months)',
                       String(computedFields.planned_duration),
@@ -208,13 +245,9 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                 <FieldGroup title="Alternative technology">
                   {summaryData.alternative_technologies.length > 0 ? (
                     <div className="flex flex-col gap-y-4">
-                      <div className="flex gap-x-7">
-                        <div className="min-w-56 sm:min-w-64">
-                          <Label>Substance converted from</Label>
-                        </div>
-                        <div className="min-w-56 sm:min-w-64">
-                          <Label>Substance converted to</Label>
-                        </div>
+                      <div className="grid grid-cols-2 gap-x-7">
+                        <Label className="pl-4">Substance converted from</Label>
+                        <Label>Substance converted to</Label>
                       </div>
                       {summaryData.alternative_technologies.map(
                         (entry, index) => {
@@ -230,14 +263,16 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                           return (
                             <div
                               key={index}
-                              className="flex flex-wrap items-end gap-x-7 gap-y-4"
+                              className="grid grid-cols-2 gap-x-7 gap-y-4 rounded-lg border border-solid border-[#D8DADE] px-4 py-3"
                             >
-                              <div className="min-w-56 sm:min-w-64">
+                              <div className="flex items-center justify-between">
                                 {detailItem('', substanceFromValue)}
+                                <HiArrowLongRight
+                                  size={40}
+                                  className="text-secondary"
+                                />
                               </div>
-                              <div className="min-w-56 sm:min-w-64">
-                                {detailItem('', substanceToValue)}
-                              </div>
+                              {detailItem('', substanceToValue)}
                             </div>
                           )
                         },
@@ -267,11 +302,9 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                           className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
                         >
                           {detailItem('', entry.name)}
-                          {detailItem(
-                            '',
-                            entry.address,
-                            'self-start whitespace-nowrap',
-                          )}
+                          {detailItem('', entry.address, {
+                            labelClassname: 'self-start whitespace-nowrap',
+                          })}
                         </div>
                       ))}
                     </div>
@@ -321,11 +354,10 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                                     Description
                                   </Label>
                                 </div>
-                                {detailItem(
-                                  '',
-                                  entry.description,
-                                  'self-start whitespace-nowrap',
-                                )}
+                                {detailItem('', entry.description, {
+                                  labelClassname:
+                                    'self-start whitespace-nowrap',
+                                })}
                               </div>
                               <div className="min-w-56 sm:min-w-64">
                                 <div className="xl:hidden">
