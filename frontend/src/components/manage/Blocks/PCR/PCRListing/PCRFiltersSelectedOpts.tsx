@@ -11,7 +11,7 @@ import { PCRFiltersProps } from '../interfaces'
 
 import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
-import { map } from 'lodash'
+import { map, omit } from 'lodash'
 import dayjs from 'dayjs'
 
 const PCRFiltersSelectedOpts = ({
@@ -21,8 +21,10 @@ const PCRFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: PCRFiltersProps) => {
+  const filtersToClear = omit(filters, 'pcr_submitted')
+
   const areFiltersApplied =
-    getAreFiltersApplied(filters) ||
+    getAreFiltersApplied(filtersToClear) ||
     filters?.search ||
     filters?.pcr_submission_date_after ||
     filters?.pcr_submission_date_before
@@ -65,11 +67,6 @@ const PCRFiltersSelectedOpts = ({
       entities: formatEntity(fieldToOptionsMapping.ad_hoc_pcr),
       entityIdentifier: 'ad_hoc_pcr',
       extraLabel: pcrFieldsMapping.ad_hoc_pcr,
-    },
-    {
-      entities: formatEntity(fieldToOptionsMapping.pcr_submitted),
-      entityIdentifier: 'pcr_submitted',
-      extraLabel: pcrFieldsMapping.pcr_submitted,
     },
   ]
 

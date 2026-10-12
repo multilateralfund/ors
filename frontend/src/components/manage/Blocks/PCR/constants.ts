@@ -11,7 +11,6 @@ export const initialParams = {
   status_id: [],
   pcr_due: [],
   ad_hoc_pcr: [],
-  pcr_submitted: [],
   pcr_submission_date_after: '',
   pcr_submission_date_before: '',
 }
@@ -27,7 +26,6 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   category: 'IND/MYA',
   pcr_due: 'PCR due',
   ad_hoc_pcr: 'Ad-hoc PCR',
-  pcr_submitted: 'PCR submitted',
   pcr_submission_date: 'PCR submission date',
   title: 'Title',
   metacode: 'Metacode',
