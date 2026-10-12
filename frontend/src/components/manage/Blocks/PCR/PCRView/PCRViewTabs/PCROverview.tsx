@@ -12,8 +12,8 @@ import { getOtherOptionId } from '../../utils'
 import { PCRResponse } from '../../interfaces'
 import {
   pcrFieldsMapping,
-  borderedValueClassname,
   overviewTextareaClassname,
+  borderedValueContainerClassname,
 } from '../../constants'
 
 import { Divider } from '@mui/material'
@@ -65,10 +65,7 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
           {detailItem(
             pcrFieldsMapping.project_goal_achieved,
             pcr.project_goal_achieved,
-            {
-              containerClassname: '!flex-row gap-4 items-center',
-              valueClassname: borderedValueClassname,
-            },
+            borderedValueContainerClassname,
           )}
           {getCollapseIcon(isGoalsSectionExpanded, collapseGoalsSection)}
         </div>
@@ -80,10 +77,11 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
           )}
         <Divider className="w-full lg:w-[65%]" />
         <div className="flex gap-4">
-          {detailItem(pcrFieldsMapping.rating, pcr.rating, {
-            containerClassname: '!flex-row gap-4 items-center',
-            valueClassname: borderedValueClassname,
-          })}
+          {detailItem(
+            pcrFieldsMapping.rating,
+            pcr.rating,
+            borderedValueContainerClassname,
+          )}
           {getCollapseIcon(isRatingSectionExpanded, collapseRatingSection)}
         </div>
         {isRatingSectionExpanded && (

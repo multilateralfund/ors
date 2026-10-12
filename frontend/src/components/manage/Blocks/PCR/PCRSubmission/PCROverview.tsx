@@ -5,7 +5,7 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { financialFiguresTypeOptions, booleanFieldsOpts } from '../constants'
+import { booleanFieldsOpts } from '../constants'
 import { getOtherOptionId } from '../utils'
 
 import { IoTrash } from 'react-icons/io5'
@@ -83,19 +83,6 @@ const PCROverview = () => {
       <Divider className="my-6" />
       <SubSectionTitle>Indicators</SubSectionTitle>
       <div className="flex flex-col gap-y-4">
-        <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-          <PCRSelectWidget
-            {...{ PCRData, setPCRData, sectionIdentifier }}
-            field="financial_figures_status"
-            options={financialFiguresTypeOptions}
-            errors={overviewErrors}
-          />
-          <PCRTextAreaWidget
-            {...{ PCRData, setPCRData, sectionIdentifier }}
-            field="financial_figures_status_explanation"
-            errors={overviewErrors}
-          />
-        </div>
         <div className="flex">
           <PCRTextAreaWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}

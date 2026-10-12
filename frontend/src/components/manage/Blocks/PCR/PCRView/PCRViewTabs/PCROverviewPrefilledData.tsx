@@ -23,7 +23,6 @@ import { useStore } from '@ors/store'
 
 import { find, keys, map, uniq } from 'lodash'
 import { Divider } from '@mui/material'
-import cx from 'classnames'
 
 const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
   const { countries, agencies } = useContext(ProjectsDataContext)
@@ -157,7 +156,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
         </SubSectionTitle>
         {detailItem('', pcr.financial_figures_status, {
           containerClassname: '!gap-0',
-          valueClassname: cx(borderedValueClassname, '!mt-0'),
+          valueClassname: borderedValueClassname,
         })}
         {getCollapseIcon(isFundingExpanded, collapseFunding)}
       </div>

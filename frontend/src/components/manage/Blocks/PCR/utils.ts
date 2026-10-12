@@ -327,6 +327,12 @@ export const formatNestedPcErrors = (
         entry.description,
       )
 
+      entryErrors = validateWordCount(
+        entryErrors,
+        'action_taken',
+        entry.action_taken ?? '',
+      )
+
       return entryErrors
     })
   }
@@ -480,7 +486,7 @@ export const getFormData = (
 
   const sdgsContributionData = filter(
     sdgs_contribution,
-    (sdg) => sdg.goals.length > 0,
+    (sdg) => sdg.goals.length > 0 || sdg.sdg_not_applying,
   )
 
   const formattedSupportingEvidence =
