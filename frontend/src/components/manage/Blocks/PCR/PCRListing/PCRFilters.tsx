@@ -27,7 +27,7 @@ const PCRFilters = ({
   }
 
   const FieldFilter = ({ field }: { field: string }) => {
-    const simpleFields = ['category', 'pcr_due', 'ad_hoc_pcr', 'pcr_submitted']
+    const simpleFields = ['category', 'pcr_due', 'ad_hoc_pcr']
 
     const filterField = simpleFields.includes(field) ? field : field + '_id'
 
@@ -84,7 +84,6 @@ const PCRFilters = ({
       <FieldFilter field="status" />
       <FieldFilter field="pcr_due" />
       <FieldFilter field="ad_hoc_pcr" />
-      <FieldFilter field="pcr_submitted" />
       <DateRangePicker
         label="PCR submission date"
         start={filters.pcr_submission_date_after || ''}

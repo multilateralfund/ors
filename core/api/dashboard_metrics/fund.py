@@ -355,7 +355,7 @@ def baseline_rows(_context: MetricContext) -> list[dict[str, Any]]:
         },
         {
             "group": HCFC,
-            "value": round(hcfc_baseline / ods_hcfc, 2) if ods_hcfc else None,
+            "value": round(ods_hcfc / hcfc_baseline, 2) if ods_hcfc else None,
         },
     ]
 

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useContext, useEffect } from 'react'
+import { useMemo, useRef, useState, useContext } from 'react'
 
 import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -31,16 +31,14 @@ const PCRListingWrapper = () => {
 
   const updatedInitialFilters = {
     ...initialFilters,
-    pcr_due: [booleanFieldsOpts[0]],
+    pcr_submitted: [booleanFieldsOpts[1]],
   }
-  const updatedInitialParams = { ...initialFilters, pcr_due: ['Yes'] }
+  const updatedInitialParams = { ...initialFilters, pcr_submitted: ['No'] }
 
   const [view, setView] = useState<ViewSelectorValuesType | null>('list')
   const [projectId, setProjectId] = useState<number | null>(null)
   const [pcrId, setPcrId] = useState<number | null>(null)
-  const [filters, setFilters] = useState<Record<string, any>>(
-    updatedInitialFilters,
-  )
+  const [filters, setFilters] = useState(updatedInitialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
   const pcrProjects = useGetPCRProjects(updatedInitialParams)
@@ -56,7 +54,6 @@ const PCRListingWrapper = () => {
     status: statuses,
     pcr_due: booleanFieldsOpts,
     ad_hoc_pcr: booleanFieldsOpts,
-    pcr_submitted: booleanFieldsOpts,
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {
@@ -76,34 +73,14 @@ const PCRListingWrapper = () => {
   }
 
   const handleChangeViewSelector = (value: ViewSelectorValuesType) => {
-    const isDue = value === 'list'
-    const selectedOption = [booleanFieldsOpts[0]]
+    setView(value)
 
-    const pcrDue = isDue ? selectedOption : null
-    const pcrSubmitted = isDue ? null : selectedOption
+    const pcrSubmitted =
+      value === 'table' ? booleanFieldsOpts[0] : booleanFieldsOpts[1]
 
-    handleFilterChange({ pcr_due: pcrDue, pcr_submitted: pcrSubmitted })
-    handleParamsChange({
-      pcr_due: pcrDue ? pcrDue[0].id : null,
-      pcr_submitted: pcrSubmitted ? pcrSubmitted[0].id : null,
-      offset: 0,
-    })
+    handleFilterChange({ pcr_submitted: [pcrSubmitted] })
+    handleParamsChange({ pcr_submitted: pcrSubmitted.id, offset: 0 })
   }
-
-  useEffect(() => {
-    const isDue =
-      filters.pcr_due?.length === 1 && filters.pcr_due[0].id === 'Yes'
-    const isSubmitted =
-      filters.pcr_submitted?.length === 1 &&
-      filters.pcr_submitted[0].id === 'Yes'
-
-    if (isDue === isSubmitted) {
-      setView(null)
-      return
-    }
-
-    setView(isDue ? 'list' : 'table')
-  }, [filters.pcr_due, filters.pcr_submitted])
 
   return (
     <>
@@ -140,7 +117,7 @@ const PCRListingWrapper = () => {
             <TableViewSelector
               value={view as ViewSelectorValuesType}
               reverseViewOrder={true}
-              tooltipText={['Due PCRs', 'Completed PCRs']}
+              tooltipText={['Not completed PCRs', 'Completed PCRs']}
               changeHandler={(_, value) => {
                 if (value) {
                   handleChangeViewSelector(value)
