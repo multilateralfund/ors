@@ -8,6 +8,7 @@ import {
 } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import Link from '@ors/components/ui/Link/Link'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 
 import {
@@ -28,7 +29,10 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import Field from '@ors/components/manage/Form/Field'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import {
+  SubSectionTitle,
+  ProjectSummary,
+} from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ProjectType } from '@ors/types/api_projects'
 import {
@@ -53,6 +57,7 @@ import {
 } from '../interfaces'
 
 import { filter, find, map, omit } from 'lodash'
+import { TfiClose } from 'react-icons/tfi'
 import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
 import cx from 'classnames'
@@ -611,9 +616,18 @@ const PCRSummaryOfKeyData = () => {
         >
           <DialogTitle
             id="pcr-summary-edit-dialog-title"
-            className="p-6 pt-5 text-3xl text-white"
+            className="p-6 pt-5 text-white"
           >
-            {editingProject.code}
+            <div className="flex items-center justify-between gap-4 text-3xl">
+              {editingProject.code}
+              <Link
+                className="flex h-6 w-6 cursor-pointer justify-center"
+                href={null}
+              >
+                <TfiClose size={24} color="white" onClick={closeDialog} />
+              </Link>
+            </div>
+            <ProjectSummary project={editingProject} />
           </DialogTitle>
           <DialogContent className="p-0">
             <Tabs

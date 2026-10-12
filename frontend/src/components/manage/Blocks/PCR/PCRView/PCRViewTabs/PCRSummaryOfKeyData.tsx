@@ -1,11 +1,14 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
+import Link from '@ors/components/ui/Link/Link'
+import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
   SectionTitle,
   SubSectionTitle,
+  ProjectSummary,
   detailItem,
   dateDetailItem,
   numberDetailItem,
@@ -26,11 +29,13 @@ import { ProjectType } from '@ors/types/api_projects'
 
 import { ColDef, ICellRendererParams } from 'ag-grid-community'
 import { HiArrowLongRight } from 'react-icons/hi2'
+import { TfiClose } from 'react-icons/tfi'
 import { FiEye } from 'react-icons/fi'
 import {
   Dialog,
-  DialogContent,
   DialogTitle,
+  DialogContent,
+  DialogActions,
   IconButton,
   Tabs,
   Tab,
@@ -154,9 +159,18 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
         >
           <DialogTitle
             id="pcr-summary-view-dialog-title"
-            className="p-6 pt-5 text-3xl text-white"
+            className="p-6 pt-5 text-white"
           >
-            {crtProject.code}
+            <div className="flex items-center justify-between gap-4 text-3xl">
+              {crtProject.code}
+              <Link
+                className="flex h-6 w-6 cursor-pointer justify-center"
+                href={null}
+              >
+                <TfiClose size={24} color="white" onClick={closeDialog} />
+              </Link>
+            </div>
+            <ProjectSummary project={crtProject} />
           </DialogTitle>
           <DialogContent className="p-0">
             <Tabs
@@ -391,6 +405,13 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
               )}
             </div>
           </DialogContent>
+          <DialogActions className="px-6 py-3">
+            <SubmitButton
+              title="Cancel"
+              onSubmit={closeDialog}
+              className="!border-white bg-white !text-primary hover:border-white hover:bg-white hover:text-primary"
+            />
+          </DialogActions>
         </Dialog>
       )}
     </div>

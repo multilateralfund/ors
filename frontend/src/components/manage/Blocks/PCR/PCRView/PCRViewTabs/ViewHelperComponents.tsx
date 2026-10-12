@@ -109,3 +109,28 @@ export const getCollapseIcon = (
       onClick={collapseSection}
     />
   )
+
+export const ProjectSummary = ({ project }: { project: any }) => {
+  const projectDataMapping = [
+    { label: 'Type', value: project.project_type },
+    { label: 'Sector', value: project.sector },
+    { label: 'Agency', value: project.agency },
+    { label: 'Tranche(s)', value: project.tranche },
+  ]
+
+  return (
+    <div className="mt-4 flex flex-wrap gap-3">
+      {projectDataMapping.map((entry, index) => (
+        <>
+          <div className="flex items-center gap-3">
+            <span>{entry.label}:</span>
+            <span className="rounded border border-solid px-1 py-0.5 font-medium uppercase leading-tight">
+              {entry.value}
+            </span>
+          </div>
+          {index !== projectDataMapping.length - 1 && <span>|</span>}
+        </>
+      ))}
+    </div>
+  )
+}
