@@ -431,6 +431,7 @@ COUNTRY_USERS_EMAIL_CC = env.list("COUNTRY_USERS_EMAIL_CC", default=[])
 # DRF Integration
 
 REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "core.api.auth_redirect.login_redirect_exception_handler",
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",

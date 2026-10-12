@@ -258,9 +258,12 @@ export interface ThemeSlice {
   setMode: (mode: 'dark' | 'light' | null) => void
 }
 
-export interface UserSlice
-  extends SliceData<ApiUser, Record<string, any> | null | undefined> {
+export interface UserSlice extends SliceData<
+  ApiUser,
+  Record<string, any> | null | undefined
+> {
   getUser: () => Promise<ApiUser | null>
+  msalLoginFailed: () => void
   login: (username: string, password: string) => void
   logout: () => Promise<void>
 }

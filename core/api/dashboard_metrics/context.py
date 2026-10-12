@@ -101,3 +101,7 @@ class MetricContext:
     def with_family(self, family: str) -> list[ClassifiedProject]:
         """The projects addressing one substance family."""
         return self.where(lambda row: row.family == family)
+
+    def with_family_detail(self, family_detail: str) -> list[ClassifiedProject]:
+        """The projects addressing one substance family."""
+        return self.where(lambda row: row.family_detail == family_detail)

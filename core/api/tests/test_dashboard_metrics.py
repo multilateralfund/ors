@@ -2071,26 +2071,47 @@ class TestFundPlaceholders(BaseTest):
 
         assert "placeholder" not in metric
         assert metric["value"]["categories"] == [
-            "Other ODS",
+            "Methyl Bromide",
+            "Methyl Chloroform",
+            "Chlorofluorocarbons (CFCs)",
+            "Carbon Tetrachloride (CTC)",
+            "Halons",
             "Hydrofluorocarbons (HFCs)",
             "Hydrochlorofluorocarbons (HCFCs)",
         ]
-        assert metric["value"]["series"][0]["name"] == "Other ODS"
+
+        assert metric["value"]["series"][0]["name"] == "Methyl Bromide"
         assert metric["value"]["series"][0]["data"][0] == 100.0
 
-        assert metric["value"]["series"][1]["name"] == "Hydrofluorocarbons (HFCs)"
-        assert metric["value"]["series"][1]["data"][0] is None
+        assert metric["value"]["series"][1]["name"] == "Methyl Chloroform"
+        assert metric["value"]["series"][1]["data"][0] == 100.0
+
+        assert metric["value"]["series"][2]["name"] == "Chlorofluorocarbons (CFCs)"
+        assert metric["value"]["series"][2]["data"][0] == 100.0
+
+        assert metric["value"]["series"][3]["name"] == "Carbon Tetrachloride (CTC)"
+        assert metric["value"]["series"][3]["data"][0] == 100.0
+
+        assert metric["value"]["series"][4]["name"] == "Halons"
+        assert metric["value"]["series"][4]["data"][0] == 100.0
+
+        assert metric["value"]["series"][5]["name"] == "Hydrofluorocarbons (HFCs)"
+        assert metric["value"]["series"][5]["data"][0] is None
 
         assert (
-            metric["value"]["series"][2]["name"] == "Hydrochlorofluorocarbons (HCFCs)"
+            metric["value"]["series"][6]["name"] == "Hydrochlorofluorocarbons (HCFCs)"
         )
-        assert metric["value"]["series"][2]["data"][0] is None
+        assert metric["value"]["series"][6]["data"][0] is None
 
     def test_asking_serves_all_three_families(self, user, brazil):
         assert self.fund(user)["baseline_phased_out_by_substance"]["value"][
             "categories"
         ] == [
-            "Other ODS",
+            "Methyl Bromide",
+            "Methyl Chloroform",
+            "Chlorofluorocarbons (CFCs)",
+            "Carbon Tetrachloride (CTC)",
+            "Halons",
             "Hydrofluorocarbons (HFCs)",
             "Hydrochlorofluorocarbons (HCFCs)",
         ]
@@ -2099,8 +2120,12 @@ class TestFundPlaceholders(BaseTest):
         """Partly invented, so the rows say which halves are which."""
         metric = self.fund(user)["baseline_phased_out_by_substance"]
         assert metric["value"]["series"][0]["data"] == [100]
-        assert metric["value"]["series"][1]["data"] == [None]
-        assert metric["value"]["series"][2]["data"] == [None]
+        assert metric["value"]["series"][1]["data"] == [100]
+        assert metric["value"]["series"][2]["data"] == [100]
+        assert metric["value"]["series"][3]["data"] == [100]
+        assert metric["value"]["series"][4]["data"] == [100]
+        assert metric["value"]["series"][5]["data"] == [None]
+        assert metric["value"]["series"][6]["data"] == [None]
 
 
 class TestDashboardMetricsExport(BaseTest):

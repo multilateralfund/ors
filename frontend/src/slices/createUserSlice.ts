@@ -43,6 +43,16 @@ export const createUserSlice = ({
       return null
     }
   },
+  msalLoginFailed: () => {
+    setSlice('user', {
+      data: null,
+      loaded: true,
+      loading: false,
+      error: {
+        non_field_errors: ['Microsoft sign in failed. Please try again.'],
+      },
+    })
+  },
   // Login
   login: async (username, password) => {
     setSlice('user', { loaded: false, loading: true })

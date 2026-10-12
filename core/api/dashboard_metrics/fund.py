@@ -182,24 +182,48 @@ def _prepare_horizontal_bar_structure(
         "title": "Percentage of baseline consumption phased out by substance (%)",
         "subtitle": None,
         "categories": [
-            "Other ODS",
+            "Methyl Bromide",
+            "Methyl Chloroform",
+            "Chlorofluorocarbons (CFCs)",
+            "Carbon Tetrachloride (CTC)",
+            "Halons",
             "Hydrofluorocarbons (HFCs)",
             "Hydrochlorofluorocarbons (HCFCs)",
         ],
         "series": [
             {
-                "name": "Other ODS",
-                "color": "var(--deep-teal)",
+                "name": "Methyl Bromide",
+                "color": "var(--mlf-blue)",
+                "data": [data[0]["value"]],
+            },
+            {
+                "name": "Methyl Chloroform",
+                "color": "var(--mlf-blue)",
+                "data": [data[0]["value"]],
+            },
+            {
+                "name": "Chlorofluorocarbons (CFCs)",
+                "color": "var(--mlf-blue)",
+                "data": [data[0]["value"]],
+            },
+            {
+                "name": "Carbon Tetrachloride (CTC)",
+                "color": "var(--mlf-blue)",
+                "data": [data[0]["value"]],
+            },
+            {
+                "name": "Halons",
+                "color": "var(--mlf-blue)",
                 "data": [data[0]["value"]],
             },
             {
                 "name": "Hydrofluorocarbons (HFCs)",
-                "color": "var(--mlf-blue)",
+                "color": "var(--deep-teal)",
                 "data": [data[1]["value"]],
             },
             {
                 "name": "Hydrochlorofluorocarbons (HCFCs)",
-                "color": "var(--mlf-blue)",
+                "color": "var(--deep-teal)",
                 "data": [data[2]["value"]],
             },
         ],
@@ -291,8 +315,8 @@ def baseline_rows(_context: MetricContext) -> list[dict[str, Any]]:
     The total approved phase out is the sum of either total_phase_out_odp_tonnes or
     total_phase_out_co2_tonnes values from all the projects in the intended family.
     """
-    hfc_projects = _context.with_family(HFC)
-    hcfc_projects = _context.with_family(HCFC)
+    hfc_projects = _context.with_family_detail(HFC)
+    hcfc_projects = _context.with_family_detail(HCFC)
     apr_hfc = _context.apr_where([p.project.id for p in hfc_projects])
     apr_hcfc = _context.apr_where([p.project.id for p in hcfc_projects])
     hcfc_baseline = float(getattr(config, "HCFC_BASELINE", 0))

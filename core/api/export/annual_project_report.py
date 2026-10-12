@@ -1444,12 +1444,14 @@ class APRSummaryTablesExportWriter:
             data["total_consumption_odp"] = total_consumption_odp
             data["total_production_odp"] = total_production_odp
 
-            data["total_consumption_mt"] = sum(
+            total_consumption_mt = sum(
                 apr.consumption_phased_out_mt or 0 for apr in records
             )
-            data["total_production_mt"] = sum(
+            total_production_mt = sum(
                 apr.production_phased_out_mt or 0 for apr in records
             )
+            data["total_consumption_mt"] = total_consumption_mt
+            data["total_production_mt"] = total_production_mt
 
             data["total_consumption_co2"] = sum(
                 apr.consumption_phased_out_co2 or 0 for apr in records
@@ -1458,9 +1460,16 @@ class APRSummaryTablesExportWriter:
                 apr.production_phased_out_co2 or 0 for apr in records
             )
 
-            total_odp = total_consumption_odp + total_production_odp
+            total_odp_mt = (
+                total_consumption_odp
+                + total_production_odp
+                + total_consumption_mt
+                + total_production_mt
+            )
             data["cost_effectiveness"] = (
-                data["total_approved_funding"] / (total_odp * 1000) if total_odp else 0
+                data["total_approved_funding"] / (total_odp_mt * 1000)
+                if total_odp_mt
+                else 0
             )
 
             if sheet_type == "ongoing_investment":
@@ -1469,15 +1478,31 @@ class APRSummaryTablesExportWriter:
                 # often not yet reported and would otherwise make the ratio artificially
                 # large. Completed projects (cumulative sheets) use actual phaseout
                 # above, since actuals are final once a project is complete.
-                total_phaseout_combined = sum(
-                    (apr.consumption_phased_out_odp_proposal_denorm or 0)
-                    + (apr.production_phased_out_odp_proposal_denorm or 0)
+                total_consumption_odp_proposal = sum(
+                    apr.consumption_phased_out_odp_proposal_denorm or 0
                     for apr in records
                 )
-                data["total_phaseout_combined_kg"] = total_phaseout_combined * 1000
+                total_production_odp_proposal = sum(
+                    apr.production_phased_out_odp_proposal_denorm or 0
+                    for apr in records
+                )
+                total_consumption_mt_proposal = sum(
+                    apr.consumption_phased_out_mt_proposal_denorm or 0
+                    for apr in records
+                )
+                total_production_mt_proposal = sum(
+                    apr.production_phased_out_mt_proposal_denorm or 0 for apr in records
+                )
+                total_odp_mt_proposal = (
+                    total_consumption_odp_proposal
+                    + total_production_odp_proposal
+                    + total_consumption_mt_proposal
+                    + total_production_mt_proposal
+                )
+                data["total_phaseout_combined_kg"] = total_odp_mt_proposal * 1000
                 data["cost_effectiveness"] = (
-                    data["total_approved_funding"] / data["total_phaseout_combined_kg"]
-                    if data["total_phaseout_combined_kg"]
+                    data["total_approved_funding"] / (total_odp_mt_proposal * 1000)
+                    if total_odp_mt_proposal
                     else 0
                 )
 
