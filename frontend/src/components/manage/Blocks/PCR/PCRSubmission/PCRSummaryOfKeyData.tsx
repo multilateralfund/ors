@@ -63,7 +63,6 @@ import { FiEdit } from 'react-icons/fi'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -616,15 +615,15 @@ const PCRSummaryOfKeyData = () => {
         >
           <DialogTitle
             id="pcr-summary-edit-dialog-title"
-            className="p-6 pt-5 text-white"
+            className="px-6 py-5 text-white"
           >
-            <div className="flex items-center justify-between gap-4 text-3xl">
+            <div className="flex items-center justify-between gap-4 text-2xl">
               {editingProject.code}
               <Link
                 className="flex h-6 w-6 cursor-pointer justify-center"
                 href={null}
               >
-                <TfiClose size={24} color="white" onClick={closeDialog} />
+                <TfiClose size={18} color="white" onClick={closeDialog} />
               </Link>
             </div>
             <ProjectSummary project={editingProject} />

@@ -36,6 +36,13 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   IconButton,
   Tabs,
   Tab,
@@ -159,15 +166,15 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
         >
           <DialogTitle
             id="pcr-summary-view-dialog-title"
-            className="p-6 pt-5 text-white"
+            className="px-6 py-5 text-white"
           >
-            <div className="flex items-center justify-between gap-4 text-3xl">
+            <div className="flex items-center justify-between gap-4 text-2xl">
               {crtProject.code}
               <Link
                 className="flex h-6 w-6 cursor-pointer justify-center"
                 href={null}
               >
-                <TfiClose size={24} color="white" onClick={closeDialog} />
+                <TfiClose size={18} color="white" onClick={closeDialog} />
               </Link>
             </div>
             <ProjectSummary project={crtProject} />
@@ -301,27 +308,39 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
               {currentTab === 2 && (
                 <FieldGroup title="Enterprises">
                   {summaryData.enterprises.length > 0 ? (
-                    <div className="flex flex-col gap-y-4">
-                      <div className="grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]">
-                        <div>
-                          <Label>Name of enterprise</Label>
-                        </div>
-                        <div>
-                          <Label>Address of enterprise</Label>
-                        </div>
-                      </div>
-                      {summaryData.enterprises.map((entry, index) => (
-                        <div
-                          key={index}
-                          className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
-                        >
-                          {detailItem('', entry.name)}
-                          {detailItem('', entry.address, {
-                            labelClassname: 'self-start whitespace-nowrap',
-                          })}
-                        </div>
-                      ))}
-                    </div>
+                    <TableContainer
+                      component={Paper}
+                      className="PcrEnterprisesTableContainer"
+                    >
+                      <Table stickyHeader className="PcrEnterprisesTable">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell className="IdColumn">#</TableCell>
+                            <TableCell className="NameColumn">
+                              NAME OF ENTERPRISE
+                            </TableCell>
+                            <TableCell>ADDRESS OF ENTERPRISE</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {summaryData.enterprises.map((row, index) => (
+                            <TableRow>
+                              <TableCell className="IdColumn">
+                                {index + 1}
+                              </TableCell>
+
+                              <TableCell className="NameColumn">
+                                {row.name || '-'}
+                              </TableCell>
+
+                              <TableCell className="AddressColumn">
+                                {row.address || '-'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
                   ) : (
                     '-'
                   )}
