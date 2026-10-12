@@ -2103,7 +2103,6 @@ class TestFundPlaceholders(BaseTest):
         assert metric["value"]["series"][6]["name"] == "Halons"
         assert metric["value"]["series"][6]["data"][0] == 100.0
 
-
     def test_asking_serves_all_three_families(self, user, brazil):
         assert self.fund(user)["baseline_phased_out_by_substance"]["value"][
             "categories"
