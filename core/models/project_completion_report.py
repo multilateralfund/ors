@@ -88,7 +88,9 @@ class PCR(models.Model):
         LOCAL_EXECUTING_AGENCY = "Local executing agency", "Local executing agency"
         OTHER = "Other", "Other"
 
-    meta_project = models.ForeignKey("MetaProject", on_delete=models.PROTECT)
+    meta_project = models.ForeignKey(
+        "MetaProject", on_delete=models.PROTECT, related_name="pcrs"
+    )
     version_created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

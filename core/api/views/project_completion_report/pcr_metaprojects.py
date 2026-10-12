@@ -1,4 +1,4 @@
-from django.db.models import Prefetch, Q
+from django.db.models import Count, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, filters
@@ -24,7 +24,11 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         filters.SearchFilter,
     ]
     serializer_class = PCRMetaProjectSerializer
-    search_fields = ["title"]
+    search_fields = [
+        "title",
+        "meta_project__pcrs__project_components__delay_causes__delay__name",
+        "meta_project__pcrs__project_components__learned_lessons__lesson__name",
+    ]
 
     def filter_project_permissions_queryset(self, queryset):
         """
@@ -85,8 +89,16 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         queryset = (
-            MetaProject.objects.filter(
-                is_draft=False, projects__in=filtered_projects_qs
+            MetaProject.objects.annotate(
+                pcr_waived_count=Count(
+                    "projects",
+                    filter=Q(projects__pcr_waived=True),
+                )
+            )
+            .filter(
+                is_draft=False,
+                projects__in=filtered_projects_qs,
+                pcr_waived_count__lt=1,
             )
             .distinct()
             .select_related("lead_agency")
