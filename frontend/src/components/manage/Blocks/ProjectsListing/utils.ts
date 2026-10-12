@@ -1065,11 +1065,7 @@ export const getMenus = (
       title: 'Reporting',
       menuItems: [
         { title: 'Annual Progress Reports', url: '/apr' },
-        {
-          title: 'Project Completion Reports',
-          url: '/projects-listing/pcr-listing',
-        },
-        { title: 'PCR view', url: '/pcr' },
+        { title: 'Project Completion Reports', url: '/pcr' },
       ],
     },
   ]
@@ -1476,7 +1472,8 @@ export const formatMetaprojectData = (
     const fdValue = fdEntry.value
     const computedValue = cfd[key]
     const skipComputedValue = skipComputed?.includes(key) ?? false
-    const finalValue = fdValue == null && !skipComputedValue ? computedValue : fdValue
+    const finalValue =
+      fdValue == null && !skipComputedValue ? computedValue : fdValue
 
     result[key] =
       fdEntry.type === 'DecimalField'
