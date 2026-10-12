@@ -236,7 +236,17 @@ class ProjectFilter(filters.FilterSet):
         return queryset.filter(query_filters)
 
     def filter_pcr_due(self, queryset, name, value):
-        # TODO: Implement the logic for filtering based on PCR due status
+        if not value:
+            return queryset
+        for option in value:
+            if option == "Yes":
+                return queryset.pcr_required_or_ad_hoc()
+            if option in ["No", "N/A"]:
+                return queryset.exclude(
+                    id__in=queryset.pcr_required_or_ad_hoc().values_list(
+                        "id", flat=True
+                    )
+                )
         return queryset
 
     def filter_ad_hoc_pcr(self, queryset, name, value):
