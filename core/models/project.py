@@ -358,6 +358,17 @@ class ProjectQuerySet(models.QuerySet["Project"]):
     def pcr_required(self):
         return self.exclude(ProjectPCRRequiredExclusionRule.objects.active_project_q())
 
+    def pcr_required_or_ad_hoc(self):
+        result = self.exclude(
+            models.Q(ProjectPCRRequiredExclusionRule.objects.active_project_q())
+            | models.Q(ad_hoc_pcr=True)
+        )
+        result = self.exclude(
+            models.Q(ProjectPCRRequiredExclusionRule.objects.active_project_q())
+            & models.Q(ad_hoc_pcr=False)
+        )
+        return result
+
     def with_effective_date(self):
         """
         Annotates each project version with its "effective date" — the date that
