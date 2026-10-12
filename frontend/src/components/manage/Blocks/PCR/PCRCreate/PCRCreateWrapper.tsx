@@ -5,6 +5,7 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
+import { projectPhaseOptions } from '../constants'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
 import { map, uniq } from 'lodash'
@@ -33,11 +34,23 @@ const PCRCreateWrapper = () => {
   )
   const initialGenderMainstreamingData = useMemo(
     () =>
-      map(agencyIds, (agency_id) => ({ agency_id, gender_mainstreamings: [] })),
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        gender_mainstreamings: map(projectPhaseOptions, (phase) => ({
+          project_preparation: phase.id,
+          prefilled: '',
+          qualitative_description: '',
+        })),
+      })),
     [agencyIds],
   )
   const initialSdgsData = useMemo(
-    () => map(agencyIds, (agency_id) => ({ agency_id, goals: [] })),
+    () =>
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        sdg_not_applying: false,
+        goals: [],
+      })),
     [agencyIds],
   )
   const initialSupportingEvidencesData = useMemo(

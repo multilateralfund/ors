@@ -210,11 +210,9 @@ const PCRForm = () => {
         let updatedErrors = { ...existingErrors }
 
         const activitiesField = [
+          'planned_output',
           'actual_activity_output',
           'additional_remarks',
-          'planned_output',
-          'type_of_activity',
-          'type_of_sector',
         ]
 
         activitiesField.forEach((field) => {
@@ -288,17 +286,10 @@ const PCRForm = () => {
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
       [ppField]: map(ppData, (pp, index) => {
-        const ppIdField = 'project_preparation'
         const ppTextField = 'qualitative_description'
 
         const existingErrors = prev[ppField]?.[index] ?? {}
         let updatedErrors = { ...existingErrors }
-
-        if (!pp[ppIdField]) {
-          updatedErrors[ppIdField] = [requiredMessage]
-        } else if (updatedErrors[ppIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [ppIdField])
-        }
 
         updatedErrors = validateWordCount(
           updatedErrors,
@@ -314,7 +305,10 @@ const PCRForm = () => {
   const sdgContributionData = PCRData.sdgs_contribution || []
 
   useEffect(() => {
-    const sdgData = filter(sdgContributionData, (sdg) => sdg.goals.length > 0)
+    const sdgData = filter(
+      sdgContributionData,
+      (sdg) => sdg.goals.length > 0 || sdg.sdg_not_applying,
+    )
 
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,

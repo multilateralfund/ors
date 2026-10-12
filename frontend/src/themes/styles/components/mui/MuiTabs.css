@@ -88,3 +88,17 @@
 .sectionsTabs.pcrTabs .MuiButtonBase-root {
   max-width: 420px;
 }
+
+.sectionsTabs.summaryOfKeyDataTabs {
+  .MuiTab-root {
+    @apply mr-1 bg-[#ffffff12] text-[#ffffffb8];
+  }
+
+  .MuiTab-root:hover {
+    @apply bg-[#ffffff24];
+  }
+
+  .MuiTab-root.Mui-selected {
+    @apply bg-white text-primary;
+  }
+}

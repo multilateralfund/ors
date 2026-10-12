@@ -7,13 +7,13 @@ import {
   SectionTitle,
   SubSectionTitle,
   detailItem,
-  booleanDetailItem,
 } from './ViewHelperComponents'
 import {
   pcrFieldsMapping,
+  projectPhaseOptions,
   pcTitleClassname,
-  borderedValueClassname,
   pcTextareaClassname,
+  borderedValueContainerClassname,
 } from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
@@ -32,10 +32,24 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
     (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
   )
 
-  const ppData = filter(
+  const initialPpData = filter(
     pcr.gender_mainstreamings,
     ({ agency_id }) => agency_id === Number(crtAgencyId),
   )
+  const ppData = map(projectPhaseOptions, (phase) => {
+    const initialPpEntry = {
+      project_preparation: phase.id,
+      prefilled: '',
+      qualitative_description: '',
+    }
+
+    const phaseData = find(
+      initialPpData,
+      (entry) => entry.project_preparation === phase.name,
+    )
+
+    return phaseData ?? initialPpEntry
+  })
 
   return (
     <>
@@ -73,10 +87,10 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
                   )}
                 </div>
                 <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                  {booleanDetailItem(
+                  {detailItem(
                     pcrFieldsMapping.prefilled,
                     pp.prefilled,
-                    borderedValueClassname,
+                    borderedValueContainerClassname,
                   )}
                   <Divider className="my-4" />
                   {detailItem(

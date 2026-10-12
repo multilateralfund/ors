@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
 import { getFormattedNumericValue } from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import { borderedValueClassname } from '../../constants'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Divider } from '@mui/material'
@@ -66,12 +67,16 @@ export const numberDetailItem = (
 export const booleanDetailItem = (
   fieldName: string,
   fieldValue: boolean | null | undefined,
-  className?: string,
 ) => (
-  <span className="flex flex-col gap-1">
+  <span className="flex flex-row items-center gap-4">
     <span className="text-[#4D4D4D]">{fieldName}</span>
-    <h4 className={cx('m-0 text-xl font-semibold text-primary', className)}>
-      {fieldValue == null ? '-' : fieldValue ? 'Yes' : 'No'}
+    <h4
+      className={cx(
+        'm-0 text-xl font-semibold text-primary',
+        borderedValueClassname,
+      )}
+    >
+      {fieldValue ? 'Yes' : 'No'}
     </h4>
   </span>
 )
