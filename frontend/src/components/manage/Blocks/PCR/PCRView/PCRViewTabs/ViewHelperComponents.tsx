@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 
 import { getFormattedNumericValue } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { borderedValueClassname } from '../../constants'
+import { ProjectType } from '@ors/types/api_projects'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Divider } from '@mui/material'
@@ -109,3 +110,25 @@ export const getCollapseIcon = (
       onClick={collapseSection}
     />
   )
+
+export const ProjectSummary = ({ project }: { project: ProjectType }) => {
+  const projectDataMapping = [
+    { label: 'Type', value: project.project_type },
+    { label: 'Sector', value: project.sector },
+    { label: 'Agency', value: project.agency },
+    { label: 'Tranche(s)', value: project.tranche },
+  ]
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-3">
+      {projectDataMapping.map((entry) => (
+        <div className="flex items-center gap-1.5 text-base">
+          <span className="font-normal text-[#fffc]">{entry.label}:</span>
+          <span className="rounded border border-solid px-1 py-0.5 font-medium leading-tight">
+            {entry.value ?? '-'}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
