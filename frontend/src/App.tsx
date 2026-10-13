@@ -95,6 +95,7 @@ import PCRListingPage from '@ors/app/pcr/page'
 import PCRCreatePage from '@ors/app/pcr/create/page'
 import PCRViewPage from '@ors/app/pcr/view/page'
 import PCREditPage from '@ors/app/pcr/edit/page'
+import ManagePCRsPage from '@ors/app/pcr/manage/page'
 
 function RedirectToSection() {
   const permissions = useContext(PermissionsContext)
@@ -489,6 +490,11 @@ export default function App() {
             <PCRDataProvider>
               <PCREditPage />
             </PCRDataProvider>
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/manage-pcrs">
+          <ProjectsDataProvider>
+            <ManagePCRsPage />
           </ProjectsDataProvider>
         </Route>
         <Route>
