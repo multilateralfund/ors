@@ -1,6 +1,7 @@
 import DateRangePicker from '@ors/components/ui/DateRangePicker/DateRangePicker'
 import Field from '@ors/components/manage/Form/Field'
 import { SearchFilter } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { pcrFieldsMapping } from '../constants'
 import { PCRFiltersProps } from '../interfaces'
@@ -11,10 +12,13 @@ import { union } from 'lodash'
 const PCRFilters = ({
   form,
   filters,
+  view,
   fieldToOptionsMapping,
   handleFilterChange,
   handleParamsChange,
-}: PCRFiltersProps) => {
+}: PCRFiltersProps & {
+  view: ViewSelectorValuesType | null
+}) => {
   const defaultProps = {
     multiple: true,
     value: [],
@@ -84,12 +88,14 @@ const PCRFilters = ({
       <FieldFilter field="status" />
       <FieldFilter field="pcr_due" />
       <FieldFilter field="ad_hoc_pcr" />
-      <DateRangePicker
-        label="PCR submission date"
-        start={filters.pcr_submission_date_after || ''}
-        end={filters.pcr_submission_date_before || ''}
-        onChange={handleDateRangeChange}
-      />
+      {view === 'table' && (
+        <DateRangePicker
+          label="PCR submission date"
+          start={filters.pcr_submission_date_after || ''}
+          end={filters.pcr_submission_date_before || ''}
+          onChange={handleDateRangeChange}
+        />
+      )}
     </div>
   )
 }

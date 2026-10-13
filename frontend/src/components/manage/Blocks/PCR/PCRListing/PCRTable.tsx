@@ -14,6 +14,7 @@ const PCRTable = ({
   setProjectId,
   setPcrId,
   filters,
+  view,
 }: PCRTableProps) => {
   const gridRef = useRef(null)
 
@@ -46,6 +47,7 @@ const PCRTable = ({
     projectId,
     setProjectId,
     setPcrId,
+    view,
   )
 
   return (
