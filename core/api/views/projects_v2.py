@@ -736,32 +736,32 @@ class ProjectV2ViewSet(
             report__progress_report__year=latest_apr_year, project__in=projects_approved
         )
         funds_approved = sum(
-            [sum([p.total_fund, p.support_cost_psc]) for p in projects_approved]
+            (sum((p.total_fund, p.support_cost_psc)) for p in projects_approved)
         )
-        funds_disbursed = sum([apr.funds_disbursed or 0.0 for apr in aprs])
+        funds_disbursed = sum((apr.funds_disbursed or 0.0 for apr in aprs))
         count_projects_approved = projects_approved.count()
         count_projects_completed = projects_completed.count()
         total_ods_phase_out = sum(
-            [
+            (
                 sum(
-                    [
+                    (
                         apr.consumption_phased_out_odp or 0.0,
                         apr.production_phased_out_odp or 0.0,
-                    ]
+                    )
                 )
                 for apr in aprs
-            ]
+            )
         )
         total_co2_phase_out = sum(
-            [
+            (
                 sum(
-                    [
+                    (
                         apr.consumption_phased_out_co2 or 0.0,
                         apr.production_phased_out_co2 or 0.0,
-                    ]
+                    )
                 )
                 for apr in aprs
-            ]
+            )
         )
         return Response(
             {
