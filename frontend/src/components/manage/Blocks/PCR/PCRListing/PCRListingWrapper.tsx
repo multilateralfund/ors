@@ -75,6 +75,19 @@ const PCRListingWrapper = () => {
   const handleChangeViewSelector = (value: ViewSelectorValuesType) => {
     setView(value)
 
+    if (value === 'list') {
+      handleFilterChange({
+        pcr_submission_date_after: '',
+        pcr_submission_date_before: '',
+      })
+
+      handleParamsChange({
+        pcr_submission_date_after: '',
+        pcr_submission_date_before: '',
+        offset: 0,
+      })
+    }
+
     const pcrSubmitted =
       value === 'table' ? booleanFieldsOpts[0] : booleanFieldsOpts[1]
 
@@ -113,7 +126,7 @@ const PCRListingWrapper = () => {
       <div className="flex flex-col gap-6" key={key}>
         <div className="flex flex-col gap-2.5">
           <div className="flex flex-col gap-4 md:flex-row">
-            <PCRFilters {...filtersProps} />
+            <PCRFilters {...filtersProps} view={view} />
             <TableViewSelector
               value={view as ViewSelectorValuesType}
               reverseViewOrder={true}
@@ -128,7 +141,7 @@ const PCRListingWrapper = () => {
           <PCRFiltersSelectedOpts {...filtersProps} />
         </div>
         <PCRTable
-          {...{ pcrProjects, projectId, setProjectId, setPcrId, filters }}
+          {...{ pcrProjects, projectId, setProjectId, setPcrId, filters, view }}
         />
       </div>
     </>
