@@ -1066,6 +1066,7 @@ export const getMenus = (
       menuItems: [
         { title: 'Annual Progress Reports', url: '/apr' },
         { title: 'Project Completion Reports', url: '/pcr' },
+        { title: 'Manage Project Completion Reports', url: '/manage-pcrs' },
       ],
     },
   ]
