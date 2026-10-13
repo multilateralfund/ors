@@ -1,4 +1,6 @@
-.SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root .MuiTableSortLabel-icon {
+.SimpleTable
+  .MuiButtonBase-root.MuiTableSortLabel-root
+  .MuiTableSortLabel-icon {
   @apply text-black;
 }
 
@@ -6,12 +8,16 @@
   @apply hover:text-secondary;
 }
 
-.SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root:hover .MuiTableSortLabel-icon {
+.SimpleTable
+  .MuiButtonBase-root.MuiTableSortLabel-root:hover
+  .MuiTableSortLabel-icon {
   @apply text-secondary;
 }
 
 .SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root.Mui-active,
-.SimpleTable .MuiButtonBase-root.MuiTableSortLabel-root.Mui-active .MuiTableSortLabel-icon {
+.SimpleTable
+  .MuiButtonBase-root.MuiTableSortLabel-root.Mui-active
+  .MuiTableSortLabel-icon {
   @apply text-secondary;
 }
 
@@ -24,7 +30,7 @@
 }
 
 .SimpleTable .MuiTableCell-root.MuiTableCell-head {
-  @apply text-base border-collapse;
+  @apply border-collapse text-base;
 }
 
 .SimpleTable .MuiTableCell-root.MuiTableCell-head:first-child {
@@ -36,9 +42,41 @@
 }
 
 .SimpleTable .MuiTableRow-root td {
-  @apply border-solid border-0 border-b border-mui-default-border;
+  @apply border-0 border-b border-solid border-mui-default-border;
 }
 
 .SimpleTable .MuiTableRow-root:last-child td {
   @apply border-0;
+}
+
+.PcrEnterprisesTableContainer {
+  @apply max-h-[400px] overflow-auto !rounded-lg border border-solid border-[#d5dce1] shadow-none;
+}
+
+.PcrEnterprisesTable {
+  @apply min-w-full;
+}
+
+.PcrEnterprisesTable .MuiTableCell-root {
+  @apply border-b border-[#d5dce1] px-4 py-2;
+}
+
+.PcrEnterprisesTable .MuiTableHead-root .MuiTableCell-root {
+  @apply bg-primary text-[13px] font-bold text-mlfs-hlerYellowTint;
+}
+
+.PcrEnterprisesTable .IdColumn {
+  @apply w-12;
+}
+
+.PcrEnterprisesTable .MuiTableBody-root .IdColumn {
+  @apply text-lg text-[#9ca3af];
+}
+
+.PcrEnterprisesTable .NameColumn {
+  @apply w-[42%] text-lg font-semibold text-primary;
+}
+
+.PcrEnterprisesTable .AddressColumn {
+  @apply whitespace-normal text-lg leading-[1.6] text-[#333];
 }
