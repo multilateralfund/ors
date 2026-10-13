@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, RefObject } from 'react'
 
+import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import { useGetPCRProjects } from './hooks/useGetPCRProjects'
 import { PCRMetaProjectType } from '@ors/types/api_projects'
 
@@ -15,6 +16,7 @@ export type PCRTableProps = {
   setProjectId: (id: number | null) => void
   setPcrId: (id: number | null) => void
   filters: Record<string, any>
+  view: ViewSelectorValuesType | null
 }
 
 export type PCRFiltersProps = {
