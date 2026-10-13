@@ -14,7 +14,7 @@ import {
   ITooltipParams,
 } from 'ag-grid-community'
 
-const expandMetaproject = (
+export const expandMetaproject = (
   params: ICellRendererParams,
   pcrProjectsData: PCRUpdatedMetaproject[],
 ) => {
@@ -58,7 +58,130 @@ const expandMetaproject = (
   }
 }
 
-const getNumberColsValue = (
+export const commonTableColumns = [
+  {
+    headerName: pcrFieldsMapping.status,
+    field: 'status',
+    tooltipField: 'status',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+    minWidth: 80,
+  },
+  {
+    headerName: pcrFieldsMapping.country,
+    field: 'country',
+    tooltipField: 'country',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+    minWidth: 150,
+  },
+  {
+    headerName: pcrFieldsMapping.metacode,
+    field: 'metacode',
+    tooltipField: 'metacode',
+  },
+  {
+    headerName: pcrFieldsMapping.code,
+    field: 'code',
+    tooltipField: 'code',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+    minWidth: 180,
+  },
+  {
+    headerName: pcrFieldsMapping.cluster,
+    field: 'cluster',
+    tooltipField: 'cluster',
+    minWidth: 150,
+  },
+  {
+    headerName: pcrFieldsMapping.tranche,
+    field: 'tranche',
+    tooltipField: 'tranche',
+    minWidth: 60,
+  },
+  {
+    headerName: pcrFieldsMapping.agency,
+    field: 'agency',
+    tooltipField: 'agency',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+  },
+  {
+    headerName: pcrFieldsMapping.project_type,
+    field: 'project_type',
+    tooltipField: 'project_type',
+  },
+  {
+    headerName: pcrFieldsMapping.sector,
+    field: 'sector',
+    tooltipField: 'sector',
+  },
+  {
+    headerName: pcrFieldsMapping.subsectors,
+    field: 'subsectors',
+    tooltipField: 'subsectors',
+    minWidth: 200,
+  },
+  {
+    headerName: pcrFieldsMapping.total_fund,
+    valueGetter: (params: ValueGetterParams) => {
+      const totalFund = getNumberColsValue(params, 'total_fund')
+      const updatedParams = {
+        ...params,
+        data: { ...params.data, total_fund: totalFund },
+      }
+
+      return !isNil(totalFund)
+        ? '$' + formatNumberColumns(updatedParams, 'total_fund')
+        : ''
+    },
+    tooltipValueGetter: (params: ITooltipParams) => {
+      const totalFund = getNumberColsValue(params, 'total_fund')
+      const updatedParams = {
+        ...params,
+        data: { ...params.data, total_fund: totalFund },
+      }
+
+      return formatNumberColumns(updatedParams, 'total_fund', {
+        maximumFractionDigits: 10,
+        minimumFractionDigits: 2,
+      })
+    },
+  },
+  {
+    headerName: pcrFieldsMapping.support_cost_psc,
+    valueGetter: (params: ValueGetterParams) => {
+      const supportCost = getNumberColsValue(params, 'support_cost_psc')
+      const updatedParams = {
+        ...params,
+        data: { ...params.data, support_cost_psc: supportCost },
+      }
+
+      return !isNil(supportCost)
+        ? '$' + formatNumberColumns(updatedParams, 'support_cost_psc')
+        : ''
+    },
+    tooltipValueGetter: (params: ITooltipParams) => {
+      const supportCost = getNumberColsValue(params, 'support_cost_psc')
+      const updatedParams = {
+        ...params,
+        data: { ...params.data, support_cost_psc: supportCost },
+      }
+
+      return formatNumberColumns(updatedParams, 'support_cost_psc', {
+        maximumFractionDigits: 10,
+        minimumFractionDigits: 2,
+      })
+    },
+  },
+]
+
+export const defaultColDef = {
+  headerClass: 'ag-text-center',
+  cellClass: 'ag-text-center ag-cell-ellipsed',
+  minWidth: 120,
+  resizable: true,
+  sortable: false,
+}
+
+export const getNumberColsValue = (
   params: ValueGetterParams | ITooltipParams,
   field: string,
 ) =>
@@ -165,118 +288,7 @@ const getColumnDefs = (
         )
       },
     },
-    {
-      headerName: pcrFieldsMapping.status,
-      field: 'status',
-      tooltipField: 'status',
-      cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 80,
-    },
-    {
-      headerName: pcrFieldsMapping.country,
-      field: 'country',
-      tooltipField: 'country',
-      cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 170,
-    },
-    {
-      headerName: pcrFieldsMapping.metacode,
-      field: 'metacode',
-      tooltipField: 'metacode',
-    },
-    {
-      headerName: pcrFieldsMapping.code,
-      field: 'code',
-      tooltipField: 'code',
-      cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 180,
-    },
-    {
-      headerName: pcrFieldsMapping.cluster,
-      field: 'cluster',
-      tooltipField: 'cluster',
-      minWidth: 150,
-    },
-    {
-      headerName: pcrFieldsMapping.tranche,
-      field: 'tranche',
-      tooltipField: 'tranche',
-      minWidth: 60,
-    },
-    {
-      headerName: pcrFieldsMapping.agency,
-      field: 'agency',
-      tooltipField: 'agency',
-      cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-    },
-    {
-      headerName: pcrFieldsMapping.project_type,
-      field: 'project_type',
-      tooltipField: 'project_type',
-    },
-    {
-      headerName: pcrFieldsMapping.sector,
-      field: 'sector',
-      tooltipField: 'sector',
-    },
-    {
-      headerName: pcrFieldsMapping.subsectors,
-      field: 'subsectors',
-      tooltipField: 'subsectors',
-      minWidth: 200,
-    },
-    {
-      headerName: pcrFieldsMapping.total_fund,
-      valueGetter: (params: ValueGetterParams) => {
-        const totalFund = getNumberColsValue(params, 'total_fund')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, total_fund: totalFund },
-        }
-
-        return !isNil(totalFund)
-          ? '$' + formatNumberColumns(updatedParams, 'total_fund')
-          : ''
-      },
-      tooltipValueGetter: (params: ITooltipParams) => {
-        const totalFund = getNumberColsValue(params, 'total_fund')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, total_fund: totalFund },
-        }
-
-        return formatNumberColumns(updatedParams, 'total_fund', {
-          maximumFractionDigits: 10,
-          minimumFractionDigits: 2,
-        })
-      },
-    },
-    {
-      headerName: pcrFieldsMapping.support_cost_psc,
-      valueGetter: (params: ValueGetterParams) => {
-        const supportCost = getNumberColsValue(params, 'support_cost_psc')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, support_cost_psc: supportCost },
-        }
-
-        return !isNil(supportCost)
-          ? '$' + formatNumberColumns(updatedParams, 'support_cost_psc')
-          : ''
-      },
-      tooltipValueGetter: (params: ITooltipParams) => {
-        const supportCost = getNumberColsValue(params, 'support_cost_psc')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, support_cost_psc: supportCost },
-        }
-
-        return formatNumberColumns(updatedParams, 'support_cost_psc', {
-          maximumFractionDigits: 10,
-          minimumFractionDigits: 2,
-        })
-      },
-    },
+    ...commonTableColumns,
     ...(view === 'table'
       ? [
           {
@@ -289,13 +301,7 @@ const getColumnDefs = (
         ]
       : []),
   ],
-  defaultColDef: {
-    headerClass: 'ag-text-center',
-    cellClass: 'ag-text-center ag-cell-ellipsed',
-    minWidth: 120,
-    resizable: true,
-    sortable: false,
-  },
+  defaultColDef,
 })
 
 export default getColumnDefs
