@@ -213,6 +213,7 @@ router.register(
     basename="compare-versions",
 )
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
+
 router.register(
     "project-completion-reports",
     PCRProjectViewSet,
