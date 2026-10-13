@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.api.dashboard_metrics.primitives import format_number
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
     DenyAll,
@@ -34,7 +35,7 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
 )
 from core.api.serializers.annual_project_report import ProjectAPRHistorySerializer
-from core.models.annual_project_report import AnnualProjectReport
+from core.models.annual_project_report import AnnualProgressReport, AnnualProjectReport
 from core.models.project import (
     Project,
     ProjectOdsOdp,
@@ -215,6 +216,7 @@ class ProjectV2ViewSet(
             "list_previous_tranches",
             "list_associated_projects",
             "field_history",
+            "portofolio_metrics",
             "apr_history",
             "list_filters",
             "compare_versions",
@@ -703,5 +705,72 @@ class ProjectV2ViewSet(
         project.refresh_from_db()
         return Response(
             ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        description="""
+        Returns a few statistics about the projects required by the portofolio listing page.""",
+        request=None,
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    @action(methods=["GET"], detail=False)
+    def portofolio_metrics(self, request, *args, **kwargs):
+        projects_completed = Project.objects.filter(
+            status__name__in=[
+                "Financially completed",
+                "Completed",
+                "Closed",
+            ]
+        )
+        latest_apr_year = list(
+            AnnualProgressReport.objects.order_by("year")
+            .values_list("year", flat=True)
+            .distinct()
+        )[-1]
+        projects_approved = Project.objects.filter(submission_status__name="Approved")
+        aprs = AnnualProjectReport.objects.filter(
+            report__progress_report__year=latest_apr_year, project__in=projects_approved
+        )
+        funds_approved = sum(
+            [sum([p.total_fund, p.support_cost_psc]) for p in projects_approved]
+        )
+        funds_disbursed = sum([apr.funds_disbursed or 0.0 for apr in aprs])
+        count_projects_approved = projects_approved.count()
+        count_projects_completed = projects_completed.count()
+        total_ods_phase_out = sum(
+            [
+                sum(
+                    [
+                        apr.consumption_phased_out_odp or 0.0,
+                        apr.production_phased_out_odp or 0.0,
+                    ]
+                )
+                for apr in aprs
+            ]
+        )
+        total_co2_phase_out = sum(
+            [
+                sum(
+                    [
+                        apr.consumption_phased_out_co2 or 0.0,
+                        apr.production_phased_out_co2 or 0.0,
+                    ]
+                )
+                for apr in aprs
+            ]
+        )
+        return Response(
+            {
+                "funds_approved": format_number(funds_approved, 0, "$"),
+                "funds_disbursed": format_number(funds_disbursed, 0, "$"),
+                "total_ods_phase_out": format_number(total_ods_phase_out),
+                "total_co2_phase_out": format_number(total_co2_phase_out),
+                "count_projects_approved": format_number(count_projects_approved),
+                "count_projects_completed": format_number(count_projects_completed),
+            },
             status=status.HTTP_200_OK,
         )
