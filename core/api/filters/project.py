@@ -240,10 +240,10 @@ class ProjectFilter(filters.FilterSet):
             return queryset
         for option in value:
             if option == "Yes":
-                return queryset.pcr_required_or_ad_hoc()
+                return queryset.pcr_required_pcr_or_ad_hoc()
             if option in ["No", "N/A"]:
                 return queryset.exclude(
-                    id__in=queryset.pcr_required_or_ad_hoc().values_list(
+                    id__in=queryset.pcr_required_pcr_or_ad_hoc().values_list(
                         "id", flat=True
                     )
                 )

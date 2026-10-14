@@ -265,14 +265,6 @@ class AnnualProjectReport(models.Model):
     # or when the workspace is first accessed. They store snapshot values
     # that (hopefully) won't change since reporting is done for historical years.
 
-    # PCR due
-    pcr_due_denorm = models.BooleanField(
-        null=True,
-        blank=True,
-        verbose_name="PCR Due (denormalized)",
-        help_text="Whether PCR is due (ONG to COM/FIN transition)",
-    )
-
     # Project identification - derived from Project relationships
     meta_code_denorm = models.CharField(
         max_length=255,
@@ -588,36 +580,6 @@ class AnnualProjectReport(models.Model):
         )
 
     @property
-    def pcr_due(self):
-        """
-        Returns True if the project transitioned into completion (COM or FIN)
-        during self.report_year: the version in effect at the end of the year
-        is COM/FIN, while the version in effect at the end of the previous year
-        was not yet completed.
-
-        Version timing uses the effective_date fallback (post_excom_decision >
-        post_excom_meeting > transfer_* > date_approved). Both the cached
-        (sync/bulk) and the uncached (fallback) paths resolve the same versions,
-        so the denormalized pcr_due_denorm matches the live value.
-        """
-        completed_codes = ("COM", "FIN")
-
-        current = self.latest_project_version_for_year
-        if (
-            current is None
-            or current.status is None
-            or current.status.code not in completed_codes
-        ):
-            return False
-
-        previous = self.previous_project_version_for_year
-        return (
-            previous is not None
-            and previous.status is not None
-            and previous.status.code not in completed_codes
-        )
-
-    @property
     def date_approved(self):
         return self.project_version_3.date_approved if self.project_version_3 else None
 
@@ -835,7 +797,6 @@ class AnnualProjectReport(models.Model):
         "support_cost_adjustment_denorm",
         "support_cost_approved_plus_adjustment_denorm",
         "date_of_completion_per_agreement_or_decisions_denorm",
-        "pcr_due_denorm",
     ]
 
     # Abbreviations of non-canonical APR regions mapped to "canonical" ones.
@@ -966,4 +927,3 @@ class AnnualProjectReport(models.Model):
         self.date_of_completion_per_agreement_or_decisions_denorm = (
             self.date_of_completion_per_agreement_or_decisions
         )
-        self.pcr_due_denorm = self.pcr_due

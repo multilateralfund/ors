@@ -118,6 +118,8 @@ def _pcr_listing_data():
         cluster=cluster_a,
         project_type=type_a,
         sector=sector_a,
+        ad_hoc_pcr=False,
+        pcr_due=False,
     )
     project_a.subsectors.set([subsector_a])
 
@@ -125,6 +127,8 @@ def _pcr_listing_data():
         title="Unique Beta Completion Title",
         metacode="PCR-META-002",
         category=Project.Category.MYA,
+        ad_hoc_pcr=False,
+        pcr_due=False,
         country=country_b,
         agency=coop_agency_b,
         lead_agency=lead_agency_b,
