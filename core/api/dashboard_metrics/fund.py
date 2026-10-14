@@ -357,12 +357,14 @@ def baseline_rows(_context: MetricContext) -> list[dict[str, Any]]:
         {
             "group": HFC,
             "value": (
-                round(co2_tonnes_hfc / hfc_baseline, 2) if co2_tonnes_hfc else None
+                round((co2_tonnes_hfc / hfc_baseline) * 100, 2)
+                if co2_tonnes_hfc
+                else None
             ),
         },
         {
             "group": HCFC,
-            "value": round(ods_hcfc / hcfc_baseline, 2) if ods_hcfc else None,
+            "value": round((ods_hcfc / hcfc_baseline) * 100, 2) if ods_hcfc else None,
         },
     ]
 
