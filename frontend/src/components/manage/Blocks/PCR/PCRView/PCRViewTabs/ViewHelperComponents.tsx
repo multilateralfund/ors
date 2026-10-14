@@ -5,6 +5,7 @@ import { borderedValueClassname } from '../../constants'
 import { ProjectType } from '@ors/types/api_projects'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
+import { FiEdit3 } from 'react-icons/fi'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -91,24 +92,11 @@ export const dateDetailItem = (fieldName: string, fieldValue: string) => (
   </span>
 )
 
-export const getCollapseIcon = (
-  isSectionExpanded: boolean,
-  collapseSection: () => void,
-) =>
+export const getCollapseIcon = (isSectionExpanded: boolean) =>
   isSectionExpanded ? (
-    <IoChevronUp
-      className="cursor-pointer"
-      color="#002B3D"
-      size="36"
-      onClick={collapseSection}
-    />
+    <IoChevronUp className="cursor-pointer" color="#002B3D" size="24" />
   ) : (
-    <IoChevronDown
-      className="cursor-pointer"
-      color="#002B3D"
-      size="36"
-      onClick={collapseSection}
-    />
+    <IoChevronDown className="cursor-pointer" color="#002B3D" size="24" />
   )
 
 export const ProjectSummary = ({ project }: { project: ProjectType }) => {
@@ -132,3 +120,10 @@ export const ProjectSummary = ({ project }: { project: ProjectType }) => {
     </div>
   )
 }
+
+export const EditSectionIndicator = () => (
+  <div className="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-lg leading-none text-mlfs-hlYellow">
+    <FiEdit3 size={18} />
+    <span>Edit</span>
+  </div>
+)

@@ -249,8 +249,8 @@ export type WidgetPprops = {
   errors: ErrorType
   indexes?: number[]
   subFields?: string[]
-  rows?: number
   disabled?: boolean
+  className?: string
 }
 
 export type FieldType = 'drop_down' | 'text' | 'boolean'

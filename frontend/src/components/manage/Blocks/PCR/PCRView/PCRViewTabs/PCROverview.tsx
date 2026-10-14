@@ -3,7 +3,6 @@ import { useContext, useState } from 'react'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import {
-  SectionTitle,
   SubSectionTitle,
   getCollapseIcon,
   detailItem,
@@ -40,8 +39,6 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
   }
   return (
     <>
-      <SectionTitle>PCR Overview</SectionTitle>
-      <Divider className="mb-6 mt-4" />
       <PCROverviewPrefilledData {...{ pcr }} />
       <Divider className="my-6" />
       <SubSectionTitle>Indicators</SubSectionTitle>

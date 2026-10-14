@@ -51,7 +51,8 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   total_mlf_funding_disbursed: 'Total MLF funding disbursed',
   total_mlf_funding_returned: 'Total MLF funding returned',
   financial_figures_status: 'Financial figures status',
-  financial_figures_status_explanation: 'Explanations if needed',
+  financial_figures_status_explanation:
+    'Financial figures - explanations, if needed',
   addresses: 'Address(es) of enterprise(s) and project site(s), if applicable',
   project_goal_achieved: 'All project goals achieved',
   project_goal_achieved_explanation:
@@ -93,7 +94,7 @@ export const viewPcrFieldsMapping: { [key: string]: string } = {
 }
 
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
-  financial_figures_status_explanation: 'Financial figures status explanation',
+  financial_figures_status_explanation: 'Financial figures - explanations',
   addresses: 'Address(es) of enterprise(s) and project site(s)',
   project_goal_achieved_explanation: 'All project goals achieved explanation',
   rating_explanation: 'Rating explanation',
@@ -193,8 +194,8 @@ const commonClassnames = { labelClassname, valueClassname }
 
 export const overviewTextareaClassname = {
   containerClassname:
-    'bg-white !gap-2 lg:!gap-20 lg:!flex-row p-4 rounded-lg w-full lg:w-[65%]',
-  labelClassname: labelClassname + ' lg:w-36',
+    'bg-white !gap-2 lg:!gap-20 lg:!flex-row p-4 rounded-lg w-full lg:w-[85%]',
+  labelClassname: labelClassname + ' lg:w-[20%]',
   valueClassname: valueClassname,
 }
 

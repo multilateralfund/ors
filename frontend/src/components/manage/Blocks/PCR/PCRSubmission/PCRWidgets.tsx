@@ -33,7 +33,7 @@ import cx from 'classnames'
 const overviewFieldsClassName = formatClassName('min-w-56 md:min-w-72')
 
 const additionalProperties: Record<string, Record<string, unknown>> = {
-  financial_figures_status: overviewFieldsClassName,
+  financial_figures_status: formatClassName('!w-44 PCRInput'),
   project_goal_achieved: overviewFieldsClassName,
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
@@ -299,13 +299,14 @@ export const PCRSelectWidget = ({
   indexes,
   subFields,
   disabled,
+  className,
 }: WidgetPprops & { options: OptionsType[] }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedValue = find(options, { id: value }) || null
   const formattedErrors = formatErrors(errors, indexes)
 
   return (
-    <div>
+    <div className={className}>
       <Label>{pcrFieldsMapping[field]}</Label>
       <div className="flex items-center">
         <Field
@@ -386,16 +387,18 @@ export const PCRTextAreaWidget = ({
   indexes,
   subFields,
   rows,
-}: WidgetPprops) => {
+  placeholder,
+}: WidgetPprops & { rows?: number; placeholder?: string }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
 
   return (
     <div className="w-full md:w-auto">
-      <Label>{pcrFieldsMapping[field]} (150-250 words)</Label>
+      <Label>{pcrFieldsMapping[field]}</Label>
       <div className="flex items-center">
         <TextareaAutosize
           value={value as string}
+          placeholder={placeholder}
           onFocus={onTextareaFocus}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
             changeHandler['text'](
@@ -412,7 +415,7 @@ export const PCRTextAreaWidget = ({
             '!min-w-56 !pb-[8px] md:!min-w-[600px]',
           )}
           style={STYLE}
-          minRows={rows ?? 7}
+          minRows={rows ?? 5}
           {...(rows ? { maxRows: rows } : {})}
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />

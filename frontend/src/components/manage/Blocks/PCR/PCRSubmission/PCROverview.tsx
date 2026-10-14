@@ -80,7 +80,6 @@ const PCROverview = () => {
   return (
     <>
       <PCROverviewPrefilledData />
-      <Divider className="my-6" />
       <SubSectionTitle>Indicators</SubSectionTitle>
       <div className="flex flex-col gap-y-4">
         <div className="flex">

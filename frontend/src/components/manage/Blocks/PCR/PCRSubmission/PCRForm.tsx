@@ -31,7 +31,7 @@ import {
 } from '../constants'
 
 import { filter, flatMap, map, omit } from 'lodash'
-import { Tabs, Tab, Divider } from '@mui/material'
+import { Tabs, Tab } from '@mui/material'
 
 const PCRForm = () => {
   const [currentTab, setCurrentTab] = useState<number>(0)
@@ -80,7 +80,6 @@ const PCRForm = () => {
     {
       id: 'overview',
       label: <TabLabel field="overview" />,
-      title: 'PCR Overview',
       component: <PCROverview />,
       shouldDisplayErrors: true,
     },
@@ -295,11 +294,10 @@ const PCRForm = () => {
 
             return (
               <span key={id}>
-                <SectionTitle>{title}</SectionTitle>
-                {id === 'overview' ? (
-                  <Divider className="mb-6 mt-4" />
-                ) : (
-                  <div className="mb-6" />
+                {title && (
+                  <div className="mb-6">
+                    <SectionTitle>{title}</SectionTitle>
+                  </div>
                 )}
                 {shouldDisplayErrors && tabErrors && tabErrors.length > 0 && (
                   <ErrorsList errors={tabErrors} />
