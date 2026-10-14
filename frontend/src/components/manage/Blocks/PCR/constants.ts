@@ -70,8 +70,6 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   disposal_type: 'Disposal type',
   disposal_date: 'Date of disposal',
   activity_title: 'Activity component',
-  type_of_activity: 'Activity',
-  type_of_sector: 'Sector',
   planned_output: 'Planned output(s)',
   actual_activity_output: 'Actual activity output(s)',
   additional_remarks: 'Additional remarks, if applicable',
@@ -157,8 +155,6 @@ export const initialOverviewData = {
 
 export const initialActivitiesData = {
   activity_title: '',
-  type_of_activity: '',
-  type_of_sector: '',
   planned_output: '',
   actual_activity_output: '',
   additional_remarks: '',
@@ -171,15 +167,7 @@ export const defaultSummaryOfKeyDataErrors = {
   equipments: {},
 }
 
-export const overviewFieldsToValidate = [
-  'financial_figures_status_explanation',
-  'addresses',
-  'project_goal_achieved_explanation',
-  'rating_explanation',
-]
 export const requiredMessage = 'This field is required.'
-export const validWordCountMessage =
-  'This field must be between 150 and 250 words.'
 
 export const summaryOfKeyDataField = 'pcr_projects'
 export const pcField = 'project_components'

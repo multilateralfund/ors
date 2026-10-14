@@ -4,7 +4,6 @@ import {
   pcrFieldsMapping,
   pcrFieldsErrorsMapping,
   requiredMessage,
-  validWordCountMessage,
 } from './constants'
 import {
   PCRData,
@@ -280,26 +279,6 @@ export const getErrorIndex = (
   )
 }
 
-const hasValidWordCount = (text: string) => {
-  const wordCount = text.trim().split(/\s+/).filter(Boolean).length
-
-  return wordCount === 0 || (wordCount >= 150 && wordCount <= 250)
-}
-
-export const validateWordCount = (
-  errors: Record<string, any>,
-  field: string,
-  value: string,
-) => {
-  if (!hasValidWordCount(value)) {
-    return { ...errors, [field]: [validWordCountMessage] }
-  }
-
-  return errors[field]?.includes(validWordCountMessage)
-    ? omit(errors, [field])
-    : errors
-}
-
 export const formatNestedPcErrors = (
   pc: CauseOfDelayProjectComponent | LessonLearnedProjectComponent,
   updatedErrors: Record<string, any>,
@@ -321,18 +300,6 @@ export const formatNestedPcErrors = (
         entryErrors = omit(entryErrors, [idField])
       }
 
-      entryErrors = validateWordCount(
-        entryErrors,
-        'description',
-        entry.description,
-      )
-
-      entryErrors = validateWordCount(
-        entryErrors,
-        'action_taken',
-        entry.action_taken ?? '',
-      )
-
       return entryErrors
     })
   }
@@ -340,7 +307,7 @@ export const formatNestedPcErrors = (
 
 const hasErrorMessage = (errors: Record<string, any>): boolean => {
   if (typeof errors === 'string') {
-    return errors === requiredMessage || errors === validWordCountMessage
+    return errors === requiredMessage
   }
 
   if (Array.isArray(errors)) {
