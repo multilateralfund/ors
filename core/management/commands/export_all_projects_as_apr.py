@@ -32,9 +32,6 @@ from core.models import (
 )
 
 
-# Fields excluded from the export.
-EXCLUDE_FIELDS = {"pcr_due"}
-
 # Calculated fields - not stored as "denorm" fields, but computable after
 # populate_derived_fields() populates them
 COMPUTED_FIELDS = {
@@ -245,7 +242,7 @@ class Command(BaseCommand):
                 year=year,
                 agency_name=None,
                 project_reports_data=project_data,
-                exclude_fields=EXCLUDE_FIELDS,
+                exclude_fields={},
                 progress_callback=_write_progress,
             )
             writer.generate_to_file(output)

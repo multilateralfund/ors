@@ -127,7 +127,6 @@ class APRExportWriter:
     }
 
     BOOLEAN_FIELDS = {
-        "pcr_due",
         "gender_policy",
     }
 
@@ -893,7 +892,7 @@ class APRSummaryTablesExportWriter:
 
         # Filter and group by cluster in-memory, to avoid repeated DB hits.
         # Use the agency-reported date_actual_completion falling within the report
-        # year, rather than pcr_due_denorm: increase_version() never updates the
+        # year: increase_version() never updates the
         # effective-date fields (post_excom_decision/meeting/date_approved), so a
         # plain status-only transition to COM/FIN is invisible to that version-chain
         # comparison for every year, not just this one.
