@@ -358,14 +358,11 @@ class ProjectQuerySet(models.QuerySet["Project"]):
     def pcr_required(self):
         return self.exclude(ProjectPCRRequiredExclusionRule.objects.active_project_q())
 
-    def pcr_required_or_ad_hoc(self):
-        result = self.exclude(
-            models.Q(ProjectPCRRequiredExclusionRule.objects.active_project_q())
-            | models.Q(ad_hoc_pcr=True)
-        )
+    def pcr_required_pcr_or_ad_hoc(self):
         result = self.exclude(
             models.Q(ProjectPCRRequiredExclusionRule.objects.active_project_q())
             & models.Q(ad_hoc_pcr=False)
+            & models.Q(pcr_due=False)
         )
         return result
 
@@ -505,6 +502,10 @@ class Project(models.Model):
         null=True,
         blank=True,
         related_name="lead_projects",
+    )
+    pcr_due = models.BooleanField(
+        default=False,
+        help_text="Marked as True by PCR admin if the project is approved as pcr due",
     )
     metacode = models.CharField(
         max_length=255,

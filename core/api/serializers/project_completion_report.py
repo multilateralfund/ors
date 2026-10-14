@@ -838,6 +838,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
             "pcr_id",
             "project_type",
             "project_type_id",
+            "pcr_due",
             "pcr_submission_date",
             "sector",
             "sector_id",

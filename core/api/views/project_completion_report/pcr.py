@@ -173,7 +173,7 @@ class PCRProjectViewSet(
 
         pcr_required_project = Project.objects.filter(
             pk=OuterRef("project_id")
-        ).pcr_required()
+        ).pcr_required_pcr_or_ad_hoc()
         queryset = (
             PCRProject.objects.select_related(
                 "pcr",
