@@ -34,7 +34,7 @@ from core.models.project_completion_report import (
 )
 from core.models.substance import Substance
 
-# pylint: abstract-method, disable=too-many-locals
+# pylint: disable=too-many-locals,abstract-method
 
 
 class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
