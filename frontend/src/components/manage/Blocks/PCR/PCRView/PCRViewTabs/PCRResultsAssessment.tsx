@@ -80,20 +80,6 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
                   })}
                 </div>
                 <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                  <div className="my-2 grid grid-cols-1 gap-6 rounded-lg p-6 lg:grid-cols-2">
-                    {detailItem(
-                      pcrFieldsMapping.type_of_activity,
-                      activity.type_of_activity,
-                      outputFieldsClassname,
-                      true,
-                    )}
-                    {detailItem(
-                      pcrFieldsMapping.type_of_sector,
-                      activity.type_of_sector,
-                      outputFieldsClassname,
-                      true,
-                    )}
-                  </div>
                   <div className="my-2 grid grid-cols-1 gap-6 rounded-lg bg-[#F5F5F5] p-6 lg:grid-cols-2">
                     {detailItem(
                       pcrFieldsMapping.planned_output,
