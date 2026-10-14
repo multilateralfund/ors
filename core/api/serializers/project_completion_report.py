@@ -34,7 +34,7 @@ from core.models.project_completion_report import (
 )
 from core.models.substance import Substance
 
-# pylint: disable=too-many-locals
+# pylint: abstract-method, disable=too-many-locals
 
 
 class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
@@ -906,3 +906,15 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
         if pcr:
             return pcr.id
         return None
+
+
+class PCRProjectSetAdHocOrPcrDueSerializer(serializers.Serializer):
+    """
+    Serializer for MetaProject model.
+    """
+
+    projects = serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(), many=True
+    )
+    ad_hoc_pcr = serializers.BooleanField(default=False)
+    pcr_due = serializers.BooleanField(default=False)
