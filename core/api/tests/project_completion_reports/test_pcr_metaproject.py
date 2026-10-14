@@ -362,3 +362,49 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert len(response.data) == 2
         assert response.data[0]["id"] == projects[0].meta_project.id
         assert response.data[1]["id"] == projects[1].meta_project.id
+
+    def test_set_pcr_or_ad_hoc(self):
+        url = reverse("pcr-metaprojects-set-pcr-or-ad-hoc")
+        meta_project = MetaProjectFactory(umbrella_code="PCR-CALC")
+        project1 = ProjectFactory.create(
+            meta_project=meta_project,
+            metacode=meta_project.umbrella_code,
+            ad_hoc_pcr=False,
+            pcr_due=False,
+        )
+        project2 = ProjectFactory.create(
+            meta_project=meta_project,
+            metacode=meta_project.umbrella_code,
+            ad_hoc_pcr=False,
+            pcr_due=False,
+        )
+        data = {
+            "projects": [
+                project1.id,
+            ],
+            "ad_hoc_pcr": True,
+        }
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 200
+        project1.refresh_from_db()
+        project2.refresh_from_db()
+        assert project1.ad_hoc_pcr is True
+        assert project2.ad_hoc_pcr is True
+        project1.ad_hoc_pcr = False
+        project1.save()
+        project2.ad_hoc_pcr = False
+        project2.save()
+
+        data = {
+            "projects": [
+                project1.id,
+            ],
+            "pcr_due": True,
+        }
+
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 200
+        project1.refresh_from_db()
+        project2.refresh_from_db()
+        assert project1.pcr_due is True
+        assert project2.pcr_due is True

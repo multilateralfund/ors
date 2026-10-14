@@ -1,12 +1,16 @@
+from drf_spectacular.utils import extend_schema
 from django.db.models import Count, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import viewsets, filters
+from rest_framework.decorators import action
+from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
-
 from core.api.filters.project import ProjectFilter, ProjectFilterBackend
 from core.api.permissions import HasPCRViewAccess
-from core.api.serializers.project_completion_report import PCRMetaProjectSerializer
+from core.api.serializers.project_completion_report import (
+    PCRMetaProjectSerializer,
+    PCRProjectSetAdHocOrPcrDueSerializer,
+)
 from core.models.annual_project_report import AnnualProjectReport
 from core.models.project import MetaProject, Project
 
@@ -118,3 +122,29 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @extend_schema(
+        description="""
+        Allows editing only the actual fields of the project. Available only for 'Approved' projects.
+        """,
+        request=PCRProjectSetAdHocOrPcrDueSerializer,
+        responses={
+            status.HTTP_200_OK: None,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    @action(methods=["POST"], detail=False)
+    def set_pcr_or_ad_hoc(self, request, *args, **kwargs):
+        serializer = PCRProjectSetAdHocOrPcrDueSerializer(
+            data=request.data, partial=True
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        for project in serializer.validated_data["projects"]:
+            for associated_project in project.meta_project.projects.all():
+                if serializer.validated_data.get("ad_hoc_pcr", False):
+                    associated_project.ad_hoc_pcr = True
+                if serializer.validated_data.get("pcr_due", False):
+                    associated_project.pcr_due = True
+                associated_project.save()
+        return Response({}, status=status.HTTP_200_OK)
