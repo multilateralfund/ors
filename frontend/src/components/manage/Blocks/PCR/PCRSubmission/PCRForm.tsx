@@ -15,21 +15,16 @@ import PCRDocumentation from './PCRDocumentation'
 import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
 import { SectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
-import { Activity } from '../interfaces'
 import {
   formatErrors,
   formatNestedPcErrors,
   hasSectionErrors,
-  validateWordCount,
   normalizeErrors,
-  getOtherOptionId,
 } from '../utils'
 import {
-  overviewFieldsToValidate,
   pcField,
   cdField,
   llField,
-  ppField,
   sdgsContributionField,
   supportingEvidencesField,
   requiredMessage,
@@ -41,8 +36,7 @@ import { Tabs, Tab, Divider } from '@mui/material'
 const PCRForm = () => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { PCRData, errors, setErrors, ratingOptions } =
-    useContext(PCRDataContext)
+  const { PCRData, errors, setErrors } = useContext(PCRDataContext)
 
   const tabMapping = {
     overview: { title: 'Overview', errors: errors.overview },
@@ -136,36 +130,6 @@ const PCRForm = () => {
   const additionalCommentsField = 'additional_comments'
 
   const overviewData = PCRData.overview || []
-  const inlineOverviewData = omit(overviewData, additionalCommentsField)
-
-  useEffect(() => {
-    setErrors((prev: Record<string, any>) => {
-      let updatedErrors = { ...prev }
-
-      const isOtherRating =
-        inlineOverviewData.rating === getOtherOptionId(ratingOptions)
-
-      const fields = isOtherRating
-        ? [...overviewFieldsToValidate, 'rating_explanation_other']
-        : overviewFieldsToValidate
-
-      fields.forEach((field) => {
-        updatedErrors = validateWordCount(
-          updatedErrors,
-          field,
-          (inlineOverviewData[field as keyof typeof inlineOverviewData] ??
-            '') as string,
-        )
-      })
-
-      if (!isOtherRating) {
-        updatedErrors = omit(updatedErrors, ['rating_explanation_other'])
-      }
-
-      return normalizeErrors(updatedErrors)
-    })
-  }, [JSON.stringify(inlineOverviewData)])
-
   const additionalCommentsData = overviewData[additionalCommentsField] || []
 
   useEffect(() => {
@@ -183,50 +147,11 @@ const PCRForm = () => {
             updatedErrors = omit(updatedErrors, ['entity'])
           }
 
-          updatedErrors = validateWordCount(
-            updatedErrors,
-            'comment',
-            comment.comment,
-          )
-
           return normalizeErrors(updatedErrors)
         },
       ),
     }))
   }, [JSON.stringify(additionalCommentsData)])
-
-  const resultsAssessmentData = PCRData.results_assessment || []
-
-  useEffect(() => {
-    const activitiesData = flatMap(
-      resultsAssessmentData,
-      ({ activities }) => activities,
-    )
-
-    setErrors((prev: Record<string, any[]>) => ({
-      ...prev,
-      activities: map(activitiesData, (activity, index) => {
-        const existingErrors = prev.activities?.[index] ?? {}
-        let updatedErrors = { ...existingErrors }
-
-        const activitiesField = [
-          'planned_output',
-          'actual_activity_output',
-          'additional_remarks',
-        ]
-
-        activitiesField.forEach((field) => {
-          updatedErrors = validateWordCount(
-            updatedErrors,
-            field,
-            activity[field as keyof Activity],
-          )
-        })
-
-        return normalizeErrors(updatedErrors)
-      }),
-    }))
-  }, [JSON.stringify(resultsAssessmentData)])
 
   const causesOfDelayData = PCRData.causes_of_delay || []
   const cdProjectComponents = flatMap(
@@ -275,33 +200,6 @@ const PCRForm = () => {
     }))
   }, [JSON.stringify(causesOfDelayData), JSON.stringify(lessonsLearnedData)])
 
-  const genderMainstreamingData = PCRData.gender_mainstreaming || []
-
-  useEffect(() => {
-    const ppData = flatMap(
-      genderMainstreamingData,
-      ({ gender_mainstreamings }) => gender_mainstreamings,
-    )
-
-    setErrors((prev: Record<string, any[]>) => ({
-      ...prev,
-      [ppField]: map(ppData, (pp, index) => {
-        const ppTextField = 'qualitative_description'
-
-        const existingErrors = prev[ppField]?.[index] ?? {}
-        let updatedErrors = { ...existingErrors }
-
-        updatedErrors = validateWordCount(
-          updatedErrors,
-          ppTextField,
-          pp[ppTextField],
-        )
-
-        return normalizeErrors(updatedErrors)
-      }),
-    }))
-  }, [JSON.stringify(genderMainstreamingData)])
-
   const sdgContributionData = PCRData.sdgs_contribution || []
 
   useEffect(() => {
@@ -314,7 +212,6 @@ const PCRForm = () => {
       ...prev,
       [sdgsContributionField]: map(sdgData, (sdg, index) => {
         const sdgIdField = 'goal_id'
-        const sdgTextField = 'description'
 
         const existingErrors = prev[sdgsContributionField]?.[index] ?? {}
 
@@ -330,12 +227,6 @@ const PCRForm = () => {
             } else if (goalErrors[sdgIdField]?.includes(requiredMessage)) {
               goalErrors = omit(goalErrors, [sdgIdField])
             }
-
-            goalErrors = validateWordCount(
-              goalErrors,
-              sdgTextField,
-              goal[sdgTextField],
-            )
 
             return goalErrors
           }),

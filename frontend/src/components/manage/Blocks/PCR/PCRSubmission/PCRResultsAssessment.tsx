@@ -7,12 +7,7 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
-import {
-  TabLabel,
-  PCRTextWidget,
-  PCRSelectWidget,
-  PCRTextAreaWidget,
-} from './PCRWidgets'
+import { TabLabel, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import { initialActivitiesData } from '../constants'
 
@@ -26,7 +21,7 @@ const PCRResultsAssessment = () => {
   const activityField = 'activities'
 
   const { PCRData, setPCRData, errors, setErrors } = useContext(PCRDataContext)
-  const { agencies, sectors } = useContext(ProjectsDataContext)
+  const { agencies } = useContext(ProjectsDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
@@ -147,25 +142,8 @@ const PCRResultsAssessment = () => {
                 subFields={['', activityField]}
               />
               <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                <PCRTextWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="type_of_activity"
-                  errors={agencyErrors}
-                  indexes={[crtTab, activityIndex]}
-                  subFields={['', activityField]}
-                />
-                <PCRSelectWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="type_of_sector"
-                  options={sectors}
-                  errors={agencyErrors}
-                  indexes={[crtTab, activityIndex]}
-                  subFields={['', activityField]}
-                />
-              </div>
-              <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
                 {map(
-                  keys(initialActivitiesData).slice(3),
+                  keys(initialActivitiesData).slice(1),
                   (field, fieldIndex) => (
                     <Fragment key={fieldIndex}>
                       <PCRTextAreaWidget

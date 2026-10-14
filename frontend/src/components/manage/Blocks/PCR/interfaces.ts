@@ -68,8 +68,6 @@ export interface PCROverviewData {
 
 export type Activity = {
   activity_title: string
-  type_of_activity: string
-  type_of_sector: string
   planned_output: string
   actual_activity_output: string
   additional_remarks: string
