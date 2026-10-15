@@ -171,11 +171,13 @@ export const NavigationButton = ({
   setCurrentTab,
   type = 'next',
   isBtnDisabled = false,
+  className,
 }: ProjectTabSetters & {
   nextStep?: number
   nextTab?: number
   type?: string
   isBtnDisabled?: boolean
+  className?: string
 }) => {
   const moveToNextStep = () => {
     if (nextStep && setCurrentStep) {
@@ -190,12 +192,16 @@ export const NavigationButton = ({
 
   return (
     <Button
-      className={cx('h-8 border px-3 py-1 leading-none', {
-        'border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-          type === 'next' && !isBtnDisabled,
-        'border-solid border-primary bg-white text-primary':
-          type === 'previous' && !isBtnDisabled,
-      })}
+      className={cx(
+        'h-8 border px-3 py-1 leading-none',
+        {
+          'border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+            type === 'next' && !isBtnDisabled,
+          'border-solid border-primary bg-white text-primary':
+            type === 'previous' && !isBtnDisabled,
+        },
+        className,
+      )}
       disabled={isBtnDisabled}
       size="large"
       variant="contained"

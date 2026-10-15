@@ -96,3 +96,27 @@ textarea {
     @apply bg-mlfs-bannerColor;
   }
 }
+
+.PCRInput {
+  .MuiInputBase-root,
+  .MuiAutocomplete-inputRoot,
+  .MuiAutocomplete-clearIndicator,
+  .MuiAutocomplete-clearIndicator:hover {
+    @apply rounded-full bg-[#faebd5];
+  }
+
+  .MuiAutocomplete-endAdornment svg,
+  .MuiAutocomplete-clearIndicator,
+  .MuiAutocomplete-clearIndicator svg:hover,
+  .MuiInputBase-root input,
+  .MuiAutocomplete-inputRoot input {
+    @apply text-[#7d5817];
+  }
+
+  .MuiInputBase-root fieldset,
+  .MuiAutocomplete-inputRoot fieldset,
+  .MuiInputBase-root:hover fieldset,
+  .MuiAutocomplete-inputRoot:hover fieldset {
+    @apply border-2 border-[#eed3ad];
+  }
+}

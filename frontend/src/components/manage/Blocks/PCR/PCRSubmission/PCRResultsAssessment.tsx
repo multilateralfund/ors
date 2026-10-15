@@ -137,6 +137,7 @@ const PCRResultsAssessment = () => {
               <PCRTextWidget
                 {...{ PCRData, setPCRData, sectionIdentifier }}
                 field="activity_title"
+                className="md:!min-w-[600px]"
                 errors={agencyErrors}
                 indexes={[crtTab, activityIndex]}
                 subFields={['', activityField]}

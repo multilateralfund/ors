@@ -566,3 +566,9 @@ export const getFundingClassname = (index: number, isTotal: boolean) =>
         isTotal,
     },
   )
+
+export const getValueClassName = (value: string) => ({
+  'bg-[#e0f0e6] text-[#275f3b] border-[#c3e0cc]': value === 'Yes',
+  'bg-[#fbe5e4] text-[#8c2626] border-[#f0cdcc]': value === 'No',
+  'bg-[#edf1f4] text-[#424d54] border-[#d9dde0]': value === 'N/A',
+})

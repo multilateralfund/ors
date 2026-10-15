@@ -1,11 +1,12 @@
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 
 import { getFormattedNumericValue } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { borderedValueClassname } from '../../constants'
 import { ProjectType } from '@ors/types/api_projects'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
-import { Divider } from '@mui/material'
+import { Divider, Popover } from '@mui/material'
+import { FiEdit3 } from 'react-icons/fi'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -22,7 +23,7 @@ export const SubSectionTitle = ({
 }) => (
   <div
     className={cx(
-      'mb-6 text-lg font-bold uppercase tracking-[1px] text-typography-sectionTitle',
+      'mb-0 content-center text-lg font-bold uppercase tracking-[1px] text-primary',
       className,
     )}
   >
@@ -91,24 +92,11 @@ export const dateDetailItem = (fieldName: string, fieldValue: string) => (
   </span>
 )
 
-export const getCollapseIcon = (
-  isSectionExpanded: boolean,
-  collapseSection: () => void,
-) =>
+export const getCollapseIcon = (isSectionExpanded: boolean) =>
   isSectionExpanded ? (
-    <IoChevronUp
-      className="cursor-pointer"
-      color="#002B3D"
-      size="36"
-      onClick={collapseSection}
-    />
+    <IoChevronUp className="cursor-pointer" color="#002B3D" size="24" />
   ) : (
-    <IoChevronDown
-      className="cursor-pointer"
-      color="#002B3D"
-      size="36"
-      onClick={collapseSection}
-    />
+    <IoChevronDown className="cursor-pointer" color="#002B3D" size="24" />
   )
 
 export const ProjectSummary = ({ project }: { project: ProjectType }) => {
@@ -130,5 +118,49 @@ export const ProjectSummary = ({ project }: { project: ProjectType }) => {
         </div>
       ))}
     </div>
+  )
+}
+
+export const EditSectionIndicator = () => (
+  <div className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-3 py-1 text-lg leading-none text-mlfs-hlYellow">
+    <FiEdit3 size={18} />
+    <span>Edit</span>
+  </div>
+)
+
+export const UserInfo = ({ info }: { info: string }) => {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+
+  return (
+    <>
+      <div
+        className="mt-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-solid border-[#D1D5DB] bg-white text-2xl text-[#9a2b2b]"
+        onClick={(event) => setAnchorEl(anchorEl ? null : event.currentTarget)}
+      >
+        <span className="mt-1">*</span>
+      </div>
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'center', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'center', horizontal: 'left' }}
+        slotProps={{
+          paper: {
+            sx: {
+              backgroundColor: '#f6f9d9',
+              border: '1px solid #f0f2ce',
+              borderRadius: '8px !important',
+              fontSize: '16px',
+              ml: 2.25,
+              px: 1.25,
+              py: 0.5,
+            },
+          },
+        }}
+      >
+        {info}
+      </Popover>
+    </>
   )
 }

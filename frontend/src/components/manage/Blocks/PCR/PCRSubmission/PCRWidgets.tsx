@@ -8,6 +8,7 @@ import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListi
 import { onTextareaFocus } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { STYLE } from '@ors/components/manage/Blocks/Replenishment/Inputs/constants'
+import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -29,11 +30,12 @@ import { ApiAgency } from '@ors/types/api_agencies'
 import { TextareaAutosize, Checkbox } from '@mui/material'
 import { find, map } from 'lodash'
 import cx from 'classnames'
+import dayjs from 'dayjs'
 
 const overviewFieldsClassName = formatClassName('min-w-56 md:min-w-72')
 
 const additionalProperties: Record<string, Record<string, unknown>> = {
-  financial_figures_status: overviewFieldsClassName,
+  financial_figures_status: formatClassName('!w-44 PCRInput'),
   project_goal_achieved: overviewFieldsClassName,
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
@@ -299,13 +301,14 @@ export const PCRSelectWidget = ({
   indexes,
   subFields,
   disabled,
+  className,
 }: WidgetPprops & { options: OptionsType[] }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedValue = find(options, { id: value }) || null
   const formattedErrors = formatErrors(errors, indexes)
 
   return (
-    <div>
+    <div className={className}>
       <Label>{pcrFieldsMapping[field]}</Label>
       <div className="flex items-center">
         <Field
@@ -342,6 +345,7 @@ export const PCRTextWidget = ({
   errors,
   indexes,
   subFields,
+  className,
 }: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
@@ -368,7 +372,8 @@ export const PCRTextWidget = ({
           {...defaultPropsSimpleField}
           containerClassName={
             defaultPropsSimpleField.containerClassName +
-            ' !min-w-56 md:!min-w-[600px]'
+            ' !min-w-56 ' +
+            className
           }
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
@@ -386,16 +391,20 @@ export const PCRTextAreaWidget = ({
   indexes,
   subFields,
   rows,
-}: WidgetPprops) => {
+  placeholder,
+  className,
+  excludeLabel,
+}: WidgetPprops & { rows?: number; placeholder?: string }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
 
   return (
     <div className="w-full md:w-auto">
-      <Label>{pcrFieldsMapping[field]} (150-250 words)</Label>
+      {!excludeLabel && <Label>{pcrFieldsMapping[field]}</Label>}
       <div className="flex items-center">
         <TextareaAutosize
           value={value as string}
+          placeholder={placeholder}
           onFocus={onTextareaFocus}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
             changeHandler['text'](
@@ -410,9 +419,10 @@ export const PCRTextAreaWidget = ({
           className={cx(
             textAreaClassname,
             '!min-w-56 !pb-[8px] md:!min-w-[600px]',
+            className,
           )}
           style={STYLE}
-          minRows={rows ?? 7}
+          minRows={rows ?? 5}
           {...(rows ? { maxRows: rows } : {})}
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
@@ -466,6 +476,45 @@ export const PCRBooleanWidget = ({
       >
         {pcrFieldsMapping[field]}
       </Label>
+    </div>
+  )
+}
+
+export const PCRDateWidget = ({
+  PCRData,
+  setPCRData,
+  sectionIdentifier,
+  field,
+  errors,
+  indexes,
+  subFields,
+  className,
+}: WidgetPprops) => {
+  const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+  const formattedErrors = formatErrors(errors, indexes)
+
+  return (
+    <div>
+      <Label>{pcrFieldsMapping[field]}</Label>
+      <div className="flex items-center">
+        <DateInput
+          id={field}
+          value={value}
+          formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+          onChange={(event) =>
+            changeHandler['text'](
+              event,
+              sectionIdentifier,
+              field,
+              setPCRData,
+              indexes,
+              subFields,
+            )
+          }
+          className="!m-0 w-40 grow-0"
+        />
+        <FieldErrorIndicator errors={formattedErrors} field={field} />
+      </div>
     </div>
   )
 }

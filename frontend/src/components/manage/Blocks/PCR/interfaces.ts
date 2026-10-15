@@ -64,6 +64,7 @@ export interface PCROverviewData {
   rating_explanation: string
   additional_comments: AdditionalCommentType[]
   completed_by: string
+  completion_date: string
 }
 
 export type Activity = {
@@ -129,6 +130,7 @@ export type PCRResponse = {
   rating_explanation: string
   additional_comments: { entity: string; comment: string }[]
   completed_by: string
+  completion_date: string
   pcr_projects: PCRProjectResponse[]
   activities: (Activity & { agency_id: number })[]
   project_components: {
@@ -249,8 +251,9 @@ export type WidgetPprops = {
   errors: ErrorType
   indexes?: number[]
   subFields?: string[]
-  rows?: number
   disabled?: boolean
+  className?: string
+  excludeLabel?: boolean
 }
 
 export type FieldType = 'drop_down' | 'text' | 'boolean'

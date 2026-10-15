@@ -51,17 +51,19 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   total_mlf_funding_disbursed: 'Total MLF funding disbursed',
   total_mlf_funding_returned: 'Total MLF funding returned',
   financial_figures_status: 'Financial figures status',
-  financial_figures_status_explanation: 'Explanations if needed',
+  financial_figures_status_explanation:
+    'Financial figures - explanations, if needed',
   addresses: 'Address(es) of enterprise(s) and project site(s), if applicable',
   project_goal_achieved: 'All project goals achieved',
   project_goal_achieved_explanation:
     'If no, please provide a brief explanation',
-  rating: 'Rating',
+  rating: 'Overall rating',
   rating_explanation_other: 'Specify rating',
   rating_explanation: 'Please explain your rating',
   entity: 'Entity user inputting the comment on behalf',
   comment: 'Comment',
   completed_by: 'Completion report done by',
+  completion_date: 'Date',
   funds_disbursed: 'Funds disbursed',
   planned_date_of_completion: 'Planned date of completion',
   substance_from: 'Substance converted from',
@@ -93,12 +95,13 @@ export const viewPcrFieldsMapping: { [key: string]: string } = {
 }
 
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
-  financial_figures_status_explanation: 'Financial figures status explanation',
+  financial_figures_status_explanation: 'Financial figures - explanations',
   addresses: 'Address(es) of enterprise(s) and project site(s)',
   project_goal_achieved_explanation: 'All project goals achieved explanation',
   rating_explanation: 'Rating explanation',
   additional_comments: 'Additional comment',
   comment: 'Comment',
+  completion_date: 'Completion date',
   alternative_technologies: 'Alternative technology',
   enterprises: 'Enterprise',
   equipments: 'Equipment',
@@ -151,6 +154,7 @@ export const initialOverviewData = {
   rating_explanation: '',
   additional_comments: [],
   completed_by: '',
+  completion_date: '',
 }
 
 export const initialActivitiesData = {
@@ -192,9 +196,8 @@ const labelClassname = 'self-start mt-0.5'
 const commonClassnames = { labelClassname, valueClassname }
 
 export const overviewTextareaClassname = {
-  containerClassname:
-    'bg-white !gap-2 lg:!gap-20 lg:!flex-row p-4 rounded-lg w-full lg:w-[65%]',
-  labelClassname: labelClassname + ' lg:w-36',
+  containerClassname: '!gap-2 lg:!gap-20 lg:!flex-row w-full lg:w-[85%]',
+  labelClassname: labelClassname + ' lg:w-[20%]',
   valueClassname: valueClassname,
 }
 
@@ -224,3 +227,5 @@ export const fundingFields = [
   'mlf_funding_disbursed',
   'mlf_funding_returned',
 ]
+
+export const borderedContainerClassname = 'border border-solid border-[#e5e7eb]'
