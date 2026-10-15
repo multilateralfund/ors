@@ -308,10 +308,14 @@ const PCRForm = () => {
                     <NavigationButton
                       type="previous"
                       setCurrentTab={setCurrentTab}
+                      className="!h-10"
                     />
                   )}
                   {currentTab !== tabs.length - 1 && (
-                    <NavigationButton setCurrentTab={setCurrentTab} />
+                    <NavigationButton
+                      setCurrentTab={setCurrentTab}
+                      className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
+                    />
                   )}
                 </div>
               </span>

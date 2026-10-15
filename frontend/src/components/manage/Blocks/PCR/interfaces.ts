@@ -253,6 +253,7 @@ export type WidgetPprops = {
   subFields?: string[]
   disabled?: boolean
   className?: string
+  excludeLabel?: boolean
 }
 
 export type FieldType = 'drop_down' | 'text' | 'boolean'

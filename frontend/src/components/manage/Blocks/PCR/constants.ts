@@ -227,3 +227,5 @@ export const fundingFields = [
   'mlf_funding_disbursed',
   'mlf_funding_returned',
 ]
+
+export const borderedContainerClassname = 'border border-solid border-[#e5e7eb]'

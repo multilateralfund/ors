@@ -9,11 +9,12 @@ import {
   dateDetailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
-import { pcrFieldsMapping } from '../../constants'
+import { pcrFieldsMapping, borderedContainerClassname } from '../../constants'
 import { useStore } from '@ors/store'
 
 import { find, map, uniq } from 'lodash'
 import { Divider } from '@mui/material'
+import cx from 'classnames'
 
 const PCROverviewProjectOverview = ({
   numberEnterprises,
@@ -40,7 +41,7 @@ const PCROverviewProjectOverview = ({
   ).join(', ')
 
   return (
-    <div className="mb-9 flex flex-col border border-solid border-[#e5e7eb]">
+    <div className={cx('mb-9 flex flex-col', borderedContainerClassname)}>
       <div className="bg-[#f4f5f6] px-6 py-4">
         <SubSectionTitle>Project overview</SubSectionTitle>
       </div>

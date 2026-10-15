@@ -393,13 +393,14 @@ export const PCRTextAreaWidget = ({
   rows,
   placeholder,
   className,
+  excludeLabel,
 }: WidgetPprops & { rows?: number; placeholder?: string }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
 
   return (
     <div className="w-full md:w-auto">
-      <Label>{pcrFieldsMapping[field]}</Label>
+      {!excludeLabel && <Label>{pcrFieldsMapping[field]}</Label>}
       <div className="flex items-center">
         <TextareaAutosize
           value={value as string}

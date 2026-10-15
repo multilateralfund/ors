@@ -14,8 +14,10 @@ import {
   pcrFieldsErrorsMapping,
   overviewTextareaClassname,
   borderedValueClassname,
+  borderedContainerClassname,
 } from '../../constants'
 
+import { FaCheck } from 'react-icons/fa'
 import { Divider } from '@mui/material'
 import { map } from 'lodash'
 import cx from 'classnames'
@@ -44,7 +46,7 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
   return (
     <>
       <PCROverviewPrefilledData {...{ pcr }} />
-      <div className="mb-10 flex flex-col border border-solid border-[#e5e7eb]">
+      <div className={cx('mb-10 flex flex-col', borderedContainerClassname)}>
         <div className="bg-[#f4f5f6] px-6 py-4">
           <SubSectionTitle>Indicators</SubSectionTitle>
         </div>
@@ -98,17 +100,37 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
           </div>
         </div>
       </div>
-      <div className="mb-10 flex flex-col border border-solid border-[#e5e7eb]">
+      <div className={cx('mb-10 flex flex-col', borderedContainerClassname)}>
         <div className="bg-[#f4f5f6] px-6 py-4">
           <SubSectionTitle>Additional comments</SubSectionTitle>
         </div>
         <div className="flex flex-col border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {pcr.additional_comments.length > 0 ? (
-              map(pcr.additional_comments, (comment, commentIndex) => (
+          <div className="flex flex-row flex-wrap items-center gap-2.5">
+            <span className="text-[#4D4D4D]">
+              Entities commenting ({pcr.additional_comments.length ?? 0}{' '}
+              selected)
+            </span>
+            {map(pcr.additional_comments, (comment) => (
+              <h4
+                className={cx(
+                  borderedValueClassname,
+                  'm-0 flex flex-row items-center gap-2 rounded-full border-primary bg-primary !p-2 !font-normal text-white',
+                )}
+              >
+                <FaCheck size={12} color="#bdcb19" />
+                {comment.entity}
+              </h4>
+            ))}
+          </div>
+          {pcr.additional_comments.length > 0 && (
+            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {map(pcr.additional_comments, (comment, commentIndex) => (
                 <div
                   key={commentIndex}
-                  className="flex flex-col rounded-lg bg-white p-6"
+                  className={cx(
+                    'flex flex-col rounded-lg p-6',
+                    borderedContainerClassname,
+                  )}
                 >
                   {detailItem(pcrFieldsMapping.entity, comment.entity)}
                   <Divider className="my-6" />
@@ -117,14 +139,17 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
                     valueClassname: '!text-black !font-normal !text-lg',
                   })}
                 </div>
-              ))
-            ) : (
-              <div className="text-3xl text-primary">-</div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      <div className="flex flex-col flex-wrap gap-y-4 border border-solid border-[#e5e7eb] bg-white p-6 md:flex-row">
+      <div
+        className={cx(
+          'flex flex-col flex-wrap gap-y-4 bg-white p-6 md:flex-row',
+          borderedContainerClassname,
+        )}
+      >
         {detailItem(pcrFieldsMapping.completed_by, pcr.completed_by)}
         <Divider
           className="mx-8 hidden md:block"
