@@ -6,7 +6,7 @@ import {
   getAreFiltersApplied,
   formatEntity,
 } from '@ors/components/manage/Blocks/ProjectsListing/utils'
-import { initialFilters, initialParams, pcrFieldsMapping } from '../constants'
+import { initialFilters, initialParams } from '../constants'
 import { PCRFiltersProps } from '../interfaces'
 
 import { Typography } from '@mui/material'
@@ -19,7 +19,7 @@ const ManagePCRsFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: PCRFiltersProps) => {
-  const filtersToClear = omit(filters, 'pcr_submitted', 'pcr_due')
+  const filtersToClear = omit(filters, 'pcr_submitted', 'pcr_due', 'ad_hoc_pcr')
 
   const areFiltersApplied =
     getAreFiltersApplied(filtersToClear) || filters?.search
@@ -53,11 +53,6 @@ const ManagePCRsFiltersSelectedOpts = ({
       entities: formatEntity(fieldToOptionsMapping.status),
       entityIdentifier: 'status_id',
     },
-    {
-      entities: formatEntity(fieldToOptionsMapping.ad_hoc_pcr),
-      entityIdentifier: 'ad_hoc_pcr',
-      extraLabel: pcrFieldsMapping.ad_hoc_pcr,
-    },
   ]
 
   return (
@@ -77,7 +72,6 @@ const ManagePCRsFiltersSelectedOpts = ({
             handleFilterChange,
             handleParamsChange,
             'id',
-            selectedOpt.extraLabel,
           ),
         )}
         <Typography
@@ -89,7 +83,7 @@ const ManagePCRsFiltersSelectedOpts = ({
             if (inputSearch) {
               inputSearch.value = ''
             }
-            const params = omit(initialParams, 'pcr_due')
+            const params = omit(initialParams, 'pcr_due', 'ad_hoc_pcr')
 
             handleFilterChange({ ...initialFilters, ...params })
             handleParamsChange({ offset: 0, ...params })
