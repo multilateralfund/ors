@@ -303,7 +303,7 @@ const PCRForm = () => {
                   <ErrorsList errors={tabErrors} />
                 )}
                 {component}
-                <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
                   {currentTab !== 0 && (
                     <NavigationButton
                       type="previous"

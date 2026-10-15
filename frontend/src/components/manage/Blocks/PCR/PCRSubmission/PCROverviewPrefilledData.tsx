@@ -29,18 +29,16 @@ const PCROverviewPrefilledData = () => {
       <PCROverviewProjectOverview
         numberEnterprises={fundsByAgency.total_number_of_enterprises.toString()}
       />
-      <div className="mb-10 flex flex-col border border-solid border-[#e5e7eb]">
-        <div className="flex justify-between gap-4 bg-[#f4f5f6] px-6 py-4">
+      <div className="mb-9 flex flex-col border border-solid border-[#e5e7eb]">
+        <div className="flex flex-wrap justify-between gap-4 bg-[#f4f5f6] px-6 py-4">
           <div
             className="flex cursor-pointer items-center gap-2"
             onClick={collapseFunding}
           >
             {getCollapseIcon(isFundingExpanded)}
-            <SubSectionTitle className="!mb-0 content-center">
-              Funding (US$)
-            </SubSectionTitle>
+            <SubSectionTitle>Funding (US$)</SubSectionTitle>
           </div>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap gap-6">
             <PCRSelectWidget
               {...{ PCRData, setPCRData, sectionIdentifier }}
               field="financial_figures_status"

@@ -40,11 +40,9 @@ const PCROverviewProjectOverview = ({
   ).join(', ')
 
   return (
-    <div className="mb-10 flex flex-col border border-solid border-[#e5e7eb]">
+    <div className="mb-9 flex flex-col border border-solid border-[#e5e7eb]">
       <div className="bg-[#f4f5f6] px-6 py-4">
-        <SubSectionTitle className="!mb-0 content-center">
-          Project overview
-        </SubSectionTitle>
+        <SubSectionTitle>Project overview</SubSectionTitle>
       </div>
       <div className="border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
         <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2 lg:grid-cols-4">

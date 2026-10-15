@@ -8,6 +8,7 @@ import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListi
 import { onTextareaFocus } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { STYLE } from '@ors/components/manage/Blocks/Replenishment/Inputs/constants'
+import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -29,6 +30,7 @@ import { ApiAgency } from '@ors/types/api_agencies'
 import { TextareaAutosize, Checkbox } from '@mui/material'
 import { find, map } from 'lodash'
 import cx from 'classnames'
+import dayjs from 'dayjs'
 
 const overviewFieldsClassName = formatClassName('min-w-56 md:min-w-72')
 
@@ -343,6 +345,7 @@ export const PCRTextWidget = ({
   errors,
   indexes,
   subFields,
+  className,
 }: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
@@ -369,7 +372,8 @@ export const PCRTextWidget = ({
           {...defaultPropsSimpleField}
           containerClassName={
             defaultPropsSimpleField.containerClassName +
-            ' !min-w-56 md:!min-w-[600px]'
+            ' !min-w-56 ' +
+            className
           }
         />
         <FieldErrorIndicator errors={formattedErrors} field={field} />
@@ -388,6 +392,7 @@ export const PCRTextAreaWidget = ({
   subFields,
   rows,
   placeholder,
+  className,
 }: WidgetPprops & { rows?: number; placeholder?: string }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
@@ -413,6 +418,7 @@ export const PCRTextAreaWidget = ({
           className={cx(
             textAreaClassname,
             '!min-w-56 !pb-[8px] md:!min-w-[600px]',
+            className,
           )}
           style={STYLE}
           minRows={rows ?? 5}
@@ -469,6 +475,45 @@ export const PCRBooleanWidget = ({
       >
         {pcrFieldsMapping[field]}
       </Label>
+    </div>
+  )
+}
+
+export const PCRDateWidget = ({
+  PCRData,
+  setPCRData,
+  sectionIdentifier,
+  field,
+  errors,
+  indexes,
+  subFields,
+  className,
+}: WidgetPprops) => {
+  const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+  const formattedErrors = formatErrors(errors, indexes)
+
+  return (
+    <div>
+      <Label>{pcrFieldsMapping[field]}</Label>
+      <div className="flex items-center">
+        <DateInput
+          id={field}
+          value={value}
+          formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+          onChange={(event) =>
+            changeHandler['text'](
+              event,
+              sectionIdentifier,
+              field,
+              setPCRData,
+              indexes,
+              subFields,
+            )
+          }
+          className="!m-0 w-40 grow-0"
+        />
+        <FieldErrorIndicator errors={formattedErrors} field={field} />
+      </div>
     </div>
   )
 }

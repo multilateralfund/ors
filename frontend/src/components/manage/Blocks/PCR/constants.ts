@@ -57,12 +57,13 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   project_goal_achieved: 'All project goals achieved',
   project_goal_achieved_explanation:
     'If no, please provide a brief explanation',
-  rating: 'Rating',
+  rating: 'Overall rating',
   rating_explanation_other: 'Specify rating',
   rating_explanation: 'Please explain your rating',
   entity: 'Entity user inputting the comment on behalf',
   comment: 'Comment',
   completed_by: 'Completion report done by',
+  completion_date: 'Date',
   funds_disbursed: 'Funds disbursed',
   planned_date_of_completion: 'Planned date of completion',
   substance_from: 'Substance converted from',
@@ -100,6 +101,7 @@ export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   rating_explanation: 'Rating explanation',
   additional_comments: 'Additional comment',
   comment: 'Comment',
+  completion_date: 'Completion date',
   alternative_technologies: 'Alternative technology',
   enterprises: 'Enterprise',
   equipments: 'Equipment',
@@ -152,6 +154,7 @@ export const initialOverviewData = {
   rating_explanation: '',
   additional_comments: [],
   completed_by: '',
+  completion_date: '',
 }
 
 export const initialActivitiesData = {
@@ -193,8 +196,7 @@ const labelClassname = 'self-start mt-0.5'
 const commonClassnames = { labelClassname, valueClassname }
 
 export const overviewTextareaClassname = {
-  containerClassname:
-    'bg-white !gap-2 lg:!gap-20 lg:!flex-row p-4 rounded-lg w-full lg:w-[85%]',
+  containerClassname: '!gap-2 lg:!gap-20 lg:!flex-row w-full lg:w-[85%]',
   labelClassname: labelClassname + ' lg:w-[20%]',
   valueClassname: valueClassname,
 }
