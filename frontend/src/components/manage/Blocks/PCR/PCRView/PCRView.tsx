@@ -86,15 +86,19 @@ const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
           .map(({ id, component }) => (
             <span key={id}>
               {component}
-              <div className="mt-5 flex flex-wrap items-center gap-2.5">
+              <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
                 {currentTab !== 0 && (
                   <NavigationButton
                     type="previous"
                     setCurrentTab={setCurrentTab}
+                    className="!h-10"
                   />
                 )}
                 {currentTab !== tabs.length - 1 && (
-                  <NavigationButton setCurrentTab={setCurrentTab} />
+                  <NavigationButton
+                    setCurrentTab={setCurrentTab}
+                    className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
+                  />
                 )}
               </div>
             </span>

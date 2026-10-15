@@ -91,7 +91,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       <SubmitButton
-        title="Create PCR"
+        title="Create PCR (draft)"
         onSubmit={createPCR}
         isDisabled={isSaveDisabled}
         className="!py-2"

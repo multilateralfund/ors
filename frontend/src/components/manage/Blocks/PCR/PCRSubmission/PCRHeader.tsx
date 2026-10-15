@@ -43,7 +43,7 @@ const PCRHeader = ({ mode }: { mode: string }) => {
           <PageHeading>
             {mode === 'edit' ? (
               <>
-                <span className="font-medium text-[#4D4D4D]">Update PCR: </span>
+                <span className="font-medium text-[#4D4D4D]">Edit PCR: </span>
                 <span>{pcrMetaproject?.data?.umbrella_code}</span>
               </>
             ) : (
