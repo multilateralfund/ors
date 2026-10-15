@@ -32,11 +32,13 @@ const ManagePCRsWrapper = () => {
     ...initialFilters,
     pcr_submitted: [booleanFieldsOpts[1]],
     pcr_due: [booleanFieldsOpts[1]],
+    ad_hoc_pcr: [booleanFieldsOpts[1]],
   }
   const updatedInitialParams = {
     ...initialFilters,
     pcr_submitted: ['No'],
     pcr_due: ['No'],
+    ad_hoc_pcr: ['No'],
   }
 
   const [view, setView] = useState<ViewSelectorValuesType | null>('list')
@@ -58,7 +60,6 @@ const ManagePCRsWrapper = () => {
     sector: sectors,
     category: categoryOpts,
     status: statuses,
-    ad_hoc_pcr: booleanFieldsOpts,
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {
@@ -82,19 +83,39 @@ const ManagePCRsWrapper = () => {
 
     const pcrDue =
       value === 'table' ? booleanFieldsOpts[0] : booleanFieldsOpts[1]
+    const adHocPcr = value === 'list' ? booleanFieldsOpts[1] : null
 
-    handleFilterChange({ pcr_due: [pcrDue] })
-    handleParamsChange({ pcr_due: pcrDue.id, offset: 0 })
+    handleFilterChange({
+      pcr_due: [pcrDue],
+      ad_hoc_pcr: adHocPcr ? [adHocPcr] : null,
+    })
+    handleParamsChange({
+      pcr_due: pcrDue.id,
+      ad_hoc_pcr: adHocPcr ? adHocPcr.id : null,
+      offset: 0,
+    })
   }
 
   const markAsPcrDue = () => {
-    enqueueSnackbar(<>Marked projects as PCR due.</>, {
+    enqueueSnackbar(<>Marked project(s) as PCR due.</>, {
+      variant: 'success',
+    })
+  }
+
+  const markAsAdHocPcr = () => {
+    enqueueSnackbar(<>Marked project(s) as ad-hoc PCR.</>, {
       variant: 'success',
     })
   }
 
   const removePcrDue = () => {
-    enqueueSnackbar(<>Removed PCR due status of projects.</>, {
+    enqueueSnackbar(<>Removed PCR due status of project(s).</>, {
+      variant: 'success',
+    })
+  }
+
+  const removeAdHocPcr = () => {
+    enqueueSnackbar(<>Removed ad-hoc PCR status of project(s).</>, {
       variant: 'success',
     })
   }
@@ -111,21 +132,37 @@ const ManagePCRsWrapper = () => {
             <RedirectBackButton />
             <PageHeading>Manage Project Completion Reports</PageHeading>
           </div>
-          <div className="ml-auto mt-auto">
+          <div className="ml-auto mt-auto flex flex-wrap justify-end gap-2.5">
             {view === 'list' ? (
-              <SubmitButton
-                title="Mark as PCR due"
-                onSubmit={markAsPcrDue}
-                isDisabled={projectIds.idsToAdd.length === 0}
-                className="!mb-0"
-              />
+              <>
+                <SubmitButton
+                  title="Mark as PCR due"
+                  onSubmit={markAsPcrDue}
+                  isDisabled={projectIds.idsToAdd.length === 0}
+                  className="!mb-0"
+                />
+                <SubmitButton
+                  title="Mark as ad-hoc PCR"
+                  onSubmit={markAsAdHocPcr}
+                  isDisabled={projectIds.idsToAdd.length === 0}
+                  className="!mb-0"
+                />
+              </>
             ) : (
-              <SubmitButton
-                title="Remove PCR due status"
-                onSubmit={removePcrDue}
-                isDisabled={projectIds.idsToRemove.length === 0}
-                className="!mb-0"
-              />
+              <>
+                <SubmitButton
+                  title="Remove PCR due status"
+                  onSubmit={removePcrDue}
+                  isDisabled={projectIds.idsToRemove.length === 0}
+                  className="!mb-0"
+                />
+                <SubmitButton
+                  title="Remove ad-hoc PCR status"
+                  onSubmit={removeAdHocPcr}
+                  isDisabled={projectIds.idsToRemove.length === 0}
+                  className="!mb-0"
+                />
+              </>
             )}
           </div>
         </div>

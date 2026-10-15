@@ -26,9 +26,7 @@ const ManagePCRsFilters = ({
   }
 
   const FieldFilter = ({ field }: { field: string }) => {
-    const simpleFields = ['category', 'ad_hoc_pcr']
-
-    const filterField = simpleFields.includes(field) ? field : field + '_id'
+    const filterField = field === 'category' ? field : field + '_id'
 
     return (
       <Field
@@ -69,7 +67,6 @@ const ManagePCRsFilters = ({
       <FieldFilter field="sector" />
       <FieldFilter field="category" />
       <FieldFilter field="status" />
-      <FieldFilter field="ad_hoc_pcr" />
     </div>
   )
 }
