@@ -9,6 +9,7 @@ import {
   SectionTitle,
   SubSectionTitle,
   ProjectSummary,
+  EntryIndex,
   detailItem,
   dateDetailItem,
   numberDetailItem,
@@ -263,7 +264,7 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
               )}
 
               {currentTab === 1 && (
-                <FieldGroup title="Alternative technology">
+                <FieldGroup>
                   {summaryData.alternative_technologies.length > 0 ? (
                     <div className="flex flex-col gap-y-4">
                       <div className="grid grid-cols-2 gap-x-7">
@@ -306,34 +307,34 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
               )}
 
               {currentTab === 2 && (
-                <FieldGroup title="Enterprises">
+                <FieldGroup>
                   {summaryData.enterprises.length > 0 ? (
                     <TableContainer
                       component={Paper}
-                      className="PcrEnterprisesTableContainer"
+                      className="PcrViewTableContainer"
                     >
-                      <Table stickyHeader className="PcrEnterprisesTable">
+                      <Table stickyHeader className="PcrViewTable">
                         <TableHead>
                           <TableRow>
-                            <TableCell className="IdColumn">#</TableCell>
+                            <TableCell>#</TableCell>
                             <TableCell className="NameColumn">
-                              NAME OF ENTERPRISE
+                              Name of enterprise
                             </TableCell>
-                            <TableCell>ADDRESS OF ENTERPRISE</TableCell>
+                            <TableCell>Address of enterprise</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {summaryData.enterprises.map((row, index) => (
                             <TableRow>
-                              <TableCell className="IdColumn">
-                                {index + 1}
+                              <TableCell>
+                                <EntryIndex index={index} />
                               </TableCell>
 
-                              <TableCell className="NameColumn">
+                              <TableCell className="NameColumn w-1/2">
                                 {row.name || '-'}
                               </TableCell>
 
-                              <TableCell className="AddressColumn">
+                              <TableCell className="w-1/2">
                                 {row.address || '-'}
                               </TableCell>
                             </TableRow>

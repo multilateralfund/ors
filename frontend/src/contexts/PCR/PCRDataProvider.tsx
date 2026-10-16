@@ -152,7 +152,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     const pcrSdgs = PCRData.sdgs_contribution || []
     const filteredSdgs = filter(
       pcrSdgs,
-      (sdg) => sdg.goals.length > 0 || sdg.sdg_not_applying,
+      (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
     )
 
     const formattedErrors = reduce(

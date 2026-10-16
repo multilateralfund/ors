@@ -12,7 +12,7 @@ import {
   pcrFieldsMapping,
   llField,
   pcTitleClassname,
-  pcTextareaClassname,
+  textareaClassname,
 } from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
@@ -90,7 +90,7 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
                               {detailItem(
                                 pcrFieldsMapping.description,
                                 ll.description,
-                                pcTextareaClassname,
+                                textareaClassname,
                               )}
                             </div>
                           </div>
