@@ -8,8 +8,8 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { TabLabel, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { initialActivitiesData, borderedContainerClassname } from '../constants'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
-import { initialActivitiesData } from '../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, keys, map } from 'lodash'
@@ -126,54 +126,69 @@ const PCRResultsAssessment = () => {
           />
         ))}
       </Tabs>
-      <div className="border-0 border-t border-solid border-primary py-6">
+      <div className="border-0 border-t border-solid border-primary pt-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
         )}
-        <SubSectionTitle>Activities</SubSectionTitle>
-        <div className="flex flex-col gap-y-4">
-          {map(activitiesData, (_, activityIndex) => (
-            <Fragment key={activityIndex}>
-              <PCRTextWidget
-                {...{ PCRData, setPCRData, sectionIdentifier }}
-                field="activity_title"
-                className="md:!min-w-[600px]"
-                errors={agencyErrors}
-                indexes={[crtTab, activityIndex]}
-                subFields={['', activityField]}
+        <div className={cx('flex flex-col', borderedContainerClassname)}>
+          <div className="bg-[#f4f5f6] px-6 py-4">
+            <SubSectionTitle>
+              Implementation effectiveness (achievement of activity output)
+            </SubSectionTitle>
+          </div>
+          <div className="flex flex-col border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
+            <div className="flex flex-col gap-y-4">
+              {map(activitiesData, (_, activityIndex) => (
+                <Fragment key={activityIndex}>
+                  <PCRTextWidget
+                    {...{ PCRData, setPCRData, sectionIdentifier }}
+                    field="activity_title"
+                    className="md:!min-w-[600px]"
+                    errors={agencyErrors}
+                    indexes={[crtTab, activityIndex]}
+                    subFields={['', activityField]}
+                  />
+                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                    {map(
+                      keys(initialActivitiesData).slice(1),
+                      (field, fieldIndex) => (
+                        <Fragment key={fieldIndex}>
+                          <PCRTextAreaWidget
+                            {...{
+                              PCRData,
+                              setPCRData,
+                              sectionIdentifier,
+                              field,
+                            }}
+                            errors={agencyErrors}
+                            indexes={[crtTab, activityIndex]}
+                            subFields={['', activityField]}
+                          />
+                        </Fragment>
+                      ),
+                    )}
+                    <IoTrash
+                      className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
+                      size={16}
+                      onClick={() => {
+                        onRemoveActivity(activityIndex)
+                      }}
+                    />
+                  </div>
+                  {activityIndex !== activitiesData.length - 1 && (
+                    <Divider className="my-5" />
+                  )}
+                </Fragment>
+              ))}
+              <SubmitButton
+                title="Add activity"
+                onSubmit={onAddActivity}
+                className={cx('mr-auto h-8', {
+                  'mt-4': activitiesData.length > 0,
+                })}
               />
-              <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                {map(
-                  keys(initialActivitiesData).slice(1),
-                  (field, fieldIndex) => (
-                    <Fragment key={fieldIndex}>
-                      <PCRTextAreaWidget
-                        {...{ PCRData, setPCRData, sectionIdentifier, field }}
-                        errors={agencyErrors}
-                        indexes={[crtTab, activityIndex]}
-                        subFields={['', activityField]}
-                      />
-                    </Fragment>
-                  ),
-                )}
-                <IoTrash
-                  className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                  size={16}
-                  onClick={() => {
-                    onRemoveActivity(activityIndex)
-                  }}
-                />
-              </div>
-              {activityIndex !== activitiesData.length - 1 && (
-                <Divider className="my-5" />
-              )}
-            </Fragment>
-          ))}
-          <SubmitButton
-            title="Add activity"
-            onSubmit={onAddActivity}
-            className={cx('mr-auto h-8', { 'mt-4': activitiesData.length > 0 })}
-          />
+            </div>
+          </div>
         </div>
       </div>
     </>

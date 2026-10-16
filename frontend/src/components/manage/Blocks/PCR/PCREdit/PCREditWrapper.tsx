@@ -128,8 +128,9 @@ const PCREditWrapper = () => {
     )
     const sdgsContribution = map(agencyIds, (agency_id) => ({
       agency_id,
-      sdg_not_applying:
-        groupedSdgsContribution[agency_id]?.[0]?.sdg_not_applying,
+      sdg_applying: groupedSdgsContribution[agency_id]?.[0]?.sdg_applying,
+      sdg_not_applying_explanation:
+        groupedSdgsContribution[agency_id]?.[0]?.sdg_not_applying_explanation,
       goals: groupedSdgsContribution[agency_id]?.[0]?.goals ?? [],
     }))
 

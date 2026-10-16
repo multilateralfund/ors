@@ -5,13 +5,25 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
   SectionTitle,
   SubSectionTitle,
-  detailItem,
+  EntryIndex,
+  NoDataReported,
 } from './ViewHelperComponents'
-import { pcrFieldsMapping, activitiesTextareaClassname } from '../../constants'
+import { pcrFieldsMapping, borderedContainerClassname } from '../../constants'
 import { PCRResponse } from '../../interfaces'
 
 import { filter, find, keys, map } from 'lodash'
-import { Tabs, Tab } from '@mui/material'
+import cx from 'classnames'
+import {
+  Tabs,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from '@mui/material'
 
 const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
   const { fundsByAgency } = useContext(PCRDataContext)
@@ -26,29 +38,16 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
     (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
   )
 
-  const activitesData = filter(
+  const activitiesData = filter(
     pcr.activities,
     ({ agency_id }) => agency_id === Number(crtAgencyId),
   )
 
-  const updatedClassname = {
-    ...activitiesTextareaClassname,
-    containerClassname:
-      activitiesTextareaClassname.containerClassname +
-      ' lg:!flex-row !gap-2 lg:!gap-20',
-    labelClassname: activitiesTextareaClassname.labelClassname + ' lg:w-28',
-  }
-
-  const outputFieldsClassname = {
-    ...activitiesTextareaClassname,
-    containerClassname:
-      activitiesTextareaClassname.containerClassname + ' !gap-0 !p-0 w-auto',
-    labelClassname: activitiesTextareaClassname.labelClassname + ' !mt-0',
-  }
-
   return (
     <>
-      <SectionTitle>Project results overall assessment</SectionTitle>
+      <SectionTitle>
+        Project results: overall assessment highlights
+      </SectionTitle>
       <Tabs
         aria-label="results-assessment-view-tabs"
         className="sectionsTabs mt-6"
@@ -68,43 +67,62 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="border-0 border-t border-solid border-primary py-6">
-        <SubSectionTitle>Activities</SubSectionTitle>
-        <div className="flex flex-col gap-y-6">
-          {activitesData.length > 0 ? (
-            map(activitesData, (activity, activityIndex) => (
-              <div key={activityIndex}>
-                <div className="rounded-t-lg bg-primary px-8 py-4">
-                  {detailItem('', activity.activity_title, {
-                    valueClassname: 'text-white !font-bold !text-3xl',
-                  })}
-                </div>
-                <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                  <div className="my-2 grid grid-cols-1 gap-6 rounded-lg bg-[#F5F5F5] p-6 lg:grid-cols-2">
-                    {detailItem(
-                      pcrFieldsMapping.planned_output,
-                      activity.planned_output,
-                      outputFieldsClassname,
-                      true,
-                    )}
-                    {detailItem(
-                      pcrFieldsMapping.actual_activity_output,
-                      activity.actual_activity_output,
-                      outputFieldsClassname,
-                      true,
-                    )}
-                  </div>
-                  {detailItem(
-                    pcrFieldsMapping.additional_remarks,
-                    activity.additional_remarks,
-                    updatedClassname,
-                  )}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-3xl text-primary">-</div>
-          )}
+      <div className="border-0 border-t border-solid border-primary pt-6">
+        <div className={cx('flex flex-col', borderedContainerClassname)}>
+          <div className="bg-[#f4f5f6] px-6 py-4">
+            <SubSectionTitle>
+              Implementation effectiveness (achievement of activity output)
+            </SubSectionTitle>
+          </div>
+          <div className="flex flex-col border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
+            {activitiesData.length > 0 ? (
+              <TableContainer
+                component={Paper}
+                className="PcrViewTableContainer"
+              >
+                <Table stickyHeader className="PcrViewTable">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>#</TableCell>
+                      <TableCell className="NameColumn">
+                        {pcrFieldsMapping.activity_title}
+                      </TableCell>
+                      <TableCell>{pcrFieldsMapping.planned_output}</TableCell>
+                      <TableCell>
+                        {pcrFieldsMapping.actual_activity_output}
+                      </TableCell>
+                      <TableCell>
+                        {pcrFieldsMapping.additional_remarks}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {map(activitiesData, (activity, activityIndex) => (
+                      <TableRow key={activityIndex}>
+                        <TableCell>
+                          <EntryIndex index={activityIndex} />
+                        </TableCell>
+                        <TableCell className="NameColumn w-1/4">
+                          {activity.activity_title || '-'}
+                        </TableCell>
+                        <TableCell className="w-1/4">
+                          {activity.planned_output || '-'}
+                        </TableCell>
+                        <TableCell className="w-1/4">
+                          {activity.actual_activity_output || '-'}
+                        </TableCell>
+                        <TableCell className="w-1/4">
+                          {activity.additional_remarks || '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <NoDataReported text="No data reported." />
+            )}
+          </div>
         </div>
       </div>
     </>

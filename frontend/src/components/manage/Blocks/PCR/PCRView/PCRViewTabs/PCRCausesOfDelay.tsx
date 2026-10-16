@@ -12,7 +12,7 @@ import {
   pcrFieldsMapping,
   cdField,
   pcTitleClassname,
-  pcTextareaClassname,
+  textareaClassname,
 } from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
@@ -90,12 +90,12 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
                               {detailItem(
                                 pcrFieldsMapping.description,
                                 cd.description,
-                                pcTextareaClassname,
+                                textareaClassname,
                               )}
                               {detailItem(
                                 pcrFieldsMapping.action_taken,
                                 cd.action_taken,
-                                pcTextareaClassname,
+                                textareaClassname,
                               )}
                             </div>
                           </div>
