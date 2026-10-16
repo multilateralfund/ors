@@ -207,8 +207,8 @@ export const overviewTextareaClassname = {
 
 export const pcTitleClassname = {
   containerClassname: 'gap-2',
-  labelClassname: 'uppercase text-[#F5FF80]',
-  valueClassname: 'text-white !font-bold !text-3xl',
+  labelClassname: 'uppercase text-mlfs-hlYellow text-lg',
+  valueClassname: 'text-white !font-medium !text-3xl',
 }
 
 export const textareaClassname = {

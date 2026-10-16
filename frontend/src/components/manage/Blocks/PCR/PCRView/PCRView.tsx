@@ -92,12 +92,14 @@ const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
                     type="previous"
                     setCurrentTab={setCurrentTab}
                     className="!h-10"
+                    extraText={tabs[currentTab - 1].label}
                   />
                 )}
                 {currentTab !== tabs.length - 1 && (
                   <NavigationButton
                     setCurrentTab={setCurrentTab}
                     className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
+                    extraText={tabs[currentTab + 1].label}
                   />
                 )}
               </div>
