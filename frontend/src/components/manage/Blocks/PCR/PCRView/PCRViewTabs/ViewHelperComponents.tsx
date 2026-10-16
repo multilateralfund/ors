@@ -40,12 +40,17 @@ export const detailItem = (
   fieldValue: string,
   classname?: Record<string, string>,
   withDivider?: boolean,
+  withLabel: boolean = true,
 ) => {
   const { containerClassname, labelClassname, valueClassname } = classname ?? {}
 
   return (
     <span className={cx('flex flex-col gap-1', containerClassname)}>
-      <span className={cx('text-[#4D4D4D]', labelClassname)}>{fieldName}</span>
+      {withLabel && (
+        <span className={cx('text-[#4D4D4D]', labelClassname)}>
+          {fieldName}
+        </span>
+      )}
       {withDivider && <Divider className="my-4" />}
       <h4
         className={cx('m-0 text-xl font-semibold text-primary', valueClassname)}
