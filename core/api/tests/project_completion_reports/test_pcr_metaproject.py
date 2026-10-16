@@ -379,8 +379,8 @@ class TestPCRMetaprojectsViewSet(BaseTest):
             pcr_due=False,
         )
         data = {
-            "projects": [
-                project1.id,
+            "meta_projects": [
+                meta_project.id,
             ],
             "ad_hoc_pcr": True,
         }
@@ -396,8 +396,8 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         project2.save()
 
         data = {
-            "projects": [
-                project1.id,
+            "meta_projects": [
+                meta_project.id,
             ],
             "pcr_due": True,
         }

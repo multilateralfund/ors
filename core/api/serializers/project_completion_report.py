@@ -1003,8 +1003,8 @@ class PCRProjectSetAdHocOrPcrDueSerializer(serializers.Serializer):
     Serializer for MetaProject model.
     """
 
-    projects = serializers.PrimaryKeyRelatedField(
-        queryset=Project.objects.all(), many=True
+    meta_projects = serializers.PrimaryKeyRelatedField(
+        queryset=MetaProject.objects.all(), many=True
     )
     ad_hoc_pcr = serializers.BooleanField(default=False)
     pcr_due = serializers.BooleanField(default=False)
