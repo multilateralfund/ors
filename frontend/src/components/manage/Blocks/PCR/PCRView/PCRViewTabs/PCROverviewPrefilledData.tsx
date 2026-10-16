@@ -46,7 +46,7 @@ const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
               ...borderedValueContainerClassname,
               valueClassname: cx(
                 borderedValueContainerClassname.valueClassname,
-                'rounded-full bg-[#faebd5] text-[#7d5817] border-[#eed3ad]',
+                'rounded-full !bg-[#faebd5] !text-[#7d5817] !border-[#eed3ad]',
               ),
             },
           )}

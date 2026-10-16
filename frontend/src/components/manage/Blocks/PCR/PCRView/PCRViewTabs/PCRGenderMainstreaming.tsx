@@ -2,22 +2,33 @@ import { useContext, useState } from 'react'
 
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { PCRResponse } from '../../interfaces'
 import {
   SectionTitle,
-  SubSectionTitle,
-  detailItem,
+  EntryIndex,
+  NoDataReported,
 } from './ViewHelperComponents'
+import { getValueClassName } from '../../utils'
+import { PCRResponse } from '../../interfaces'
 import {
   pcrFieldsMapping,
   projectPhaseOptions,
-  pcTitleClassname,
-  pcTextareaClassname,
-  borderedValueContainerClassname,
+  borderedContainerClassname,
+  borderedValueClassname,
 } from '../../constants'
 
-import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
+import cx from 'classnames'
+import {
+  Tabs,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from '@mui/material'
 
 const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
   const { fundsByAgency } = useContext(PCRDataContext)
@@ -73,36 +84,62 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="border-0 border-t border-solid border-primary py-6">
-        <SubSectionTitle>Project cycle phases</SubSectionTitle>
-        <div className="flex flex-col gap-y-6">
+      <div className="border-0 border-t border-solid border-primary pt-6">
+        <div
+          className={cx(
+            'flex flex-col bg-white p-6',
+            borderedContainerClassname,
+          )}
+        >
           {ppData.length > 0 ? (
-            map(ppData, (pp, ppIndex) => (
-              <div key={ppIndex}>
-                <div className="rounded-t-lg bg-primary px-8 py-4">
-                  {detailItem(
-                    pcrFieldsMapping.project_preparation,
-                    pp.project_preparation,
-                    pcTitleClassname,
-                  )}
-                </div>
-                <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                  {detailItem(
-                    pcrFieldsMapping.prefilled,
-                    pp.prefilled,
-                    borderedValueContainerClassname,
-                  )}
-                  <Divider className="my-4" />
-                  {detailItem(
-                    pcrFieldsMapping.qualitative_description,
-                    pp.qualitative_description,
-                    pcTextareaClassname,
-                  )}
-                </div>
-              </div>
-            ))
+            <TableContainer component={Paper} className="PcrViewTableContainer">
+              <Table stickyHeader className="PcrViewTable">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>#</TableCell>
+                    <TableCell className="NameColumn">
+                      {pcrFieldsMapping.project_preparation}
+                    </TableCell>
+                    <TableCell>{pcrFieldsMapping.prefilled}</TableCell>
+                    <TableCell>
+                      {pcrFieldsMapping.qualitative_description}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {map(ppData, (pp, ppIndex) => (
+                    <TableRow key={ppIndex}>
+                      <TableCell>
+                        <EntryIndex index={ppIndex} />
+                      </TableCell>
+                      <TableCell className="NameColumn w-[20%]">
+                        {pp.project_preparation || '-'}
+                      </TableCell>
+                      <TableCell className="w-[20%]">
+                        {pp.prefilled ? (
+                          <div
+                            className={cx(
+                              'rounded-full',
+                              borderedValueClassname,
+                              getValueClassName(pp.prefilled),
+                            )}
+                          >
+                            {pp.prefilled}
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
+                      <TableCell className="w-[60%]">
+                        {pp.qualitative_description || '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           ) : (
-            <div className="text-3xl text-primary">-</div>
+            <NoDataReported text="No data reported." />
           )}
         </div>
       </div>

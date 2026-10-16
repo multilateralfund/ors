@@ -71,9 +71,9 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   address: 'Address of enterprise',
   disposal_type: 'Disposal type',
   disposal_date: 'Date of disposal',
-  activity_title: 'Activity component',
+  activity_title: 'Activity title',
   planned_output: 'Planned output(s)',
-  actual_activity_output: 'Actual activity output(s)',
+  actual_activity_output: 'Actual output(s)',
   additional_remarks: 'Additional remarks, if applicable',
   project_component_option_id: 'Project component',
   delay_id: 'Cause of delay',
@@ -201,11 +201,6 @@ export const overviewTextareaClassname = {
   valueClassname: valueClassname,
 }
 
-export const activitiesTextareaClassname = {
-  containerClassname: 'p-4 w-full lg:w-[65%] pl-0',
-  ...commonClassnames,
-}
-
 export const pcTitleClassname = {
   containerClassname: 'gap-2',
   labelClassname: 'uppercase text-[#F5FF80]',
@@ -214,11 +209,6 @@ export const pcTitleClassname = {
 
 export const pcTextareaClassname = {
   containerClassname: 'w-full lg:w-[65%] p-0',
-  ...commonClassnames,
-}
-
-export const sdgsTextareaClassname = {
-  containerClassname: 'w-full p-0',
   ...commonClassnames,
 }
 

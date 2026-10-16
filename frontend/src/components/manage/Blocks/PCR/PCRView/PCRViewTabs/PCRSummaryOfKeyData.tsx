@@ -9,6 +9,7 @@ import {
   SectionTitle,
   SubSectionTitle,
   ProjectSummary,
+  EntryIndex,
   detailItem,
   dateDetailItem,
   numberDetailItem,
@@ -310,32 +311,30 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                   {summaryData.enterprises.length > 0 ? (
                     <TableContainer
                       component={Paper}
-                      className="PcrEnterprisesTableContainer"
+                      className="PcrViewTableContainer"
                     >
-                      <Table stickyHeader className="PcrEnterprisesTable">
+                      <Table stickyHeader className="PcrViewTable">
                         <TableHead>
                           <TableRow>
-                            <TableCell className="IdColumn">#</TableCell>
+                            <TableCell>#</TableCell>
                             <TableCell className="NameColumn">
-                              NAME OF ENTERPRISE
+                              Name of enterprise
                             </TableCell>
-                            <TableCell>ADDRESS OF ENTERPRISE</TableCell>
+                            <TableCell>Address of enterprise</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {summaryData.enterprises.map((row, index) => (
                             <TableRow>
-                              <TableCell className="IdColumn">
-                                {index + 1}
+                              <TableCell>
+                                <EntryIndex index={index} />
                               </TableCell>
 
-                              <TableCell className="NameColumn">
+                              <TableCell className="NameColumn w-[42%]">
                                 {row.name || '-'}
                               </TableCell>
 
-                              <TableCell className="AddressColumn">
-                                {row.address || '-'}
-                              </TableCell>
+                              <TableCell>{row.address || '-'}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>

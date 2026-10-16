@@ -92,7 +92,7 @@ const PCRForm = () => {
     {
       id: 'results_assessment',
       label: <TabLabel field="results_assessment" />,
-      title: 'Project results overall assessment',
+      title: 'Project results: overall assessment highlights',
       component: <PCRResultsAssessment />,
     },
     {
@@ -116,7 +116,7 @@ const PCRForm = () => {
     {
       id: 'sdgs_contribution',
       label: <TabLabel field="sdgs_contribution" />,
-      title: 'SDGs',
+      title: 'Contribution to the Sustainable Development Goals (SDGs)',
       component: <PCRSdgs />,
     },
     {
