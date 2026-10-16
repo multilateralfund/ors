@@ -64,26 +64,50 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
       <div className="border-0 border-t border-solid border-primary pt-6">
         {pcData.length > 0 ? (
           <div className="flex flex-col gap-y-6">
-            {pcData.length > 0 ? (
-              map(pcData, (pc, pcIndex) => {
-                const llData = pcData[pcIndex][llField] || []
+            {map(pcData, (pc, pcIndex) => {
+              const llData = pcData[pcIndex][llField] || []
 
-                return (
-                  <div key={pcIndex} className="flex">
-                    <div className="w-1/4 bg-primary px-6 py-4">
-                      {detailItem(
-                        'Lessons learned',
-                        pc.project_component_option?.name,
-                        pcTitleClassname,
-                      )}
-                    </div>
-                    <div className="w-3/4 border border-solid border-[#e5e7eb] bg-white px-6 py-4">
-                      <SubSectionTitle>Lessons learned</SubSectionTitle>
-                      {llData.length > 0 ? (
-                        map(llData, (ll, llIndex) => (
+              return (
+                <div key={pcIndex} className="flex">
+                  <div className="w-1/4 bg-primary px-6 py-4">
+                    {detailItem(
+                      'Lessons learned',
+                      pc.project_component_option?.name,
+                      pcTitleClassname,
+                    )}
+                    {llData.length > 0 && (
+                      <>
+                        <Divider className="my-4 opacity-20" />
+                        {map(llData, (ll, llIndex) => (
+                          <div key={llIndex} className="mb-2">
+                            <div className="flex gap-3">
+                              <div className="mt-1 flex h-5 min-h-5 w-5 min-w-5 items-center justify-center rounded-full bg-mlfs-hlYellow text-lg font-bold text-primary">
+                                {llIndex + 1}
+                              </div>
+                              <h4 className="m-0 text-lg font-normal text-white">
+                                {ll.lesson?.name || '-'}
+                              </h4>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                  <div
+                    className={cx(
+                      'w-3/4 bg-white px-6 py-4',
+                      borderedContainerClassname,
+                    )}
+                  >
+                    {llData.length > 0 ? (
+                      <>
+                        <SubSectionTitle className="mb-5">
+                          Lessons learned
+                        </SubSectionTitle>
+                        {map(llData, (ll, llIndex) => (
                           <div key={llIndex}>
-                            <div className="flex gap-5 pt-4">
-                              <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-[#EBFF00]">
+                            <div className="flex gap-3">
+                              <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-mlfs-hlYellow">
                                 {llIndex + 1}
                               </div>
                               <div>
@@ -98,20 +122,18 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
                               </div>
                             </div>
                             {llIndex !== llData.length - 1 && (
-                              <Divider className="my-4" />
+                              <Divider className="-mx-6 my-4" />
                             )}
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-3xl text-primary">-</div>
-                      )}
-                    </div>
+                        ))}
+                      </>
+                    ) : (
+                      <NoDataReported text="No data reported." />
+                    )}
                   </div>
-                )
-              })
-            ) : (
-              <div className="text-3xl text-primary">-</div>
-            )}
+                </div>
+              )
+            })}
           </div>
         ) : (
           <div className={cx('bg-white p-6', borderedContainerClassname)}>
