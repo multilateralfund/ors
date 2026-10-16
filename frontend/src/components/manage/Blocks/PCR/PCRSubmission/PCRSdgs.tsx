@@ -6,7 +6,6 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import {
   TabLabel,
   PCRSelectWidget,
@@ -153,48 +152,60 @@ const PCRSdgs = () => {
         )}
         <PCRBooleanWidget
           {...{ PCRData, setPCRData, sectionIdentifier }}
-          field="sdg_not_applying"
+          field="sdg_applying"
           errors={agencyErrors}
           indexes={[crtTab]}
         />
-        <Divider className="my-2" />
-        <SubSectionTitle>Goals</SubSectionTitle>
-        <div className="flex flex-col gap-y-4">
-          {map(sdgsData, (_, sdgIndex) => (
-            <Fragment key={sdgIndex}>
-              <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                <PCRSelectWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="goal_id"
-                  options={sdgsOptions}
-                  errors={agencyErrors}
-                  indexes={[crtTab, sdgIndex]}
-                  subFields={['', sdgsField]}
-                />
-                <PCRTextAreaWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="description"
-                  errors={agencyErrors}
-                  indexes={[crtTab, sdgIndex]}
-                  subFields={['', sdgsField]}
-                />
-                <IoTrash
-                  className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                  size={16}
-                  onClick={() => {
-                    onRemoveSdg(sdgIndex)
-                  }}
-                />
-              </div>
-              {sdgIndex !== sdgsData.length - 1 && <Divider className="my-5" />}
-            </Fragment>
-          ))}
-        </div>
-        <SubmitButton
-          title="Add SDG"
-          onSubmit={onAddSdg}
-          className={cx('mr-auto h-8', { 'mt-4': sdgsData.length > 0 })}
-        />
+        {!sectionData[crtTab].sdg_applying ? (
+          <PCRTextAreaWidget
+            {...{ PCRData, setPCRData, sectionIdentifier }}
+            field="sdg_not_applying_explanation"
+            errors={agencyErrors}
+            indexes={[crtTab]}
+          />
+        ) : (
+          <>
+            <Divider className="my-5" />
+            <div className="flex flex-col gap-y-4">
+              {map(sdgsData, (_, sdgIndex) => (
+                <Fragment key={sdgIndex}>
+                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                    <PCRSelectWidget
+                      {...{ PCRData, setPCRData, sectionIdentifier }}
+                      field="goal_id"
+                      options={sdgsOptions}
+                      errors={agencyErrors}
+                      indexes={[crtTab, sdgIndex]}
+                      subFields={['', sdgsField]}
+                    />
+                    <PCRTextAreaWidget
+                      {...{ PCRData, setPCRData, sectionIdentifier }}
+                      field="description"
+                      errors={agencyErrors}
+                      indexes={[crtTab, sdgIndex]}
+                      subFields={['', sdgsField]}
+                    />
+                    <IoTrash
+                      className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
+                      size={16}
+                      onClick={() => {
+                        onRemoveSdg(sdgIndex)
+                      }}
+                    />
+                  </div>
+                  {sdgIndex !== sdgsData.length - 1 && (
+                    <Divider className="my-5" />
+                  )}
+                </Fragment>
+              ))}
+            </div>
+            <SubmitButton
+              title="Add SDG"
+              onSubmit={onAddSdg}
+              className={cx('mr-auto h-8', { 'mt-4': sdgsData.length > 0 })}
+            />
+          </>
+        )}
       </div>
     </>
   )

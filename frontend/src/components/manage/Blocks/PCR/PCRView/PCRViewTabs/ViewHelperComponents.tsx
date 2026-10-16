@@ -10,6 +10,7 @@ import { ProjectType } from '@ors/types/api_projects'
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Divider, Popover } from '@mui/material'
 import { FiEdit3, FiInfo } from 'react-icons/fi'
+import { FaCheck } from 'react-icons/fa6'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -72,19 +73,25 @@ export const numberDetailItem = (
 export const booleanDetailItem = (
   fieldName: string,
   fieldValue: boolean | null | undefined,
-) => (
-  <span className="flex flex-row items-center gap-4">
-    <span className="text-[#4D4D4D]">{fieldName}</span>
-    <h4
-      className={cx(
-        'm-0 text-xl font-semibold text-primary',
-        borderedValueClassname,
-      )}
-    >
-      {fieldValue ? 'Yes' : 'No'}
-    </h4>
-  </span>
-)
+  classname?: Record<string, string>,
+) => {
+  const { labelClassname, valueClassname } = classname ?? {}
+
+  return (
+    <span className="flex flex-row items-center gap-4">
+      <span className={cx('text-[#4D4D4D]', labelClassname)}>{fieldName}</span>
+      <h4
+        className={cx(
+          'm-0 text-xl font-semibold text-primary',
+          borderedValueClassname,
+          valueClassname,
+        )}
+      >
+        {fieldValue ? 'Yes' : 'No'}
+      </h4>
+    </span>
+  )
+}
 
 export const dateDetailItem = (fieldName: string, fieldValue: string) => (
   <span className="flex flex-col gap-1">
@@ -191,4 +198,16 @@ export const NoDataReported = ({
     <div className="font-semibold text-primary">{text}</div>
     <div className="text-[#333]">{additionalText}</div>
   </div>
+)
+
+export const SelectedEntity = (entity: string) => (
+  <h4
+    className={cx(
+      borderedValueClassname,
+      'm-0 flex flex-row items-center gap-2 rounded-full border-primary bg-primary !p-2 !font-normal !leading-none text-white',
+    )}
+  >
+    <FaCheck size={12} color="#bdcb19" />
+    {entity}
+  </h4>
 )

@@ -6,6 +6,7 @@ import {
   SubSectionTitle,
   detailItem,
   dateDetailItem,
+  SelectedEntity,
 } from './ViewHelperComponents'
 import { getOtherOptionId, getValueClassName } from '../../utils'
 import { PCRResponse } from '../../interfaces'
@@ -17,7 +18,6 @@ import {
   borderedContainerClassname,
 } from '../../constants'
 
-import { FaCheck } from 'react-icons/fa'
 import { Divider } from '@mui/material'
 import { map } from 'lodash'
 import cx from 'classnames'
@@ -110,17 +110,9 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
               Entities commenting ({pcr.additional_comments.length ?? 0}{' '}
               selected)
             </span>
-            {map(pcr.additional_comments, (comment) => (
-              <h4
-                className={cx(
-                  borderedValueClassname,
-                  'm-0 flex flex-row items-center gap-2 rounded-full border-primary bg-primary !p-2 !font-normal text-white',
-                )}
-              >
-                <FaCheck size={12} color="#bdcb19" />
-                {comment.entity}
-              </h4>
-            ))}
+            {map(pcr.additional_comments, (comment) =>
+              SelectedEntity(comment.entity),
+            )}
           </div>
           {pcr.additional_comments.length > 0 && (
             <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">

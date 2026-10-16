@@ -204,7 +204,7 @@ const PCRForm = () => {
   useEffect(() => {
     const sdgData = filter(
       sdgContributionData,
-      (sdg) => sdg.goals.length > 0 || sdg.sdg_not_applying,
+      (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
     )
 
     setErrors((prev: Record<string, any[]>) => ({

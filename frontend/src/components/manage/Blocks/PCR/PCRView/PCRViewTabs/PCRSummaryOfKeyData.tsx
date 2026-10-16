@@ -264,7 +264,7 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
               )}
 
               {currentTab === 1 && (
-                <FieldGroup title="Alternative technology">
+                <FieldGroup>
                   {summaryData.alternative_technologies.length > 0 ? (
                     <div className="flex flex-col gap-y-4">
                       <div className="grid grid-cols-2 gap-x-7">
@@ -307,7 +307,7 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
               )}
 
               {currentTab === 2 && (
-                <FieldGroup title="Enterprises">
+                <FieldGroup>
                   {summaryData.enterprises.length > 0 ? (
                     <TableContainer
                       component={Paper}
@@ -330,11 +330,13 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                                 <EntryIndex index={index} />
                               </TableCell>
 
-                              <TableCell className="NameColumn w-[42%]">
+                              <TableCell className="NameColumn w-1/2">
                                 {row.name || '-'}
                               </TableCell>
 
-                              <TableCell>{row.address || '-'}</TableCell>
+                              <TableCell className="w-1/2">
+                                {row.address || '-'}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
