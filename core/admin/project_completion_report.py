@@ -119,6 +119,7 @@ class PCRProjectComponentOptionAdmin(admin.ModelAdmin):
 @admin.register(PCRDelayCategory)
 class PCRDelayCategoryAdmin(admin.ModelAdmin):
     admin_group = "PCR"
+    search_fields = ["name"]
 
     def get_list_display(self, request):
         exclude = [
@@ -161,7 +162,7 @@ class PCRDelayCauseAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     search_fields = [
         "pcr_project_component__pcr__meta_project__umbrella_code",
-        "delay",
+        "delay__name",
     ]
     list_filter = [
         AutocompleteFilterFactory("pcr_project_component", "pcr_project_component"),
@@ -169,6 +170,7 @@ class PCRDelayCauseAdmin(admin.ModelAdmin):
     ]
     raw_id_fields = [
         "pcr_project_component",
+        "delay",
     ]
 
     def get_list_display(self, request):
