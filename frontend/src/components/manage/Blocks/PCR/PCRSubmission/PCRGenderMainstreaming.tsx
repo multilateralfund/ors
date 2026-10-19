@@ -3,13 +3,18 @@ import { Fragment, useContext, useState } from 'react'
 import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { ppField, projectPhaseOptions, booleanFieldsOpts } from '../constants'
 import { getSectionAgencies, formatErrors } from '../utils'
+import {
+  ppField,
+  projectPhaseOptions,
+  booleanFieldsOpts,
+  borderedContainerClassname,
+} from '../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { map } from 'lodash'
+import cx from 'classnames'
 
 const PCRGenderMainstreaming = () => {
   const sectionIdentifier = 'gender_mainstreaming'
@@ -58,44 +63,50 @@ const PCRGenderMainstreaming = () => {
           />
         ))}
       </Tabs>
-      <div className="border-0 border-t border-solid border-primary py-6">
+      <div className="border-0 border-t border-solid border-primary pt-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
         )}
-        <SubSectionTitle>Project cycle phases</SubSectionTitle>
-        <div className="flex flex-col gap-y-4">
-          {map(ppData, (_, ppIndex) => (
-            <Fragment key={ppIndex}>
-              <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                <PCRSelectWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="project_preparation"
-                  options={projectPhaseOptions}
-                  errors={agencyErrors}
-                  indexes={[crtTab, ppIndex]}
-                  subFields={['', ppField]}
-                  disabled={true}
-                />
-                <PCRSelectWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="prefilled"
-                  options={booleanFieldsOpts}
-                  errors={agencyErrors}
-                  indexes={[crtTab, ppIndex]}
-                  subFields={['', ppField]}
-                />
-                <PCRTextAreaWidget
-                  {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="qualitative_description"
-                  errors={agencyErrors}
-                  indexes={[crtTab, ppIndex]}
-                  subFields={['', ppField]}
-                  rows={2}
-                />
-              </div>
-              {ppIndex !== ppData.length - 1 && <Divider className="my-5" />}
-            </Fragment>
-          ))}
+        <div
+          className={cx(
+            'flex flex-col bg-white p-6',
+            borderedContainerClassname,
+          )}
+        >
+          <div className="flex flex-col gap-y-4">
+            {map(ppData, (_, ppIndex) => (
+              <Fragment key={ppIndex}>
+                <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+                  <PCRSelectWidget
+                    {...{ PCRData, setPCRData, sectionIdentifier }}
+                    field="project_preparation"
+                    options={projectPhaseOptions}
+                    errors={agencyErrors}
+                    indexes={[crtTab, ppIndex]}
+                    subFields={['', ppField]}
+                    disabled={true}
+                  />
+                  <PCRSelectWidget
+                    {...{ PCRData, setPCRData, sectionIdentifier }}
+                    field="prefilled"
+                    options={booleanFieldsOpts}
+                    errors={agencyErrors}
+                    indexes={[crtTab, ppIndex]}
+                    subFields={['', ppField]}
+                  />
+                  <PCRTextAreaWidget
+                    {...{ PCRData, setPCRData, sectionIdentifier }}
+                    field="qualitative_description"
+                    errors={agencyErrors}
+                    indexes={[crtTab, ppIndex]}
+                    subFields={['', ppField]}
+                    rows={2}
+                  />
+                </div>
+                {ppIndex !== ppData.length - 1 && <Divider className="my-5" />}
+              </Fragment>
+            ))}
+          </div>
         </div>
       </div>
     </>

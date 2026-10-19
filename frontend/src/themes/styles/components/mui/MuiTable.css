@@ -49,34 +49,34 @@
   @apply border-0;
 }
 
-.PcrEnterprisesTableContainer {
-  @apply max-h-[400px] overflow-auto !rounded-lg border border-solid border-[#d5dce1] shadow-none;
+.PcrViewTableContainer {
+  @apply max-h-[400px] overflow-auto !rounded border border-solid border-[#e5e7eb] shadow-none;
 }
 
-.PcrEnterprisesTable {
+.PcrViewTable {
   @apply min-w-full;
-}
 
-.PcrEnterprisesTable .MuiTableCell-root {
-  @apply border-b border-[#d5dce1] px-4 py-2;
-}
+  .MuiTableCell-root {
+    @apply border-0 border-b border-r border-solid border-[#e5e7eb] px-2 py-3 align-top text-lg;
+  }
 
-.PcrEnterprisesTable .MuiTableHead-root .MuiTableCell-root {
-  @apply bg-primary text-[13px] font-bold text-mlfs-hlerYellowTint;
-}
+  .MuiTableHead-root .MuiTableCell-root {
+    @apply bg-[#edf1f4] font-bold text-primary;
+  }
 
-.PcrEnterprisesTable .IdColumn {
-  @apply w-12;
-}
+  .MuiTableCell-root:last-child {
+    @apply border-r-0;
+  }
 
-.PcrEnterprisesTable .MuiTableBody-root .IdColumn {
-  @apply text-lg text-[#9ca3af];
-}
+  .MuiTableBody-root .MuiTableRow-root:last-child .MuiTableCell-root {
+    @apply border-b-0;
+  }
 
-.PcrEnterprisesTable .NameColumn {
-  @apply w-[42%] text-lg font-semibold text-primary;
-}
+  .MuiTableBody-root .MuiTableCell-root:first-child {
+    @apply min-w-12;
+  }
 
-.PcrEnterprisesTable .AddressColumn {
-  @apply whitespace-normal text-lg leading-[1.6] text-[#333];
+  .NameColumn {
+    @apply font-semibold text-primary;
+  }
 }

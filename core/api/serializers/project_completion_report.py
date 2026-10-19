@@ -34,7 +34,7 @@ from core.models.project_completion_report import (
 )
 from core.models.substance import Substance
 
-# pylint: disable=too-many-locals,abstract-method
+# pylint: disable=too-many-locals,abstract-method,too-many-lines
 
 
 class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
@@ -598,12 +598,31 @@ class PCRCreateSerializer(serializers.ModelSerializer):
 
 class PCRUpdateSerializer(serializers.ModelSerializer):
     pcr_projects = PCRProjectSerializer(many=True, required=False)
+    activities = PCRActivitySerializer(many=True, required=False)
+    additional_comments = PCRAdditionalCommentSerializer(many=True, required=False)
+    gender_mainstreamings = PCRGenderMainstreamingSerializer(many=True, required=False)
+    supporting_evidences = PCRSupportingEvidenceSerializer(many=True, required=False)
+    sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(
+        many=True, required=False
+    )
+    project_components = PCRProjectComponentSerializer(many=True, required=False)
 
     class Meta:
         model = PCR
         fields = [
+            "activities",
+            "additional_comments",
             "submission_date",
+            "gender_mainstreamings",
+            "project_components",
+            "project_date_approved",
+            "project_date_completion",
+            "supporting_evidences",
             "pcr_projects",
+            "phase_out_ods_approved",
+            "phase_out_ods_actual",
+            "phase_out_co2_eq_t_approved",
+            "phase_out_co2_eq_t_actual",
             "financial_figures_status",
             "financial_figures_status_explanation",
             "addresses",
@@ -612,8 +631,12 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
             "rating",
             "rating_explanation",
             "rating_explanation_other",
+            "sustainable_development_goals",
             "completed_by",
         ]
+
+    def _get_files_by_name(self):
+        return {file_obj.name: file_obj for file_obj in self.context.get("files", [])}
 
     def validate(self, attrs):
         pcr_projects = attrs.get("pcr_projects", [])
@@ -621,16 +644,32 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
             "project_id", flat=True
         )
         validate_pcr_project_references(pcr_projects, allowed_project_ids)
+
+        files_by_name = self._get_files_by_name()
+
+        supporting_evidences = attrs.get("supporting_evidences", [])
+        for evidence in supporting_evidences:
+            filename = evidence.get("filename")
+            if filename and filename in files_by_name:
+                evidence["file"] = files_by_name[filename]
         return attrs
 
     @transaction.atomic
     def update(self, instance, validated_data):
         pcr_projects_data = validated_data.pop("pcr_projects", [])
+        nested_data_pcr = pop_nested_data(validated_data, PCR_NESTED_MODELS)
+        supporting_evidences_data = validated_data.pop("supporting_evidences", [])
+        sustainable_development_goals_data = validated_data.pop(
+            "sustainable_development_goals", []
+        )
+        project_components_data = validated_data.pop("project_components", [])
         instance = super().update(instance, validated_data)
         pcr_projects_by_project_id = {
             pcr_project.project_id: pcr_project
             for pcr_project in instance.pcr_projects.all()
         }
+
+        replace_nested_data(instance, "pcr", nested_data_pcr, PCR_NESTED_MODELS)
         for pcr_project_data in pcr_projects_data:
             project = pcr_project_data.pop("project")
             pcr_project = pcr_projects_by_project_id[project.id]
@@ -646,6 +685,57 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
                 nested_data_pcr_project,
                 PCR_PROJECT_NESTED_MODELS,
             )
+        PCRLearnedLesson.objects.filter(pcr_project_component__pcr=instance).delete()
+        PCRDelayCause.objects.filter(pcr_project_component__pcr=instance).delete()
+        PCRProjectComponent.objects.filter(pcr=instance).delete()
+        for project_component_data in project_components_data:
+            nested_data_project_component = pop_nested_data(
+                project_component_data, PCR_PROJECT_COMPONENT_NESTED_MODELS
+            )
+            project_component = PCRProjectComponent.objects.create(
+                pcr=instance, **project_component_data
+            )
+            replace_nested_data(
+                project_component,
+                "pcr_project_component",
+                nested_data_project_component,
+                PCR_PROJECT_COMPONENT_NESTED_MODELS,
+            )
+        PCRSustainableDevelopmentGoalDescription.objects.filter(
+            sgr__pcr=instance
+        ).delete()
+        PCRSustainableDevelopmentGoal.objects.filter(pcr=instance).delete()
+        for sustainable_development_goal_data in sustainable_development_goals_data:
+            nested_data_sustainable_development_goal = pop_nested_data(
+                sustainable_development_goal_data,
+                PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
+            )
+            sustainable_development_goal = PCRSustainableDevelopmentGoal.objects.create(
+                pcr=instance, agency_id=sustainable_development_goal_data["agency_id"]
+            )
+            replace_nested_data(
+                sustainable_development_goal,
+                "sgr",
+                nested_data_sustainable_development_goal,
+                PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
+            )
+        ids = []
+        for evidence_data in supporting_evidences_data:
+            file_obj = evidence_data.pop("file", None)
+
+            supporting_evidence, _ = PCRSupportingEvidence.objects.get_or_create(
+                pcr=instance,
+                agency_id=evidence_data.get("agency_id"),
+                section_id=evidence_data.get("section_id"),
+                filename=evidence_data.get("filename")
+                or (file_obj.name if file_obj else None),
+                defaults={
+                    "link": evidence_data.get("link"),
+                    "file": file_obj,
+                },
+            )
+            ids.append(supporting_evidence.id)
+        PCRSupportingEvidence.objects.filter(pcr=instance).exclude(id__in=ids).delete()
         return instance
 
     def to_representation(self, instance):
@@ -913,8 +1003,8 @@ class PCRProjectSetAdHocOrPcrDueSerializer(serializers.Serializer):
     Serializer for MetaProject model.
     """
 
-    projects = serializers.PrimaryKeyRelatedField(
-        queryset=Project.objects.all(), many=True
+    meta_projects = serializers.PrimaryKeyRelatedField(
+        queryset=MetaProject.objects.all(), many=True
     )
     ad_hoc_pcr = serializers.BooleanField(default=False)
     pcr_due = serializers.BooleanField(default=False)

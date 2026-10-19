@@ -5,6 +5,7 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
   SectionTitle,
   SubSectionTitle,
+  NoDataReported,
   detailItem,
 } from './ViewHelperComponents'
 import { PCRResponse } from '../../interfaces'
@@ -12,11 +13,13 @@ import {
   pcrFieldsMapping,
   cdField,
   pcTitleClassname,
-  pcTextareaClassname,
+  textareaClassname,
+  borderedContainerClassname,
 } from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
+import cx from 'classnames'
 
 const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
   const { fundsByAgency } = useContext(PCRDataContext)
@@ -58,63 +61,108 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="border-0 border-t border-solid border-primary py-6">
-        <SubSectionTitle>Project components</SubSectionTitle>
-        <div className="flex flex-col gap-y-6">
-          {pcData.length > 0 ? (
-            map(pcData, (pc, pcIndex) => {
+      <div className="border-0 border-t border-solid border-primary pt-6">
+        {pcData.length > 0 ? (
+          <div className="flex flex-col gap-y-6">
+            {map(pcData, (pc, pcIndex) => {
               const cdData = pcData[pcIndex][cdField] || []
 
               return (
-                <div key={pcIndex}>
-                  <div className="rounded-t-lg bg-primary px-8 py-4">
+                <div key={pcIndex} className="flex">
+                  <div className="w-1/4 bg-primary px-6 py-4">
                     {detailItem(
-                      'Component',
+                      'Delay clusters',
                       pc.project_component_option?.name,
                       pcTitleClassname,
                     )}
-                  </div>
-                  <div className="rounded-b-lg border border-solid border-[#e5e7eb] bg-white p-5">
-                    <SubSectionTitle>Causes of delay</SubSectionTitle>
-                    {cdData.length > 0 ? (
-                      map(cdData, (cd, cdIndex) => (
-                        <div key={cdIndex}>
-                          <div className="flex gap-5 pt-4">
-                            <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-[#EBFF00]">
-                              {cdIndex + 1}
-                            </div>
-                            <div className="flex flex-col gap-3">
-                              <h4 className="m-0 text-lg font-semibold text-primary">
+                    {cdData.length > 0 && (
+                      <>
+                        <Divider className="my-4 opacity-20" />
+                        {map(cdData, (cd, cdIndex) => (
+                          <div key={cdIndex} className="mb-2">
+                            <div className="flex gap-3">
+                              <div className="mt-1 flex h-5 min-h-5 w-5 min-w-5 items-center justify-center rounded-full bg-mlfs-hlYellow text-lg font-bold text-primary">
+                                {cdIndex + 1}
+                              </div>
+                              <h4 className="m-0 text-lg font-normal text-white">
                                 {cd.delay?.name || '-'}
                               </h4>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                  <div
+                    className={cx(
+                      'w-3/4 bg-white px-6 py-4',
+                      borderedContainerClassname,
+                    )}
+                  >
+                    {cdData.length > 0 ? (
+                      <>
+                        <div className="mb-5 grid grid-cols-2 gap-4">
+                          <SubSectionTitle>
+                            Description of the root causes of delay
+                          </SubSectionTitle>
+                          <SubSectionTitle>Action taken</SubSectionTitle>
+                        </div>
+                        {map(cdData, (cd, cdIndex) => (
+                          <div key={cdIndex}>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex gap-3">
+                                <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-mlfs-hlYellow">
+                                  {cdIndex + 1}
+                                </div>
+                                <h4 className="m-0 text-lg font-semibold text-primary">
+                                  {cd.delay?.name || '-'}
+                                </h4>
+                              </div>
+                              <div />
                               {detailItem(
                                 pcrFieldsMapping.description,
                                 cd.description,
-                                pcTextareaClassname,
+                                {
+                                  ...textareaClassname,
+                                  containerClassname: cx(
+                                    textareaClassname.containerClassname,
+                                    'ml-9',
+                                  ),
+                                },
                               )}
                               {detailItem(
                                 pcrFieldsMapping.action_taken,
                                 cd.action_taken,
-                                pcTextareaClassname,
+                                {
+                                  ...textareaClassname,
+                                  containerClassname: cx(
+                                    textareaClassname.containerClassname,
+                                    'bg-[#edf1f4] rounded !w-full py-3 px-4',
+                                  ),
+                                },
+                                false,
+                                false,
                               )}
                             </div>
+                            {cdIndex !== cdData.length - 1 && (
+                              <Divider className="-mx-6 my-4" />
+                            )}
                           </div>
-                          {cdIndex !== cdData.length - 1 && (
-                            <Divider className="my-4" />
-                          )}
-                        </div>
-                      ))
+                        ))}
+                      </>
                     ) : (
-                      <div className="text-3xl text-primary">-</div>
+                      <NoDataReported text="No data reported." />
                     )}
                   </div>
                 </div>
               )
-            })
-          ) : (
-            <div className="text-3xl text-primary">-</div>
-          )}
-        </div>
+            })}
+          </div>
+        ) : (
+          <div className={cx('bg-white p-6', borderedContainerClassname)}>
+            <NoDataReported text="No data reported." />
+          </div>
+        )}
       </div>
     </>
   )

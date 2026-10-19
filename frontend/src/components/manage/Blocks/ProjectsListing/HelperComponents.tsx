@@ -172,12 +172,14 @@ export const NavigationButton = ({
   type = 'next',
   isBtnDisabled = false,
   className,
+  extraText,
 }: ProjectTabSetters & {
   nextStep?: number
   nextTab?: number
   type?: string
   isBtnDisabled?: boolean
   className?: string
+  extraText?: string
 }) => {
   const moveToNextStep = () => {
     if (nextStep && setCurrentStep) {
@@ -207,7 +209,7 @@ export const NavigationButton = ({
       variant="contained"
       onClick={moveToNextStep}
     >
-      {upperCase(type)}
+      {upperCase(type)} {extraText && `: ${extraText}`}
     </Button>
   )
 }

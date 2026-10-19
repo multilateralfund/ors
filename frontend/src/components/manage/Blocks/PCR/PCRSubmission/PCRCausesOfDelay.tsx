@@ -217,7 +217,7 @@ const PCRCausesOfDelay = () => {
           />
         ))}
       </Tabs>
-      <div className="border-0 border-t border-solid border-primary py-6">
+      <div className="border-0 border-t border-solid border-primary pt-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
         )}

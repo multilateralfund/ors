@@ -71,9 +71,9 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   address: 'Address of enterprise',
   disposal_type: 'Disposal type',
   disposal_date: 'Date of disposal',
-  activity_title: 'Activity component',
+  activity_title: 'Activity title',
   planned_output: 'Planned output(s)',
-  actual_activity_output: 'Actual activity output(s)',
+  actual_activity_output: 'Actual output(s)',
   additional_remarks: 'Additional remarks, if applicable',
   project_component_option_id: 'Project component',
   delay_id: 'Cause of delay',
@@ -83,7 +83,9 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   project_preparation: 'Project cycle phase',
   qualitative_description: 'Qualitative description',
   prefilled: 'Gender policy implemented',
-  sdg_not_applying: 'SDG reporting does not apply for this agency',
+  sdg_applying:
+    'Did the project contribute to any Sustainable Development Goals (SDGs)?',
+  sdg_not_applying_explanation: 'Explanation',
   goal_id: 'SDG',
   section_id: 'Section',
 }
@@ -111,6 +113,8 @@ export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   learned_lessons: 'Lesson learned',
   gender_mainstreamings: 'Gender mainstreaming',
   sustainable_development_goals: 'SDG',
+  sdg_applying:
+    'Project contributing to any Sustainable Development Goals (SDGs)',
   supporting_evidences: 'Supporting evidence',
 }
 
@@ -201,24 +205,14 @@ export const overviewTextareaClassname = {
   valueClassname: valueClassname,
 }
 
-export const activitiesTextareaClassname = {
-  containerClassname: 'p-4 w-full lg:w-[65%] pl-0',
-  ...commonClassnames,
-}
-
 export const pcTitleClassname = {
   containerClassname: 'gap-2',
-  labelClassname: 'uppercase text-[#F5FF80]',
-  valueClassname: 'text-white !font-bold !text-3xl',
+  labelClassname: 'uppercase text-mlfs-hlYellow text-lg',
+  valueClassname: 'text-white !font-medium !text-3xl',
 }
 
-export const pcTextareaClassname = {
+export const textareaClassname = {
   containerClassname: 'w-full lg:w-[65%] p-0',
-  ...commonClassnames,
-}
-
-export const sdgsTextareaClassname = {
-  containerClassname: 'w-full p-0',
   ...commonClassnames,
 }
 

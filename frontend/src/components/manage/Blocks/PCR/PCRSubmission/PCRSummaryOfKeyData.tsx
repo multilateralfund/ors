@@ -151,7 +151,7 @@ export const FieldGroup = ({
   title?: string
 }) => (
   <div className="flex flex-col">
-    {title && <SubSectionTitle>{title}</SubSectionTitle>}
+    {title && <SubSectionTitle className="mb-4">{title}</SubSectionTitle>}
     {children}
   </div>
 )
@@ -776,7 +776,7 @@ const PCRSummaryOfKeyData = () => {
                         errors={formattedErrors.alternative_technologies}
                       />
                     )}
-                  <FieldGroup title="Alternative technology">
+                  <FieldGroup>
                     <div className="flex flex-col gap-y-4">
                       <div className="flex gap-x-7">
                         <div className="min-w-56 sm:min-w-64">
@@ -871,7 +871,7 @@ const PCRSummaryOfKeyData = () => {
                     formattedErrors.enterprises.length > 0 && (
                       <ErrorsList errors={formattedErrors.enterprises} />
                     )}
-                  <FieldGroup title="Enterprises">
+                  <FieldGroup>
                     <div className="flex flex-col gap-y-4">
                       <div className="grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]">
                         <div>

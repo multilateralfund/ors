@@ -453,7 +453,7 @@ export const getFormData = (
 
   const sdgsContributionData = filter(
     sdgs_contribution,
-    (sdg) => sdg.goals.length > 0 || sdg.sdg_not_applying,
+    (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
   )
 
   const formattedSupportingEvidence =
@@ -568,7 +568,7 @@ export const getFundingClassname = (index: number, isTotal: boolean) =>
   )
 
 export const getValueClassName = (value: string) => ({
-  'bg-[#e0f0e6] text-[#275f3b] border-[#c3e0cc]': value === 'Yes',
-  'bg-[#fbe5e4] text-[#8c2626] border-[#f0cdcc]': value === 'No',
-  'bg-[#edf1f4] text-[#424d54] border-[#d9dde0]': value === 'N/A',
+  '!bg-[#e0f0e6] !text-[#0c4b27] !border-[#b3dec5]': value === 'Yes',
+  '!bg-[#fbe5e4] !text-[#8c2626] !border-[#f0cdcc]': value === 'No',
+  '!bg-[#edf1f4] !text-[#424d54] !border-[#d9dde0]': value === 'N/A',
 })

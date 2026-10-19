@@ -9,6 +9,8 @@ import {
   SectionTitle,
   SubSectionTitle,
   ProjectSummary,
+  EntryIndex,
+  NoDataReported,
   detailItem,
   dateDetailItem,
   numberDetailItem,
@@ -31,6 +33,7 @@ import { ColDef, ICellRendererParams } from 'ag-grid-community'
 import { HiArrowLongRight } from 'react-icons/hi2'
 import { TfiClose } from 'react-icons/tfi'
 import { FiEye } from 'react-icons/fi'
+import dayjs from 'dayjs'
 import {
   Dialog,
   DialogTitle,
@@ -263,7 +266,7 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
               )}
 
               {currentTab === 1 && (
-                <FieldGroup title="Alternative technology">
+                <FieldGroup>
                   {summaryData.alternative_technologies.length > 0 ? (
                     <div className="flex flex-col gap-y-4">
                       <div className="grid grid-cols-2 gap-x-7">
@@ -300,40 +303,40 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                       )}
                     </div>
                   ) : (
-                    '-'
+                    <NoDataReported text="No data reported." />
                   )}
                 </FieldGroup>
               )}
 
               {currentTab === 2 && (
-                <FieldGroup title="Enterprises">
+                <FieldGroup>
                   {summaryData.enterprises.length > 0 ? (
                     <TableContainer
                       component={Paper}
-                      className="PcrEnterprisesTableContainer"
+                      className="PcrViewTableContainer"
                     >
-                      <Table stickyHeader className="PcrEnterprisesTable">
+                      <Table stickyHeader className="PcrViewTable">
                         <TableHead>
                           <TableRow>
-                            <TableCell className="IdColumn">#</TableCell>
+                            <TableCell>#</TableCell>
                             <TableCell className="NameColumn">
-                              NAME OF ENTERPRISE
+                              Name of enterprise
                             </TableCell>
-                            <TableCell>ADDRESS OF ENTERPRISE</TableCell>
+                            <TableCell>Address of enterprise</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {summaryData.enterprises.map((row, index) => (
                             <TableRow>
-                              <TableCell className="IdColumn">
-                                {index + 1}
+                              <TableCell>
+                                <EntryIndex index={index} />
                               </TableCell>
 
-                              <TableCell className="NameColumn">
+                              <TableCell className="NameColumn w-1/2">
                                 {row.name || '-'}
                               </TableCell>
 
-                              <TableCell className="AddressColumn">
+                              <TableCell className="w-1/2">
                                 {row.address || '-'}
                               </TableCell>
                             </TableRow>
@@ -342,85 +345,67 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                       </Table>
                     </TableContainer>
                   ) : (
-                    '-'
+                    <NoDataReported text="No data reported." />
                   )}
                 </FieldGroup>
               )}
 
               {currentTab === 3 && (
-                <div>
-                  <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
-                    {summaryData.equipments.length > 0 ? (
-                      <div className="flex flex-col gap-y-4">
-                        <div className="hidden max-w-[84rem] grid-cols-[16rem_22rem_16rem_14rem_auto] gap-4 xl:grid">
-                          <Label>Name of equipment</Label>
-                          <Label>Description</Label>
-                          <Label>Disposal type</Label>
-                          <Label>Date of disposal</Label>
-                        </div>
-                        {summaryData.equipments.map((entry, index) => {
-                          const valueToDisplay = getValueToDisplay(
-                            disposalTypeOptions,
-                            entry.disposal_type,
-                          )
+                <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
+                  {summaryData.equipments.length > 0 ? (
+                    <TableContainer
+                      component={Paper}
+                      className="PcrViewTableContainer"
+                    >
+                      <Table stickyHeader className="PcrViewTable">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>#</TableCell>
+                            <TableCell className="NameColumn">
+                              Name of equipment
+                            </TableCell>
+                            <TableCell>Description</TableCell>
+                            <TableCell>Disposal type</TableCell>
+                            <TableCell>Date of disposal</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {summaryData.equipments.map((row, index) => {
+                            const disposalType = getValueToDisplay(
+                              disposalTypeOptions,
+                              row.disposal_type,
+                            )
+                            const disposalDate =
+                              row.disposal_date &&
+                              dayjs(row.disposal_date).format('DD/MM/YYYY')
 
-                          return (
-                            <div
-                              key={index}
-                              className="grid max-w-[84rem] grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[16rem_22rem_16rem_14rem_auto]"
-                            >
-                              <div className="w-full">
-                                <div className="xl:hidden">
-                                  <Label
-                                    htmlFor={`equipment-name-${crtProject.id}-${index}`}
-                                  >
-                                    Name of equipment
-                                  </Label>
-                                </div>
-                                {detailItem('', entry.name)}
-                              </div>
-                              <div className="w-full md:col-span-2 xl:col-span-1">
-                                <div className="xl:hidden">
-                                  <Label
-                                    htmlFor={`equipment-description-${crtProject.id}-${index}`}
-                                  >
-                                    Description
-                                  </Label>
-                                </div>
-                                {detailItem('', entry.description, {
-                                  labelClassname:
-                                    'self-start whitespace-nowrap',
-                                })}
-                              </div>
-                              <div className="min-w-56 sm:min-w-64">
-                                <div className="xl:hidden">
-                                  <Label
-                                    htmlFor={`equipment-disposal_type-${crtProject.id}-${index}`}
-                                  >
-                                    Disposal type
-                                  </Label>
-                                </div>
-                                {detailItem('', valueToDisplay)}
-                              </div>
-                              <div className="w-full">
-                                <div className="xl:hidden">
-                                  <Label
-                                    htmlFor={`equipment-disposal_date-${crtProject.id}-${index}`}
-                                  >
-                                    Date of disposal
-                                  </Label>
-                                </div>
-                                {dateDetailItem('', entry.disposal_date ?? '')}
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      '-'
-                    )}
-                  </FieldGroup>
-                </div>
+                            return (
+                              <TableRow>
+                                <TableCell>
+                                  <EntryIndex index={index} />
+                                </TableCell>
+                                <TableCell className="NameColumn w-1/4">
+                                  {row.name || '-'}
+                                </TableCell>
+                                <TableCell className="w-1/4">
+                                  {row.description || '-'}
+                                </TableCell>
+                                <TableCell className="w-1/4">
+                                  {disposalType || '-'}
+                                </TableCell>
+                                <TableCell className="w-1/4">
+                                  {disposalDate || '-'}
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  ) : (
+                    <NoDataReported text="No data reported." />
+                  )}
+                </FieldGroup>
               )}
             </div>
           </DialogContent>

@@ -4,16 +4,17 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
   SectionTitle,
-  SubSectionTitle,
+  NoDataReported,
   detailItem,
 } from './ViewHelperComponents'
-import { pcrFieldsMapping } from '../../constants'
+import { borderedContainerClassname, pcrFieldsMapping } from '../../constants'
 import { PCRResponse } from '../../interfaces'
 import { formatApiUrl } from '@ors/helpers'
 
 import { IoDownloadOutline } from 'react-icons/io5'
 import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, find, keys, map } from 'lodash'
+import cx from 'classnames'
 
 const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
   const { fundsByAgency } = useContext(PCRDataContext)
@@ -55,11 +56,15 @@ const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
         ))}
       </Tabs>
-      <div className="border-0 border-t border-solid border-primary py-6">
-        <SubSectionTitle className="!mb-2">Attachments</SubSectionTitle>
-        <div className="flex flex-col rounded-lg border border-solid border-[#e5e7eb] bg-white p-5">
+      <div className="border-0 border-t border-solid border-primary pt-6">
+        <div
+          className={cx(
+            'flex flex-col bg-white p-6',
+            borderedContainerClassname,
+          )}
+        >
           {evidencesData.length === 0 ? (
-            <p className="m-1 ml-0 text-lg text-gray-500">No files available</p>
+            <NoDataReported text="No files available." />
           ) : (
             evidencesData.map((file, index) => {
               const fileName = file.filename
