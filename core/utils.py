@@ -150,6 +150,7 @@ def get_meta_project(project):
         return MetaProject.objects.create(
             country=project.country,
             cluster=project.cluster,
+            lead_agency=project.lead_agency,
             type=Project.Category.MYA,
             umbrella_code=get_draft_meta_project_code(
                 project.country,
