@@ -57,6 +57,7 @@ const getColumnDefs = (
                   checked={crtViewProjectsIds.includes(
                     props.data.metaprojectId,
                   )}
+                  disabled={view === 'table' && !(hasAdHocPcr || isPcrDue)}
                   onChange={(event) => {
                     const isChecked = event.target.checked
 
