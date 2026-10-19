@@ -33,6 +33,7 @@ const getColumnDefs = (
           props.data.projects,
           (project) => project.ad_hoc_pcr,
         )
+        const isPcrDue = find(props.data.projects, (project) => project.pcr_due)
 
         return (
           <div className="flex items-center gap-1 p-2">
@@ -79,13 +80,23 @@ const getColumnDefs = (
             <span className="flex-1 overflow-hidden truncate whitespace-nowrap">
               {props.value}
             </span>
-            {view === 'list' && (
+            {view === 'table' && (
               <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
                 {hasAdHocPcr && (
                   <Tooltip title="Ad-hoc PCR" placement="top" arrow>
                     <Chip
                       label="Ad-hoc"
                       className="border-sky-300 bg-sky-50 text-sky-700"
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Tooltip>
+                )}
+                {isPcrDue && (
+                  <Tooltip title="PCR due" placement="top" arrow>
+                    <Chip
+                      label="Due"
+                      className="border-rose-300 bg-rose-50 text-rose-800"
                       variant="outlined"
                       size="small"
                     />
