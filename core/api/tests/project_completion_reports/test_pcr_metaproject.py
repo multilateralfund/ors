@@ -124,22 +124,21 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         self.client.force_authenticate(user=admin_user)
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 1
         assert response.data[0]["id"] == projects[0].id
-        assert response.data[1]["id"] == projects[1].id
 
     def test_retrieve_includes_inventory_calculated_project_values(
         self,
         admin_user,
         project_approved_status,
+        project_financially_completed_status,
     ):
-        transferred_status = ProjectStatusFactory(name="Transferred", code="TRA")
         meta_project = MetaProjectFactory(umbrella_code="PCR-CALC")
         project = ProjectFactory.create(
             meta_project=meta_project,
             metacode=meta_project.umbrella_code,
             submission_status=project_approved_status,
-            status=transferred_status,
+            status=project_financially_completed_status,
             total_fund=1000.0,
             fund_transferred=250.0,
             total_phase_out_odp_tonnes=12.5,
@@ -198,7 +197,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         project_data = response.data["projects"][0]
         assert project_data["date_approved"] == "2024-01-31"
         assert project_data["actual_date_of_completion"] == "2025-06-30"
-        assert project_data["funds_approved"] == 1250.0
+        assert project_data["funds_approved"] == 1000.0
         assert project_data["odp_phase_out_approved"] == "12.500000000000000"
         assert project_data["odp_phase_out_actual"] == 8.0
         assert project_data["hfc_phase_down_co2_approved"] == "3456.000000000000000"
@@ -221,6 +220,8 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         new_agency,
     ):
         projects = _setup_pcr_meta_project_list
+        projects[2].status = project_financially_completed_status
+        projects[2].save()
         self.client.force_authenticate(user=admin_user)
 
         # region
@@ -329,7 +330,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
 
         response = self.client.get(self.url, {"pcr_submitted": "No"})
         assert response.status_code == 200
-        assert len(response.data) == 1
+        assert len(response.data) == 2
         assert response.data[0]["id"] == projects[0].meta_project.id
 
         # pcr submission date
