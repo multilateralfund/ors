@@ -83,6 +83,7 @@ class ProjectAssociationMixin:
             meta_project = MetaProject.objects.create(
                 umbrella_code=metacode,
                 country=country,
+                lead_agency_id=validated_data.get("lead_agency_id"),
                 cluster=validated_data["projects"].first().cluster,
                 type=project_category,
             )

@@ -973,16 +973,23 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
 
     projects = serializers.SerializerMethodField()
     pcr_id = serializers.SerializerMethodField()
+    country = serializers.SlugRelatedField("name", read_only=True)
+    country_id = serializers.IntegerField(read_only=True, source="country.id")
+    lead_agency = serializers.SlugRelatedField("name", read_only=True)
+    lead_agency_id = serializers.IntegerField(read_only=True, source="lead_agency.id")
 
     class Meta:
         model = MetaProject
         fields = [
             "id",
-            "umbrella_code",
+            "country",
+            "country_id",
             "lead_agency",
+            "lead_agency_id",
             "type",
             "projects",
             "pcr_id",
+            "umbrella_code",
         ]
 
     @extend_schema_field(ProjectListForPCRSerializer(many=True))
