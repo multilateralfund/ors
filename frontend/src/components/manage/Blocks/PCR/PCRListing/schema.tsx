@@ -75,8 +75,14 @@ export const commonTableColumns = [
   },
   {
     headerName: pcrFieldsMapping.metacode,
-    field: 'metacode',
-    tooltipField: 'metacode',
+    valueGetter: (params: ValueGetterParams) =>
+      params.data.isMetaproject
+        ? params.data.umbrella_code
+        : params.data.metacode,
+    tooltipValueGetter: (params: ITooltipParams) =>
+      params.data.isMetaproject
+        ? params.data.umbrella_code
+        : params.data.metacode,
   },
   {
     headerName: pcrFieldsMapping.code,
@@ -99,8 +105,10 @@ export const commonTableColumns = [
   },
   {
     headerName: pcrFieldsMapping.agency,
-    field: 'agency',
-    tooltipField: 'agency',
+    valueGetter: (params: ValueGetterParams) =>
+      params.data.isMetaproject ? params.data.lead_agency : params.data.agency,
+    tooltipValueGetter: (params: ITooltipParams) =>
+      params.data.isMetaproject ? params.data.lead_agency : params.data.agency,
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
   },
   {
