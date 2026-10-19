@@ -3,7 +3,11 @@ import { useMemo, useRef, useState, useContext } from 'react'
 import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
-import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import CustomLink from '@ors/components/ui/Link/Link'
+import {
+  RedirectBackButton,
+  CancelButton,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -14,9 +18,11 @@ import ManagePCRsTable from './ManagePCRsTable'
 import { initialFilters, categoryOpts, booleanFieldsOpts } from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
 import { useStore } from '@ors/store'
+import { api } from '@ors/helpers'
 
+import { CircularProgress, Modal, Typography, Box } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
-import { filter } from 'lodash'
+import { upperFirst, filter } from 'lodash'
 
 const ManagePCRsWrapper = () => {
   const form = useRef<any>()
@@ -46,11 +52,24 @@ const ManagePCRsWrapper = () => {
     idsToAdd: [],
     idsToRemove: [],
   })
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [pendingAction, setPendingAction] = useState<{
+    type: 'mark' | 'unmark'
+    status: 'pcr-due' | 'ad-hoc'
+  } | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [filters, setFilters] = useState(updatedInitialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
   const pcrProjects = useGetPCRProjects(updatedInitialParams)
-  const { loading, setParams } = pcrProjects
+  const { loading, setParams, refetch } = pcrProjects
+
+  const fieldToActionMapping = {
+    'mark_pcr-due': { action: 'mark as PCR due' },
+    'mark_ad-hoc': { action: 'mark as ad-hoc PCR' },
+    'unmark_pcr-due': { action: 'remove PCR due status' },
+    'unmark_ad-hoc': { action: 'remove ad-hoc PCR status' },
+  }
 
   const fieldToOptionsMapping: Record<string, any[]> = {
     country: countries,
@@ -96,28 +115,86 @@ const ManagePCRsWrapper = () => {
     })
   }
 
-  const markAsPcrDue = () => {
-    enqueueSnackbar(<>Marked project(s) as PCR due.</>, {
-      variant: 'success',
-    })
+  const handleConfirm = async () => {
+    if (!pendingAction) return
+
+    if (pendingAction.type === 'mark') {
+      await markProjects(pendingAction.status)
+    } else {
+      await unmarkProjects(pendingAction.status)
+    }
   }
 
-  const markAsAdHocPcr = () => {
-    enqueueSnackbar(<>Marked project(s) as ad-hoc PCR.</>, {
-      variant: 'success',
+  const resetData = () => {
+    setProjectIds({
+      idsToAdd: [],
+      idsToRemove: [],
     })
+    setPendingAction(null)
+    setShowConfirmation(false)
   }
 
-  const removePcrDue = () => {
-    enqueueSnackbar(<>Removed PCR due status of project(s).</>, {
-      variant: 'success',
-    })
+  const markProjects = async (type: string) => {
+    const message = `Marked project(s) as
+      ${type === 'pcr-due' ? ' PCR due' : ' ad-hoc PCR'}.`
+    const param = type === 'pcr-due' ? { pcr_due: true } : { ad_hoc_pcr: true }
+
+    setIsLoading(true)
+
+    try {
+      await api('api/pcr-metaprojects/set_pcr_or_ad_hoc/', {
+        data: {
+          meta_projects: projectIds.idsToAdd,
+          ...param,
+        },
+        method: 'POST',
+      })
+
+      enqueueSnackbar(<>{message}</>, {
+        variant: 'success',
+      })
+
+      resetData()
+      refetch()
+    } catch (e) {
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const removeAdHocPcr = () => {
-    enqueueSnackbar(<>Removed ad-hoc PCR status of project(s).</>, {
-      variant: 'success',
-    })
+  const unmarkProjects = async (type: string) => {
+    const message = `Removed
+      ${type === 'pcr-due' ? ' PCR due' : ' ad-hoc PCR'} status from project(s).`
+    const param =
+      type === 'pcr-due' ? { pcr_due: false } : { ad_hoc_pcr: false }
+
+    setIsLoading(true)
+
+    try {
+      await api('api/pcr-metaprojects/set_pcr_or_ad_hoc/', {
+        data: {
+          meta_projects: projectIds.idsToRemove,
+          ...param,
+        },
+        method: 'POST',
+      })
+
+      enqueueSnackbar(<>{message}</>, {
+        variant: 'success',
+      })
+
+      resetData()
+      refetch()
+    } catch (e) {
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -137,13 +214,19 @@ const ManagePCRsWrapper = () => {
               <>
                 <SubmitButton
                   title="Mark as PCR due"
-                  onSubmit={markAsPcrDue}
+                  onSubmit={() => {
+                    setPendingAction({ type: 'mark', status: 'pcr-due' })
+                    setShowConfirmation(true)
+                  }}
                   isDisabled={projectIds.idsToAdd.length === 0}
                   className="!mb-0"
                 />
                 <SubmitButton
                   title="Mark as ad-hoc PCR"
-                  onSubmit={markAsAdHocPcr}
+                  onSubmit={() => {
+                    setPendingAction({ type: 'mark', status: 'ad-hoc' })
+                    setShowConfirmation(true)
+                  }}
                   isDisabled={projectIds.idsToAdd.length === 0}
                   className="!mb-0"
                 />
@@ -152,17 +235,74 @@ const ManagePCRsWrapper = () => {
               <>
                 <SubmitButton
                   title="Remove PCR due status"
-                  onSubmit={removePcrDue}
+                  onSubmit={() => {
+                    setPendingAction({ type: 'unmark', status: 'pcr-due' })
+                    setShowConfirmation(true)
+                  }}
                   isDisabled={projectIds.idsToRemove.length === 0}
                   className="!mb-0"
                 />
                 <SubmitButton
                   title="Remove ad-hoc PCR status"
-                  onSubmit={removeAdHocPcr}
+                  onSubmit={() => {
+                    setPendingAction({ type: 'unmark', status: 'ad-hoc' })
+                    setShowConfirmation(true)
+                  }}
                   isDisabled={projectIds.idsToRemove.length === 0}
                   className="!mb-0"
                 />
               </>
+            )}
+            {showConfirmation && pendingAction && (
+              <Modal
+                aria-labelledby="manage-pcr-modal"
+                open={showConfirmation}
+                onClose={() => setShowConfirmation(false)}
+              >
+                <Box className="flex w-full max-w-[90%] flex-col absolute-center md:max-w-xl">
+                  <Typography className="mb-4 text-[20px] font-medium text-black">
+                    {upperFirst(
+                      fieldToActionMapping[
+                        `${pendingAction.type}_${pendingAction.status}`
+                      ].action,
+                    )}
+                  </Typography>
+                  <Typography className="mb-4 text-lg text-primary">
+                    Are you sure you want to{' '}
+                    {
+                      fieldToActionMapping[
+                        `${pendingAction.type}_${pendingAction.status}`
+                      ].action
+                    }{' '}
+                    {pendingAction.type === 'unmark' && 'from'} the selected
+                    project(s)?
+                  </Typography>
+                  <div className="mr-3 flex flex-wrap justify-end gap-3">
+                    <CustomLink
+                      className="h-10 px-4 py-2 text-lg uppercase"
+                      onClick={handleConfirm}
+                      href={null}
+                      color="secondary"
+                      variant="contained"
+                      button
+                    >
+                      {
+                        fieldToActionMapping[
+                          `${pendingAction.type}_${pendingAction.status}`
+                        ].action
+                      }
+                    </CustomLink>
+                    <CancelButton onClick={() => setShowConfirmation(false)} />
+                    {isLoading && (
+                      <CircularProgress
+                        color="inherit"
+                        size="30px"
+                        className="text-align mb-1 ml-1.5 mt-auto"
+                      />
+                    )}
+                  </div>
+                </Box>
+              </Modal>
             )}
           </div>
         </div>
