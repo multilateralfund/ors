@@ -618,7 +618,7 @@ def project_completed_status():
 
 @pytest.fixture
 def project_financially_completed_status():
-    return ProjectStatusFactory.create(name="Financially Completed", code="COM")
+    return ProjectStatusFactory.create(name="Financially completed", code="COM")
 
 
 @pytest.fixture

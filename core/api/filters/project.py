@@ -111,6 +111,16 @@ class ProjectFilter(filters.FilterSet):
         field_name="pcr_projects__pcr__submission_date",
         help_text="Filter by PCR submission date range. Format: YYYY-MM-DD",
     )  ### pcr submission date
+    pcr_due_by_rules = filters.MultipleChoiceFilter(
+        choices=[
+            ("Yes", True),
+            ("No", False),
+            ("N/A", None),
+        ],
+        widget=CSVWidget,
+        method="filter_pcr_due_by_rules",
+    )
+
     pcr_due = filters.MultipleChoiceFilter(
         choices=[
             ("Yes", True),
@@ -120,6 +130,7 @@ class ProjectFilter(filters.FilterSet):
         widget=CSVWidget,
         method="filter_pcr_due",
     )
+
     ad_hoc_pcr = filters.MultipleChoiceFilter(
         choices=[
             ("Yes", "Yes"),
@@ -235,19 +246,32 @@ class ProjectFilter(filters.FilterSet):
             return queryset
         return queryset.filter(query_filters)
 
-    def filter_pcr_due(self, queryset, name, value):
+    def filter_pcr_due_by_rules(self, queryset, name, value):
         if not value:
             return queryset
         for option in value:
             if option == "Yes":
-                return queryset.pcr_required_pcr_or_ad_hoc()
+                return queryset.pcr_required()
             if option in ["No", "N/A"]:
                 return queryset.exclude(
-                    id__in=queryset.pcr_required_pcr_or_ad_hoc().values_list(
-                        "id", flat=True
-                    )
+                    id__in=queryset.pcr_required().values_list("id", flat=True)
                 )
         return queryset
+
+    def filter_pcr_due(self, queryset, name, value):
+        if not value:
+            return queryset
+        query_filters = Q()
+        for option in value:
+            if option == "Yes":
+                query_filters |= Q(pcr_due=True)
+            elif option == "No":
+                query_filters |= Q(pcr_due=False)
+            elif option == "N/A":
+                query_filters |= Q(pcr_due__isnull=True)
+        if not query_filters:
+            return queryset
+        return queryset.filter(query_filters)
 
     def filter_ad_hoc_pcr(self, queryset, name, value):
         if not value:
