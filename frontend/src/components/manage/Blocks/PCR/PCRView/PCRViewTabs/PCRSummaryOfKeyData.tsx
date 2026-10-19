@@ -313,7 +313,7 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                   {summaryData.enterprises.length > 0 ? (
                     <TableContainer
                       component={Paper}
-                      className="PcrViewTableContainer"
+                      className="PcrViewTableContainer max-h-[400px]"
                     >
                       <Table stickyHeader className="PcrViewTable">
                         <TableHead>
@@ -355,7 +355,7 @@ const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
                   {summaryData.equipments.length > 0 ? (
                     <TableContainer
                       component={Paper}
-                      className="PcrViewTableContainer"
+                      className="PcrViewTableContainer max-h-[400px]"
                     >
                       <Table stickyHeader className="PcrViewTable">
                         <TableHead>
