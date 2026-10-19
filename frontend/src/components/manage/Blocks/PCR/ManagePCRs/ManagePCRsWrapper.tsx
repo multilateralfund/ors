@@ -314,7 +314,7 @@ const ManagePCRsWrapper = () => {
             <TableViewSelector
               value={view as ViewSelectorValuesType}
               reverseViewOrder={true}
-              tooltipText={['All projects', 'PCR due']}
+              tooltipText={['All projects', 'Requiring PCR']}
               changeHandler={(_, value) => {
                 if (value) {
                   handleChangeViewSelector(value)
