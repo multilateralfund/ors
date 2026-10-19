@@ -245,7 +245,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
 
     def get_project_funding_display(self, obj):
         return format_number(
-            (obj.total_fund or 0) + (obj.support_cost_psc or 0), 0, "$"
+            (obj.total_fund or 0) + (obj.support_cost_psc or 0), 0, "$", True
         )
 
     class Meta:
