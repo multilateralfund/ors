@@ -86,22 +86,24 @@ def _rows(projects: QuerySet[Project], country: Country | None) -> list[Project]
     )
 
 
-def format_number(num: float, decimals: int = 0, currency: str = "") -> str:
+def format_number(
+    num: float, decimals: int = 0, currency: str = "", full_number=False
+) -> str:
     """Format large number and optionally include currency."""
     sign = "-" if num < 0 else ""
     num = abs(num)
+    if not full_number:
+        if num >= 1_000_000_000:
+            if num % 1_000_000_000 == 0:
+                return f"{currency}{sign}{num // 1_000_000_000}B"
+            return f"{currency}{sign}{round(num / 1_000_000_000, 1)}B"
 
-    if num >= 1_000_000_000:
-        if num % 1_000_000_000 == 0:
-            return f"{currency}{sign}{num // 1_000_000_000}B"
-        return f"{currency}{sign}{round(num / 1_000_000_000, 1)}B"
-
-    if num >= 1_000_000:
-        if num % 1_000_000 == 0:
-            return f"{currency}{sign}{num // 1_000_000}M"
-        return f"{currency}{sign}{round(num / 1_000_000, 1)}M"
-    if num >= 100_000:
-        return f"{currency}{sign}{round(num / 1_000, 1)}K"
+        if num >= 1_000_000:
+            if num % 1_000_000 == 0:
+                return f"{currency}{sign}{num // 1_000_000}M"
+            return f"{currency}{sign}{round(num / 1_000_000, 1)}M"
+        if num >= 100_000:
+            return f"{currency}{sign}{round(num / 1_000, 1)}K"
     value = Decimal(str(num))
     quantizer = Decimal("1." + "0" * decimals)
     value = value.quantize(quantizer, rounding=ROUND_DOWN)
