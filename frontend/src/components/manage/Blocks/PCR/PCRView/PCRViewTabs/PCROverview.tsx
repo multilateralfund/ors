@@ -1,6 +1,3 @@
-import { useContext } from 'react'
-
-import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import {
   SubSectionTitle,
@@ -8,7 +5,7 @@ import {
   dateDetailItem,
   SelectedEntity,
 } from './ViewHelperComponents'
-import { getOtherOptionId, getValueClassName } from '../../utils'
+import { getValueClassName } from '../../utils'
 import { PCRResponse } from '../../interfaces'
 import {
   pcrFieldsMapping,
@@ -23,14 +20,6 @@ import { map } from 'lodash'
 import cx from 'classnames'
 
 const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
-  const { ratingOptions } = useContext(PCRDataContext)
-
-  const rating =
-    pcr.rating === getOtherOptionId(ratingOptions) &&
-    pcr.rating_explanation_other
-      ? `${pcr.rating}: ${pcr.rating_explanation_other}`
-      : pcr.rating
-
   const spacingClassname = 'hidden lg:mt-0.5 lg:block lg:w-[20%] lg:self-start'
   const explanationClassname = {
     ...overviewTextareaClassname,
@@ -80,11 +69,24 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
           <Divider className="my-6" />
           {detailItem(
             pcrFieldsMapping.rating,
-            rating,
+            pcr.rating,
             getExplanationClassname(
               '!text-mlfs-hlYellow bg-primary border-primary',
             ),
           )}
+          <div
+            className={cx(
+              'mt-3 flex',
+              overviewTextareaClassname.containerClassname,
+            )}
+          >
+            <div className={spacingClassname} />
+            {detailItem(
+              pcrFieldsMapping.rating_explanation_other,
+              pcr.rating_explanation_other,
+              explanationClassname,
+            )}
+          </div>
           <div
             className={cx(
               'mt-3 flex',

@@ -50,7 +50,7 @@
 }
 
 .PcrViewTableContainer {
-  @apply max-h-[400px] overflow-auto !rounded border border-solid border-[#e5e7eb] shadow-none;
+  @apply overflow-auto !rounded border border-solid border-[#e5e7eb] shadow-none;
 }
 
 .PcrViewTable {
