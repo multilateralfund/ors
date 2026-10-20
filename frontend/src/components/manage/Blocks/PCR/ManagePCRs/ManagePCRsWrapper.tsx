@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState, useContext } from 'react'
 
-import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
@@ -14,7 +13,12 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import ManagePCRsFiltersSelectedOpts from './ManagePCRsFiltersSelectedOpts'
 import ManagePCRsFilters from './ManagePCRsFilters'
 import ManagePCRsTable from './ManagePCRsTable'
-import { initialFilters, categoryOpts, booleanFieldsOpts } from '../constants'
+import {
+  initialFilters,
+  categoryOpts,
+  booleanFieldsOpts,
+  borderedContainerClassname,
+} from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
 import { useStore } from '@ors/store'
 import { api, formatApiUrl } from '@ors/helpers'
@@ -24,6 +28,7 @@ import { enqueueSnackbar } from 'notistack'
 import { upperFirst, filter } from 'lodash'
 import Link from '@ors/components/ui/Link/Link'
 import ManagePCRDueTable from './ManagePCRDueTable'
+import cx from 'classnames'
 
 const ManagePCRsWrapper = () => {
   const form = useRef<any>()
@@ -185,9 +190,7 @@ const ManagePCRsWrapper = () => {
           <div className="ml-auto mt-auto flex flex-wrap justify-end gap-2.5">
             <Link
               className="border border-solid border-primary bg-primary px-4 py-2 text-mlfs-hlYellow shadow-none hover:border-primary hover:text-mlfs-hlYellow"
-              href={formatApiUrl(
-                '/admin/core/projectpcrrequiredexclusionrule/',
-              )}
+              href={formatApiUrl('admin/core/projectpcrrequiredexclusionrule/')}
               variant="contained"
               color="secondary"
               size="large"
@@ -250,7 +253,7 @@ const ManagePCRsWrapper = () => {
         </div>
       </HeaderTitle>
       <div className="flex flex-col gap-6" key={key}>
-        <div className="flex w-[calc(50%-20px)] flex-row justify-between">
+        <div className="flex w-[calc(60%-20px)] flex-row justify-between">
           <div className="flex flex-col gap-2.5">
             <ManagePCRsFilters {...filtersProps} />
             <ManagePCRsFiltersSelectedOpts {...filtersProps} />
@@ -266,12 +269,24 @@ const ManagePCRsWrapper = () => {
           />
         </div>
         <div className="flex flex-row gap-10">
-          <div className="w-1/2">
+          <div
+            className={cx(
+              'w-[60%] rounded-lg bg-white',
+              borderedContainerClassname,
+            )}
+          >
+            <h2 className="pl-5">Completed projects</h2>
             <ManagePCRsTable
               {...{ pcrProjects, projectIds, setProjectIds, filters }}
             />
           </div>
-          <div className="w-1/2">
+          <div
+            className={cx(
+              'w-[40%] rounded-lg bg-white',
+              borderedContainerClassname,
+            )}
+          >
+            <h2 className="pl-5">PCR due</h2>
             <ManagePCRDueTable
               pcrProjects={pcrDueProjects}
               {...{ unmarkPcrDue }}

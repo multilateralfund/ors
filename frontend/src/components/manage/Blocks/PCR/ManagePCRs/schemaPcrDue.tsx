@@ -72,7 +72,7 @@ const getColumnDefs = (unmarkPcrDue: any) => ({
             <div className="ml-auto shrink-0">
               <IoClose
                 size={16}
-                className="min-h-4 min-w-4 cursor-pointer fill-gray-400"
+                className="min-h-6 min-w-6 cursor-pointer fill-gray-600"
                 onClick={() => unmarkPcrDue([props.data.metaprojectId])}
               />
             </div>
