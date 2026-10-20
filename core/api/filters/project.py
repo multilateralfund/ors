@@ -1,4 +1,4 @@
-from django.db.models import F, Q
+from django.db.models import F, Q, Exists, OuterRef
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
 from django_filters.rest_framework import DjangoFilterBackend
@@ -130,6 +130,14 @@ class ProjectFilter(filters.FilterSet):
             method="filter_pcr_due",
         )
     )
+    completed_only = filters.MultipleChoiceFilter(
+        choices=[
+            ("Yes", "Yes"),
+            ("No", "No"),
+        ],
+        widget=CSVWidget,
+        method="filter_completed_only",
+    )
 
     ad_hoc_pcr = filters.MultipleChoiceFilter(
         choices=[
@@ -244,6 +252,20 @@ class ProjectFilter(filters.FilterSet):
         if not query_filters:
             return queryset
         return queryset.filter(query_filters)
+
+    def filter_completed_only(self, queryset, name, value):
+        if not value:
+            return queryset
+        invalid_entries = Project.objects.filter(
+            meta_project_id=OuterRef("pk"),
+        ).exclude(status__name__in=["Completed", "Financially completed"])
+        meta_projects = MetaProject.objects.filter(~Exists(invalid_entries))
+        for option in value:
+            if option == "Yes":
+                return queryset.filter(meta_project__in=meta_projects)
+            if option == "No":
+                return queryset.exclude(meta_project__in=meta_projects)
+        return queryset
 
     def filter_pcr_due_by_rules(self, queryset, name, value):
         if not value:
