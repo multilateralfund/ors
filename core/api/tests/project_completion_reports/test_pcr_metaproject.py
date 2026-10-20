@@ -11,7 +11,6 @@ from core.api.tests.factories import (
     MetaProjectFactory,
     PCRFactory,
     PCRProjectFactory,
-    ProjectStatusFactory,
 )
 import pytest
 
@@ -366,18 +365,16 @@ class TestPCRMetaprojectsViewSet(BaseTest):
 
     def test_set_pcr_or_ad_hoc(self):
         url = reverse("pcr-metaprojects-set-pcr-or-ad-hoc")
-        meta_project = MetaProjectFactory(umbrella_code="PCR-CALC")
+        meta_project = MetaProjectFactory(umbrella_code="PCR-CALC", pcr_due=False)
         project1 = ProjectFactory.create(
             meta_project=meta_project,
             metacode=meta_project.umbrella_code,
             ad_hoc_pcr=False,
-            pcr_due=False,
         )
         project2 = ProjectFactory.create(
             meta_project=meta_project,
             metacode=meta_project.umbrella_code,
             ad_hoc_pcr=False,
-            pcr_due=False,
         )
         data = {
             "meta_projects": [
@@ -405,7 +402,5 @@ class TestPCRMetaprojectsViewSet(BaseTest):
 
         response = self.client.post(url, data, format="json")
         assert response.status_code == 200
-        project1.refresh_from_db()
-        project2.refresh_from_db()
-        assert project1.pcr_due is True
-        assert project2.pcr_due is True
+        meta_project.refresh_from_db()
+        assert meta_project.pcr_due is True
