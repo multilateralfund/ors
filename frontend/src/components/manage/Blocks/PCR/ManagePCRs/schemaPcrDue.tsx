@@ -15,7 +15,7 @@ import { IoClose } from 'react-icons/io5'
 const getColumnDefs = (unmarkPcrDue: any) => ({
   columnDefs: [
     {
-      headerName: 'Project',
+      headerName: 'Title / country / agency',
       field: 'umbrella_code',
       minWidth: 300,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
@@ -34,7 +34,7 @@ const getColumnDefs = (unmarkPcrDue: any) => ({
                 </span>
                 <span className="overflow-hidden truncate whitespace-nowrap text-xs leading-4 text-gray-600">
                   {props.data.country ?? 'N/A'} ·{' '}
-                  {props.data.lead_agency ?? 'N/A'}
+                  {props.data.lead_agency ?? '[agency]'}
                 </span>
               </div>
             </div>
@@ -55,7 +55,7 @@ const getColumnDefs = (unmarkPcrDue: any) => ({
         )
       },
       tooltipValueGetter: (props: any) =>
-        `${props.value ?? 'N/A'} · ${props.data?.country ?? 'N/A'} · ${props.data?.lead_agency ?? 'N/A'}`,
+        `${props.value ?? 'N/A'} · ${props.data?.country ?? 'N/A'} · ${props.data?.lead_agency ?? '[agency]'}`,
     },
     {
       headerName: 'PCR due',
