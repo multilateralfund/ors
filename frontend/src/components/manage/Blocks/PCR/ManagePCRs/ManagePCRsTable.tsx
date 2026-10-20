@@ -13,7 +13,6 @@ const ManagePCRsTable = ({
   projectIds,
   setProjectIds,
   filters,
-  view,
 }: ManagePCRsTableProps) => {
   const gridRef = useRef(null)
 
@@ -33,9 +32,6 @@ const ManagePCRsTable = ({
           isMetaproject: true,
           isExpanded: false,
           metaprojectId: metaproject.id,
-          ...(metaproject.type === 'Multi-year agreement'
-            ? { title: metaproject.umbrella_code ?? 'N/A' }
-            : { ...projects[0] }),
         }
       }),
     [results],
@@ -45,7 +41,6 @@ const ManagePCRsTable = ({
     pcrProjectsData,
     projectIds,
     setProjectIds,
-    view,
   )
 
   return (

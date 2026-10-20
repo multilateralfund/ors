@@ -62,11 +62,6 @@ const ManagePCRsFilters = ({
       </form>
       <FieldFilter field="country" />
       <FieldFilter field="lead_agency" />
-      <FieldFilter field="cluster" />
-      <FieldFilter field="project_type" />
-      <FieldFilter field="sector" />
-      <FieldFilter field="category" />
-      <FieldFilter field="status" />
     </div>
   )
 }
