@@ -50,8 +50,8 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
     pcr.sustainable_development_goals,
     ({ agency_id }) => agency_id === Number(crtAgencyId),
   )
-  const sdgApplying =
-    agencySdgsData.length > 0 ? agencySdgsData[0].sdg_applying : null
+  const sdgApplying = agencySdgsData.length > 0 ? true : null
+  // agencySdgsData.length > 0 ? agencySdgsData[0].sdg_applying : null
   const formattedSdgApplying = sdgApplying ? 'Yes' : 'No'
 
   const sdgNotApplyingExplanation =
@@ -100,7 +100,7 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
             ),
           })}
           <Divider className="my-5" />
-          {!sdgApplying ? (
+          {sdgApplying ? (
             <>
               <div className="mb-5 flex flex-row flex-wrap items-center gap-2.5">
                 <span className="text-[#4D4D4D]">

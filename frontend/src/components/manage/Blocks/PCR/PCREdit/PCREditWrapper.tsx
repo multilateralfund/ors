@@ -119,6 +119,10 @@ const PCREditWrapper = () => {
           (mainstreaming) => mainstreaming.project_preparation === phase.name,
         )
 
+        if (phaseData) {
+          phaseData.prefilled = phaseData.prefilled === true ? 'Yes' : 'No'
+        }
+
         return phaseData ?? initialPpEntry
       }),
     }))
@@ -128,7 +132,8 @@ const PCREditWrapper = () => {
     )
     const sdgsContribution = map(agencyIds, (agency_id) => ({
       agency_id,
-      sdg_applying: groupedSdgsContribution[agency_id]?.[0]?.sdg_applying,
+      sdg_applying: true,
+      // sdg_applying: groupedSdgsContribution[agency_id]?.[0]?.sdg_applying,
       sdg_not_applying_explanation:
         groupedSdgsContribution[agency_id]?.[0]?.sdg_not_applying_explanation,
       goals: groupedSdgsContribution[agency_id]?.[0]?.goals ?? [],
