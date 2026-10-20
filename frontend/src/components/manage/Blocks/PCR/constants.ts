@@ -129,6 +129,11 @@ export const booleanFieldsOpts = [
   { id: 'N/A', name: 'N/A' },
 ]
 
+export const filtersBooleanFieldsOpts = [
+  { id: 'Yes', name: 'Yes' },
+  { id: 'No', name: 'No' },
+]
+
 export const financialFiguresTypeOptions = [
   { id: 'Provisional', name: 'Provisional' },
   { id: 'Final', name: 'Final' },

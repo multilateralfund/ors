@@ -8,7 +8,7 @@ import { getSectionAgencies, formatErrors } from '../utils'
 import {
   ppField,
   projectPhaseOptions,
-  booleanFieldsOpts,
+  filtersBooleanFieldsOpts,
   borderedContainerClassname,
 } from '../constants'
 
@@ -89,7 +89,7 @@ const PCRGenderMainstreaming = () => {
                   <PCRSelectWidget
                     {...{ PCRData, setPCRData, sectionIdentifier }}
                     field="prefilled"
-                    options={booleanFieldsOpts}
+                    options={filtersBooleanFieldsOpts}
                     errors={agencyErrors}
                     indexes={[crtTab, ppIndex]}
                     subFields={['', ppField]}

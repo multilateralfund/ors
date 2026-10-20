@@ -107,34 +107,38 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {map(ppData, (pp, ppIndex) => (
-                    <TableRow key={ppIndex}>
-                      <TableCell>
-                        <EntryIndex index={ppIndex} />
-                      </TableCell>
-                      <TableCell className="NameColumn w-[20%]">
-                        {pp.project_preparation || '-'}
-                      </TableCell>
-                      <TableCell className="w-[20%]">
-                        {pp.prefilled ? (
-                          <div
-                            className={cx(
-                              'rounded-full',
-                              borderedValueClassname,
-                              getValueClassName(pp.prefilled),
-                            )}
-                          >
-                            {pp.prefilled}
-                          </div>
-                        ) : (
-                          '-'
-                        )}
-                      </TableCell>
-                      <TableCell className="w-[60%]">
-                        {pp.qualitative_description || '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {map(ppData, (pp, ppIndex) => {
+                    const prefilled = pp.prefilled ? 'Yes' : 'No'
+
+                    return (
+                      <TableRow key={ppIndex}>
+                        <TableCell>
+                          <EntryIndex index={ppIndex} />
+                        </TableCell>
+                        <TableCell className="NameColumn w-[20%]">
+                          {pp.project_preparation || '-'}
+                        </TableCell>
+                        <TableCell className="w-[20%]">
+                          {prefilled ? (
+                            <div
+                              className={cx(
+                                'rounded-full',
+                                borderedValueClassname,
+                                getValueClassName(prefilled),
+                              )}
+                            >
+                              {prefilled}
+                            </div>
+                          ) : (
+                            '-'
+                          )}
+                        </TableCell>
+                        <TableCell className="w-[60%]">
+                          {pp.qualitative_description || '-'}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>
