@@ -117,6 +117,7 @@ class MetaProject(models.Model):
         default=False,
         help_text="Marked as True by PCR admin if the meta-project is approved as pcr due",
     )
+    pcr_due_date = models.DateField(null=True, blank=True)
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
