@@ -145,12 +145,13 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         for meta_project in serializer.validated_data.get("meta_projects", []):
-            for project in meta_project.projects.all():
-                if serializer.validated_data.get("ad_hoc_pcr", None) is not None:
+            if serializer.validated_data.get("pcr_due", None) is not None:
+                meta_project.pcr_due = serializer.validated_data.get("pcr_due", False)
+                meta_project.save()
+            if serializer.validated_data.get("ad_hoc_pcr", None) is not None:
+                for project in meta_project.projects.all():
                     project.ad_hoc_pcr = serializer.validated_data.get(
                         "ad_hoc_pcr", False
                     )
-                if serializer.validated_data.get("pcr_due", None) is not None:
-                    project.pcr_due = serializer.validated_data.get("pcr_due", False)
-                project.save()
+                    project.save()
         return Response({}, status=status.HTTP_200_OK)

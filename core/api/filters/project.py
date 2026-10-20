@@ -2,7 +2,7 @@ from django.db.models import F, Q
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
 from django_filters.rest_framework import DjangoFilterBackend
-
+from drf_spectacular.utils import extend_schema_field
 from core.models.agency import Agency
 from core.models.country import Country
 from core.models.meeting import Meeting
@@ -115,27 +115,26 @@ class ProjectFilter(filters.FilterSet):
         choices=[
             ("Yes", True),
             ("No", False),
-            ("N/A", None),
         ],
         widget=CSVWidget,
         method="filter_pcr_due_by_rules",
     )
 
-    pcr_due = filters.MultipleChoiceFilter(
-        choices=[
-            ("Yes", True),
-            ("No", False),
-            ("N/A", None),
-        ],
-        widget=CSVWidget,
-        method="filter_pcr_due",
+    pcr_due = extend_schema_field({"type": "string", "enum": ["Yes", "No"]})(
+        filters.MultipleChoiceFilter(
+            choices=[
+                ("Yes", "Yes"),
+                ("No", "No"),
+            ],
+            widget=CSVWidget,
+            method="filter_pcr_due",
+        )
     )
 
     ad_hoc_pcr = filters.MultipleChoiceFilter(
         choices=[
             ("Yes", "Yes"),
             ("No", "No"),
-            ("N/A", "N/A"),
         ],
         widget=CSVWidget,
         method="filter_ad_hoc_pcr",
@@ -252,7 +251,7 @@ class ProjectFilter(filters.FilterSet):
         for option in value:
             if option == "Yes":
                 return queryset.pcr_required()
-            if option in ["No", "N/A"]:
+            if option == "No":
                 return queryset.exclude(
                     id__in=queryset.pcr_required().values_list("id", flat=True)
                 )
@@ -264,11 +263,9 @@ class ProjectFilter(filters.FilterSet):
         query_filters = Q()
         for option in value:
             if option == "Yes":
-                query_filters |= Q(pcr_due=True)
+                query_filters |= Q(meta_project__pcr_due=True)
             elif option == "No":
-                query_filters |= Q(pcr_due=False)
-            elif option == "N/A":
-                query_filters |= Q(pcr_due__isnull=True)
+                query_filters |= Q(meta_project__pcr_due=False)
         if not query_filters:
             return queryset
         return queryset.filter(query_filters)
@@ -282,8 +279,6 @@ class ProjectFilter(filters.FilterSet):
                 query_filters |= Q(ad_hoc_pcr=True)
             elif option == "No":
                 query_filters |= Q(ad_hoc_pcr=False)
-            elif option == "N/A":
-                query_filters |= Q(ad_hoc_pcr__isnull=True)
         if not query_filters:
             return queryset
         return queryset.filter(query_filters)
