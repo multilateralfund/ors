@@ -1019,3 +1019,4 @@ class PCRProjectSetAdHocOrPcrDueSerializer(serializers.Serializer):
     )
     ad_hoc_pcr = serializers.BooleanField(default=False)
     pcr_due = serializers.BooleanField(default=False)
+    pcr_due_date = serializers.DateField()

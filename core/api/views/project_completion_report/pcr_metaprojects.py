@@ -147,6 +147,9 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         for meta_project in serializer.validated_data.get("meta_projects", []):
             if serializer.validated_data.get("pcr_due", None) is not None:
                 meta_project.pcr_due = serializer.validated_data.get("pcr_due", False)
+                meta_project.pcr_due_date = serializer.validated_data.get(
+                    "pcr_due_date", None
+                )
                 meta_project.save()
             if serializer.validated_data.get("ad_hoc_pcr", None) is not None:
                 for project in meta_project.projects.all():
