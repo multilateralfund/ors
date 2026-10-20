@@ -275,8 +275,7 @@ export type OptionsType = { id: number | string; name: string }
 
 export type ManagePCRsTableProps = {
   pcrProjects: ReturnType<typeof useGetPCRProjects>
-  projectIds: Record<string, number[]>
-  setProjectIds: (ids: Record<string, number[]>) => void
+  projectIds: number[]
+  setProjectIds: (ids: number[]) => void
   filters: Record<string, any>
-  view: ViewSelectorValuesType | null
 }

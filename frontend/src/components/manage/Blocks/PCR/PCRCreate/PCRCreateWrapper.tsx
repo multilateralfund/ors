@@ -48,7 +48,7 @@ const PCRCreateWrapper = () => {
     () =>
       map(agencyIds, (agency_id) => ({
         agency_id,
-        sdg_applying: false,
+        sdg_applying: true,
         sdg_not_applying_explanation: '',
         goals: [],
       })),
