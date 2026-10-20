@@ -123,7 +123,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         self.client.force_authenticate(user=admin_user)
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data) == 1
+        assert len(response.data) == 2
         assert response.data[0]["id"] == projects[0].id
 
     def test_retrieve_includes_inventory_calculated_project_values(
@@ -329,7 +329,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
 
         response = self.client.get(self.url, {"pcr_submitted": "No"})
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 1
         assert response.data[0]["id"] == projects[0].meta_project.id
 
         # pcr submission date

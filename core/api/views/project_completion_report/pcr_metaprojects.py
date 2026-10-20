@@ -1,5 +1,5 @@
 from drf_spectacular.utils import extend_schema
-from django.db.models import Count, Exists, Prefetch, Q, OuterRef
+from django.db.models import Count, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.decorators import action
@@ -55,13 +55,9 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset.none()
 
     def get_queryset(self):
-        invalid_entries = Project.objects.filter(
-            meta_project_id=OuterRef("pk"),
-        ).exclude(status__name__in=["Completed", "Financially completed"])
-        meta_projects = MetaProject.objects.filter(~Exists(invalid_entries))
-
-        completed_projects = Project.objects.filter(meta_project__in=meta_projects)
-        projects_queryset = self.filter_project_permissions_queryset(completed_projects)
+        projects_queryset = self.filter_project_permissions_queryset(
+            Project.objects.filter(submission_status__name="Approved")
+        )
         project_filter = ProjectFilter(self.request.GET, queryset=projects_queryset)
         filtered_projects_qs = project_filter.qs
 
