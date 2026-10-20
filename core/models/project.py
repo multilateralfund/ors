@@ -113,7 +113,10 @@ class MetaProject(models.Model):
         """,
         default=False,
     )
-
+    pcr_due = models.BooleanField(
+        default=False,
+        help_text="Marked as True by PCR admin if the meta-project is approved as pcr due",
+    )
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -362,7 +365,7 @@ class ProjectQuerySet(models.QuerySet["Project"]):
         result = self.exclude(
             models.Q(ProjectPCRRequiredExclusionRule.objects.active_project_q())
             & models.Q(ad_hoc_pcr=False)
-            & models.Q(pcr_due=False)
+            & models.Q(meta_project__pcr_due=False)
         )
         return result
 
@@ -502,10 +505,6 @@ class Project(models.Model):
         null=True,
         blank=True,
         related_name="lead_projects",
-    )
-    pcr_due = models.BooleanField(
-        default=False,
-        help_text="Marked as True by PCR admin if the project is approved as pcr due",
     )
     metacode = models.CharField(
         max_length=255,

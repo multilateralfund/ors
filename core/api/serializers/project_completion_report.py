@@ -888,6 +888,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
     status = serializers.SlugRelatedField("name", read_only=True)
     status_id = serializers.IntegerField(read_only=True, source="status.id")
     funds_approved = serializers.SerializerMethodField()
+    pcr_due = serializers.SerializerMethodField()
     hfc_phase_down_co2_actual = serializers.SerializerMethodField()
     hfc_phase_down_co2_approved = serializers.DecimalField(
         max_digits=30,
@@ -947,6 +948,9 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
 
     def get_subsector_ids(self, obj):
         return [subsector.id for subsector in obj.subsectors.all()]
+
+    def get_pcr_due(self, obj):
+        return obj.meta_project.pcr_due
 
     @extend_schema_field(serializers.DateField(allow_null=True))
     def get_actual_date_of_completion(self, obj):
