@@ -29,6 +29,9 @@ import { upperFirst, filter } from 'lodash'
 import Link from '@ors/components/ui/Link/Link'
 import ManagePCRDueTable from './ManagePCRDueTable'
 import cx from 'classnames'
+import { Label } from '../../BusinessPlans/BPUpload/helpers'
+import { DateInput } from '../../Replenishment/Inputs'
+import dayjs from 'dayjs'
 
 const ManagePCRsWrapper = () => {
   const form = useRef<any>()
@@ -61,10 +64,7 @@ const ManagePCRsWrapper = () => {
   const [pendingAction, setPendingAction] = useState<{
     type: 'mark' | 'unmark'
   } | null>(null)
-  const [pcrDueData, setPcrDueData] = useState({
-    meeting: null,
-    pcr_due_date: '',
-  })
+  const [pcrDueDate, setPcrDueDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [filters, setFilters] = useState(updatedInitialFiltersListing)
   const key = useMemo(() => JSON.stringify(filters), [filters])
@@ -126,6 +126,7 @@ const ManagePCRsWrapper = () => {
     setProjectIds([])
     refetch()
     refetchPcrDue()
+    setPcrDueDate('')
   }
 
   const markProjects = async () => {
@@ -136,6 +137,7 @@ const ManagePCRsWrapper = () => {
         data: {
           meta_projects: projectIds,
           pcr_due: true,
+          pcr_due_date: pcrDueDate,
         },
         method: 'POST',
       })
@@ -178,6 +180,10 @@ const ManagePCRsWrapper = () => {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const defaultPropsDateInput = {
+    className: 'BPListUpload !ml-0 h-10 w-40 !flex-grow-0',
   }
 
   return (
@@ -226,6 +232,23 @@ const ManagePCRsWrapper = () => {
                     {pendingAction.type === 'unmark' && 'from'} the selected
                     project(s)?
                   </Typography>
+
+                  {pendingAction.type === 'mark' && (
+                    <div className="my-4 flex flex-row items-center gap-2">
+                      <Label>PCR due date</Label>
+                      <DateInput
+                        id="pcr_due_date"
+                        value={pcrDueDate as string}
+                        onChange={(event) => {
+                          setPcrDueDate(event.target.value || '')
+                        }}
+                        formatValue={(value) =>
+                          dayjs(value).format('DD/MM/YYYY')
+                        }
+                        className={defaultPropsDateInput.className}
+                      />
+                    </div>
+                  )}
                   <div className="mr-3 flex flex-wrap justify-end gap-3">
                     <CustomLink
                       className="h-10 px-4 py-2 text-lg uppercase"
@@ -256,7 +279,7 @@ const ManagePCRsWrapper = () => {
         </div>
       </HeaderTitle>
       <div className="flex flex-col gap-6" key={key}>
-        <div className="flex w-[calc(60%-20px)] flex-row justify-between">
+        <div className="flex w-[calc(60%-20px)] flex-row flex-wrap justify-between">
           <div className="flex flex-col gap-2.5">
             <ManagePCRsFilters {...filtersProps} />
             <ManagePCRsFiltersSelectedOpts {...filtersProps} />
