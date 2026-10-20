@@ -33,6 +33,14 @@ const ManagePCRsFiltersSelectedOpts = ({
       entities: formatEntity(fieldToOptionsMapping.lead_agency),
       entityIdentifier: 'lead_agency_id',
     },
+    {
+      entities: formatEntity(fieldToOptionsMapping.cluster),
+      entityIdentifier: 'cluster_id',
+    },
+    {
+      entities: formatEntity(fieldToOptionsMapping.category),
+      entityIdentifier: 'category',
+    },
   ]
 
   return (

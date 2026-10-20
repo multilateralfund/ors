@@ -33,7 +33,7 @@ import cx from 'classnames'
 const ManagePCRsWrapper = () => {
   const form = useRef<any>()
 
-  const { countries, agencies } = useContext(ProjectsDataContext)
+  const { countries, agencies, clusters } = useContext(ProjectsDataContext)
   const projectsSlice = useStore((state) => state.projects)
   const statuses = filter(projectsSlice.statuses.data, (status) =>
     ['Completed', 'Financially completed'].includes(status.name),
@@ -61,6 +61,10 @@ const ManagePCRsWrapper = () => {
   const [pendingAction, setPendingAction] = useState<{
     type: 'mark' | 'unmark'
   } | null>(null)
+  const [pcrDueData, setPcrDueData] = useState({
+    meeting: null,
+    pcr_due_date: '',
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [filters, setFilters] = useState(updatedInitialFiltersListing)
   const key = useMemo(() => JSON.stringify(filters), [filters])
@@ -79,6 +83,7 @@ const ManagePCRsWrapper = () => {
   const fieldToOptionsMapping: Record<string, any[]> = {
     country: countries,
     lead_agency: agencies,
+    cluster: clusters,
     category: categoryOpts,
     status: statuses,
   }
@@ -263,7 +268,7 @@ const ManagePCRsWrapper = () => {
               setShowConfirmation(true)
             }}
             isDisabled={projectIds.length === 0}
-            className="!mb-0"
+            className="!mb-0 !h-10"
           />
         </div>
         <div className="flex flex-row gap-10">
@@ -273,7 +278,7 @@ const ManagePCRsWrapper = () => {
               borderedContainerClassname,
             )}
           >
-            <h2 className="pl-5">Completed projects</h2>
+            <h2 className="pl-5">Projects</h2>
             <ManagePCRsTable
               {...{ pcrProjects, projectIds, setProjectIds, filters }}
             />

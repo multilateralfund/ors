@@ -1,4 +1,3 @@
-import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import {
   expandMetaproject,
@@ -25,7 +24,7 @@ const getColumnDefs = (
 ) => ({
   columnDefs: [
     {
-      headerName: 'Project',
+      headerName: 'Title / country / agency',
       field: 'umbrella_code',
       minWidth: 300,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
@@ -60,7 +59,7 @@ const getColumnDefs = (
                 </span>
                 <span className="overflow-hidden truncate whitespace-nowrap text-xs leading-4 text-gray-600">
                   {props.data.country ?? 'N/A'} ·{' '}
-                  {props.data.lead_agency ?? 'N/A'}
+                  {props.data.lead_agency ?? '[agency]'}
                 </span>
               </div>
             </div>
@@ -81,7 +80,15 @@ const getColumnDefs = (
         )
       },
       tooltipValueGetter: (props: any) =>
-        `${props.value ?? 'N/A'} · ${props.data?.country ?? 'N/A'} · ${props.data?.lead_agency ?? 'N/A'}`,
+        `${props.value ?? 'N/A'} · ${props.data?.country ?? 'N/A'} · ${props.data?.lead_agency ?? '[agency]'}`,
+    },
+    {
+      headerName: pcrFieldsMapping.cluster,
+      valueGetter: (params: ValueGetterParams) =>
+        params.data.projects?.[0]?.cluster ?? '-',
+      tooltipValueGetter: (params: ITooltipParams) =>
+        params.data.projects?.[0]?.cluster ?? '-',
+      minWidth: 150,
     },
     {
       headerName: 'Date completed',
