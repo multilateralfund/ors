@@ -188,18 +188,16 @@ const ManagePCRsWrapper = () => {
             <PageHeading>Manage Project Completion Reports</PageHeading>
           </div>
           <div className="ml-auto mt-auto flex flex-wrap justify-end gap-2.5">
-            <Link
-              className="border border-solid border-primary bg-primary px-4 py-2 text-mlfs-hlYellow shadow-none hover:border-primary hover:text-mlfs-hlYellow"
-              href={formatApiUrl('admin/core/projectpcrrequiredexclusionrule/')}
-              variant="contained"
-              color="secondary"
-              size="large"
-              button
+            <a
+              className="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeLarge MuiButton-containedSizeLarge h-10 border border-solid border-primary bg-primary px-4 py-2 text-center text-[15px] font-medium text-mlfs-hlYellow no-underline shadow-none hover:border-primary hover:text-mlfs-hlYellow"
+              href={formatApiUrl(
+                '/admin/core/projectpcrrequiredexclusionrule/',
+              )}
               target="_blank"
               rel="noopener noreferrer"
             >
               PCR exclusion rules
-            </Link>
+            </a>
 
             {showConfirmation && pendingAction && (
               <Modal
