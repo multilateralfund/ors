@@ -993,6 +993,8 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "type",
             "projects",
             "pcr_id",
+            "pcr_due",
+            "pcr_due_date",
             "umbrella_code",
         ]
 
