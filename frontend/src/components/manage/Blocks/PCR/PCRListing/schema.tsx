@@ -216,7 +216,6 @@ const getColumnDefs = (
           props.data.projects,
           (project) => project.ad_hoc_pcr,
         )
-        const isPcrDue = find(props.data.projects, (project) => project.pcr_due)
 
         return (
           <div className="flex items-center gap-1 p-2">
@@ -280,7 +279,7 @@ const getColumnDefs = (
                     />
                   </Tooltip>
                 )}
-                {isPcrDue && (
+                {props.data.pcr_due && (
                   <Tooltip title="PCR due" placement="top" arrow>
                     <Chip
                       label="Due"
