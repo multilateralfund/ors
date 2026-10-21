@@ -18,6 +18,7 @@ import {
   categoryOpts,
   booleanFieldsOpts,
   borderedContainerClassname,
+  filtersBooleanFieldsOpts,
 } from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
 import { useStore } from '@ors/store'
@@ -46,11 +47,13 @@ const ManagePCRsWrapper = () => {
     ...initialFilters,
     pcr_submitted: [booleanFieldsOpts[1]],
     pcr_due: [booleanFieldsOpts[1]],
+    completed_only: [booleanFieldsOpts[0]],
   }
   const updatedInitialParamsListing = {
     ...initialFilters,
     pcr_submitted: ['No'],
     pcr_due: ['No'],
+    completed_only: ['Yes'],
   }
 
   const updatedInitialParamsPcrDue = {
@@ -85,7 +88,7 @@ const ManagePCRsWrapper = () => {
     lead_agency: agencies,
     cluster: clusters,
     category: categoryOpts,
-    status: statuses,
+    completed_only: filtersBooleanFieldsOpts,
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {

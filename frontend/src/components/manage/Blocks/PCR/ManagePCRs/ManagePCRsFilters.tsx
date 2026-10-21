@@ -26,7 +26,9 @@ const ManagePCRsFilters = ({
   }
 
   const FieldFilter = ({ field }: { field: string }) => {
-    const filterField = field === 'category' ? field : field + '_id'
+    const filterField = ['category', 'completed_only'].includes(field)
+      ? field
+      : field + '_id'
 
     return (
       <Field
@@ -64,6 +66,7 @@ const ManagePCRsFilters = ({
       <FieldFilter field="lead_agency" />
       <FieldFilter field="cluster" />
       <FieldFilter field="category" />
+      <FieldFilter field="completed_only" />
     </div>
   )
 }
