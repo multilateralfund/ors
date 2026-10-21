@@ -41,6 +41,10 @@ const ManagePCRsFiltersSelectedOpts = ({
       entities: formatEntity(fieldToOptionsMapping.category),
       entityIdentifier: 'category',
     },
+    {
+      entities: formatEntity(fieldToOptionsMapping.completed_only),
+      entityIdentifier: 'completed_only',
+    },
   ]
 
   return (
@@ -71,7 +75,13 @@ const ManagePCRsFiltersSelectedOpts = ({
             if (inputSearch) {
               inputSearch.value = ''
             }
-            const params = omit(initialParams, 'pcr_due', 'ad_hoc_pcr')
+            const params = {
+              ...omit(
+                { ...initialParams, completed_only: [] },
+                'pcr_due',
+                'ad_hoc_pcr',
+              ),
+            }
 
             handleFilterChange({ ...initialFilters, ...params })
             handleParamsChange({ offset: 0, ...params })
