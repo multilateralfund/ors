@@ -258,7 +258,11 @@ class ProjectFilter(filters.FilterSet):
             return queryset
         invalid_entries = Project.objects.filter(
             meta_project_id=OuterRef("pk"),
-        ).exclude(status__name__in=["Completed", "Financially completed"])
+        ).exclude(
+            status__name__in=[
+                "Completed",
+            ]
+        )
         meta_projects = MetaProject.objects.filter(~Exists(invalid_entries))
         for option in value:
             if option == "Yes":
