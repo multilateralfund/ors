@@ -17,7 +17,7 @@ import { formatApiUrl } from '@ors/helpers'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 
 const dollarValueOrNull = (value: number | string) =>
-  value ? `$${formatNumberValue(value)}` : null
+  value ? `$${formatNumberValue(value, 2, 2)}` : null
 
 export default function FundingWindow() {
   const { canManageFundingWindow } = useContext(PermissionsContext)
@@ -98,7 +98,7 @@ export default function FundingWindow() {
         return (
           dollarValueOrNull(
             params?.data?.total_project_funding_approved ?? 0,
-          ) ?? '0'
+          ) ?? `$${formatNumberValue(0, 2, 2)}`
         )
       },
     },
