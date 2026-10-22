@@ -14,7 +14,10 @@ import PCRCausesOfDelay from './PCRCausesOfDelay'
 import PCRDocumentation from './PCRDocumentation'
 import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
-import { SectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import {
+  SectionTitle,
+  UserInfo,
+} from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import {
   formatErrors,
   formatNestedPcErrors,
@@ -25,12 +28,12 @@ import {
   pcField,
   cdField,
   llField,
-  sdgsContributionField,
+  ppField,
   supportingEvidencesField,
   requiredMessage,
 } from '../constants'
 
-import { filter, flatMap, map, omit } from 'lodash'
+import { flatMap, map, omit } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
 
 const PCRForm = () => {
@@ -199,42 +202,32 @@ const PCRForm = () => {
     }))
   }, [JSON.stringify(causesOfDelayData), JSON.stringify(lessonsLearnedData)])
 
-  const sdgContributionData = PCRData.sdgs_contribution || []
+  const genderMainstreamingData = PCRData.gender_mainstreaming || []
 
   useEffect(() => {
-    const sdgData = filter(
-      sdgContributionData,
-      (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
+    const ppData = flatMap(
+      genderMainstreamingData,
+      ({ gender_mainstreamings }) => gender_mainstreamings,
     )
 
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
-      [sdgsContributionField]: map(sdgData, (sdg, index) => {
-        const sdgIdField = 'goal_id'
+      [ppField]: map(ppData, (pp, index) => {
+        const ppIdField = 'project_preparation'
 
-        const existingErrors = prev[sdgsContributionField]?.[index] ?? {}
+        const existingErrors = prev[ppField]?.[index] ?? {}
+        let updatedErrors = { ...existingErrors }
 
-        const updatedErrors = {
-          ...existingErrors,
-          goals: map(sdg.goals, (goal, goalIndex) => {
-            const existingGoalErrors = existingErrors.goals?.[goalIndex] ?? {}
-
-            let goalErrors = { ...existingGoalErrors }
-
-            if (!goal[sdgIdField]) {
-              goalErrors = { ...goalErrors, [sdgIdField]: [requiredMessage] }
-            } else if (goalErrors[sdgIdField]?.includes(requiredMessage)) {
-              goalErrors = omit(goalErrors, [sdgIdField])
-            }
-
-            return goalErrors
-          }),
+        if (!pp[ppIdField]) {
+          updatedErrors[ppIdField] = [requiredMessage]
+        } else if (updatedErrors[ppIdField]?.includes(requiredMessage)) {
+          updatedErrors = omit(updatedErrors, [ppIdField])
         }
 
         return normalizeErrors(updatedErrors)
       }),
     }))
-  }, [JSON.stringify(sdgContributionData)])
+  }, [JSON.stringify(genderMainstreamingData)])
 
   const supportingEvidencesData = PCRData[supportingEvidencesField] || []
 
@@ -296,7 +289,17 @@ const PCRForm = () => {
               <span key={id}>
                 {title && (
                   <div className="mb-6">
-                    <SectionTitle>{title}</SectionTitle>
+                    {id === 'gender_mainstreaming' ? (
+                      <div className="flex items-center gap-3">
+                        <SectionTitle>{title}</SectionTitle>
+                        <UserInfo
+                          info="Referring to the required indicators in annex II of the Operational policy on gender mainstreaming for the Multilateral Fund and to streamline reporting requirements, please describe how the different phases of the project cycle met the gender mainstreaming indicators."
+                          placement="bottom"
+                        />
+                      </div>
+                    ) : (
+                      <SectionTitle>{title}</SectionTitle>
+                    )}
                   </div>
                 )}
                 {shouldDisplayErrors && tabErrors && tabErrors.length > 0 && (
