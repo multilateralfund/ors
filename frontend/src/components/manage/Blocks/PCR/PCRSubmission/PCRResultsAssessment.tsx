@@ -1,4 +1,4 @@
-import { Fragment, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
 import {
   ErrorsList,
@@ -6,15 +6,33 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { TabLabel, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { initialActivitiesData, borderedContainerClassname } from '../constants'
+import {
+  SubSectionTitle,
+  EntryIndex,
+  EditSectionIndicator,
+} from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import {
+  pcrFieldsMapping,
+  initialActivitiesData,
+  borderedContainerClassname,
+} from '../constants'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 
-import { Tabs, Tab, Divider } from '@mui/material'
 import { filter, keys, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import cx from 'classnames'
+import {
+  Tabs,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from '@mui/material'
 
 const PCRResultsAssessment = () => {
   const sectionIdentifier = 'results_assessment'
@@ -96,36 +114,39 @@ const PCRResultsAssessment = () => {
 
   return (
     <>
-      <Tabs
-        aria-label="results-assessment-tabs"
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        value={crtTab}
-        onChange={(_, newValue) => {
-          setCrtTab(newValue)
-        }}
-      >
-        {map(crtAgencies, (agency) => (
-          <Tab
-            key={agency.name}
-            aria-controls={agency.name}
-            id={agency.name}
-            label={
-              <TabLabel
-                field={activityField}
-                errors={activitiesErrors}
-                {...{ agency }}
-              />
-            }
-          />
-        ))}
-      </Tabs>
+      <div className="flex gap-2">
+        <Tabs
+          aria-label="results-assessment-tabs"
+          className="sectionsTabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          value={crtTab}
+          onChange={(_, newValue) => {
+            setCrtTab(newValue)
+          }}
+        >
+          {map(crtAgencies, (agency) => (
+            <Tab
+              key={agency.name}
+              aria-controls={agency.name}
+              id={agency.name}
+              label={
+                <TabLabel
+                  field={activityField}
+                  errors={activitiesErrors}
+                  {...{ agency }}
+                />
+              }
+            />
+          ))}
+        </Tabs>
+        <EditSectionIndicator />
+      </div>
       <div className="border-0 border-t border-solid border-primary pt-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
@@ -137,57 +158,86 @@ const PCRResultsAssessment = () => {
             </SubSectionTitle>
           </div>
           <div className="flex flex-col border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
-            <div className="flex flex-col gap-y-4">
-              {map(activitiesData, (_, activityIndex) => (
-                <Fragment key={activityIndex}>
-                  <PCRTextWidget
-                    {...{ PCRData, setPCRData, sectionIdentifier }}
-                    field="activity_title"
-                    className="md:!min-w-[600px]"
-                    errors={agencyErrors}
-                    indexes={[crtTab, activityIndex]}
-                    subFields={['', activityField]}
-                  />
-                  <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                    {map(
-                      keys(initialActivitiesData).slice(1),
-                      (field, fieldIndex) => (
-                        <Fragment key={fieldIndex}>
-                          <PCRTextAreaWidget
-                            {...{
-                              PCRData,
-                              setPCRData,
-                              sectionIdentifier,
-                              field,
-                            }}
+            {activitiesData.length > 0 && (
+              <TableContainer
+                component={Paper}
+                className="PcrViewTableContainer"
+              >
+                <Table stickyHeader className="PcrViewTable">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>#</TableCell>
+                      <TableCell>{pcrFieldsMapping.activity_title}</TableCell>
+                      <TableCell>{pcrFieldsMapping.planned_output}</TableCell>
+                      <TableCell>
+                        {pcrFieldsMapping.actual_activity_output}
+                      </TableCell>
+                      <TableCell>
+                        {pcrFieldsMapping.additional_remarks}
+                      </TableCell>
+                      <TableCell />
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {map(activitiesData, (_, activityIndex) => (
+                      <TableRow key={activityIndex}>
+                        <TableCell>
+                          <EntryIndex index={activityIndex} />
+                        </TableCell>
+                        <TableCell className="w-[15%]">
+                          <PCRTextWidget
+                            {...{ PCRData, setPCRData, sectionIdentifier }}
+                            field="activity_title"
+                            className="w-[100%] md:!min-w-[320px]"
                             errors={agencyErrors}
                             indexes={[crtTab, activityIndex]}
                             subFields={['', activityField]}
+                            excludeLabel={true}
                           />
-                        </Fragment>
-                      ),
-                    )}
-                    <IoTrash
-                      className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                      size={16}
-                      onClick={() => {
-                        onRemoveActivity(activityIndex)
-                      }}
-                    />
-                  </div>
-                  {activityIndex !== activitiesData.length - 1 && (
-                    <Divider className="my-5" />
-                  )}
-                </Fragment>
-              ))}
-              <SubmitButton
-                title="Add activity"
-                onSubmit={onAddActivity}
-                className={cx('mr-auto h-8', {
-                  'mt-4': activitiesData.length > 0,
-                })}
-              />
-            </div>
+                        </TableCell>
+                        {map(
+                          keys(initialActivitiesData).slice(1),
+                          (field, fieldIndex) => (
+                            <TableCell key={fieldIndex} className="w-1/4">
+                              <PCRTextAreaWidget
+                                {...{
+                                  PCRData,
+                                  setPCRData,
+                                  sectionIdentifier,
+                                  field,
+                                }}
+                                errors={agencyErrors}
+                                indexes={[crtTab, activityIndex]}
+                                subFields={['', activityField]}
+                                excludeLabel={true}
+                                className="md:!min-w-[320px]"
+                              />
+                            </TableCell>
+                          ),
+                        )}
+                        <TableCell className="text-center align-middle">
+                          <IoTrash
+                            className="mx-auto min-h-6 min-w-6 cursor-pointer fill-[#8a2323]"
+                            size={16}
+                            onClick={() => {
+                              onRemoveActivity(activityIndex)
+                            }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+            <SubmitButton
+              title="+ Add activity"
+              onSubmit={onAddActivity}
+              className={cx(
+                'mr-auto h-10 !border-primary !bg-primary !font-normal !text-mlfs-hlYellow',
+                { 'mt-4': activitiesData.length > 0 },
+              )}
+            />
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
-import { initialOverviewData, projectPhaseOptions } from '../constants'
+import { initialOverviewData } from '../constants'
 import {
   PCRResponse,
   PCROverviewData,
@@ -16,7 +16,7 @@ import {
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import useApi from '@ors/hooks/useApi'
 
-import { filter, find, groupBy, keys, map, pick, uniq } from 'lodash'
+import { filter, groupBy, keys, map, pick, uniq } from 'lodash'
 import { Redirect, useParams } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
@@ -107,24 +107,7 @@ const PCREditWrapper = () => {
 
     const genderMainstreamings = map(agencyIds, (agency_id) => ({
       agency_id,
-      gender_mainstreamings: map(projectPhaseOptions, (phase) => {
-        const initialPpEntry = {
-          project_preparation: phase.id,
-          prefilled: '',
-          qualitative_description: '',
-        }
-
-        const phaseData = find(
-          groupedGenderMainstreamings[agency_id],
-          (mainstreaming) => mainstreaming.project_preparation === phase.name,
-        )
-
-        if (phaseData) {
-          phaseData.prefilled = phaseData.prefilled === true ? 'Yes' : 'No'
-        }
-
-        return phaseData ?? initialPpEntry
-      }),
+      gender_mainstreamings: groupedGenderMainstreamings[agency_id] ?? [],
     }))
 
     const groupedSdgsContribution = groupDataByAgency(

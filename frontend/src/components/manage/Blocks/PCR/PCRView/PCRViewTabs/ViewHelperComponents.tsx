@@ -8,7 +8,7 @@ import {
 import { ProjectType } from '@ors/types/api_projects'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
-import { Divider, Popover } from '@mui/material'
+import { Divider, Paper, Popper } from '@mui/material'
 import { FiEdit3, FiInfo } from 'react-icons/fi'
 import { FaCheck } from 'react-icons/fa6'
 import cx from 'classnames'
@@ -143,39 +143,51 @@ export const EditSectionIndicator = () => (
   </div>
 )
 
-export const UserInfo = ({ info }: { info: string }) => {
+export const UserInfo = ({
+  info,
+  placement,
+}: {
+  info: string
+  placement?: 'right' | 'bottom' | 'top' | 'left'
+}) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
   return (
     <>
       <div
-        className="mt-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-solid border-[#D1D5DB] bg-white text-2xl text-[#9a2b2b]"
-        onClick={(event) => setAnchorEl(anchorEl ? null : event.currentTarget)}
+        className="mr-2.25 mt-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-solid border-[#D1D5DB] bg-white text-2xl text-[#9a2b2b]"
+        onMouseEnter={(event) => setAnchorEl(event.currentTarget)}
+        onMouseLeave={() => setAnchorEl(null)}
       >
         <span className="mt-1">*</span>
       </div>
-      <Popover
+      <Popper
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
-        anchorOrigin={{ vertical: 'center', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'center', horizontal: 'left' }}
-        slotProps={{
-          paper: {
-            sx: {
-              backgroundColor: '#f6f9d9',
-              border: '1px solid #f0f2ce',
-              borderRadius: '8px !important',
-              fontSize: '16px',
-              ml: 2.25,
-              px: 1.25,
-              py: 0.5,
-            },
+        onMouseEnter={() => setAnchorEl(anchorEl)}
+        onMouseLeave={() => setAnchorEl(null)}
+        placement={placement ?? 'right'}
+        sx={{ zIndex: 1300, maxWidth: 800 }}
+        modifiers={[
+          {
+            name: 'offset',
+            options: { offset: [0, 8] },
           },
-        }}
+        ]}
       >
-        {info}
-      </Popover>
+        <Paper
+          sx={{
+            backgroundColor: '#f6f9d9',
+            border: '1px solid #f0f2ce',
+            borderRadius: '8px !important',
+            fontSize: '16px',
+            px: 1.25,
+            py: 0.5,
+          }}
+        >
+          {info}
+        </Paper>
+      </Popper>
     </>
   )
 }

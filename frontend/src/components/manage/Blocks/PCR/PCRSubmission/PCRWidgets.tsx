@@ -39,8 +39,8 @@ const additionalProperties: Record<string, Record<string, unknown>> = {
   project_goal_achieved: overviewFieldsClassName,
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
-  project_preparation: formatClassName('min-w-56 md:min-w-60'),
-  prefilled: formatClassName('!w-32'),
+  project_preparation: formatClassName('min-w-56 md:min-w-72'),
+  prefilled: formatClassName('!w-56'),
 }
 
 const getValue = (
@@ -302,6 +302,7 @@ export const PCRSelectWidget = ({
   subFields,
   disabled,
   className,
+  excludeLabel,
 }: WidgetPprops & { options: OptionsType[] }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedValue = find(options, { id: value }) || null
@@ -309,7 +310,7 @@ export const PCRSelectWidget = ({
 
   return (
     <div className={className}>
-      <Label>{pcrFieldsMapping[field]}</Label>
+      {!excludeLabel && <Label>{pcrFieldsMapping[field]}</Label>}
       <div className="flex items-center">
         <Field
           widget="autocomplete"
@@ -346,13 +347,14 @@ export const PCRTextWidget = ({
   indexes,
   subFields,
   className,
+  excludeLabel,
 }: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedErrors = formatErrors(errors, indexes)
 
   return (
     <div>
-      <Label>{pcrFieldsMapping[field]}</Label>
+      {!excludeLabel && <Label>{pcrFieldsMapping[field]}</Label>}
       <div className="flex items-center">
         <SimpleInput
           id={field}
