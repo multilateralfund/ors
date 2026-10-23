@@ -16,6 +16,7 @@ from core.models.project_completion_report import (
     PCRAdditionalComment,
     PCRDelayCause,
     PCRDelayCluster,
+    PCRFutureProjectRecommendation,
     PCRGenderMainstreaming,
     PCRGoal,
     PCRLearnedLessonCategory,
@@ -99,6 +100,7 @@ PCR_PROJECT_NESTED_MODELS = {
 
 PCR_NESTED_MODELS = {
     "overall_assessment_highlights": PCROverallAssessmentHighlight,
+    "future_project_recommendations": PCRFutureProjectRecommendation,
     "additional_comments": PCRAdditionalComment,
     "gender_mainstreamings": PCRGenderMainstreaming,
 }
@@ -248,6 +250,16 @@ class PCRAdditionalCommentSerializer(serializers.ModelSerializer):
         ]
 
 
+class PCRFutureProjectRecommendationSerializer(serializers.ModelSerializer):
+    pcr_id = serializers.IntegerField(read_only=True)
+    agency_id = serializers.IntegerField()
+    agency = serializers.SlugRelatedField("name", read_only=True)
+
+    class Meta:
+        model = PCRFutureProjectRecommendation
+        fields = ["id", "pcr_id", "agency_id", "agency", "title", "description"]
+
+
 class PCRDelayCauseSerializer(serializers.ModelSerializer):
     pcr_id = serializers.IntegerField(read_only=True)
     agency_id = serializers.IntegerField()
@@ -377,6 +389,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
     delay_causes = PCRDelayCauseSerializer(many=True)
     learned_lessons = PCRLearnedLessonSerializer(many=True)
     gender_mainstreamings = PCRGenderMainstreamingSerializer(many=True)
+    future_project_recommendations = PCRFutureProjectRecommendationSerializer(many=True)
     supporting_evidences = PCRSupportingEvidenceSerializer(many=True)
     sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(many=True)
 
@@ -398,6 +411,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "meta_project_id",
             "delay_causes",
             "overall_assessment_highlights",
+            "future_project_recommendations",
             "pcr_projects",
             "project_date_approved",
             "project_date_completion",
@@ -427,6 +441,9 @@ class PCRDetailSerializer(serializers.ModelSerializer):
 
 class PCRCreateSerializer(serializers.ModelSerializer):
     overall_assessment_highlights = PCROverallAssessmentHighlightSerializer(
+        many=True, required=False
+    )
+    future_project_recommendations = PCRFutureProjectRecommendationSerializer(
         many=True, required=False
     )
     additional_comments = PCRAdditionalCommentSerializer(many=True, required=False)
@@ -470,6 +487,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "project_goal_achieved",
             "project_goal_achieved_explanation",
             "overall_assessment_highlights",
+            "future_project_recommendations",
             "learned_lessons",
             "pcr_projects",
             "rating",
@@ -607,6 +625,9 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
     overall_assessment_highlights = PCROverallAssessmentHighlightSerializer(
         many=True, required=False
     )
+    future_project_recommendations = PCRFutureProjectRecommendationSerializer(
+        many=True, required=False
+    )
     additional_comments = PCRAdditionalCommentSerializer(many=True, required=False)
     gender_mainstreamings = PCRGenderMainstreamingSerializer(many=True, required=False)
     supporting_evidences = PCRSupportingEvidenceSerializer(many=True, required=False)
@@ -623,6 +644,7 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
             "project_date_approved",
             "project_date_completion",
             "overall_assessment_highlights",
+            "future_project_recommendations",
             "supporting_evidences",
             "pcr_projects",
             "phase_out_ods_approved",

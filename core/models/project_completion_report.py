@@ -627,6 +627,30 @@ class PCRLearnedLesson(models.Model):
         return new_item
 
 
+class PCRFutureProjectRecommendation(models.Model):
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="future_project_recommendations"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="future_project_recommendations"
+    )
+    title = models.TextField(
+        blank=True, null=True, help_text="Description of the causes of delay selected "
+    )
+    description = models.TextField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "PCR Future Project Recommendations"
+
+    def make_copy(self, new_pcr: "PCR"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.save()
+        new_item.future_project_recommendations.set(self.future_project_recommendations)
+        return new_item
+
+
 class PCRGenderMainstreaming(models.Model):
     class ProjectPreparation(models.TextChoices):
         PROJECT_PREPARATION = "Project preparation", "Project preparation"

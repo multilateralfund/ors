@@ -6,6 +6,7 @@ from core.admin.utils import get_final_display_list
 from core.models.project_completion_report import (
     PCRDelayCause,
     PCRDelayCluster,
+    PCRFutureProjectRecommendation,
     PCRGenderMainstreaming,
     PCRGoal,
     PCRLearnedLesson,
@@ -113,6 +114,15 @@ class PCRDelayClusterAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = []
         return get_final_display_list(PCRDelayCluster, exclude)
+
+
+@admin.register(PCRFutureProjectRecommendation)
+class PCRFutureProjectRecommendationAdmin(admin.ModelAdmin):
+    admin_group = "PCR"
+
+    def get_list_display(self, request):
+        exclude = []
+        return get_final_display_list(PCRFutureProjectRecommendation, exclude)
 
 
 @admin.register(PCRRootCausesOfDelay)
