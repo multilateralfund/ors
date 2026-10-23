@@ -1,20 +1,32 @@
-import { Fragment, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
-import {
-  ErrorsList,
-  SubmitButton,
-} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { SubSectionTitle } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import {
+  EditSectionIndicator,
+  AddEntityButton,
+  DeleteEntityButton,
+} from './EditHelperComponents'
+import {
+  SubSectionTitle,
+  UserInfo,
+  NoDataReported,
+} from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
-import { pcField, cdField } from '../constants'
+import { pcField, cdField, borderedContainerClassname } from '../constants'
 
-import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, map, omit } from 'lodash'
-import { IoTrash } from 'react-icons/io5'
+import { filter, find, map, omit } from 'lodash'
 import cx from 'classnames'
+import {
+  Tabs,
+  Tab,
+  Divider,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+} from '@mui/material'
 
 const PCRCausesOfDelay = () => {
   const sectionIdentifier = 'causes_of_delay'
@@ -46,7 +58,14 @@ const PCRCausesOfDelay = () => {
   )
   const delayCausesErrors = map(agencyErrors, (error) => map(error, cdField))
 
-  const onAddProjectComponent = () => {
+  const DataHeader = (
+    <div className="mb-5 grid flex-1 grid-cols-2 gap-4">
+      <SubSectionTitle>Description of the root causes of delay</SubSectionTitle>
+      <SubSectionTitle>Action taken</SubSectionTitle>
+    </div>
+  )
+
+  const onAddDelayCluster = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectComponentData = {
@@ -68,7 +87,7 @@ const PCRCausesOfDelay = () => {
     }, pcField)
   }
 
-  const onRemoveProjectComponent = (pcIndex: number) => {
+  const onRemoveDelayCluster = (pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
@@ -105,11 +124,11 @@ const PCRCausesOfDelay = () => {
     })
   }
 
-  const onAddCauseOfDelay = (pcIndex: number) => {
+  const onAddCauseOfDelay = (pcIndex: number, cdId: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialCauseOfDelay = {
-        delay_id: null,
+        delay_id: cdId,
         description: '',
         action_taken: '',
       }
@@ -135,7 +154,7 @@ const PCRCausesOfDelay = () => {
     }, cdField)
   }
 
-  const onRemoveCauseOfDelay = (cdIndex: number, pcIndex: number) => {
+  const onRemoveCauseOfDelay = (cdId: number, pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
@@ -150,7 +169,7 @@ const PCRCausesOfDelay = () => {
                     ? {
                         ...pc,
                         [cdField]: pc[cdField].filter(
-                          (_, crtCdIndex) => crtCdIndex !== cdIndex,
+                          (cd) => cd.delay_id !== cdId,
                         ),
                       }
                     : pc,
@@ -178,7 +197,7 @@ const PCRCausesOfDelay = () => {
 
           const updatedCausesOfDelay = filter(
             component[cdField],
-            (_, delayIndex: number) => delayIndex !== cdIndex,
+            (delay) => delay.delay_id !== cdId,
           )
 
           return updatedCausesOfDelay.length
@@ -191,119 +210,190 @@ const PCRCausesOfDelay = () => {
 
   return (
     <>
-      <Tabs
-        aria-label="causes-of-delay-tabs"
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        value={crtTab}
-        onChange={(_, newValue) => {
-          setCrtTab(newValue)
-        }}
-      >
-        {map(crtAgencies, (agency) => (
-          <Tab
-            key={agency.name}
-            aria-controls={agency.name}
-            id={agency.name}
-            label={
-              <TabLabel field={pcField} errors={pcErrors} {...{ agency }} />
-            }
-          />
-        ))}
-      </Tabs>
+      <div className="flex gap-2">
+        <Tabs
+          aria-label="causes-of-delay-tabs"
+          className="sectionsTabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          value={crtTab}
+          onChange={(_, newValue) => {
+            setCrtTab(newValue)
+          }}
+        >
+          {map(crtAgencies, (agency) => (
+            <Tab
+              key={agency.name}
+              aria-controls={agency.name}
+              id={agency.name}
+              label={
+                <TabLabel field={pcField} errors={pcErrors} {...{ agency }} />
+              }
+            />
+          ))}
+        </Tabs>
+        <EditSectionIndicator />
+      </div>
       <div className="border-0 border-t border-solid border-primary pt-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
         )}
-        <SubSectionTitle>Project components</SubSectionTitle>
-        <div className="flex flex-col gap-y-4">
-          {map(pcData, (_, pcIndex) => {
-            const cdData = pcData[pcIndex][cdField] || []
+        <div className="mb-2 flex flex-col gap-y-6">
+          {map(pcData, (pc, pcIndex) => {
+            const cdData = pc[cdField] || []
 
             return (
-              <div key={pcIndex} className="flex items-center gap-2">
-                <div className="flex flex-1 flex-col gap-y-4">
-                  <div className="flex gap-6">
-                    <PCRSelectWidget
-                      {...{ PCRData, setPCRData, sectionIdentifier }}
-                      field="project_component_option_id"
-                      options={projectComponentOptions}
-                      errors={agencyErrors}
-                      indexes={[crtTab, pcIndex]}
-                      subFields={['', pcField]}
-                    />
-                    <IoTrash
-                      className="mt-11 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                      size={16}
-                      onClick={() => {
-                        onRemoveProjectComponent(pcIndex)
+              <div key={pcIndex} className="flex">
+                <div className="w-1/4 bg-primary px-6 py-4">
+                  <span className="text-lg uppercase text-mlfs-hlYellow">
+                    Delay clusters
+                  </span>
+                  <PCRSelectWidget
+                    {...{ PCRData, setPCRData, sectionIdentifier }}
+                    field="project_component_option_id"
+                    options={projectComponentOptions}
+                    errors={agencyErrors}
+                    indexes={[crtTab, pcIndex]}
+                    subFields={['', pcField]}
+                    excludeLabel={true}
+                  />
+                  <Divider className="my-4 opacity-20" />
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg uppercase text-mlfs-hlYellow">
+                      Root causes of delay
+                    </span>
+                    <UserInfo
+                      info="Select from the list of the root cause(s) of delay that correspond to the selected delay cluster."
+                      className={{
+                        containerClassname:
+                          '!mt-0 !h-6 !w-6 !border-mlfs-hlYellow !bg-primary',
+                        labelClassname: 'text-mlfs-hlYellow',
                       }}
                     />
                   </div>
-                  {cdData.length > 0 && <Divider className="my-5" />}
-                  <div className="flex flex-col gap-y-4">
-                    {map(cdData, (_, cdIndex) => (
-                      <Fragment key={cdIndex}>
-                        <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                          <PCRSelectWidget
-                            {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="delay_id"
-                            options={causeOfDelayOptions}
-                            errors={delayCausesErrors}
-                            indexes={[crtTab, pcIndex, cdIndex]}
-                            subFields={['', pcField, cdField]}
+                  <FormGroup className="mt-2">
+                    {causeOfDelayOptions.map((option) => (
+                      <FormControlLabel
+                        key={option.name}
+                        label={option.name}
+                        control={
+                          <Checkbox
+                            size="small"
+                            checked={cdData.some(
+                              (cd) => Number(cd.delay_id) === Number(option.id),
+                            )}
+                            onChange={(event) => {
+                              if (event.target.checked) {
+                                onAddCauseOfDelay(pcIndex, Number(option.id))
+                              } else {
+                                onRemoveCauseOfDelay(Number(option.id), pcIndex)
+                              }
+                            }}
+                            sx={{
+                              p: 0,
+                              color: '#9aafb9',
+                              '&.Mui-checked .MuiSvgIcon-root': {
+                                color: 'var(--color-mlfs-hlYellow)',
+                              },
+                            }}
                           />
-                          <PCRTextAreaWidget
-                            {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="description"
-                            errors={delayCausesErrors}
-                            indexes={[crtTab, pcIndex, cdIndex]}
-                            subFields={['', pcField, cdField]}
-                            rows={2}
-                          />
-                          <PCRTextAreaWidget
-                            {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="action_taken"
-                            errors={delayCausesErrors}
-                            indexes={[crtTab, pcIndex, cdIndex]}
-                            subFields={['', pcField, cdField]}
-                            rows={2}
-                          />
-                          <IoTrash
-                            className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                            size={16}
-                            onClick={() => {
-                              onRemoveCauseOfDelay(cdIndex, pcIndex)
+                        }
+                        sx={{
+                          gap: '6px',
+                          margin: 0,
+                          marginBottom: '12px',
+                          alignItems: 'flex-start',
+                          color: '#e2eaf0',
+                        }}
+                      />
+                    ))}
+                  </FormGroup>
+                </div>
+                <div
+                  className={cx(
+                    'w-3/4 bg-white px-6 py-4',
+                    borderedContainerClassname,
+                  )}
+                >
+                  {cdData.length > 0 ? (
+                    <>
+                      <div className="relative">
+                        {DataHeader}
+                        <div className="absolute right-0 top-0">
+                          <DeleteEntityButton
+                            title="Remove delay cluster"
+                            onAction={() => {
+                              onRemoveDelayCluster(pcIndex)
                             }}
                           />
                         </div>
-                        {cdIndex !== cdData.length - 1 && (
-                          <Divider className="my-5" />
-                        )}
-                      </Fragment>
-                    ))}
-                  </div>
-                  <SubmitButton
-                    title="Add cause of delay"
-                    onSubmit={() => onAddCauseOfDelay(pcIndex)}
-                    className="mr-auto mt-5 h-8"
-                  />
-                  <Divider className="my-5" />
+                      </div>
+                      {map(cdData, (cd, cdIndex) => {
+                        const crtCdName =
+                          find(
+                            causeOfDelayOptions,
+                            (cdOpt) => cdOpt.id === cd.delay_id,
+                          )?.name ?? '-'
+
+                        return (
+                          <div key={cdIndex}>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex gap-3">
+                                <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-mlfs-hlYellow">
+                                  {cdIndex + 1}
+                                </div>
+                                <h4 className="m-0 text-lg font-semibold text-primary">
+                                  {crtCdName}
+                                </h4>
+                              </div>
+                              <div />
+                              <PCRTextAreaWidget
+                                {...{ PCRData, setPCRData, sectionIdentifier }}
+                                field="description"
+                                errors={delayCausesErrors}
+                                indexes={[crtTab, pcIndex, cdIndex]}
+                                subFields={['', pcField, cdField]}
+                                rows={2}
+                                className="md:!min-w-full"
+                              />
+                              <PCRTextAreaWidget
+                                {...{ PCRData, setPCRData, sectionIdentifier }}
+                                field="action_taken"
+                                errors={delayCausesErrors}
+                                indexes={[crtTab, pcIndex, cdIndex]}
+                                subFields={['', pcField, cdField]}
+                                rows={2}
+                                excludeLabel={true}
+                                className="mt-[37px] md:!min-w-full"
+                              />
+                            </div>
+                            {cdIndex !== cdData.length - 1 && (
+                              <Divider className="-mx-6 my-4" />
+                            )}
+                          </div>
+                        )
+                      })}
+                    </>
+                  ) : (
+                    <>
+                      {DataHeader}
+                      <NoDataReported text="No data reported." />
+                    </>
+                  )}
                 </div>
               </div>
             )
           })}
         </div>
-        <SubmitButton
-          title="Add project component"
-          onSubmit={onAddProjectComponent}
-          className={cx('mr-auto h-8', { 'mt-4': pcData.length > 0 })}
+        <AddEntityButton
+          title="Add delay cluster"
+          action={onAddDelayCluster}
+          nrEntities={pcData.length}
         />
       </div>
     </>

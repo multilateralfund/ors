@@ -39,6 +39,7 @@ const additionalProperties: Record<string, Record<string, unknown>> = {
   project_goal_achieved: overviewFieldsClassName,
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
+  project_component_option_id: formatClassName('min-w-full'),
   project_preparation: formatClassName('min-w-56 md:min-w-72'),
   prefilled: formatClassName('!w-56'),
 }

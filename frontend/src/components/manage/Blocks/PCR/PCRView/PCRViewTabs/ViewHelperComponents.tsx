@@ -9,8 +9,8 @@ import { ProjectType } from '@ors/types/api_projects'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Divider, Paper, Popper } from '@mui/material'
-import { FiEdit3, FiInfo } from 'react-icons/fi'
 import { FaCheck } from 'react-icons/fa6'
+import { FiInfo } from 'react-icons/fi'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -136,37 +136,37 @@ export const ProjectSummary = ({ project }: { project: ProjectType }) => {
   )
 }
 
-export const EditSectionIndicator = () => (
-  <div className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-3 py-1 text-lg leading-none text-mlfs-hlYellow">
-    <FiEdit3 size={18} />
-    <span>Edit</span>
-  </div>
-)
-
 export const UserInfo = ({
   info,
   placement,
+  className,
 }: {
   info: string
   placement?: 'right' | 'bottom' | 'top' | 'left'
+  className?: Record<string, string>
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+
+  const { containerClassname, labelClassname } = className ?? {}
 
   return (
     <>
       <div
-        className="mr-2.25 mt-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-solid border-[#D1D5DB] bg-white text-2xl text-[#9a2b2b]"
+        className={cx(
+          'mr-2.25 mt-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-solid border-[#D1D5DB] bg-white text-2xl text-[#9a2b2b]',
+          containerClassname,
+        )}
         onMouseEnter={(event) => setAnchorEl(event.currentTarget)}
         onMouseLeave={() => setAnchorEl(null)}
       >
-        <span className="mt-1">*</span>
+        <span className={cx('mt-1', labelClassname)}>*</span>
       </div>
       <Popper
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onMouseEnter={() => setAnchorEl(anchorEl)}
         onMouseLeave={() => setAnchorEl(null)}
-        placement={placement ?? 'right'}
+        placement={placement ?? 'bottom'}
         sx={{ zIndex: 1300, maxWidth: 800 }}
         modifiers={[
           {

@@ -292,10 +292,7 @@ const PCRForm = () => {
                     {id === 'gender_mainstreaming' ? (
                       <div className="flex items-center gap-3">
                         <SectionTitle>{title}</SectionTitle>
-                        <UserInfo
-                          info="Referring to the required indicators in annex II of the Operational policy on gender mainstreaming for the Multilateral Fund and to streamline reporting requirements, please describe how the different phases of the project cycle met the gender mainstreaming indicators."
-                          placement="bottom"
-                        />
+                        <UserInfo info="Referring to the required indicators in annex II of the Operational policy on gender mainstreaming for the Multilateral Fund and to streamline reporting requirements, please describe how the different phases of the project cycle met the gender mainstreaming indicators." />
                       </div>
                     ) : (
                       <SectionTitle>{title}</SectionTitle>
