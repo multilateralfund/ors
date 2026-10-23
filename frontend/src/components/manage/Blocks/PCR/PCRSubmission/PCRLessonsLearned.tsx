@@ -361,7 +361,7 @@ const PCRLessonsLearned = () => {
                               <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-mlfs-hlYellow">
                                 {llIndex + 1}
                               </div>
-                              <div>
+                              <div className="flex-1">
                                 <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
                                   {crtLlName}
                                 </h4>
