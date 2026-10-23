@@ -9,9 +9,9 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { EditSectionIndicator } from './EditHelperComponents'
 import { TabLabel, PCRTextAreaWidget } from './PCRWidgets'
 import {
-  EditSectionIndicator,
   EntryIndex,
   UserInfo,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
@@ -244,10 +244,7 @@ const PCRSdgs = () => {
               />
               Yes
             </Button>
-            <UserInfo
-              info="If yes, select the SDGs below from the drop-down list (multiple selection allowed) and describe the contribution of the project to each selected SDG."
-              placement="bottom"
-            />
+            <UserInfo info="If yes, select the SDGs below from the drop-down list (multiple selection allowed) and describe the contribution of the project to each selected SDG." />
             <Button
               className="mt-1"
               sx={buttonStyle(false)}
