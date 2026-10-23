@@ -157,8 +157,8 @@ Only run `migrate_user_type_to_groups` if you have existing users in your databa
 
 To import PCR fixtures run the following:
 ```shell
-    python manage.py loaddata core/import_data_v2/resources/pcr/PCRDelayCategory.json
-    python manage.py loaddata core/import_data_v2/resources/pcr/PCRProjectComponentOption.json
+    python manage.py loaddata core/import_data_v2/resources/pcr/PCRRootCausesOfDelay.json
+    python manage.py loaddata core/import_data_v2/resources/pcr/PCRDelayCluster.json
     python manage.py loaddata core/import_data_v2/resources/pcr/PCRLearnedLessonCategory.json
     python manage.py loaddata core/import_data_v2/resources/pcr/PCRGoal.json
     python manage.py loaddata core/import_data_v2/resources/pcr/PCRSupportingEvidenceSection.json
@@ -166,8 +166,8 @@ To import PCR fixtures run the following:
 
 To update PCR fixtures:
 ```shell
-python manage.py dumpdata core.PCRDelayCategory > core/import_data_v2/resources/pcr/PCRDelayCategory.json
-python manage.py dumpdata core.PCRProjectComponentOption > core/import_data_v2/resources/pcr/PCRProjectComponentOption.json
+python manage.py dumpdata core.PCRRootCausesOfDelay > core/import_data_v2/resources/pcr/PCRRootCausesOfDelay.json
+python manage.py dumpdata core.PCRDelayCluster > core/import_data_v2/resources/pcr/PCRDelayCluster.json
 python manage.py dumpdata core.PCRLearnedLessonCategory > core/import_data_v2/resources/pcr/PCRLearnedLessonCategory.json
 python manage.py dumpdata core.PCRGoal > core/import_data_v2/resources/pcr/PCRGoal.json
 python manage.py dumpdata core.PCRSupportingEvidenceSection > core/import_data_v2/resources/pcr/PCRSupportingEvidenceSection.json

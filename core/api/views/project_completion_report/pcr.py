@@ -30,11 +30,11 @@ from core.api.permissions import (
 )
 from core.api.serializers.project_completion_report import (
     PCRCreateSerializer,
-    PCRDelayCategorySerializer,
     PCRLearnedLessonCategorySerializer,
     PCRProjectListSerializer,
-    PCRProjectComponentOptionSerializer,
+    PCRDelayClusterSerializer,
     PCRDetailSerializer,
+    PCRRootCausesOfDelaySerializer,
     PCRUpdateSerializer,
 )
 from core.api.views.utils import get_country_regions
@@ -42,23 +42,23 @@ from core.models.country import Country
 from core.models.project import MetaProject, Project
 from core.models.project_completion_report import (
     PCR,
-    PCRDelayCategory,
     PCRLearnedLessonCategory,
     PCRProject,
-    PCRProjectComponentOption,
+    PCRDelayCluster,
+    PCRRootCausesOfDelay,
 )
 
 
-class PCRProjectComponentOptionListView(generics.ListAPIView):
+class PCRDelayClusterListView(generics.ListAPIView):
     permission_classes = [HasPCRViewAccess]
-    queryset = PCRProjectComponentOption.objects.order_by("sort_order", "name")
-    serializer_class = PCRProjectComponentOptionSerializer
+    queryset = PCRDelayCluster.objects.order_by("sort_order", "name")
+    serializer_class = PCRDelayClusterSerializer
 
 
-class PCRDelayCategoryListView(generics.ListAPIView):
+class PCRRootCausesOfDelayListView(generics.ListAPIView):
     permission_classes = [HasPCRViewAccess]
-    queryset = PCRDelayCategory.objects.order_by("sort_order", "name")
-    serializer_class = PCRDelayCategorySerializer
+    queryset = PCRRootCausesOfDelay.objects.order_by("sort_order", "name")
+    serializer_class = PCRRootCausesOfDelaySerializer
 
 
 class PCRLearnedLessonCategoryListView(generics.ListAPIView):

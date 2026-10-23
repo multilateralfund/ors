@@ -18,10 +18,9 @@ from core.models.utils import get_protected_storage
 
 PCR_RELATED_MODELS = [
     "PCRProject",
-    "PCRActivity",
     "PCRAdditionalComment",
-    "PCRProjectComponent",
     "PCRGenderMainstreaming",
+    "PCROverallAssessmentHighlight",
     "PCRSustainableDevelopmentGoal",
     "PCRSupportingEvidence",
 ]
@@ -462,16 +461,14 @@ class PCRAdditionalComment(models.Model):
         return new_item
 
 
-class PCRActivity(models.Model):
-    pcr = models.ForeignKey("PCR", on_delete=models.PROTECT, related_name="activities")
-    agency = models.ForeignKey(Agency, on_delete=models.PROTECT)
-    type_of_activity = models.TextField(
-        blank=True, null=True, help_text="Type of activity"
+class PCROverallAssessmentHighlight(models.Model):
+    pcr = models.ForeignKey(
+        "PCR", on_delete=models.PROTECT, related_name="overall_assessment_highlights"
     )
+    agency = models.ForeignKey(Agency, on_delete=models.PROTECT)
     activity_title = models.TextField(
         blank=True, null=True, help_text="Type of activity"
     )
-    type_of_sector = models.TextField(blank=True, null=True, help_text="Type of sector")
     planned_output = models.TextField(
         blank=True, null=True, help_text="Planned output(s)"
     )
@@ -485,10 +482,10 @@ class PCRActivity(models.Model):
     date_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = "PCR activities"
+        verbose_name_plural = "PCR overall assessment highlights"
 
     def __str__(self):
-        return f"{self.pcr} - {self.type_of_activity}"
+        return f"{self.pcr} - {self.activity_title}"
 
     def make_copy(self, new_pcr):
         new_item = self.__class__.objects.get(pk=self.pk)
@@ -499,7 +496,7 @@ class PCRActivity(models.Model):
         return new_item
 
 
-class PCRProjectComponentOptionManager(models.Manager):
+class PCRDelayClusterManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(obsolete=False)
 
@@ -507,21 +504,21 @@ class PCRProjectComponentOptionManager(models.Manager):
         return super().get_queryset()
 
 
-class PCRProjectComponentOption(models.Model):
+class PCRDelayCluster(models.Model):
     name = models.CharField(max_length=256)
     sort_order = models.FloatField(null=True, blank=True)
     obsolete = models.BooleanField(default=False)
 
-    objects = PCRProjectComponentOptionManager()
+    objects = PCRDelayClusterManager()
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name_plural = "PCR project component options"
+        verbose_name_plural = "PCR delay cluster options"
 
 
-class PCRDelayCategoryManager(models.Manager):
+class PCRRootCausesOfDelayManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(obsolete=False)
 
@@ -529,74 +526,51 @@ class PCRDelayCategoryManager(models.Manager):
         return super().get_queryset()
 
 
-class PCRDelayCategory(models.Model):
+class PCRRootCausesOfDelay(models.Model):
     name = models.CharField(max_length=256)
     sort_order = models.FloatField(null=True, blank=True)
     obsolete = models.BooleanField(default=False)
 
-    objects = PCRDelayCategoryManager()
+    objects = PCRRootCausesOfDelayManager()
 
     class Meta:
-        verbose_name_plural = "PCR delay categories"
+        verbose_name_plural = "PCR root causes of delay"
 
     def __str__(self):
         return self.name
-
-
-class PCRProjectComponent(models.Model):
-    pcr = models.ForeignKey(
-        PCR, on_delete=models.PROTECT, related_name="project_components"
-    )
-    agency = models.ForeignKey(
-        Agency, on_delete=models.PROTECT, related_name="project_components"
-    )
-    project_component_option = models.ForeignKey(
-        PCRProjectComponentOption, on_delete=models.PROTECT
-    )
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name_plural = "PCR project components"
-
-    def __str__(self):
-        return f"{self.pcr.meta_project.umbrella_code} - {self.project_component_option.name}"
-
-    def make_copy(self, new_pcr):
-        new_item = self.__class__.objects.get(pk=self.pk)
-        new_item.pk = None
-        new_item.pcr = new_pcr
-        new_item.agency = self.agency
-        new_item.save()
-
-        for model_name in PCR_PROJECT_COMPONENT_RELATED_MODELS:
-            model_class = apps.get_model("core", model_name)
-            items = model_class.objects.filter(pcr_project_component=self)
-            for item in items:
-                item.make_copy(new_item)
-
-        return new_item
 
 
 class PCRDelayCause(models.Model):
-    pcr_project_component = models.ForeignKey(
-        PCRProjectComponent, on_delete=models.PROTECT, related_name="delay_causes"
+    pcr = models.ForeignKey(PCR, on_delete=models.PROTECT, related_name="delay_causes")
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="delay_causes"
     )
-    delay = models.ForeignKey("PCRDelayCategory", on_delete=models.PROTECT)
-    description = models.TextField(blank=True, null=True, help_text="Planned output(s)")
+    delay_cluster = models.ForeignKey(
+        PCRDelayCluster, on_delete=models.PROTECT, related_name="delay_causes"
+    )
+    root_causes_of_delay = models.ManyToManyField(
+        "PCRRootCausesOfDelay", related_name="delay_causes"
+    )
+    description_roots_causes_of_delay = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Description of the roots causes of delay",
+    )
+    action_token = models.TextField(blank=True, null=True, help_text="Action taken")
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.pcr_project_component.pcr.meta_project.umbrella_code} - {self.delay}"
+        return f"{self.pcr.meta_project.umbrella_code} - {self.delay_cluster}"
 
     class Meta:
         verbose_name_plural = "PCR delay causes"
 
-    def make_copy(self, new_pcr_project_component: "PCRProjectComponent"):
+    def make_copy(self, new_pcr: "PCR"):
         new_item = self.__class__.objects.get(pk=self.pk)
         new_item.pk = None
-        new_item.pcr_project_component = new_pcr_project_component
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
         new_item.delay = self.delay
         new_item.save()
         return new_item
@@ -625,10 +599,16 @@ class PCRLearnedLessonCategory(models.Model):
 
 
 class PCRLearnedLesson(models.Model):
-    pcr_project_component = models.ForeignKey(
-        PCRProjectComponent, on_delete=models.PROTECT, related_name="learned_lessons"
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="learned_lessons"
     )
-    lesson = models.ForeignKey(PCRLearnedLessonCategory, on_delete=models.PROTECT)
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="learned_lessons"
+    )
+    lessons = models.ManyToManyField(
+        PCRLearnedLessonCategory,
+        related_name="lessons",
+    )
     description = models.TextField(
         blank=True, null=True, help_text="Description of the causes of delay selected "
     )
@@ -638,12 +618,12 @@ class PCRLearnedLesson(models.Model):
     class Meta:
         verbose_name_plural = "PCR learned lessons"
 
-    def make_copy(self, new_pcr_project_component: "PCRProjectComponent"):
+    def make_copy(self, new_pcr: "PCR"):
         new_item = self.__class__.objects.get(pk=self.pk)
         new_item.pk = None
-        new_item.pcr_project_component = new_pcr_project_component
-        new_item.lesson = self.lesson
+        new_item.pcr = new_pcr
         new_item.save()
+        new_item.lessons.set(self.lessons)
         return new_item
 
 
@@ -877,7 +857,7 @@ class OLD_PCRSector(models.Model):
 class OLD_PCRActivity(models.Model):
     """
     This is the old model used in the initial data import. TBD if the information from here
-    will be migrated to PCRActivity
+    will be migrated to PCROverallAssessmentHighlight
     """
 
     meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE)

@@ -15,13 +15,13 @@ from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
     MetaProjectFactory,
-    PCRDelayCategoryFactory,
+    PCRRootCausesOfDelayFactory,
     PCRLearnedLessonCategoryFactory,
     PCRFactory,
     PCRGoalFactory,
     PCRProjectFactory,
     PCRProjectEnterpriseFactory,
-    PCRProjectComponentOptionFactory,
+    PCRDelayClusterFactory,
     PCRSupportingEvidenceSectionFactory,
     ProjectClusterFactory,
     ProjectFactory,
@@ -241,11 +241,11 @@ def test_pcr_project_create(
     substance_from = SubstanceFactory.create()
     substance_to = SubstanceFactory.create()
     client.force_authenticate(user=admin_user)
-    delay1 = PCRDelayCategoryFactory()
-    delay2 = PCRDelayCategoryFactory()
+    delay1 = PCRRootCausesOfDelayFactory()
+    delay2 = PCRRootCausesOfDelayFactory()
     lesson1 = PCRLearnedLessonCategoryFactory(obsolete=False)
     lesson2 = PCRLearnedLessonCategoryFactory(obsolete=False)
-    project_component_option = PCRProjectComponentOptionFactory()
+    pcr_delay_cluster = PCRDelayClusterFactory()
     goal1 = PCRGoalFactory()
     goal2 = PCRGoalFactory()
     goal3 = PCRGoalFactory()
@@ -284,8 +284,6 @@ def test_pcr_project_create(
                         {
                             "agency_id": agency.id,
                             "activity_title": "Activity title 1",
-                            "type_of_activity": "Type of activity 1",
-                            "type_of_sector": "Type of sector 1",
                             "planned_output": "Planned output 1",
                             "actual_activity_output": "Actual activity output 1",
                             "additional_remarks": "Additional remarks 1",
@@ -293,8 +291,6 @@ def test_pcr_project_create(
                         {
                             "agency_id": new_agency.id,
                             "activity_title": "Activity title 2",
-                            "type_of_activity": "Type of activity 2",
-                            "type_of_sector": "Type of sector 2",
                             "planned_output": "Planned output 2",
                             "actual_activity_output": "Actual activity output 2",
                             "additional_remarks": "Additional remarks 2",

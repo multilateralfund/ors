@@ -6,18 +6,18 @@ from rest_framework.views import APIView
 from core.models.project_completion_report import (
     PCR,
     PCRAdditionalComment,
-    PCRDelayCategory,
     PCRGoal,
     PCRLearnedLessonCategory,
-    PCRProjectComponentOption,
+    PCRDelayCluster,
+    PCRRootCausesOfDelay,
     PCRSupportingEvidenceSection,
 )
 
 from core.api.serializers.project_completion_report import (
-    PCRDelayCategorySerializer,
     PCRGoalSerializer,
     PCRLearnedLessonCategorySerializer,
-    PCRProjectComponentOptionSerializer,
+    PCRDelayClusterSerializer,
+    PCRRootCausesOfDelaySerializer,
     PCRSupportingEvidenceSectionSerializer,
 )
 
@@ -88,9 +88,9 @@ class PCREntityView(BaseMetadataView):
         return Response(choices)
 
 
-class PCRDelayCategoryView(ListAPIView):
-    queryset = PCRDelayCategory.objects.all()
-    serializer_class = PCRDelayCategorySerializer
+class PCRRootCausesOfDelayView(ListAPIView):
+    queryset = PCRRootCausesOfDelay.objects.all()
+    serializer_class = PCRRootCausesOfDelaySerializer
 
 
 class PCRGoalView(ListAPIView):
@@ -103,9 +103,9 @@ class PCRLearnedLessonCategoryView(ListAPIView):
     serializer_class = PCRLearnedLessonCategorySerializer
 
 
-class PCRProjectComponentOptionView(ListAPIView):
-    queryset = PCRProjectComponentOption.objects.all()
-    serializer_class = PCRProjectComponentOptionSerializer
+class PCRDelayClusterView(ListAPIView):
+    queryset = PCRDelayCluster.objects.all()
+    serializer_class = PCRDelayClusterSerializer
 
 
 class PCRSupportingEvidenceSectionView(ListAPIView):

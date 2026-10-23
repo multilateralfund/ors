@@ -3,9 +3,9 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from core.models.project_completion_report import (
-    PCRDelayCategory,
+    PCRRootCausesOfDelay,
     PCRLearnedLessonCategory,
-    PCRProjectComponentOption,
+    PCRDelayCluster,
 )
 
 
@@ -20,8 +20,8 @@ def _client():
 @pytest.mark.parametrize(
     ("model", "url_name"),
     [
-        (PCRProjectComponentOption, "pcr-project-component-option-list"),
-        (PCRDelayCategory, "pcr-delay-category-list"),
+        (PCRDelayCluster, "pcr-project-component-option-list"),
+        (PCRRootCausesOfDelay, "pcr-root-causes-of-delay-list"),
         (PCRLearnedLessonCategory, "pcr-learned-lesson-category-list"),
     ],
 )
