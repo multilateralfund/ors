@@ -282,9 +282,16 @@ class PCRDelayCauseSerializer(serializers.ModelSerializer):
 
 class PCRLearnedLessonSerializer(serializers.ModelSerializer):
     pcr_id = serializers.IntegerField(read_only=True)
-    agency_id = serializers.IntegerField(read_only=True)
+    agency_id = serializers.IntegerField()
     agency = serializers.SlugRelatedField("name", read_only=True)
     lessons = PCRLearnedLessonCategorySerializer(read_only=True, many=True)
+    lessons_ids = serializers.PrimaryKeyRelatedField(
+        allow_empty=True,
+        many=True,
+        write_only=True,
+        required=False,
+        queryset=PCRLearnedLessonCategory.objects.all(),
+    )
 
     class Meta:
         model = PCRLearnedLesson
@@ -294,6 +301,7 @@ class PCRLearnedLessonSerializer(serializers.ModelSerializer):
             "agency",
             "description",
             "lessons",
+            "lessons_ids",
             "pcr_id",
         ]
 
@@ -434,6 +442,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         queryset=MetaProject.objects.all(), source="meta_project"
     )
     delay_causes = PCRDelayCauseSerializer(many=True, required=False)
+    learned_lessons = PCRLearnedLessonSerializer(many=True, required=False)
     pcr_projects = PCRProjectSerializer(many=True, required=False)
     gender_mainstreamings = PCRGenderMainstreamingSerializer(many=True, required=False)
     sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(
@@ -461,6 +470,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "project_goal_achieved",
             "project_goal_achieved_explanation",
             "overall_assessment_highlights",
+            "learned_lessons",
             "pcr_projects",
             "rating",
             "rating_explanation",
@@ -513,6 +523,8 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "sustainable_development_goals", []
         )
         delay_causes_data = validated_data.pop("delay_causes", [])
+
+        learned_lessons_data = validated_data.pop("learned_lessons", [])
         supporting_evidences_data = validated_data.pop("supporting_evidences", [])
 
         pcr_projects_by_project_id = {
@@ -548,6 +560,13 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             root_causes_of_delay_ids = delay_cause_data.pop("root_causes_of_delay_ids")
             delay_cause = PCRDelayCause.objects.create(pcr=pcr, **delay_cause_data)
             delay_cause.root_causes_of_delay.set(root_causes_of_delay_ids)
+
+        for learned_lesson_data in learned_lessons_data:
+            lessons_ids = learned_lesson_data.pop("lessons_ids")
+            lesson_learned = PCRLearnedLesson.objects.create(
+                pcr=pcr, **learned_lesson_data
+            )
+            lesson_learned.lessons.set(lessons_ids)
 
         for sustainable_development_goal_data in sustainable_development_goals_data:
             nested_data_sustainable_development_goal = pop_nested_data(
@@ -594,7 +613,6 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
     sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(
         many=True, required=False
     )
-    # project_components = PCRProjectComponentSerializer(many=True, required=False)
 
     class Meta:
         model = PCR
@@ -650,7 +668,7 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
         sustainable_development_goals_data = validated_data.pop(
             "sustainable_development_goals", []
         )
-        project_components_data = validated_data.pop("project_components", [])
+        # project_components_data = validated_data.pop("project_components", [])
         instance = super().update(instance, validated_data)
         pcr_projects_by_project_id = {
             pcr_project.project_id: pcr_project
@@ -673,21 +691,21 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
                 nested_data_pcr_project,
                 PCR_PROJECT_NESTED_MODELS,
             )
-        PCRLearnedLesson.objects.filter(pcr_project_component__pcr=instance).delete()
-        PCRDelayCause.objects.filter(pcr=instance).delete()
-        for project_component_data in project_components_data:
-            nested_data_project_component = pop_nested_data(
-                project_component_data, PCR_PROJECT_COMPONENT_NESTED_MODELS
-            )
-            # project_component = PCRProjectComponent.objects.create(
-            #     pcr=instance, **project_component_data
-            # )
-            # replace_nested_data(
-            #     project_component,
-            #     "pcr_project_component",
-            #     nested_data_project_component,
-            #     PCR_PROJECT_COMPONENT_NESTED_MODELS,
-            # )
+        # PCRLearnedLesson.objects.filter(pcr_project_component__pcr=instance).delete()
+        # PCRDelayCause.objects.filter(pcr=instance).delete()
+        # for project_component_data in project_components_data:
+        #     nested_data_project_component = pop_nested_data(
+        #         project_component_data, PCR_PROJECT_COMPONENT_NESTED_MODELS
+        #     )
+        # project_component = PCRProjectComponent.objects.create(
+        #     pcr=instance, **project_component_data
+        # )
+        # replace_nested_data(
+        #     project_component,
+        #     "pcr_project_component",
+        #     nested_data_project_component,
+        #     PCR_PROJECT_COMPONENT_NESTED_MODELS,
+        # )
         PCRSustainableDevelopmentGoalDescription.objects.filter(
             sgr__pcr=instance
         ).delete()
