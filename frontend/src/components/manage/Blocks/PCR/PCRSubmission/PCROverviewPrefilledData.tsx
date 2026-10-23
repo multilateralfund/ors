@@ -4,8 +4,8 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewProjectOverview from '../PCRView/PCRViewTabs/PCROverviewProjectOverview'
 import PCROverviewFundingData from '../PCRView/PCRViewTabs/PCROverviewFundingData'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { EditSectionIndicator } from './EditHelperComponents'
 import {
-  EditSectionIndicator,
   SubSectionTitle,
   getCollapseIcon,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'

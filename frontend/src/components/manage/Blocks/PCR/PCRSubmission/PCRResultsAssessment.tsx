@@ -1,16 +1,13 @@
 import { useContext, useState } from 'react'
 
-import {
-  ErrorsList,
-  SubmitButton,
-} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { EditSectionIndicator, AddEntityButton } from './EditHelperComponents'
 import { TabLabel, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
 import {
   SubSectionTitle,
   EntryIndex,
-  EditSectionIndicator,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import {
   pcrFieldsMapping,
@@ -184,11 +181,11 @@ const PCRResultsAssessment = () => {
                         <TableCell>
                           <EntryIndex index={activityIndex} />
                         </TableCell>
-                        <TableCell className="w-[15%]">
+                        <TableCell className="w-1/4">
                           <PCRTextWidget
                             {...{ PCRData, setPCRData, sectionIdentifier }}
                             field="activity_title"
-                            className="w-[100%] md:!min-w-[320px]"
+                            className="w-full md:!min-w-full"
                             errors={agencyErrors}
                             indexes={[crtTab, activityIndex]}
                             subFields={['', activityField]}
@@ -210,7 +207,7 @@ const PCRResultsAssessment = () => {
                                 indexes={[crtTab, activityIndex]}
                                 subFields={['', activityField]}
                                 excludeLabel={true}
-                                className="md:!min-w-[320px]"
+                                className="md:!min-w-full"
                               />
                             </TableCell>
                           ),
@@ -230,13 +227,10 @@ const PCRResultsAssessment = () => {
                 </Table>
               </TableContainer>
             )}
-            <SubmitButton
-              title="+ Add activity"
-              onSubmit={onAddActivity}
-              className={cx(
-                'mr-auto h-10 !border-primary !bg-primary !font-normal !text-mlfs-hlYellow',
-                { 'mt-4': activitiesData.length > 0 },
-              )}
+            <AddEntityButton
+              title="Add activity"
+              action={onAddActivity}
+              nrEntities={activitiesData.length}
             />
           </div>
         </div>

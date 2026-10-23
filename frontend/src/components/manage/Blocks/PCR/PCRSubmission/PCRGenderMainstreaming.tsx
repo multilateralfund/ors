@@ -1,16 +1,11 @@
 import { useContext, useState } from 'react'
 
-import {
-  ErrorsList,
-  SubmitButton,
-} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import {
-  EditSectionIndicator,
-  EntryIndex,
-} from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import { EditSectionIndicator, AddEntityButton } from './EditHelperComponents'
 import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { EntryIndex } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import {
   ppField,
@@ -20,20 +15,11 @@ import {
   borderedContainerClassname,
 } from '../constants'
 
+import { TableCell, TableRow } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
 import { filter, map } from 'lodash'
+import * as mui from '@mui/material'
 import cx from 'classnames'
-import {
-  Tabs,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-} from '@mui/material'
 
 const PCRGenderMainstreaming = () => {
   const sectionIdentifier = 'gender_mainstreaming'
@@ -117,7 +103,7 @@ const PCRGenderMainstreaming = () => {
   return (
     <>
       <div className="flex gap-2">
-        <Tabs
+        <mui.Tabs
           aria-label="gender-mainstreaming-tabs"
           className="sectionsTabs"
           variant="scrollable"
@@ -133,7 +119,7 @@ const PCRGenderMainstreaming = () => {
           }}
         >
           {map(crtAgencies, (agency) => (
-            <Tab
+            <mui.Tab
               key={agency.name}
               aria-controls={agency.name}
               id={agency.name}
@@ -142,7 +128,7 @@ const PCRGenderMainstreaming = () => {
               }
             />
           ))}
-        </Tabs>
+        </mui.Tabs>
         <EditSectionIndicator />
       </div>
       <div className="border-0 border-t border-solid border-primary pt-6">
@@ -156,9 +142,12 @@ const PCRGenderMainstreaming = () => {
           )}
         >
           {ppData.length > 0 && (
-            <TableContainer component={Paper} className="PcrViewTableContainer">
-              <Table stickyHeader className="PcrViewTable">
-                <TableHead>
+            <mui.TableContainer
+              component={mui.Paper}
+              className="PcrViewTableContainer"
+            >
+              <mui.Table stickyHeader className="PcrViewTable">
+                <mui.TableHead>
                   <TableRow>
                     <TableCell>#</TableCell>
                     <TableCell>
@@ -170,8 +159,8 @@ const PCRGenderMainstreaming = () => {
                     </TableCell>
                     <TableCell />
                   </TableRow>
-                </TableHead>
-                <TableBody>
+                </mui.TableHead>
+                <mui.TableBody>
                   {map(ppData, (_, ppIndex) => (
                     <TableRow key={ppIndex}>
                       <TableCell className="w-[4%]">
@@ -222,17 +211,14 @@ const PCRGenderMainstreaming = () => {
                       </TableCell>
                     </TableRow>
                   ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                </mui.TableBody>
+              </mui.Table>
+            </mui.TableContainer>
           )}
-          <SubmitButton
-            title="+ Add project cycle phase"
-            onSubmit={onAddProjectPhase}
-            className={cx(
-              'mr-auto h-10 !border-primary !bg-primary !font-normal !text-mlfs-hlYellow',
-              { 'mt-4': ppData.length > 0 },
-            )}
+          <AddEntityButton
+            title="Add project cycle phase"
+            action={onAddProjectPhase}
+            nrEntities={ppData.length}
           />
         </div>
       </div>

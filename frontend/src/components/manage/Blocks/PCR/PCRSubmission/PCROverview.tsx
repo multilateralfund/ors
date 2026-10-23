@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
+import { EditSectionIndicator } from './EditHelperComponents'
 import {
   PCRSelectWidget,
   PCRTextWidget,
@@ -9,7 +10,6 @@ import {
   PCRDateWidget,
 } from './PCRWidgets'
 import {
-  EditSectionIndicator,
   SubSectionTitle,
   UserInfo,
   detailItem,
@@ -165,7 +165,7 @@ const PCROverview = () => {
         <div className="flex justify-between gap-4 bg-[#f4f5f6] px-6 py-4">
           <div className="flex items-center gap-4">
             <SubSectionTitle>Additional comments</SubSectionTitle>
-            <UserInfo info="Select every entity commenting" />
+            <UserInfo info="Select every entity commenting" placement="right" />
           </div>
           <EditSectionIndicator />
         </div>
