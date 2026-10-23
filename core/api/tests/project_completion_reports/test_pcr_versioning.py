@@ -9,19 +9,18 @@ from django.utils import timezone
 from core.api.tests.factories import MetaProjectFactory
 
 from core.models import PCR
-from core.models import PCRActivity
 from core.models import PCRAdditionalComment
 from core.models import PCRProject
 from core.models import PCRProjectAlternativeTechnology
-from core.models import PCRProjectComponent
-from core.models import PCRProjectComponentOption
+from core.models import PCRDelayCluster
+from core.models import PCROverallAssessmentHighlight
 from core.models import PCRProjectEnterprise
 from core.models import PCRProjectEquipment
 from core.models import PCRSupportingEvidence
 from core.models import PCRSupportingEvidenceSection
 from core.models import PCRSustainableDevelopmentGoal
 from core.models import PCRSustainableDevelopmentGoalDescription
-from core.models import PCRDelayCategory
+from core.models import PCRRootCausesOfDelay
 from core.models import PCRDelayCause
 from core.models import PCRGoal
 
@@ -108,12 +107,10 @@ def pcr_additional_comment(original_pcr):
 
 @pytest.fixture
 def pcr_activity(original_pcr, agency):
-    return PCRActivity.objects.create(
+    return PCROverallAssessmentHighlight.objects.create(
         pcr=original_pcr,
         agency=agency,
-        type_of_activity="Activity Type",
         activity_title="Activity Title",
-        type_of_sector="Sector Type",
         planned_output="Planned Output",
         actual_activity_output="Actual Output",
         additional_remarks="Additional Remarks",
@@ -122,21 +119,12 @@ def pcr_activity(original_pcr, agency):
 
 @pytest.fixture
 def pcr_project_component_option():
-    return PCRProjectComponentOption.objects.create(name="Component option")
-
-
-@pytest.fixture
-def pcr_project_component(original_pcr, agency, pcr_project_component_option):
-    return PCRProjectComponent.objects.create(
-        pcr=original_pcr,
-        agency=agency,
-        project_component_option=pcr_project_component_option,
-    )
+    return PCRDelayCluster.objects.create(name="Component option")
 
 
 @pytest.fixture
 def pcr_delay_category():
-    return PCRDelayCategory.objects.create(name="Delay Category")
+    return PCRRootCausesOfDelay.objects.create(name="Delay Category")
 
 
 @pytest.fixture
@@ -223,8 +211,7 @@ def test_increase_version(
     assert PCRProjectEnterprise.objects.filter(pcr_project__pcr=archived_pcr).exists()
     assert PCRProjectEquipment.objects.filter(pcr_project__pcr=archived_pcr).exists()
     assert PCRAdditionalComment.objects.filter(pcr=archived_pcr).exists()
-    assert PCRActivity.objects.filter(pcr=archived_pcr).exists()
-    assert PCRProjectComponent.objects.filter(pcr=archived_pcr).exists()
+    assert PCROverallAssessmentHighlight.objects.filter(pcr=archived_pcr).exists()
     assert PCRDelayCause.objects.filter(
         pcr_project_component__pcr=archived_pcr
     ).exists()
@@ -278,22 +265,31 @@ def test_increase_version(
     assert new_pcr_additional_comment.entity == pcr_additional_comment.entity
     assert new_pcr_additional_comment.comment == pcr_additional_comment.comment
 
-    # Check that the duplicated PCRActivity has the correct fields
-    new_pcr_activity = PCRActivity.objects.get(pcr=archived_pcr)
-    assert new_pcr_activity.agency == pcr_activity.agency
-    assert new_pcr_activity.type_of_activity == pcr_activity.type_of_activity
-    assert new_pcr_activity.activity_title == pcr_activity.activity_title
-    assert new_pcr_activity.type_of_sector == pcr_activity.type_of_sector
-    assert new_pcr_activity.planned_output == pcr_activity.planned_output
-    assert new_pcr_activity.additional_remarks == pcr_activity.additional_remarks
+    # Check that the duplicated PCROverallAssessmentHighlight has the correct fields
+    new_pcr_overall_assessment_highlight = PCROverallAssessmentHighlight.objects.get(
+        pcr=archived_pcr
+    )
+    assert new_pcr_overall_assessment_highlight.agency == pcr_activity.agency
+    assert (
+        new_pcr_overall_assessment_highlight.activity_title
+        == pcr_activity.activity_title
+    )
+    assert (
+        new_pcr_overall_assessment_highlight.planned_output
+        == pcr_activity.planned_output
+    )
+    assert (
+        new_pcr_overall_assessment_highlight.additional_remarks
+        == pcr_activity.additional_remarks
+    )
 
     # Check that the duplicated PCRProjectComponent has the correct fields
-    new_pcr_project_component = PCRProjectComponent.objects.get(pcr=archived_pcr)
-    assert new_pcr_project_component.agency == pcr_project_component.agency
-    assert (
-        new_pcr_project_component.project_component_option
-        == pcr_project_component.project_component_option
-    )
+    # new_pcr_project_component = PCRProjectComponent.objects.get(pcr=archived_pcr)
+    # assert new_pcr_project_component.agency == pcr_project_component.agency
+    # assert (
+    #     new_pcr_project_component.project_component_option
+    #     == pcr_project_component.project_component_option
+    # )
 
     # Check that the duplicated PCRDelayCause has the correct fields
     new_pcr_delay_cause = PCRDelayCause.objects.get(
@@ -432,11 +428,15 @@ def test_archived_revision_is_unchanged_when_current_pcr_is_edited(
     pcr_additional_comment.save()
 
     archived_project = PCRProject.objects.get(pcr=archived_pcr)
-    archived_activity = PCRActivity.objects.get(pcr=archived_pcr)
+    archived_overall_assessment_hightlight = PCROverallAssessmentHighlight.objects.get(
+        pcr=archived_pcr
+    )
     archived_comment = PCRAdditionalComment.objects.get(pcr=archived_pcr)
 
     assert archived_project.funds_disbursed == Decimal("100.00")
-    assert archived_activity.actual_activity_output == "Actual Output"
+    assert (
+        archived_overall_assessment_hightlight.actual_activity_output == "Actual Output"
+    )
     assert archived_comment.comment == "Some comment"
 
 
@@ -449,11 +449,13 @@ def test_increase_version_rolls_back_when_snapshot_creation_fails(
     assert pcr_activity.pcr == original_pcr
 
     with patch.object(
-        PCRActivity,
+        PCROverallAssessmentHighlight,
         "make_copy",
-        side_effect=RuntimeError("Unable to copy PCR activity"),
+        side_effect=RuntimeError("Unable to copy PCROverallAssessmentHighlight"),
     ):
-        with pytest.raises(RuntimeError, match="Unable to copy PCR activity"):
+        with pytest.raises(
+            RuntimeError, match="Unable to copy PCROverallAssessmentHighlight"
+        ):
             original_pcr.increase_version(secretariat_user)
 
     original_pcr.refresh_from_db()
@@ -462,4 +464,4 @@ def test_increase_version_rolls_back_when_snapshot_creation_fails(
         PCR.objects.really_all().filter(meta_project=original_pcr.meta_project).count()
         == 1
     )
-    assert PCRActivity.objects.filter(pcr=original_pcr).count() == 1
+    assert PCROverallAssessmentHighlight.objects.filter(pcr=original_pcr).count() == 1

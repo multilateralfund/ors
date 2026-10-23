@@ -140,18 +140,18 @@ from core.api.views.projects_v2 import (
 from core.api.views.project_completion_report.metadata import (
     PCRRatingView,
     PCRCompletedByView,
-    PCRDelayCategoryView,
+    PCRDelayClusterView,
     PCREntityView,
     PCRGoalView,
     PCRLearnedLessonCategoryView,
-    PCRProjectComponentOptionView,
+    PCRRootCausesOfDelayView,
     PCRSupportingEvidenceSectionView,
 )
 from core.api.views.project_completion_report.pcr import PCRProjectViewSet
 from core.api.views.project_completion_report.pcr import (
-    PCRDelayCategoryListView,
+    PCRDelayClusterListView,
     PCRLearnedLessonCategoryListView,
-    PCRProjectComponentOptionListView,
+    PCRRootCausesOfDelayListView,
 )
 from core.api.views.project_completion_report.pcr_metaprojects import (
     PCRMetaprojectsViewSet,
@@ -329,12 +329,12 @@ urlpatterns = [
     ),
     path(
         "project-completion-reports/project-component-options/",
-        PCRProjectComponentOptionListView.as_view(),
+        PCRDelayClusterListView.as_view(),
         name="pcr-project-component-option-list",
     ),
     path(
         "project-completion-reports/delay-categories/",
-        PCRDelayCategoryListView.as_view(),
+        PCRRootCausesOfDelayListView.as_view(),
         name="pcr-delay-category-list",
     ),
     path(
@@ -359,7 +359,7 @@ urlpatterns = [
     ),
     path(
         "project-completion-report/delay-category/",
-        PCRDelayCategoryView.as_view(),
+        PCRRootCausesOfDelayView.as_view(),
         name="project-completion-report-delay-category",
     ),
     path(
@@ -374,7 +374,7 @@ urlpatterns = [
     ),
     path(
         "project-completion-report/project-component-option/",
-        PCRProjectComponentOptionView.as_view(),
+        PCRDelayClusterView.as_view(),
         name="project-completion-report-project-component-option",
     ),
     path(
