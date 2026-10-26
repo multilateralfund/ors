@@ -546,14 +546,10 @@ class PCRDelayCause(models.Model):
         PCRDelayCluster, on_delete=models.PROTECT, related_name="delay_causes"
     )
     root_causes_of_delay = models.ManyToManyField(
-        "PCRRootCausesOfDelay", related_name="delay_causes"
+        "PCRRootCausesOfDelay",
+        through="PCRDelayCauseRootCause",
+        related_name="delay_causes",
     )
-    description_roots_causes_of_delay = models.TextField(
-        blank=True,
-        null=True,
-        help_text="Description of the roots causes of delay",
-    )
-    action_taken = models.TextField(blank=True, null=True, help_text="Action taken")
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
@@ -570,7 +566,37 @@ class PCRDelayCause(models.Model):
         new_item.agency = self.agency
         new_item.delay_cluster = self.delay_cluster
         new_item.save()
-        new_item.root_causes_of_delay.set(self.root_causes_of_delay.all())
+
+        for root_cause in self.pcrdelaycauserootcause_set.all():
+            root_cause.make_copy(new_item)
+
+        return new_item
+
+
+class PCRDelayCauseRootCause(models.Model):
+    delay_cause = models.ForeignKey(PCRDelayCause, on_delete=models.CASCADE)
+    root_cause = models.ForeignKey(PCRRootCausesOfDelay, on_delete=models.PROTECT)
+    description_roots_causes_of_delay = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Description of the roots causes of delay",
+    )
+    action_taken = models.TextField(blank=True, null=True, help_text="Action taken")
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "PCR delay cause root causes"
+
+    def __str__(self):
+        return f"{self.delay_cause} - {self.root_cause}"
+
+    def make_copy(self, delay_cause: "PCRDelayCause"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.delay_cause = delay_cause
+        new_item.root_cause = self.root_cause
+        new_item.save()
         return new_item
 
 
@@ -605,10 +631,8 @@ class PCRLearnedLesson(models.Model):
     )
     lessons = models.ManyToManyField(
         PCRLearnedLessonCategory,
+        through="PCRLearnedLessonDescription",
         related_name="lessons",
-    )
-    description = models.TextField(
-        blank=True, null=True, help_text="Description of the causes of delay selected "
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -621,7 +645,34 @@ class PCRLearnedLesson(models.Model):
         new_item.pk = None
         new_item.pcr = new_pcr
         new_item.save()
-        new_item.lessons.set(self.lessons)
+
+        for lesson in self.pcrlearnedlessondescription_set.all():
+            lesson.make_copy(new_item)
+
+        return new_item
+
+
+class PCRLearnedLessonDescription(models.Model):
+    learned_lesson = models.ForeignKey(PCRLearnedLesson, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(PCRLearnedLessonCategory, on_delete=models.PROTECT)
+    description = models.TextField(
+        blank=True, null=True, help_text="Description of the lesson learned"
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "PCR learned lesson descriptions"
+
+    def __str__(self):
+        return f"{self.learned_lesson} - {self.lesson}"
+
+    def make_copy(self, learned_lesson: "PCRLearnedLesson"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.learned_lesson = learned_lesson
+        new_item.lesson = self.lesson
+        new_item.save()
         return new_item
 
 

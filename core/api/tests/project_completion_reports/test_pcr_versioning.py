@@ -22,6 +22,7 @@ from core.models import PCRSustainableDevelopmentGoal
 from core.models import PCRSustainableDevelopmentGoalDescription
 from core.models import PCRRootCausesOfDelay
 from core.models import PCRDelayCause
+from core.models import PCRDelayCauseRootCause
 from core.models import PCRGoal
 
 pytestmark = pytest.mark.django_db
@@ -135,10 +136,13 @@ def pcr_delay_cause(
         pcr=original_pcr,
         agency=agency,
         delay_cluster=pcr_delay_cluster_option,
+    )
+    PCRDelayCauseRootCause.objects.create(
+        delay_cause=delay_cause,
+        root_cause=pcr_root_causes_of_delay,
         description_roots_causes_of_delay="Delay Cause Description",
         action_taken="Action Taken",
     )
-    delay_cause.root_causes_of_delay.set([pcr_root_causes_of_delay])
     return delay_cause
 
 
@@ -289,10 +293,15 @@ def test_increase_version(
     # Check that the duplicated PCRDelayCause has the correct fields
     new_pcr_delay_cause = PCRDelayCause.objects.get(pcr=archived_pcr)
     assert new_pcr_delay_cause.delay_cluster == pcr_delay_cause.delay_cluster
+    new_root_cause = new_pcr_delay_cause.pcrdelaycauserootcause_set.get()
+    root_cause = pcr_delay_cause.pcrdelaycauserootcause_set.get()
+    assert new_root_cause.id != root_cause.id
+    assert new_root_cause.root_cause == root_cause.root_cause
     assert (
-        new_pcr_delay_cause.description_roots_causes_of_delay
-        == pcr_delay_cause.description_roots_causes_of_delay
+        new_root_cause.description_roots_causes_of_delay
+        == root_cause.description_roots_causes_of_delay
     )
+    assert new_root_cause.action_taken == root_cause.action_taken
 
     # Check that the duplicated PCRSustainableDevelopmentGoal has the correct fields
     new_pcr_sustainable_development_goal = PCRSustainableDevelopmentGoal.objects.get(

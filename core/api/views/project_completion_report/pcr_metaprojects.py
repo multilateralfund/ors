@@ -56,7 +56,9 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         projects_queryset = self.filter_project_permissions_queryset(
-            Project.objects.filter(submission_status__name="Approved")
+            Project.objects.filter(submission_status__name="Approved").exclude(
+                category="IND", status__name="Transferred"
+            )
         )
         project_filter = ProjectFilter(self.request.GET, queryset=projects_queryset)
         filtered_projects_qs = project_filter.qs

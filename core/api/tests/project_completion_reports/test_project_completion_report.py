@@ -305,34 +305,48 @@ def test_pcr_project_create(
                         {
                             "agency_id": agency.id,
                             "delay_cluster_id": delay_cluster1.id,
-                            "root_causes_of_delay_ids": [
-                                root_delay1.id,
-                                root_delay2.id,
+                            "root_causes_of_delay": [
+                                {
+                                    "root_cause_id": root_delay1.id,
+                                    "description_roots_causes_of_delay": "description 1",
+                                    "action_taken": "text 1",
+                                },
+                                {
+                                    "root_cause_id": root_delay2.id,
+                                    "description_roots_causes_of_delay": "description 2",
+                                    "action_taken": "text 2",
+                                },
                             ],
-                            "description_roots_causes_of_delay": "description 1",
-                            "action_taken": "text 1",
                         },
                         {
                             "agency_id": new_agency.id,
                             "delay_cluster_id": delay_cluster2.id,
-                            "root_causes_of_delay_ids": [
-                                root_delay2.id,
+                            "root_causes_of_delay": [
+                                {
+                                    "root_cause_id": root_delay2.id,
+                                    "description_roots_causes_of_delay": "description 3",
+                                    "action_taken": "text 3",
+                                },
                             ],
-                            "description_roots_causes_of_delay": "description 2",
-                            "action_taken": "text 2",
                         },
                     ],
                     "learned_lessons": [
                         {
                             "agency_id": agency.id,
-                            "description": "Description 1",
-                            "lessons_ids": [lesson1.id],
+                            "lessons": [
+                                {
+                                    "lesson_id": lesson1.id,
+                                    "description": "Description 1",
+                                }
+                            ],
                         },
                         {
                             "agency_id": new_agency.id,
-                            "description": "Description 2",
-                            "lessons_ids": [
-                                lesson2.id,
+                            "lessons": [
+                                {
+                                    "lesson_id": lesson2.id,
+                                    "description": "Description 2",
+                                }
                             ],
                         },
                     ],
@@ -487,29 +501,32 @@ def test_pcr_project_create(
     assert len(response.data["delay_causes"]) == 2
     assert response.data["delay_causes"][0]["agency_id"] == agency.id
     assert response.data["delay_causes"][0]["delay_cluster"]["id"] == delay_cluster1.id
-    assert (
-        response.data["delay_causes"][0]["root_causes_of_delay"][0]["id"]
-        == root_delay1.id
-    )
-    assert (
-        response.data["delay_causes"][0]["root_causes_of_delay"][1]["id"]
-        == root_delay2.id
-    )
+    root_causes = response.data["delay_causes"][0]["root_causes_of_delay"]
+    assert root_causes[0]["root_cause_id"] == root_delay1.id
+    assert root_causes[0]["description_roots_causes_of_delay"] == "description 1"
+    assert root_causes[0]["action_taken"] == "text 1"
+    assert root_causes[1]["root_cause_id"] == root_delay2.id
+    assert root_causes[1]["description_roots_causes_of_delay"] == "description 2"
+    assert root_causes[1]["action_taken"] == "text 2"
 
     assert response.data["delay_causes"][1]["agency_id"] == new_agency.id
     assert response.data["delay_causes"][1]["delay_cluster"]["id"] == delay_cluster2.id
-    assert (
-        response.data["delay_causes"][1]["root_causes_of_delay"][0]["id"]
-        == root_delay2.id
-    )
+    root_causes = response.data["delay_causes"][1]["root_causes_of_delay"]
+    assert root_causes[0]["root_cause_id"] == root_delay2.id
+    assert root_causes[0]["description_roots_causes_of_delay"] == "description 3"
+    assert root_causes[0]["action_taken"] == "text 3"
 
     # lessons learned
     assert len(response.data["learned_lessons"]) == 2
     assert response.data["learned_lessons"][0]["agency_id"] == agency.id
-    assert response.data["learned_lessons"][0]["lessons"][0]["id"] == lesson1.id
+    lessons = response.data["learned_lessons"][0]["lessons"]
+    assert lessons[0]["lesson_id"] == lesson1.id
+    assert lessons[0]["description"] == "Description 1"
 
     assert response.data["learned_lessons"][1]["agency_id"] == new_agency.id
-    assert response.data["learned_lessons"][1]["lessons"][0]["id"] == lesson2.id
+    lessons = response.data["learned_lessons"][1]["lessons"]
+    assert lessons[0]["lesson_id"] == lesson2.id
+    assert lessons[0]["description"] == "Description 2"
 
     # gender mainstreamings
     assert len(response.data["gender_mainstreamings"]) == 1

@@ -5,12 +5,14 @@ from django.contrib import admin
 from core.admin.utils import get_final_display_list
 from core.models.project_completion_report import (
     PCRDelayCause,
+    PCRDelayCauseRootCause,
     PCRDelayCluster,
     PCRFutureProjectRecommendation,
     PCRGenderMainstreaming,
     PCRGoal,
     PCRLearnedLesson,
     PCRLearnedLessonCategory,
+    PCRLearnedLessonDescription,
     PCR,
     PCROverallAssessmentHighlight,
     PCRProject,
@@ -133,6 +135,7 @@ class PCRRootCausesOfDelayAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "pcrdelaycause",
+            "pcrdelaycauserootcause",
         ]
         return get_final_display_list(PCRRootCausesOfDelay, exclude)
 
@@ -140,9 +143,19 @@ class PCRRootCausesOfDelayAdmin(admin.ModelAdmin):
         return PCRRootCausesOfDelay.objects.really_all()
 
 
+class PCRDelayCauseRootCauseInline(admin.TabularInline):
+    model = PCRDelayCauseRootCause
+    fk_name = "delay_cause"
+    extra = 1
+    autocomplete_fields = ["root_cause"]
+    verbose_name = "Root cause of delay"
+    verbose_name_plural = "Root causes of delay"
+
+
 @admin.register(PCRDelayCause)
 class PCRDelayCauseAdmin(admin.ModelAdmin):
     admin_group = "PCR"
+    inlines = [PCRDelayCauseRootCauseInline]
     search_fields = [
         "pcr__meta_project__umbrella_code",
         "delay_cluster__name",
@@ -158,17 +171,19 @@ class PCRDelayCauseAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = []
+        exclude = ["pcrdelaycauserootcause"]
         return get_final_display_list(PCRDelayCause, exclude)
 
 
 @admin.register(PCRLearnedLessonCategory)
 class PCRLearnedLessonCategoryAdmin(admin.ModelAdmin):
     admin_group = "PCR"
+    search_fields = ["name"]
 
     def get_list_display(self, request):
         exclude = [
             "pcrlearnedlesson",
+            "pcrlearnedlessondescription",
         ]
         return get_final_display_list(PCRLearnedLessonCategory, exclude)
 
@@ -176,12 +191,22 @@ class PCRLearnedLessonCategoryAdmin(admin.ModelAdmin):
         return PCRLearnedLessonCategory.objects.really_all()
 
 
+class PCRLearnedLessonDescriptionInline(admin.TabularInline):
+    model = PCRLearnedLessonDescription
+    fk_name = "learned_lesson"
+    extra = 1
+    autocomplete_fields = ["lesson"]
+    verbose_name = "Lesson learned"
+    verbose_name_plural = "Lessons learned"
+
+
 @admin.register(PCRLearnedLesson)
 class PCRLearnedLessonAdmin(admin.ModelAdmin):
     admin_group = "PCR"
+    inlines = [PCRLearnedLessonDescriptionInline]
     search_fields = [
         "pcr__meta_project__umbrella_code",
-        "lessons",
+        "lessons__name",
     ]
     list_filter = [
         AutocompleteFilterFactory("pcr", "pcr"),
@@ -193,7 +218,7 @@ class PCRLearnedLessonAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = []
+        exclude = ["pcrlearnedlessondescription"]
         return get_final_display_list(PCRLearnedLesson, exclude)
 
 

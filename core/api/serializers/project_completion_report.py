@@ -17,12 +17,14 @@ from core.models.project_completion_report import (
     PCR,
     PCRAdditionalComment,
     PCRDelayCause,
+    PCRDelayCauseRootCause,
     PCRDelayCluster,
     PCRFutureProjectRecommendation,
     PCRGenderMainstreaming,
     PCRGoal,
     PCRLearnedLessonCategory,
     PCRLearnedLesson,
+    PCRLearnedLessonDescription,
     PCROverallAssessmentHighlight,
     PCRProject,
     PCRProjectAlternativeTechnology,
@@ -109,11 +111,15 @@ PCR_NESTED_MODELS = {
     "learned_lessons": PCRLearnedLesson,
 }
 
-PCR_NESTED_MODELS_M2M = {
-    "delay_causes": [
-        ("root_causes_of_delay", "root_causes_of_delay_ids"),
-    ],
-    "learned_lessons": [("lessons", "lessons_ids")],
+PCR_NESTED_MODELS_THROUGH = {
+    "delay_causes": (
+        "delay_cause",
+        {"pcrdelaycauserootcause_set": PCRDelayCauseRootCause},
+    ),
+    "learned_lessons": (
+        "learned_lesson",
+        {"pcrlearnedlessondescription_set": PCRLearnedLessonDescription},
+    ),
 }
 
 PCR_NESTED_MODELS_LOOK_UP_FIELDS = {
@@ -144,19 +150,17 @@ def pop_nested_data(pcr_project_data, PARENT_MODEL_DICT):
 
 
 def replace_nested_data(
-    parent_object, parent_field_name, nested_data, PARENT_MODEL_DICT, m2m_fields={}
+    parent_object, parent_field_name, nested_data, PARENT_MODEL_DICT, through_models={}
 ):
     for field_name, rows in nested_data.items():
         ids = []
         if rows is None:
             continue
         for row in rows:
-            m2m_info = {
-                field_name_in_model: row.pop(data_field_name)
-                for field_name_in_model, data_field_name in m2m_fields.get(
-                    field_name, []
-                )
-            }
+            through_parent_field_name, THROUGH_MODEL_DICT = through_models.get(
+                field_name, (None, {})
+            )
+            nested_data_through = pop_nested_data(row, THROUGH_MODEL_DICT)
 
             model = PARENT_MODEL_DICT[field_name]
 
@@ -178,9 +182,13 @@ def replace_nested_data(
                     obj.save()
                 else:
                     obj = model.objects.create(**lookup)
-            if m2m_info:
-                for field, data in m2m_info.items():
-                    getattr(obj, field).set(data)
+            if THROUGH_MODEL_DICT:
+                replace_nested_data(
+                    obj,
+                    through_parent_field_name,
+                    nested_data_through,
+                    THROUGH_MODEL_DICT,
+                )
 
             ids.append(obj.id)
 
@@ -310,21 +318,42 @@ class PCRFutureProjectRecommendationSerializer(serializers.ModelSerializer):
         fields = ["id", "pcr_id", "agency_id", "agency", "title", "description"]
 
 
+class PCRDelayCauseRootCauseSerializer(serializers.ModelSerializer):
+    delay_cause_id = serializers.IntegerField(read_only=True)
+    root_cause_id = serializers.PrimaryKeyRelatedField(
+        queryset=PCRRootCausesOfDelay.objects.all(), source="root_cause"
+    )
+    root_cause = serializers.SlugRelatedField("name", read_only=True)
+    description_roots_causes_of_delay = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True
+    )
+    action_taken = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True
+    )
+
+    class Meta:
+        model = PCRDelayCauseRootCause
+        fields = [
+            "id",
+            "delay_cause_id",
+            "root_cause_id",
+            "root_cause",
+            "description_roots_causes_of_delay",
+            "action_taken",
+        ]
+
+
 class PCRDelayCauseSerializer(serializers.ModelSerializer):
     pcr_id = serializers.IntegerField(read_only=True)
     agency_id = serializers.IntegerField()
     agency = serializers.SlugRelatedField("name", read_only=True)
     delay_cluster = PCRDelayClusterSerializer(required=False)
     delay_cluster_id = serializers.IntegerField()
-    root_causes_of_delay = PCRRootCausesOfDelaySerializer(many=True, required=False)
-    root_causes_of_delay_ids = serializers.PrimaryKeyRelatedField(
+    root_causes_of_delay = PCRDelayCauseRootCauseSerializer(
         many=True,
-        write_only=True,
+        source="pcrdelaycauserootcause_set",
         required=False,
-        queryset=PCRRootCausesOfDelay.objects.all(),
     )
-    description_roots_causes_of_delay = serializers.CharField(required=False)
-    action_taken = serializers.CharField(required=False)
 
     class Meta:
         model = PCRDelayCause
@@ -336,9 +365,27 @@ class PCRDelayCauseSerializer(serializers.ModelSerializer):
             "delay_cluster_id",
             "delay_cluster",
             "root_causes_of_delay",
-            "root_causes_of_delay_ids",
-            "description_roots_causes_of_delay",
-            "action_taken",
+        ]
+
+
+class PCRLearnedLessonDescriptionSerializer(serializers.ModelSerializer):
+    learned_lesson_id = serializers.IntegerField(read_only=True)
+    lesson_id = serializers.PrimaryKeyRelatedField(
+        queryset=PCRLearnedLessonCategory.objects.all(), source="lesson"
+    )
+    lesson = serializers.SlugRelatedField("name", read_only=True)
+    description = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True
+    )
+
+    class Meta:
+        model = PCRLearnedLessonDescription
+        fields = [
+            "id",
+            "learned_lesson_id",
+            "lesson_id",
+            "lesson",
+            "description",
         ]
 
 
@@ -346,13 +393,10 @@ class PCRLearnedLessonSerializer(serializers.ModelSerializer):
     pcr_id = serializers.IntegerField(read_only=True)
     agency_id = serializers.IntegerField()
     agency = serializers.SlugRelatedField("name", read_only=True)
-    lessons = PCRLearnedLessonCategorySerializer(read_only=True, many=True)
-    lessons_ids = serializers.PrimaryKeyRelatedField(
-        allow_empty=True,
+    lessons = PCRLearnedLessonDescriptionSerializer(
         many=True,
-        write_only=True,
+        source="pcrlearnedlessondescription_set",
         required=False,
-        queryset=PCRLearnedLessonCategory.objects.all(),
     )
 
     class Meta:
@@ -361,9 +405,7 @@ class PCRLearnedLessonSerializer(serializers.ModelSerializer):
             "id",
             "agency_id",
             "agency",
-            "description",
             "lessons",
-            "lessons_ids",
             "pcr_id",
         ]
 
@@ -601,7 +643,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         pcr = PCR.objects.create(**validated_data)
 
         replace_nested_data(
-            pcr, "pcr", nested_data_pcr, PCR_NESTED_MODELS, PCR_NESTED_MODELS_M2M
+            pcr, "pcr", nested_data_pcr, PCR_NESTED_MODELS, PCR_NESTED_MODELS_THROUGH
         )
         pcr.decisions.set(decisions_data)
 
@@ -738,7 +780,11 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
         }
 
         replace_nested_data(
-            instance, "pcr", nested_data_pcr, PCR_NESTED_MODELS, PCR_NESTED_MODELS_M2M
+            instance,
+            "pcr",
+            nested_data_pcr,
+            PCR_NESTED_MODELS,
+            PCR_NESTED_MODELS_THROUGH,
         )
         for pcr_project_data in pcr_projects_data:
             project = pcr_project_data.pop("project")
