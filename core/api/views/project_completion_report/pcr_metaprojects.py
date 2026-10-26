@@ -150,9 +150,8 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
                 )
                 meta_project.save()
             if serializer.validated_data.get("ad_hoc_pcr", None) is not None:
-                for project in meta_project.projects.all():
-                    project.ad_hoc_pcr = serializer.validated_data.get(
-                        "ad_hoc_pcr", False
-                    )
-                    project.save()
+                meta_project.ad_hoc_pcr = serializer.validated_data.get(
+                    "ad_hoc_pcr", False
+                )
+                meta_project.save()
         return Response({}, status=status.HTTP_200_OK)

@@ -43,10 +43,16 @@ def setup_pcr_meta_project_list(
     country_ro.parent = country_europe
     country_ro.save()
     meta_project1 = MetaProjectFactory(
-        country=new_country, umbrella_code="xyz1", cluster=project_cluster_kip
+        country=new_country,
+        umbrella_code="xyz1",
+        cluster=project_cluster_kip,
+        ad_hoc_pcr=True,
     )
     meta_project2 = MetaProjectFactory(
-        country=country_ro, umbrella_code="xyz2", cluster=project_cluster_kpp
+        country=country_ro,
+        umbrella_code="xyz2",
+        cluster=project_cluster_kpp,
+        ad_hoc_pcr=False,
     )
     pcr2 = PCRFactory(meta_project=meta_project2, submission_date="2026-08-08")
 
@@ -60,7 +66,6 @@ def setup_pcr_meta_project_list(
         project_type=project_type,
         country=new_country,
         meta_project=meta_project1,
-        ad_hoc_pcr=True,
         submission_status=project_approved_status,
         metacode=meta_project1.umbrella_code,
         cluster=project_cluster_kip,
@@ -78,7 +83,6 @@ def setup_pcr_meta_project_list(
         country=country_ro,
         project_type=new_project_type,
         meta_project=meta_project2,
-        ad_hoc_pcr=False,
         submission_status=project_approved_status,
         metacode=meta_project2.umbrella_code,
         cluster=project_cluster_kpp,
@@ -97,7 +101,6 @@ def setup_pcr_meta_project_list(
         sector=sector_other,
         project_type=new_project_type,
         meta_project=meta_project2,
-        ad_hoc_pcr=False,
         submission_status=project_draft_status,
         metacode=meta_project2.umbrella_code,
         cluster=project_cluster_kpp,
@@ -365,16 +368,16 @@ class TestPCRMetaprojectsViewSet(BaseTest):
 
     def test_set_pcr_or_ad_hoc(self):
         url = reverse("pcr-metaprojects-set-pcr-or-ad-hoc")
-        meta_project = MetaProjectFactory(umbrella_code="PCR-CALC", pcr_due=False)
+        meta_project = MetaProjectFactory(
+            umbrella_code="PCR-CALC", pcr_due=False, ad_hoc_pcr=False
+        )
         project1 = ProjectFactory.create(
             meta_project=meta_project,
             metacode=meta_project.umbrella_code,
-            ad_hoc_pcr=False,
         )
         project2 = ProjectFactory.create(
             meta_project=meta_project,
             metacode=meta_project.umbrella_code,
-            ad_hoc_pcr=False,
         )
         data = {
             "meta_projects": [
@@ -388,10 +391,9 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         project2.refresh_from_db()
         assert project1.ad_hoc_pcr is True
         assert project2.ad_hoc_pcr is True
-        project1.ad_hoc_pcr = False
-        project1.save()
-        project2.ad_hoc_pcr = False
-        project2.save()
+        meta_project.refresh_from_db()
+        meta_project.ad_hoc_pcr = False
+        meta_project.save()
 
         data = {
             "meta_projects": [
