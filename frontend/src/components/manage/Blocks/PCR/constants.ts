@@ -127,12 +127,11 @@ export const categoryOpts = [
 export const booleanFieldsOpts = [
   { id: 'Yes', name: 'Yes' },
   { id: 'No', name: 'No' },
-  { id: 'N/A', name: 'N/A' },
 ]
 
-export const filtersBooleanFieldsOpts = [
-  { id: 'Yes', name: 'Yes' },
-  { id: 'No', name: 'No' },
+export const extendedBooleanFieldsOpts = [
+  ...booleanFieldsOpts,
+  { id: 'N/A', name: 'N/A' },
 ]
 
 export const financialFiguresTypeOptions = [

@@ -1,23 +1,24 @@
 import { defaultColDef } from '../PCRListing/schema'
-import { PCRUpdatedMetaproject } from '../interfaces'
-import { pcrFieldsMapping } from '../constants'
+import { TitleColumn } from './schema'
+import { formatDate } from '../utils'
 
-import { Checkbox, Chip, Tooltip } from '@mui/material'
+import { IoClose } from 'react-icons/io5'
+import { find } from 'lodash'
+import cx from 'classnames'
+import dayjs from 'dayjs'
 import {
   ICellRendererParams,
   ValueGetterParams,
   ITooltipParams,
 } from 'ag-grid-community'
-import { find } from 'lodash'
-import { formatDate } from '../utils'
-import { IoClose } from 'react-icons/io5'
 
-const getColumnDefs = (unmarkPcrDue: any) => ({
+const getColumnDefsPcrDue = (unmarkProjects: (ids: number[]) => void) => ({
   columnDefs: [
     {
-      headerName: 'Title / country / agency',
+      headerName: 'Metacode / Title / Country / Agency',
       field: 'umbrella_code',
       minWidth: 300,
+      autoHeight: true,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => {
         const hasAdHocPcr = find(
@@ -26,36 +27,17 @@ const getColumnDefs = (unmarkPcrDue: any) => ({
         )
 
         return (
-          <div className="flex items-center justify-center gap-1 p-2">
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-col gap-0">
-                <span className="overflow-hidden truncate whitespace-nowrap text-sm font-medium leading-5">
-                  {props.value ?? 'N/A'}
-                </span>
-                <span className="overflow-hidden truncate whitespace-nowrap text-xs leading-4 text-gray-600">
-                  {props.data.country ?? 'N/A'} ·{' '}
-                  {props.data.lead_agency ?? '[agency]'}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
-              {hasAdHocPcr && (
-                <Tooltip title="Ad-hoc PCR" placement="top" arrow>
-                  <Chip
-                    label="Ad-hoc"
-                    className="border-sky-300 bg-sky-50 text-sky-700"
-                    variant="outlined"
-                    size="small"
-                  />
-                </Tooltip>
-              )}
-            </div>
+          <div className="flex items-center gap-1 p-1">
+            {TitleColumn(props, hasAdHocPcr)}
           </div>
         )
       },
-      tooltipValueGetter: (props: any) =>
-        `${props.value ?? 'N/A'} · ${props.data?.country ?? 'N/A'} · ${props.data?.lead_agency ?? '[agency]'}`,
+      tooltipValueGetter: (props: ITooltipParams) =>
+        `${props.value ?? 'N/A'} ${
+          props.data.type === 'Individual'
+            ? ` · ${props.data.projects[0].title}`
+            : ''
+        } · ${props.data.country ?? 'N/A'} · ${props.data.lead_agency ?? '[agency]'}`,
     },
     {
       headerName: 'PCR due',
@@ -64,16 +46,26 @@ const getColumnDefs = (unmarkPcrDue: any) => ({
       tooltipValueGetter: (params: ITooltipParams) =>
         formatDate(params.data.pcr_due_date),
       cellRenderer: (props: ICellRendererParams) => {
+        const isDateOverdue = dayjs(props.data.pcr_due_date).isBefore(
+          dayjs(),
+          'day',
+        )
+
         return (
           <div className="flex w-full items-center gap-1 p-2">
-            <span className="min-w-0 flex-1 truncate">
+            <span
+              className={cx(
+                'min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap',
+                { 'text-red-500': isDateOverdue },
+              )}
+            >
               {props.value ?? '-'}
             </span>
             <div className="ml-auto shrink-0">
               <IoClose
-                size={16}
                 className="min-h-6 min-w-6 cursor-pointer fill-gray-600"
-                onClick={() => unmarkPcrDue([props.data.metaprojectId])}
+                onClick={() => unmarkProjects([props.data.id])}
+                size={16}
               />
             </div>
           </div>
@@ -84,4 +76,4 @@ const getColumnDefs = (unmarkPcrDue: any) => ({
   defaultColDef,
 })
 
-export default getColumnDefs
+export default getColumnDefsPcrDue

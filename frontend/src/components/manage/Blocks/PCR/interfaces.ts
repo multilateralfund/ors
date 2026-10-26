@@ -274,8 +274,10 @@ export type PCRActionButtons = { setIsLoading: (isLoading: boolean) => void }
 export type OptionsType = { id: number | string; name: string }
 
 export type ManagePCRsTableProps = {
+  type: string
   pcrProjects: ReturnType<typeof useGetPCRProjects>
-  projectIds: number[]
-  setProjectIds: (ids: number[]) => void
+  projectIds?: number[]
+  setProjectIds?: (ids: number[]) => void
+  unmarkProjects?: (ids: number[]) => void
   filters: Record<string, any>
 }
