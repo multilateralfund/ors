@@ -11,7 +11,9 @@ from core.api.tests.factories import (
     MetaProjectFactory,
     PCRFactory,
     PCRProjectFactory,
+    ProjectStatusFactory,
 )
+from core.models import MetaProject
 import pytest
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-statements
@@ -204,6 +206,91 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert project_data["odp_phase_out_actual"] == 8.0
         assert project_data["hfc_phase_down_co2_approved"] == "3456.000000000000000"
         assert project_data["hfc_phase_down_co2_actual"] == 3500.0
+
+    def test_date_of_completion_and_total_funding(
+        self, admin_user, project_approved_status
+    ):
+        meta_project = MetaProjectFactory(
+            umbrella_code="PCR-DATE", type=MetaProject.MetaProjectType.MYA
+        )
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=2025, endorsed=True)
+        )
+        for completion_date, total_fund, support_cost_psc in [
+            (date(2025, 6, 30), 1000.0, 70.0),
+            (date(2025, 9, 15), 500.0, None),
+            (None, None, 35.0),
+        ]:
+            project = ProjectFactory.create(
+                meta_project=meta_project,
+                metacode=meta_project.umbrella_code,
+                submission_status=project_approved_status,
+                total_fund=total_fund,
+                support_cost_psc=support_cost_psc,
+            )
+            if completion_date:
+                AnnualProjectReportFactory(
+                    project=project,
+                    report=agency_report,
+                    date_actual_completion=completion_date,
+                )
+
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.get(
+            reverse("pcr-metaprojects-detail", args=[meta_project.id])
+        )
+
+        assert response.status_code == 200
+        assert response.data["date_of_completion"] == "2025-09-15"
+        assert response.data["total_funding"] == 1605.0
+
+    def test_status(
+        self,
+        admin_user,
+        project_approved_status,
+        project_ongoing_status,
+        project_completed_status,
+    ):
+        transferred_status = ProjectStatusFactory.create(name="Transferred", code="TRF")
+        ind_meta_project = MetaProjectFactory(
+            umbrella_code="PCR-IND", type=MetaProject.MetaProjectType.IND
+        )
+        ProjectFactory.create(
+            meta_project=ind_meta_project,
+            metacode=ind_meta_project.umbrella_code,
+            submission_status=project_approved_status,
+            status=project_ongoing_status,
+        )
+        mya_meta_project = MetaProjectFactory(
+            umbrella_code="PCR-MYA", type=MetaProject.MetaProjectType.MYA
+        )
+        for status in [project_completed_status, transferred_status]:
+            ProjectFactory.create(
+                meta_project=mya_meta_project,
+                metacode=mya_meta_project.umbrella_code,
+                submission_status=project_approved_status,
+                status=status,
+            )
+
+        self.client.force_authenticate(user=admin_user)
+
+        def get_status(meta_project):
+            response = self.client.get(
+                reverse("pcr-metaprojects-detail", args=[meta_project.id])
+            )
+            assert response.status_code == 200
+            return response.data["status"]
+
+        assert get_status(ind_meta_project) == "Ongoing"
+        assert get_status(mya_meta_project) == "Completed"
+
+        ProjectFactory.create(
+            meta_project=mya_meta_project,
+            metacode=mya_meta_project.umbrella_code,
+            submission_status=project_approved_status,
+            status=project_ongoing_status,
+        )
+        assert get_status(mya_meta_project) == "Not completed"
 
     def test_filters(
         self,
