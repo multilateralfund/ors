@@ -3,7 +3,8 @@ from collections import Counter
 from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-
+from django.db.models import ManyToManyField
+from django.core.exceptions import MultipleObjectsReturned
 from core.api.serializers.meeting import DecisionSerializer
 from core.api.export.projects_inventory_report import project_actual_fund
 from core.api.export.projects_inventory_report import project_apr_co2_actual
@@ -103,11 +104,30 @@ PCR_NESTED_MODELS = {
     "future_project_recommendations": PCRFutureProjectRecommendation,
     "additional_comments": PCRAdditionalComment,
     "gender_mainstreamings": PCRGenderMainstreaming,
-}
-
-PCR_PROJECT_COMPONENT_NESTED_MODELS = {
     "delay_causes": PCRDelayCause,
     "learned_lessons": PCRLearnedLesson,
+}
+
+PCR_NESTED_MODELS_M2M = {
+    "delay_causes": [
+        ("root_causes_of_delay", "root_causes_of_delay_ids"),
+    ],
+    "learned_lessons": [("lessons", "lessons_ids")],
+}
+
+PCR_NESTED_MODELS_LOOK_UP_FIELDS = {
+    "overall_assessment_highlights": [
+        "agency_id",
+    ],
+    "future_project_recommendations": [
+        "agency_id",
+    ],
+    "additional_comments": [
+        "entity",
+    ],
+    "gender_mainstreamings": [
+        "agency_id",
+    ],
 }
 
 PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS = {
@@ -123,21 +143,50 @@ def pop_nested_data(pcr_project_data, PARENT_MODEL_DICT):
 
 
 def replace_nested_data(
-    parent_object, parent_field_name, nested_data, PARENT_MODEL_DICT
+    parent_object, parent_field_name, nested_data, PARENT_MODEL_DICT, m2m_fields={}
 ):
     for field_name, rows in nested_data.items():
+        ids = []
         if rows is None:
             continue
-        getattr(parent_object, field_name).all().delete()
-        PARENT_MODEL_DICT[field_name].objects.bulk_create(
-            [
-                PARENT_MODEL_DICT[field_name](
-                    **{parent_field_name: parent_object},
-                    **row,
+        for row in rows:
+            m2m_info = {
+                field_name_in_model: row.pop(data_field_name)
+                for field_name_in_model, data_field_name in m2m_fields.get(
+                    field_name, []
                 )
-                for row in rows
-            ]
-        )
+            }
+
+            model = PARENT_MODEL_DICT[field_name]
+
+            lookup = {
+                parent_field_name: parent_object,
+                **{field: row.get(field, None) for field in row},
+            }
+            try:
+                obj, _ = model.objects.update_or_create(
+                    **lookup,
+                )
+            except MultipleObjectsReturned:
+                obj = model.objects.filter(**lookup).first()
+
+                if obj is not None:
+                    for key, value in lookup.items():
+                        setattr(obj, key, value)
+
+                    obj.save()
+                else:
+                    obj = model.objects.create(**lookup)
+            if m2m_info:
+                for field, data in m2m_info.items():
+                    getattr(obj, field).set(data)
+
+            ids.append(obj.id)
+
+        # remove stale objects
+        PARENT_MODEL_DICT[field_name].objects.filter(
+            **{parent_field_name: parent_object}
+        ).exclude(id__in=ids).delete()
 
 
 class PCRSupportingEvidenceSerializer(serializers.ModelSerializer):
@@ -540,9 +589,6 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         sustainable_development_goals_data = validated_data.pop(
             "sustainable_development_goals", []
         )
-        delay_causes_data = validated_data.pop("delay_causes", [])
-
-        learned_lessons_data = validated_data.pop("learned_lessons", [])
         supporting_evidences_data = validated_data.pop("supporting_evidences", [])
 
         pcr_projects_by_project_id = {
@@ -553,7 +599,9 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         nested_data_pcr = pop_nested_data(validated_data, PCR_NESTED_MODELS)
         pcr = PCR.objects.create(**validated_data)
 
-        replace_nested_data(pcr, "pcr", nested_data_pcr, PCR_NESTED_MODELS)
+        replace_nested_data(
+            pcr, "pcr", nested_data_pcr, PCR_NESTED_MODELS, PCR_NESTED_MODELS_M2M
+        )
         pcr.decisions.set(decisions_data)
 
         for project in pcr.meta_project.projects.order_by("id"):
@@ -573,18 +621,6 @@ class PCRCreateSerializer(serializers.ModelSerializer):
                 nested_data_pcr_project,
                 PCR_PROJECT_NESTED_MODELS,
             )
-
-        for delay_cause_data in delay_causes_data:
-            root_causes_of_delay_ids = delay_cause_data.pop("root_causes_of_delay_ids")
-            delay_cause = PCRDelayCause.objects.create(pcr=pcr, **delay_cause_data)
-            delay_cause.root_causes_of_delay.set(root_causes_of_delay_ids)
-
-        for learned_lesson_data in learned_lessons_data:
-            lessons_ids = learned_lesson_data.pop("lessons_ids")
-            lesson_learned = PCRLearnedLesson.objects.create(
-                pcr=pcr, **learned_lesson_data
-            )
-            lesson_learned.lessons.set(lessons_ids)
 
         for sustainable_development_goal_data in sustainable_development_goals_data:
             nested_data_sustainable_development_goal = pop_nested_data(
@@ -634,6 +670,8 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
     sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(
         many=True, required=False
     )
+    delay_causes = PCRDelayCauseSerializer(many=True, required=False)
+    learned_lessons = PCRLearnedLessonSerializer(many=True, required=False)
 
     class Meta:
         model = PCR
@@ -646,6 +684,8 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
             "overall_assessment_highlights",
             "future_project_recommendations",
             "supporting_evidences",
+            "delay_causes",
+            "learned_lessons",
             "pcr_projects",
             "phase_out_ods_approved",
             "phase_out_ods_actual",
@@ -690,14 +730,15 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
         sustainable_development_goals_data = validated_data.pop(
             "sustainable_development_goals", []
         )
-        # project_components_data = validated_data.pop("project_components", [])
         instance = super().update(instance, validated_data)
         pcr_projects_by_project_id = {
             pcr_project.project_id: pcr_project
             for pcr_project in instance.pcr_projects.all()
         }
 
-        replace_nested_data(instance, "pcr", nested_data_pcr, PCR_NESTED_MODELS)
+        replace_nested_data(
+            instance, "pcr", nested_data_pcr, PCR_NESTED_MODELS, PCR_NESTED_MODELS_M2M
+        )
         for pcr_project_data in pcr_projects_data:
             project = pcr_project_data.pop("project")
             pcr_project = pcr_projects_by_project_id[project.id]
@@ -713,21 +754,6 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
                 nested_data_pcr_project,
                 PCR_PROJECT_NESTED_MODELS,
             )
-        # PCRLearnedLesson.objects.filter(pcr_project_component__pcr=instance).delete()
-        # PCRDelayCause.objects.filter(pcr=instance).delete()
-        # for project_component_data in project_components_data:
-        #     nested_data_project_component = pop_nested_data(
-        #         project_component_data, PCR_PROJECT_COMPONENT_NESTED_MODELS
-        #     )
-        # project_component = PCRProjectComponent.objects.create(
-        #     pcr=instance, **project_component_data
-        # )
-        # replace_nested_data(
-        #     project_component,
-        #     "pcr_project_component",
-        #     nested_data_project_component,
-        #     PCR_PROJECT_COMPONENT_NESTED_MODELS,
-        # )
         PCRSustainableDevelopmentGoalDescription.objects.filter(
             sgr__pcr=instance
         ).delete()

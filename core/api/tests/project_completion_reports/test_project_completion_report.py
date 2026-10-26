@@ -245,7 +245,6 @@ def test_pcr_project_create(
     delay2 = PCRRootCausesOfDelayFactory()
     lesson1 = PCRLearnedLessonCategoryFactory(obsolete=False)
     lesson2 = PCRLearnedLessonCategoryFactory(obsolete=False)
-    pcr_delay_cluster = PCRDelayClusterFactory()
     goal1 = PCRGoalFactory()
     goal2 = PCRGoalFactory()
     goal3 = PCRGoalFactory()
@@ -303,7 +302,6 @@ def test_pcr_project_create(
                     "project_components": [
                         {
                             "agency_id": agency.id,
-                            "project_component_option_id": project_component_option.id,
                             "delay_causes": [
                                 {"delay_id": delay1.id, "description": "Description 1"},
                                 {"delay_id": delay2.id, "description": "Description 2"},
@@ -467,10 +465,6 @@ def test_pcr_project_create(
     # project components
     assert len(response.data["project_components"]) == 1
     assert response.data["project_components"][0]["agency_id"] == agency.id
-    assert (
-        response.data["project_components"][0]["project_component_option_id"]
-        == project_component_option.id
-    )
     assert len(response.data["project_components"][0]["delay_causes"]) == 2
     assert (
         response.data["project_components"][0]["delay_causes"][0]["delay_id"]

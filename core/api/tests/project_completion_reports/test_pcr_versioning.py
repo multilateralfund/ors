@@ -185,7 +185,6 @@ def test_increase_version(
     pcr_project_equipment,
     pcr_additional_comment,
     pcr_activity,
-    pcr_project_component,
     pcr_delay_cause,
     pcr_sustainable_development_goal,
     pcr_supporting_evidence,
