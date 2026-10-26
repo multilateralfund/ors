@@ -328,14 +328,14 @@ urlpatterns = [
         name="project-settings",
     ),
     path(
-        "project-completion-reports/project-component-options/",
+        "project-completion-reports/delay-cluster-options/",
         PCRDelayClusterListView.as_view(),
-        name="pcr-project-component-option-list",
+        name="pcr-delay-cluster-options-list",
     ),
     path(
-        "project-completion-reports/delay-categories/",
+        "project-completion-reports/root-causes-of-delay-options/",
         PCRRootCausesOfDelayListView.as_view(),
-        name="pcr-delay-category-list",
+        name="pcr-root-causes-of-delay-options-list",
     ),
     path(
         "project-completion-reports/learned-lesson-categories/",

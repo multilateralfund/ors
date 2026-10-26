@@ -112,7 +112,7 @@ class PCRDelayClusterAdmin(admin.ModelAdmin):
     admin_group = "PCR"
 
     def get_list_display(self, request):
-        exclude = []
+        exclude = ["delay_causes"]
         return get_final_display_list(PCRDelayCluster, exclude)
 
 

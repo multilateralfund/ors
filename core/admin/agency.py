@@ -31,6 +31,9 @@ class AgencyAdmin(admin.ModelAdmin):
             "supporting_evidences",
             "old_pcractivity",
             "project",
+            "delay_causes",
+            "learned_lessons",
+            "future_project_recommendations",
             "user",
         ]
         fields = get_final_display_list(Agency, exclude)

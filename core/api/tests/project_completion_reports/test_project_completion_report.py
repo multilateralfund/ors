@@ -241,8 +241,10 @@ def test_pcr_project_create(
     substance_from = SubstanceFactory.create()
     substance_to = SubstanceFactory.create()
     client.force_authenticate(user=admin_user)
-    delay1 = PCRRootCausesOfDelayFactory()
-    delay2 = PCRRootCausesOfDelayFactory()
+    delay_cluster1 = PCRDelayClusterFactory()
+    delay_cluster2 = PCRDelayClusterFactory()
+    root_delay1 = PCRRootCausesOfDelayFactory()
+    root_delay2 = PCRRootCausesOfDelayFactory()
     lesson1 = PCRLearnedLessonCategoryFactory(obsolete=False)
     lesson2 = PCRLearnedLessonCategoryFactory(obsolete=False)
     goal1 = PCRGoalFactory()
@@ -279,7 +281,7 @@ def test_pcr_project_create(
                     "rating_explanation": "Rating explanation 1",
                     "completed_by": PCR.CompletedBy.LEAD_AGENCY,
                     "addresses": "Test project address",
-                    "activities": [
+                    "overall_assessment_highlights": [
                         {
                             "agency_id": agency.id,
                             "activity_title": "Activity title 1",
@@ -299,22 +301,38 @@ def test_pcr_project_create(
                         {"entity": "Cooperating agency", "comment": "Comment 1"},
                         {"entity": "Consultants", "comment": "Comment 2"},
                     ],
-                    "project_components": [
+                    "delay_causes": [
                         {
                             "agency_id": agency.id,
-                            "delay_causes": [
-                                {"delay_id": delay1.id, "description": "Description 1"},
-                                {"delay_id": delay2.id, "description": "Description 2"},
+                            "delay_cluster_id": delay_cluster1.id,
+                            "root_causes_of_delay_ids": [
+                                root_delay1.id,
+                                root_delay2.id,
                             ],
-                            "learned_lessons": [
-                                {
-                                    "description": "Description 1",
-                                    "lesson_id": lesson1.id,
-                                },
-                                {
-                                    "description": "Description 2",
-                                    "lesson_id": lesson2.id,
-                                },
+                            "description_roots_causes_of_delay": "description 1",
+                            "action_taken": "text 1",
+                        },
+                        {
+                            "agency_id": new_agency.id,
+                            "delay_cluster_id": delay_cluster2.id,
+                            "root_causes_of_delay_ids": [
+                                root_delay2.id,
+                            ],
+                            "description_roots_causes_of_delay": "description 2",
+                            "action_taken": "text 2",
+                        },
+                    ],
+                    "learned_lessons": [
+                        {
+                            "agency_id": agency.id,
+                            "description": "Description 1",
+                            "lessons_ids": [lesson1.id],
+                        },
+                        {
+                            "agency_id": new_agency.id,
+                            "description": "Description 2",
+                            "lessons_ids": [
+                                lesson2.id,
                             ],
                         },
                     ],
@@ -432,9 +450,10 @@ def test_pcr_project_create(
         }
     ]
 
-    assert len(pcr.activities.all()) == 2
+    assert len(pcr.overall_assessment_highlights.all()) == 2
     assert len(pcr.additional_comments.all()) == 2
-    assert len(pcr.project_components.all()) == 1
+    assert len(pcr.delay_causes.all()) == 2
+    assert len(pcr.learned_lessons.all()) == 2
     assert len(pcr.gender_mainstreamings.all()) == 1
     assert len(pcr.sustainable_development_goals.all()) == 2
 
@@ -451,9 +470,11 @@ def test_pcr_project_create(
     assert response.data["decisions"][0]["id"] == decision.id
 
     # activities
-    assert len(response.data["activities"]) == 2
-    assert response.data["activities"][0]["agency_id"] == agency.id
-    assert response.data["activities"][1]["agency_id"] == new_agency.id
+    assert len(response.data["overall_assessment_highlights"]) == 2
+    assert response.data["overall_assessment_highlights"][0]["agency_id"] == agency.id
+    assert (
+        response.data["overall_assessment_highlights"][1]["agency_id"] == new_agency.id
+    )
 
     # additional comments
     assert len(response.data["additional_comments"]) == 2
@@ -462,27 +483,33 @@ def test_pcr_project_create(
     assert response.data["additional_comments"][1]["entity"] == "Consultants"
     assert response.data["additional_comments"][1]["comment"] == "Comment 2"
 
-    # project components
-    assert len(response.data["project_components"]) == 1
-    assert response.data["project_components"][0]["agency_id"] == agency.id
-    assert len(response.data["project_components"][0]["delay_causes"]) == 2
+    # delay causes
+    assert len(response.data["delay_causes"]) == 2
+    assert response.data["delay_causes"][0]["agency_id"] == agency.id
+    assert response.data["delay_causes"][0]["delay_cluster"]["id"] == delay_cluster1.id
     assert (
-        response.data["project_components"][0]["delay_causes"][0]["delay_id"]
-        == delay1.id
+        response.data["delay_causes"][0]["root_causes_of_delay"][0]["id"]
+        == root_delay1.id
     )
     assert (
-        response.data["project_components"][0]["delay_causes"][1]["delay_id"]
-        == delay2.id
+        response.data["delay_causes"][0]["root_causes_of_delay"][1]["id"]
+        == root_delay2.id
     )
-    assert len(response.data["project_components"][0]["learned_lessons"]) == 2
+
+    assert response.data["delay_causes"][1]["agency_id"] == new_agency.id
+    assert response.data["delay_causes"][1]["delay_cluster"]["id"] == delay_cluster2.id
     assert (
-        response.data["project_components"][0]["learned_lessons"][0]["lesson_id"]
-        == lesson1.id
+        response.data["delay_causes"][1]["root_causes_of_delay"][0]["id"]
+        == root_delay2.id
     )
-    assert (
-        response.data["project_components"][0]["learned_lessons"][1]["lesson_id"]
-        == lesson2.id
-    )
+
+    # lessons learned
+    assert len(response.data["learned_lessons"]) == 2
+    assert response.data["learned_lessons"][0]["agency_id"] == agency.id
+    assert response.data["learned_lessons"][0]["lessons"][0]["id"] == lesson1.id
+
+    assert response.data["learned_lessons"][1]["agency_id"] == new_agency.id
+    assert response.data["learned_lessons"][1]["lessons"][0]["id"] == lesson2.id
 
     # gender mainstreamings
     assert len(response.data["gender_mainstreamings"]) == 1

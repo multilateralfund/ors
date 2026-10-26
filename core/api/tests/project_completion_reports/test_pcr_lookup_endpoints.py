@@ -20,8 +20,8 @@ def _client():
 @pytest.mark.parametrize(
     ("model", "url_name"),
     [
-        (PCRDelayCluster, "pcr-project-component-option-list"),
-        (PCRRootCausesOfDelay, "pcr-root-causes-of-delay-list"),
+        (PCRDelayCluster, "pcr-delay-cluster-options-list"),
+        (PCRRootCausesOfDelay, "pcr-root-causes-of-delay-options-list"),
         (PCRLearnedLessonCategory, "pcr-learned-lesson-category-list"),
     ],
 )
@@ -63,8 +63,8 @@ def test_pcr_lookup_lists_active_options_ordered_by_sort_order_and_name(
 @pytest.mark.parametrize(
     "url_name",
     [
-        "pcr-project-component-option-list",
-        "pcr-delay-category-list",
+        "pcr-delay-cluster-options-list",
+        "pcr-root-causes-of-delay-options-list",
         "pcr-learned-lesson-category-list",
     ],
 )

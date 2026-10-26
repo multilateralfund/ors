@@ -118,22 +118,28 @@ def pcr_activity(original_pcr, agency):
 
 
 @pytest.fixture
-def pcr_project_component_option():
-    return PCRDelayCluster.objects.create(name="Component option")
+def pcr_delay_cluster_option():
+    return PCRDelayCluster.objects.create(name="Delay cluster option")
 
 
 @pytest.fixture
-def pcr_delay_category():
+def pcr_root_causes_of_delay():
     return PCRRootCausesOfDelay.objects.create(name="Delay Category")
 
 
 @pytest.fixture
-def pcr_delay_cause(pcr_project_component, pcr_delay_category):
-    return PCRDelayCause.objects.create(
-        pcr_project_component=pcr_project_component,
-        delay=pcr_delay_category,
-        description="Delay Cause Description",
+def pcr_delay_cause(
+    original_pcr, agency, pcr_delay_cluster_option, pcr_root_causes_of_delay
+):
+    delay_cause = PCRDelayCause.objects.create(
+        pcr=original_pcr,
+        agency=agency,
+        delay_cluster=pcr_delay_cluster_option,
+        description_roots_causes_of_delay="Delay Cause Description",
+        action_taken="Action Taken",
     )
+    delay_cause.root_causes_of_delay.set([pcr_root_causes_of_delay])
+    return delay_cause
 
 
 @pytest.fixture
@@ -211,9 +217,7 @@ def test_increase_version(
     assert PCRProjectEquipment.objects.filter(pcr_project__pcr=archived_pcr).exists()
     assert PCRAdditionalComment.objects.filter(pcr=archived_pcr).exists()
     assert PCROverallAssessmentHighlight.objects.filter(pcr=archived_pcr).exists()
-    assert PCRDelayCause.objects.filter(
-        pcr_project_component__pcr=archived_pcr
-    ).exists()
+    assert PCRDelayCause.objects.filter(pcr=archived_pcr).exists()
     assert PCRSustainableDevelopmentGoal.objects.filter(pcr=archived_pcr).exists()
     assert PCRSupportingEvidence.objects.filter(pcr=archived_pcr).exists()
 
@@ -282,20 +286,13 @@ def test_increase_version(
         == pcr_activity.additional_remarks
     )
 
-    # Check that the duplicated PCRProjectComponent has the correct fields
-    # new_pcr_project_component = PCRProjectComponent.objects.get(pcr=archived_pcr)
-    # assert new_pcr_project_component.agency == pcr_project_component.agency
-    # assert (
-    #     new_pcr_project_component.project_component_option
-    #     == pcr_project_component.project_component_option
-    # )
-
     # Check that the duplicated PCRDelayCause has the correct fields
-    new_pcr_delay_cause = PCRDelayCause.objects.get(
-        pcr_project_component__pcr=archived_pcr
+    new_pcr_delay_cause = PCRDelayCause.objects.get(pcr=archived_pcr)
+    assert new_pcr_delay_cause.delay_cluster == pcr_delay_cause.delay_cluster
+    assert (
+        new_pcr_delay_cause.description_roots_causes_of_delay
+        == pcr_delay_cause.description_roots_causes_of_delay
     )
-    assert new_pcr_delay_cause.delay == pcr_delay_cause.delay
-    assert new_pcr_delay_cause.description == pcr_delay_cause.description
 
     # Check that the duplicated PCRSustainableDevelopmentGoal has the correct fields
     new_pcr_sustainable_development_goal = PCRSustainableDevelopmentGoal.objects.get(

@@ -1,10 +1,11 @@
 from collections import Counter
 
 from django.db import transaction
+from django.core.exceptions import MultipleObjectsReturned
+
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from django.db.models import ManyToManyField
-from django.core.exceptions import MultipleObjectsReturned
+
 from core.api.serializers.meeting import DecisionSerializer
 from core.api.export.projects_inventory_report import project_actual_fund
 from core.api.export.projects_inventory_report import project_apr_co2_actual
@@ -35,7 +36,7 @@ from core.models.project_completion_report import (
 )
 from core.models.substance import Substance
 
-# pylint: disable=too-many-locals,abstract-method,too-many-lines
+# pylint: disable=too-many-locals,abstract-method,too-many-lines,dangerous-default-value
 
 
 class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
@@ -323,7 +324,7 @@ class PCRDelayCauseSerializer(serializers.ModelSerializer):
         queryset=PCRRootCausesOfDelay.objects.all(),
     )
     description_roots_causes_of_delay = serializers.CharField(required=False)
-    action_token = serializers.CharField(required=False)
+    action_taken = serializers.CharField(required=False)
 
     class Meta:
         model = PCRDelayCause
@@ -337,7 +338,7 @@ class PCRDelayCauseSerializer(serializers.ModelSerializer):
             "root_causes_of_delay",
             "root_causes_of_delay_ids",
             "description_roots_causes_of_delay",
-            "action_token",
+            "action_taken",
         ]
 
 

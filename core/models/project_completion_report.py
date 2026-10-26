@@ -23,17 +23,14 @@ PCR_RELATED_MODELS = [
     "PCROverallAssessmentHighlight",
     "PCRSustainableDevelopmentGoal",
     "PCRSupportingEvidence",
+    "PCRDelayCause",
+    "PCRLearnedLesson",
 ]
 
 PCR_PROJECT_RELATED_MODELS = [
     "PCRProjectAlternativeTechnology",
     "PCRProjectEnterprise",
     "PCRProjectEquipment",
-]
-
-PCR_PROJECT_COMPONENT_RELATED_MODELS = [
-    "PCRDelayCause",
-    "PCRLearnedLesson",
 ]
 
 
@@ -556,7 +553,7 @@ class PCRDelayCause(models.Model):
         null=True,
         help_text="Description of the roots causes of delay",
     )
-    action_token = models.TextField(blank=True, null=True, help_text="Action taken")
+    action_taken = models.TextField(blank=True, null=True, help_text="Action taken")
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
@@ -571,8 +568,9 @@ class PCRDelayCause(models.Model):
         new_item.pk = None
         new_item.pcr = new_pcr
         new_item.agency = self.agency
-        new_item.delay = self.delay
+        new_item.delay_cluster = self.delay_cluster
         new_item.save()
+        new_item.root_causes_of_delay.set(self.root_causes_of_delay.all())
         return new_item
 
 
