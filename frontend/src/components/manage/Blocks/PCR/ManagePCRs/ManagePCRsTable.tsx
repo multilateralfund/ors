@@ -35,7 +35,7 @@ const ManagePCRsTable = ({
         gridRef={gridRef}
         key={JSON.stringify(filters)}
         getRowId={(params) => params.data.id}
-        domLayout="normal"
+        domLayout="autoHeight"
         className="projects-table pcr-listing"
         rowData={results}
         rowCount={count}
