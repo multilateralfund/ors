@@ -31,6 +31,16 @@ def project_has_cooperating_agency_q(prefix=""):
     )
 
 
+def completed_meta_projects():
+    """
+    Meta projects with all their projects completed or transferred.
+    """
+    invalid_entries = Project.objects.filter(
+        meta_project_id=OuterRef("pk"),
+    ).exclude(status__name__in=["Completed", "Transferred"])
+    return MetaProject.objects.filter(~Exists(invalid_entries))
+
+
 class ProjectFilterBackend(DjangoFilterBackend):
     def get_filterset_class(self, view, queryset=None):
         return ProjectFilter
@@ -256,10 +266,7 @@ class ProjectFilter(filters.FilterSet):
     def filter_completed_only(self, queryset, name, value):
         if not value:
             return queryset
-        invalid_entries = Project.objects.filter(
-            meta_project_id=OuterRef("pk"),
-        ).exclude(status__name__in=["Completed", "Transferred"])
-        meta_projects = MetaProject.objects.filter(~Exists(invalid_entries))
+        meta_projects = completed_meta_projects()
         for option in value:
             if option == "Yes":
                 return queryset.filter(meta_project__in=meta_projects)

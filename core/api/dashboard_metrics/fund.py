@@ -643,6 +643,18 @@ FUND_METRICS: tuple[Metric, ...] = (
         compute=manual("EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES", True),
     ),
     Metric(
+        metric_id="hfc_expected_savings_to_society",
+        label="Expected avoided emissions from HFCs",
+        section="From protecting the ozone layer to safeguarding climate and health",
+        kind=Kind.SCALAR,
+        unit=Unit.USD,
+        disposition=Disposition.COMPUTE,
+        formula="manual admin field",
+        db_source="MANUAL-CONSTANCE",
+        src_model_field=("constance " "TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC "),
+        compute=manual("TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC", True),
+    ),
+    Metric(
         metric_id="savings_to_society",
         label="Total savings to society",
         section="From protecting the ozone layer to safeguarding climate and health",

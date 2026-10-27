@@ -69,7 +69,7 @@ EE_WINDOW_CODES = frozenset({"89/6", "91/65", "94/60", "95/87"})
 DISPOSAL_CLUSTER_CODES = frozenset({"DISP"})
 DISPOSAL_SECTOR_CODES = frozenset({"DES"})
 DISPOSAL_WINDOW_CODES = frozenset({"91/66"})
-HFC23_CLUSTER_CODES = frozenset({"EC 1"})
+HFC23_CLUSTER_CODES = frozenset({"EC1", "EC2", "ECIND"})
 IS_TYPE_CODES = frozenset({"INS"})
 
 THEME_CONSUMPTION = "Consumption"
