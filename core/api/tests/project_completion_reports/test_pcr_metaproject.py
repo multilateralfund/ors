@@ -453,6 +453,53 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert response.data[0]["id"] == projects[0].meta_project.id
         assert response.data[1]["id"] == projects[1].meta_project.id
 
+    def test_list_filters(
+        self,
+        admin_user,
+        new_country,
+        country_ro,
+        project_cluster_kip,
+        _setup_pcr_meta_project_list,
+    ):
+        projects = _setup_pcr_meta_project_list
+        meta_project_pcr_due = projects[1].meta_project
+        meta_project_pcr_due.pcr_due = True
+        meta_project_pcr_due.save()
+
+        url = reverse("pcr-metaprojects-list-filters")
+        self.client.force_authenticate(user=admin_user)
+
+        def get_country_ids(params):
+            response = self.client.get(url, params)
+            assert response.status_code == 200
+            return sorted(country["id"] for country in response.data["country"])
+
+        assert get_country_ids({"pcr_due": "No"}) == [new_country.id]
+        assert get_country_ids({"pcr_due": "Yes"}) == [country_ro.id]
+
+        # union of the PCR due and not PCR due listings
+        assert get_country_ids({"pcr_due": "No", "pcr_due_union": "true"}) == sorted(
+            [new_country.id, country_ro.id]
+        )
+        # the other filters are still applied
+        assert get_country_ids(
+            {
+                "pcr_due": "Yes",
+                "pcr_due_union": "true",
+                "cluster_id": project_cluster_kip.id,
+            }
+        ) == [new_country.id]
+
+        # search is applied as in the listing
+        assert get_country_ids({"pcr_due_union": "true", "search": "Project 2"}) == [
+            country_ro.id
+        ]
+        response = self.client.get(self.url, {"search": "Project 2"})
+        assert response.status_code == 200
+        assert [meta_project["id"] for meta_project in response.data] == [
+            meta_project_pcr_due.id
+        ]
+
     def test_set_pcr_or_ad_hoc(self):
         url = reverse("pcr-metaprojects-set-pcr-or-ad-hoc")
         meta_project = MetaProjectFactory(
