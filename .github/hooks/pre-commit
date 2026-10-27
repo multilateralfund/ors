@@ -2,13 +2,57 @@
 # Runs the backend checks from CI (black, pylint, pytest) before each commit.
 # Enable once per clone with: git config core.hooksPath .github/hooks
 # Skip for a single commit with: git commit --no-verify
+#
+# The checks run in the app container when it is running, otherwise in the
+# local environment (activate the virtualenv first). Force one with
+# PRE_COMMIT_MODE=docker or PRE_COMMIT_MODE=local.
 
 CONTAINER="${PRE_COMMIT_CONTAINER:-mlf.app}"
+MODE="${PRE_COMMIT_MODE:-auto}"
 
-if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
-    echo "pre-commit: container '$CONTAINER' is not running, start it with docker compose up." >&2
-    exit 1
+container_running() {
+    command -v docker >/dev/null 2>&1 \
+        && docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$CONTAINER"
+}
+
+if [ "$MODE" = "auto" ]; then
+    if container_running; then
+        MODE=docker
+    else
+        MODE=local
+    fi
 fi
+
+case "$MODE" in
+    docker)
+        if ! container_running; then
+            echo "pre-commit: container '$CONTAINER' is not running, start it with docker compose up." >&2
+            exit 1
+        fi
+        ;;
+    local)
+        for tool in black pylint pytest; do
+            if ! command -v "$tool" >/dev/null 2>&1; then
+                echo "pre-commit: '$tool' not found, activate the virtualenv or start the '$CONTAINER' container." >&2
+                exit 1
+            fi
+        done
+        ;;
+    *)
+        echo "pre-commit: unknown PRE_COMMIT_MODE '$MODE', use docker or local." >&2
+        exit 1
+        ;;
+esac
+
+echo "pre-commit: running checks ($MODE)"
+
+run() {
+    if [ "$MODE" = "docker" ]; then
+        docker exec -w /app "$CONTAINER" "$@"
+    else
+        "$@"
+    fi
+}
 
 fail() {
     echo "pre-commit: $1 failed, commit aborted." >&2
@@ -17,8 +61,15 @@ fail() {
 
 # Only the files git knows about, as CI does, so local scripts are not checked
 on_python_files() {
-    git ls-files -z '*.py' | xargs -0 docker exec -w /app "$CONTAINER" "$@"
+    git ls-files -z '*.py' | xargs -0 sh -c '
+        if [ "$MODE" = "docker" ]; then
+            exec docker exec -w /app "$CONTAINER" "$@"
+        fi
+        exec "$@"
+    ' sh "$@"
 }
+
+export MODE CONTAINER
 
 echo "pre-commit: black"
 on_python_files black --check || fail black
@@ -27,4 +78,4 @@ echo "pre-commit: pylint"
 on_python_files pylint || fail pylint
 
 echo "pre-commit: pytest"
-docker exec -w /app "$CONTAINER" pytest -q -p no:warnings || fail pytest
+run pytest -q -p no:warnings || fail pytest
