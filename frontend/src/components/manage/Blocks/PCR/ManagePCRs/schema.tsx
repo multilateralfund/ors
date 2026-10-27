@@ -58,7 +58,7 @@ const getColumnDefs = (
       autoHeight: true,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => (
-        <div className="relative flex items-center gap-1 px-[4.5rem] py-1 text-center">
+        <div className="relative flex items-center gap-1 px-16 py-1 text-center">
           <div className="absolute left-2">
             <Checkbox
               checked={projectIds.includes(props.data.id)}
