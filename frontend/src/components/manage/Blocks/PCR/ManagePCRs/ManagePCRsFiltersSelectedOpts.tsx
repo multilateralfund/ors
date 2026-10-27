@@ -26,6 +26,10 @@ const ManagePCRsFiltersSelectedOpts = ({
 
   const filterSelectedOpts = [
     {
+      entities: formatEntity(fieldToOptionsMapping.region),
+      entityIdentifier: 'region_id',
+    },
+    {
       entities: formatEntity(fieldToOptionsMapping.country),
       entityIdentifier: 'country_id',
     },
@@ -78,7 +82,11 @@ const ManagePCRsFiltersSelectedOpts = ({
               inputSearch.value = ''
             }
 
-            const params = { ...initialParams, completed_only: [] }
+            const params = {
+              ...initialParams,
+              region_id: [],
+              completed_only: [],
+            }
             const finalParams = omit(params, 'pcr_due')
 
             handleFilterChange({ ...initialFilters, ...finalParams })
