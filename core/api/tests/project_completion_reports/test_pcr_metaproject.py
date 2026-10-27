@@ -481,6 +481,14 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert get_country_ids({"pcr_due": "No", "pcr_due_union": "true"}) == sorted(
             [new_country.id, country_ro.id]
         )
+        response = self.client.get(url, {"pcr_due_union": "true"})
+        assert response.data["completed_only"] == [
+            {"id": "Yes", "name": "Yes"},
+            {"id": "No", "name": "No"},
+        ]
+        response = self.client.get(url, {"pcr_due": "No"})
+        assert response.data["completed_only"] == [{"id": "Yes", "name": "Yes"}]
+
         # the other filters are still applied
         assert get_country_ids(
             {

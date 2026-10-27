@@ -93,6 +93,7 @@ FUND_METRIC_IDS = frozenset(
         "ods_avoided_emissions",
         "controlled_substances_avoided_emissions",
         "hfc_expected_avoided_emissions",
+        "hfc_expected_savings_to_society",
         "savings_to_society",
         "grant_funding_pledged",
         "ods_cost_per_odp_tonne",
@@ -2312,7 +2313,7 @@ class TestSpecCommand:
         out = StringIO()
         call_command("dashboard_metrics_spec", stdout=out)
         rendered = out.getvalue()
-        assert "129 metrics, 129 implemented." in rendered
+        assert "130 metrics, 130 implemented." in rendered
         for metric_id in FUND_METRIC_IDS | COUNTRY_METRIC_IDS:
             assert f"`{metric_id}`" in rendered
 

@@ -307,39 +307,44 @@ CONSTANCE_CONFIG.update(EMAILS_CONSTANCE_FIELDS)
 PROJECTS_GLOBAL_FIELDS = OrderedDict(
     {
         "TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR": (
-            Decimal(0),
+            "",
             "Total savings to society in US $",
-            Decimal,
+            str,
         ),
         "TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES": (
-            Decimal(0),
+            "",
             "Total avoided emissions of ODS in ODP tonnes",
-            Decimal,
+            str,
         ),
         "TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES": (
-            Decimal(0),
+            "",
             "Total avoided emissions of controlled substances in CO2-eq tonnes",
-            Decimal,
+            str,
+        ),
+        "TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC": (
+            "",
+            "Expected avoided emissions from HFCs",
+            str,
         ),
         "COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS": (
-            Decimal(0),
+            "",
             "Cost to the Fund to remove 1 ODP tonne from ODS",
-            Decimal,
+            str,
         ),
         "COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_CONTROLLED_SUBSTANCES": (
-            Decimal(0),
+            "",
             "Cost to the Fund to remove 1 CO2-eq tonne from controlled substances",
-            Decimal,
+            str,
         ),
         "EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES": (
-            Decimal(0),
+            "",
             "Expected avoided emissions from HFCs in CO2-eq tonnes",
-            Decimal,
+            str,
         ),
         "EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS": (
-            Decimal(0),
+            "",
             "Expected cost to the Fund to remove 1 CO2-eq tonne from HFCs",
-            Decimal,
+            str,
         ),
         "HCFC_BASELINE": (
             Decimal(0),

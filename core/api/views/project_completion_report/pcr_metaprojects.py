@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from core.api.filters.project import (
     ProjectFilter,
     ProjectFilterBackend,
+    completed_meta_projects,
     project_has_cooperating_agency_q,
 )
 from core.api.permissions import HasPCRViewAccess
@@ -47,6 +48,16 @@ def get_subsectors(queryset: QuerySet[Project]):
         .distinct()
     )
     return [{"id": pk, "name": name} for pk, name in values if pk is not None]
+
+
+def get_completed_only(queryset: QuerySet[Project]):
+    is_completed = queryset.filter(meta_project__in=completed_meta_projects())
+    options = []
+    if is_completed.exists():
+        options.append({"id": "Yes", "name": "Yes"})
+    if queryset.exclude(id__in=is_completed.values("id")).exists():
+        options.append({"id": "No", "name": "No"})
+    return options
 
 
 def get_categories(queryset: QuerySet[Project]):
@@ -222,6 +233,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             "subsector": get_subsectors(queryset),
             "category": get_categories(queryset),
             "status": get_available_values(queryset, "status"),
+            "completed_only": get_completed_only(queryset),
         }
         return Response(result)
 
