@@ -153,6 +153,14 @@ def update_project_statuses_after_apr_endorsement(progress_report_id):
                 project.increase_version(user)
                 project.status = new_status
                 project.save(update_fields=["status"])
+                if (
+                    new_status.name == "Completed"
+                    and project.category == "Individual"
+                    and project.meta_project
+                ):
+                    # pcr_due is stored on the meta project
+                    project.meta_project.pcr_due = True
+                    project.meta_project.save(update_fields=["pcr_due"])
                 log_project_history(
                     project,
                     user,
