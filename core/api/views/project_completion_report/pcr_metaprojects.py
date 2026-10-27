@@ -181,6 +181,8 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
     @extend_schema(
+        # not detected as a list view, so the listing filters are not added otherwise
+        filters=True,
         parameters=[
             OpenApiParameter(
                 name="pcr_due_union",
