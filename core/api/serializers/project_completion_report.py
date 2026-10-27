@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 from collections import Counter
 
 from django.db import transaction
@@ -38,7 +39,7 @@ from core.models.project_completion_report import (
 )
 from core.models.substance import Substance
 
-# pylint: disable=too-many-locals,abstract-method,too-many-lines,dangerous-default-value
+# pylint: disable=too-many-locals,abstract-method,dangerous-default-value
 
 
 class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
