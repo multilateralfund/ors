@@ -6108,6 +6108,52 @@ class TestAPREndorseProjectVersioning:
         assert archived is not None
         assert archived.status == project_ongoing_status
 
+    @pytest.mark.parametrize(
+        "category, completed, expected_pcr_due",
+        [
+            ("Individual", True, True),
+            ("Individual", False, False),
+            ("Multi-year agreement", True, False),
+        ],
+    )
+    def test_completed_individual_project_sets_pcr_due(
+        self,
+        project_ongoing_status,
+        project_completed_status,
+        category,
+        completed,
+        expected_pcr_due,
+    ):
+        progress_report = self._make_progress_report(year=2025)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+        meta_project = MetaProjectFactory(pcr_due=False)
+        project = ProjectFactory(
+            status=project_ongoing_status,
+            version=3,
+            category=category,
+            meta_project=meta_project,
+        )
+        new_status = (
+            project_completed_status
+            if completed
+            else ProjectStatusFactory(name="Financially completed", code="FIN")
+        )
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status=new_status.name,
+        )
+
+        update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project.refresh_from_db()
+        meta_project.refresh_from_db()
+        assert project.status == new_status
+        assert meta_project.pcr_due is expected_pcr_due
+
     def test_status_unchanged_skips_new_version(self, project_ongoing_status):
         progress_report = self._make_progress_report(year=2025)
         user = UserFactory()
