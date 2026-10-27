@@ -1367,10 +1367,7 @@ class TestCountryValues(BaseTest):
         )
 
         metrics = self.entry(user)
-        assert metrics["kf_funding_approved"]["value"] == {
-            "funds_approved": "$100",
-            "funds_plus_psc": "$110",
-        }
+        assert metrics["kf_funding_approved"]["value"] == "$110"
         assert metrics["kf_projects_approved"]["value"] == "1"
         assert metrics["theme_total"]["value"] == "$110"
 
@@ -1421,7 +1418,7 @@ class TestCountryValues(BaseTest):
         )
 
         metrics = self.entry(user)
-        assert metrics["kf_funding_approved"]["value"]["funds_approved"] == "$100"
+        assert metrics["kf_funding_approved"]["value"] == "$100"
         assert metrics["scope_excluded_status"]["value"] == {
             "projects_by_code": 1,
             "projects_by_metacode": 1,
@@ -1439,7 +1436,7 @@ class TestCountryValues(BaseTest):
         metrics = self.entry(user)
         assert metrics["scope_no_code"]["value"] == 1
         assert metrics["kf_projects_approved"]["value"] == "1"
-        assert metrics["kf_funding_approved"]["value"]["funds_approved"] == "$125"
+        assert metrics["kf_funding_approved"]["value"] == "$125"
 
     def test_a_stale_rollup_is_reported_never_substituted(self, user, ongoing_status):
         """Swapping in the substance sum would put this page at odds with the rest."""
