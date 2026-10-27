@@ -266,7 +266,7 @@ const ManagePCRsWrapper = () => {
               borderedContainerClassname,
             )}
           >
-            <div className="flex flex-wrap items-center justify-between px-5">
+            <div className="flex flex-wrap items-center justify-between gap-x-1 px-5 py-1">
               <h2>Projects</h2>
               <SubmitButton
                 title="Mark as PCR due"
@@ -288,7 +288,7 @@ const ManagePCRsWrapper = () => {
               borderedContainerClassname,
             )}
           >
-            <h2 className="px-5">PCR due</h2>
+            <h2 className="px-5 py-1">PCR due</h2>
             <ManagePCRsTable
               type="due"
               pcrProjects={pcrDueProjects}
