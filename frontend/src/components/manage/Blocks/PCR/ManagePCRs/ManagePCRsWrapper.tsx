@@ -29,8 +29,8 @@ import { useGetPcrFilters } from '../hooks/useGetPcrFilters'
 import { api, formatApiUrl } from '@ors/helpers'
 
 import { CircularProgress, Modal, Typography, Box } from '@mui/material'
+import { unionBy, upperFirst } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
-import { upperFirst } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -47,7 +47,7 @@ const ManagePCRsWrapper = () => {
     pcr_submitted: ['No'],
     pcr_due: ['No'],
     completed_only: ['Yes'],
-    category: [categoryOpts[1].name],
+    category: [categoryOpts[1].id],
   }
   const pcrDueInitialParams = { ...updatedInitialParams, pcr_due: ['Yes'] }
 
@@ -79,13 +79,20 @@ const ManagePCRsWrapper = () => {
     unmark: 'remove PCR due status',
   }
 
+  const withDefaultOption = (field: string) =>
+    unionBy(
+      filterOptions?.[field] ?? [],
+      (filters as Record<string, any>)[field] ?? [],
+      'id',
+    )
+
   const fieldToOptionsMapping: Record<string, any[]> = {
     region: filterOptions?.region ?? [],
     country: filterOptions?.country ?? [],
     lead_agency: filterOptions?.lead_agency ?? [],
     cluster: filterOptions?.cluster ?? [],
-    category: filterOptions?.category ?? [],
-    completed_only: booleanFieldsOpts,
+    category: withDefaultOption('category'),
+    completed_only: withDefaultOption('completed_only'),
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {
