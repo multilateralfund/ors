@@ -1,5 +1,5 @@
+import { TitleColumn, TooltipTitleColumn } from './schema'
 import { defaultColDef } from '../PCRListing/schema'
-import { TitleColumn } from './schema'
 import { formatDate } from '../utils'
 
 import { IoClose } from 'react-icons/io5'
@@ -18,22 +18,17 @@ const getColumnDefsPcrDue = (unmarkProjects: (ids: number[]) => void) => ({
       field: 'umbrella_code',
       minWidth: 300,
       autoHeight: true,
-      headerClass: 'ag-text-center !pl-1 !pr-[60px]',
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => (
-        <div className="flex items-center gap-1 p-1">{TitleColumn(props)}</div>
+        <div className="relative flex items-center gap-1 p-1">
+          {TitleColumn(props)}
+        </div>
       ),
-
-      tooltipValueGetter: (props: ITooltipParams) =>
-        `${props.value ?? 'N/A'} ${
-          props.data.type === 'Individual'
-            ? ` · ${props.data.projects[0].title}`
-            : ''
-        } · ${props.data.country ?? 'N/A'} · ${props.data.lead_agency ?? '[agency]'}`,
+      tooltipValueGetter: (props: ITooltipParams) => TooltipTitleColumn(props),
     },
     {
       headerName: 'PCR due',
-      headerClass: 'ag-text-center !pl-[11px] !pr-[39px]',
+      minWidth: 150,
       valueGetter: (params: ValueGetterParams) =>
         formatDate(params.data.pcr_due_date),
       tooltipValueGetter: (params: ITooltipParams) =>
@@ -45,22 +40,19 @@ const getColumnDefsPcrDue = (unmarkProjects: (ids: number[]) => void) => ({
         )
 
         return (
-          <div className="flex w-full items-center gap-1 p-2">
+          <div className="relative flex w-full items-center justify-center p-2">
             <span
-              className={cx(
-                'min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap',
-                { 'text-red-500': isDateOverdue },
-              )}
+              className={cx('min-w-0 truncate whitespace-nowrap', {
+                'text-red-500': isDateOverdue,
+              })}
             >
               {props.value ?? '-'}
             </span>
-            <div className="ml-auto shrink-0">
-              <IoClose
-                className="min-h-6 min-w-6 cursor-pointer fill-gray-600"
-                onClick={() => unmarkProjects([props.data.id])}
-                size={16}
-              />
-            </div>
+            <IoClose
+              className="absolute right-2 min-h-6 min-w-6 cursor-pointer fill-gray-600"
+              onClick={() => unmarkProjects([props.data.id])}
+              size={16}
+            />
           </div>
         )
       },

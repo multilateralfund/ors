@@ -26,8 +26,8 @@ export const TitleColumn = (props: ICellRendererParams) => (
         {props.data.country ?? 'N/A'} · {props.data.lead_agency ?? '[agency]'}
       </span>
     </div>
-    <div className="flex min-w-14 shrink-0 justify-end">
-      {props.data.ad_hoc_pcr && (
+    {props.data.ad_hoc_pcr && (
+      <div className="absolute right-2">
         <Tooltip title="Ad-hoc PCR" placement="top">
           <Chip
             label="Ad-hoc"
@@ -36,10 +36,15 @@ export const TitleColumn = (props: ICellRendererParams) => (
             size="small"
           />
         </Tooltip>
-      )}
-    </div>
+      </div>
+    )}
   </>
 )
+
+export const TooltipTitleColumn = (props: ITooltipParams) =>
+  `${props.value ?? 'N/A'} ${
+    props.data.type === 'Individual' ? ` · ${props.data.projects[0].title}` : ''
+  } · ${props.data.country ?? 'N/A'} · ${props.data.lead_agency ?? '[agency]'}`
 
 const getColumnDefs = (
   projectIds: number[],
@@ -53,29 +58,26 @@ const getColumnDefs = (
       autoHeight: true,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => (
-        <div className="flex items-center gap-1 p-1">
-          <Checkbox
-            checked={projectIds.includes(props.data.id)}
-            onChange={(event) => {
-              const metaprojectId = props.data.id
+        <div className="relative flex items-center gap-1 p-1 text-center">
+          <div className="absolute left-2">
+            <Checkbox
+              checked={projectIds.includes(props.data.id)}
+              onChange={(event) => {
+                const metaprojectId = props.data.id
 
-              setProjectIds(
-                event.target.checked
-                  ? [...projectIds, metaprojectId]
-                  : projectIds.filter((id) => id !== metaprojectId),
-              )
-            }}
-            sx={{ color: 'black' }}
-          />
+                setProjectIds(
+                  event.target.checked
+                    ? [...projectIds, metaprojectId]
+                    : projectIds.filter((id) => id !== metaprojectId),
+                )
+              }}
+              sx={{ color: 'black' }}
+            />
+          </div>
           {TitleColumn(props)}
         </div>
       ),
-      tooltipValueGetter: (props: ITooltipParams) =>
-        `${props.value ?? 'N/A'} ${
-          props.data.type === 'Individual'
-            ? ` · ${props.data.projects[0].title}`
-            : ''
-        } · ${props.data.country ?? 'N/A'} · ${props.data.lead_agency ?? '[agency]'}`,
+      tooltipValueGetter: (props: ITooltipParams) => TooltipTitleColumn(props),
     },
     {
       headerName: 'Status',

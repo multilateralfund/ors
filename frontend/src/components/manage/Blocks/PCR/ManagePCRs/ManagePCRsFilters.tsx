@@ -62,6 +62,7 @@ const ManagePCRsFilters = ({
           {...{ form, filters, handleFilterChange, handleParamsChange }}
         />
       </form>
+      <FieldFilter field="region" />
       <FieldFilter field="country" />
       <FieldFilter field="lead_agency" />
       <FieldFilter field="cluster" />
