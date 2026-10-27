@@ -136,8 +136,10 @@ export type PCRResponse = {
   delay_causes: {
     agency_id: number
     delay_cluster_id: number | null
-    causes_of_delay: {
+    delay_cluster: { name: string }
+    root_causes_of_delay: {
       root_cause_id: number | null
+      root_cause?: string
       description_roots_causes_of_delay: string
       action_taken: string
     }[]
@@ -146,10 +148,14 @@ export type PCRResponse = {
     agency_id: number
     lessons: {
       lesson_id: number | null
+      lesson: string
       description: string
     }[]
   }[]
-  gender_mainstreamings: (ProjectPhase & { agency_id: number })[]
+  gender_mainstreamings: (Omit<ProjectPhase, 'prefilled'> & {
+    agency_id: number
+    prefilled: boolean
+  })[]
   sustainable_development_goals: {
     agency_id: number
     sdg_applying: boolean

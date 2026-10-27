@@ -11,7 +11,6 @@ import {
 import { PCRResponse } from '../../interfaces'
 import {
   pcrFieldsMapping,
-  delayField,
   pcTitleClassname,
   textareaClassname,
   borderedContainerClassname,
@@ -35,8 +34,8 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
   )
 
   const pcData = filter(
-    pcr.project_components,
-    (pc) => pc.agency_id === Number(crtAgencyId) && pc[delayField].length > 0,
+    pcr.delay_causes,
+    (dc) => dc.agency_id === Number(crtAgencyId),
   )
 
   return (
@@ -65,14 +64,14 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
         {pcData.length > 0 ? (
           <div className="flex flex-col gap-y-6">
             {map(pcData, (pc, pcIndex) => {
-              const cdData = pcData[pcIndex][delayField] || []
+              const cdData = pc.root_causes_of_delay || []
 
               return (
                 <div key={pcIndex} className="flex">
                   <div className="w-1/4 bg-primary px-6 py-4">
                     {detailItem(
                       'Delay clusters',
-                      pc.project_component_option?.name,
+                      pc.delay_cluster.name,
                       pcTitleClassname,
                     )}
                     {cdData.length > 0 && (
@@ -85,7 +84,7 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
                                 {cdIndex + 1}
                               </div>
                               <h4 className="m-0 text-lg font-normal text-white">
-                                {cd.delay?.name || '-'}
+                                {cd.root_cause || '-'}
                               </h4>
                             </div>
                           </div>
@@ -115,13 +114,13 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
                                   {cdIndex + 1}
                                 </div>
                                 <h4 className="m-0 text-lg font-semibold text-primary">
-                                  {cd.delay?.name || '-'}
+                                  {cd.root_cause || '-'}
                                 </h4>
                               </div>
                               <div />
                               {detailItem(
-                                pcrFieldsMapping.description,
-                                cd.description,
+                                pcrFieldsMapping.description_roots_causes_of_delay,
+                                cd.description_roots_causes_of_delay,
                                 {
                                   ...textareaClassname,
                                   containerClassname: cx(
