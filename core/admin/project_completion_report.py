@@ -4,21 +4,23 @@ from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
 from core.models.project_completion_report import (
-    PCRDelayCategory,
     PCRDelayCause,
+    PCRDelayCauseRootCause,
+    PCRDelayCluster,
+    PCRFutureProjectRecommendation,
     PCRGenderMainstreaming,
     PCRGoal,
     PCRLearnedLesson,
     PCRLearnedLessonCategory,
+    PCRLearnedLessonDescription,
     PCR,
-    PCRActivity,
+    PCROverallAssessmentHighlight,
     PCRProject,
     PCRAdditionalComment,
     PCRProjectAlternativeTechnology,
-    PCRProjectComponentOption,
-    PCRProjectComponent,
     PCRProjectEnterprise,
     PCRProjectEquipment,
+    PCRRootCausesOfDelay,
     PCRSustainableDevelopmentGoalDescription,
     PCRSustainableDevelopmentGoal,
     PCRSupportingEvidenceSection,
@@ -90,8 +92,8 @@ class PCRAdditionalCommentAdmin(admin.ModelAdmin):
     ]
 
 
-@admin.register(PCRActivity)
-class PCRActivityAdmin(admin.ModelAdmin):
+@admin.register(PCROverallAssessmentHighlight)
+class PCROverallAssessmentHighlightAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     search_fields = [
         "pcr__meta_project__umbrella_code",
@@ -107,84 +109,81 @@ class PCRActivityAdmin(admin.ModelAdmin):
     ]
 
 
-@admin.register(PCRProjectComponentOption)
-class PCRProjectComponentOptionAdmin(admin.ModelAdmin):
+@admin.register(PCRDelayCluster)
+class PCRDelayClusterAdmin(admin.ModelAdmin):
     admin_group = "PCR"
 
     def get_list_display(self, request):
-        exclude = ["pcrprojectcomponent"]
-        return get_final_display_list(PCRProjectComponentOption, exclude)
+        exclude = ["delay_causes"]
+        return get_final_display_list(PCRDelayCluster, exclude)
 
 
-@admin.register(PCRDelayCategory)
-class PCRDelayCategoryAdmin(admin.ModelAdmin):
+@admin.register(PCRFutureProjectRecommendation)
+class PCRFutureProjectRecommendationAdmin(admin.ModelAdmin):
+    admin_group = "PCR"
+
+    def get_list_display(self, request):
+        exclude = []
+        return get_final_display_list(PCRFutureProjectRecommendation, exclude)
+
+
+@admin.register(PCRRootCausesOfDelay)
+class PCRRootCausesOfDelayAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     search_fields = ["name"]
 
     def get_list_display(self, request):
         exclude = [
             "pcrdelaycause",
+            "pcrdelaycauserootcause",
         ]
-        return get_final_display_list(PCRDelayCategory, exclude)
+        return get_final_display_list(PCRRootCausesOfDelay, exclude)
 
     def get_queryset(self, request):
-        return PCRDelayCategory.objects.really_all()
+        return PCRRootCausesOfDelay.objects.really_all()
 
 
-@admin.register(PCRProjectComponent)
-class PCRProjectComponentAdmin(admin.ModelAdmin):
-    admin_group = "PCR"
-    search_fields = [
-        "pcr__meta_project__umbrella_code",
-        "project_component_option__name",
-    ]
-    list_filter = [
-        AutocompleteFilterFactory("pcr", "pcr"),
-        AutocompleteFilterFactory("agency", "agency"),
-        AutocompleteFilterFactory(
-            "project_component_option", "project_component_option"
-        ),
-    ]
-    raw_id_fields = [
-        "pcr",
-    ]
-
-    def get_list_display(self, request):
-        exclude = [
-            "delay_causes",
-            "learned_lessons",
-        ]
-        return get_final_display_list(PCRProjectComponent, exclude)
+class PCRDelayCauseRootCauseInline(admin.TabularInline):
+    model = PCRDelayCauseRootCause
+    fk_name = "delay_cause"
+    extra = 1
+    autocomplete_fields = ["root_cause"]
+    verbose_name = "Root cause of delay"
+    verbose_name_plural = "Root causes of delay"
 
 
 @admin.register(PCRDelayCause)
 class PCRDelayCauseAdmin(admin.ModelAdmin):
     admin_group = "PCR"
+    inlines = [PCRDelayCauseRootCauseInline]
     search_fields = [
-        "pcr_project_component__pcr__meta_project__umbrella_code",
-        "delay__name",
+        "pcr__meta_project__umbrella_code",
+        "delay_cluster__name",
     ]
     list_filter = [
-        AutocompleteFilterFactory("pcr_project_component", "pcr_project_component"),
-        AutocompleteFilterFactory("delay", "delay"),
+        AutocompleteFilterFactory("pcr", "pcr"),
+        AutocompleteFilterFactory("agency", "agency"),
+        AutocompleteFilterFactory("delay_cluster", "delay_cluster"),
     ]
     raw_id_fields = [
-        "pcr_project_component",
-        "delay",
+        "pcr",
+        "delay_cluster",
     ]
 
     def get_list_display(self, request):
-        exclude = []
+        exclude = ["pcrdelaycauserootcause"]
         return get_final_display_list(PCRDelayCause, exclude)
 
 
 @admin.register(PCRLearnedLessonCategory)
 class PCRLearnedLessonCategoryAdmin(admin.ModelAdmin):
     admin_group = "PCR"
+    search_fields = ["name"]
 
     def get_list_display(self, request):
         exclude = [
             "pcrlearnedlesson",
+            "pcrlearnedlessondescription",
         ]
         return get_final_display_list(PCRLearnedLessonCategory, exclude)
 
@@ -192,23 +191,34 @@ class PCRLearnedLessonCategoryAdmin(admin.ModelAdmin):
         return PCRLearnedLessonCategory.objects.really_all()
 
 
+class PCRLearnedLessonDescriptionInline(admin.TabularInline):
+    model = PCRLearnedLessonDescription
+    fk_name = "learned_lesson"
+    extra = 1
+    autocomplete_fields = ["lesson"]
+    verbose_name = "Lesson learned"
+    verbose_name_plural = "Lessons learned"
+
+
 @admin.register(PCRLearnedLesson)
 class PCRLearnedLessonAdmin(admin.ModelAdmin):
     admin_group = "PCR"
+    inlines = [PCRLearnedLessonDescriptionInline]
     search_fields = [
-        "pcr_project_component__pcr__meta_project__umbrella_code",
-        "lesson",
+        "pcr__meta_project__umbrella_code",
+        "lessons__name",
     ]
     list_filter = [
-        AutocompleteFilterFactory("pcr_project_component", "pcr_project_component"),
-        AutocompleteFilterFactory("lesson", "lesson"),
+        AutocompleteFilterFactory("pcr", "pcr"),
+        AutocompleteFilterFactory("agency", "agency"),
+        AutocompleteFilterFactory("lessons", "lessons"),
     ]
     raw_id_fields = [
-        "pcr_project_component",
+        "pcr",
     ]
 
     def get_list_display(self, request):
-        exclude = []
+        exclude = ["pcrlearnedlessondescription"]
         return get_final_display_list(PCRLearnedLesson, exclude)
 
 

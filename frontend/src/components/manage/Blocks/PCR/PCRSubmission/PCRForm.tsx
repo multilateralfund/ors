@@ -18,16 +18,9 @@ import {
   SectionTitle,
   UserInfo,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import { formatErrors, hasSectionErrors, normalizeErrors } from '../utils'
 import {
-  formatErrors,
-  formatNestedPcErrors,
-  hasSectionErrors,
-  normalizeErrors,
-} from '../utils'
-import {
-  pcField,
   cdField,
-  llField,
   ppField,
   supportingEvidencesField,
   requiredMessage,
@@ -51,13 +44,13 @@ const PCRForm = () => {
       title: 'Project results',
       errors: errors.results_assessment,
     },
-    causes_of_delay: {
+    delay_causes: {
       title: 'Causes of delay',
-      errors: errors.causes_of_delay,
+      errors: errors.delay_causes,
     },
-    lessons_learned: {
+    learned_lessons: {
       title: 'Lessons learned',
-      errors: errors.lessons_learned,
+      errors: errors.learned_lessons,
     },
     gender_mainstreaming: {
       title: 'Gender mainstreaming',
@@ -99,14 +92,14 @@ const PCRForm = () => {
       component: <PCRResultsAssessment />,
     },
     {
-      id: 'causes_of_delay',
-      label: <TabLabel field="causes_of_delay" />,
+      id: 'delay_causes',
+      label: <TabLabel field="delay_causes" />,
       title: 'Causes of delay',
       component: <PCRCausesOfDelay />,
     },
     {
-      id: 'lessons_learned',
-      label: <TabLabel field="lessons_learned" />,
+      id: 'learned_lessons',
+      label: <TabLabel field="learned_lessons" />,
       title: 'Lessons learned',
       component: <PCRLessonsLearned />,
     },
@@ -155,52 +148,32 @@ const PCRForm = () => {
     }))
   }, [JSON.stringify(additionalCommentsData)])
 
-  const causesOfDelayData = PCRData.causes_of_delay || []
-  const cdProjectComponents = flatMap(
-    causesOfDelayData,
-    ({ project_components }) => project_components,
-  )
-  const lessonsLearnedData = PCRData.lessons_learned || []
-  const llProjectComponents = flatMap(
-    lessonsLearnedData,
-    ({ project_components }) => project_components,
-  )
+  const causesOfDelayData = PCRData.delay_causes || []
 
   useEffect(() => {
-    const projectComponents = [...cdProjectComponents, ...llProjectComponents]
-    const pcIdField = 'project_component_option_id'
+    const cdData = flatMap(
+      causesOfDelayData,
+      ({ causes_of_delay }) => causes_of_delay,
+    )
 
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
-      [pcField]: map(projectComponents, (pc, index) => {
-        const existingErrors = prev[pcField]?.[index] ?? {}
+      [cdField]: map(cdData, (cd, index) => {
+        const cdIdField = 'delay_cluster_id'
+
+        const existingErrors = prev[cdField]?.[index] ?? {}
         let updatedErrors = { ...existingErrors }
 
-        if (!pc[pcIdField]) {
-          updatedErrors[pcIdField] = [requiredMessage]
-        } else if (updatedErrors[pcIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [pcIdField])
+        if (!cd[cdIdField]) {
+          updatedErrors[cdIdField] = [requiredMessage]
+        } else if (updatedErrors[cdIdField]?.includes(requiredMessage)) {
+          updatedErrors = omit(updatedErrors, [cdIdField])
         }
-
-        formatNestedPcErrors(
-          pc,
-          updatedErrors,
-          existingErrors,
-          cdField,
-          'delay_id',
-        )
-        formatNestedPcErrors(
-          pc,
-          updatedErrors,
-          existingErrors,
-          llField,
-          'lesson_id',
-        )
 
         return normalizeErrors(updatedErrors)
       }),
     }))
-  }, [JSON.stringify(causesOfDelayData), JSON.stringify(lessonsLearnedData)])
+  }, [JSON.stringify(causesOfDelayData)])
 
   const genderMainstreamingData = PCRData.gender_mainstreaming || []
 

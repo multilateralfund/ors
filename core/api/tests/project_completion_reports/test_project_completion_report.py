@@ -15,13 +15,13 @@ from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
     MetaProjectFactory,
-    PCRDelayCategoryFactory,
+    PCRRootCausesOfDelayFactory,
     PCRLearnedLessonCategoryFactory,
     PCRFactory,
     PCRGoalFactory,
     PCRProjectFactory,
     PCRProjectEnterpriseFactory,
-    PCRProjectComponentOptionFactory,
+    PCRDelayClusterFactory,
     PCRSupportingEvidenceSectionFactory,
     ProjectClusterFactory,
     ProjectFactory,
@@ -111,6 +111,9 @@ def _pcr_listing_data():
         title="Unique Alpha Completion Title",
         metacode="PCR-META-001",
         category=Project.Category.IND,
+        meta_project=MetaProjectFactory.create(
+            type=Project.Category.IND, ad_hoc_pcr=False
+        ),
         country=country_a,
         agency=coop_agency_a,
         lead_agency=lead_agency_a,
@@ -118,7 +121,6 @@ def _pcr_listing_data():
         cluster=cluster_a,
         project_type=type_a,
         sector=sector_a,
-        ad_hoc_pcr=False,
     )
     project_a.subsectors.set([subsector_a])
 
@@ -126,7 +128,9 @@ def _pcr_listing_data():
         title="Unique Beta Completion Title",
         metacode="PCR-META-002",
         category=Project.Category.MYA,
-        ad_hoc_pcr=False,
+        meta_project=MetaProjectFactory.create(
+            type=Project.Category.MYA, ad_hoc_pcr=False
+        ),
         country=country_b,
         agency=coop_agency_b,
         lead_agency=lead_agency_b,
@@ -241,11 +245,12 @@ def test_pcr_project_create(
     substance_from = SubstanceFactory.create()
     substance_to = SubstanceFactory.create()
     client.force_authenticate(user=admin_user)
-    delay1 = PCRDelayCategoryFactory()
-    delay2 = PCRDelayCategoryFactory()
+    delay_cluster1 = PCRDelayClusterFactory()
+    delay_cluster2 = PCRDelayClusterFactory()
+    root_delay1 = PCRRootCausesOfDelayFactory()
+    root_delay2 = PCRRootCausesOfDelayFactory()
     lesson1 = PCRLearnedLessonCategoryFactory(obsolete=False)
     lesson2 = PCRLearnedLessonCategoryFactory(obsolete=False)
-    project_component_option = PCRProjectComponentOptionFactory()
     goal1 = PCRGoalFactory()
     goal2 = PCRGoalFactory()
     goal3 = PCRGoalFactory()
@@ -280,12 +285,10 @@ def test_pcr_project_create(
                     "rating_explanation": "Rating explanation 1",
                     "completed_by": PCR.CompletedBy.LEAD_AGENCY,
                     "addresses": "Test project address",
-                    "activities": [
+                    "overall_assessment_highlights": [
                         {
                             "agency_id": agency.id,
                             "activity_title": "Activity title 1",
-                            "type_of_activity": "Type of activity 1",
-                            "type_of_sector": "Type of sector 1",
                             "planned_output": "Planned output 1",
                             "actual_activity_output": "Actual activity output 1",
                             "additional_remarks": "Additional remarks 1",
@@ -293,8 +296,6 @@ def test_pcr_project_create(
                         {
                             "agency_id": new_agency.id,
                             "activity_title": "Activity title 2",
-                            "type_of_activity": "Type of activity 2",
-                            "type_of_sector": "Type of sector 2",
                             "planned_output": "Planned output 2",
                             "actual_activity_output": "Actual activity output 2",
                             "additional_remarks": "Additional remarks 2",
@@ -304,23 +305,52 @@ def test_pcr_project_create(
                         {"entity": "Cooperating agency", "comment": "Comment 1"},
                         {"entity": "Consultants", "comment": "Comment 2"},
                     ],
-                    "project_components": [
+                    "delay_causes": [
                         {
                             "agency_id": agency.id,
-                            "project_component_option_id": project_component_option.id,
-                            "delay_causes": [
-                                {"delay_id": delay1.id, "description": "Description 1"},
-                                {"delay_id": delay2.id, "description": "Description 2"},
+                            "delay_cluster_id": delay_cluster1.id,
+                            "root_causes_of_delay": [
+                                {
+                                    "root_cause_id": root_delay1.id,
+                                    "description_roots_causes_of_delay": "description 1",
+                                    "action_taken": "text 1",
+                                },
+                                {
+                                    "root_cause_id": root_delay2.id,
+                                    "description_roots_causes_of_delay": "description 2",
+                                    "action_taken": "text 2",
+                                },
                             ],
-                            "learned_lessons": [
+                        },
+                        {
+                            "agency_id": new_agency.id,
+                            "delay_cluster_id": delay_cluster2.id,
+                            "root_causes_of_delay": [
                                 {
-                                    "description": "Description 1",
+                                    "root_cause_id": root_delay2.id,
+                                    "description_roots_causes_of_delay": "description 3",
+                                    "action_taken": "text 3",
+                                },
+                            ],
+                        },
+                    ],
+                    "learned_lessons": [
+                        {
+                            "agency_id": agency.id,
+                            "lessons": [
+                                {
                                     "lesson_id": lesson1.id,
-                                },
+                                    "description": "Description 1",
+                                }
+                            ],
+                        },
+                        {
+                            "agency_id": new_agency.id,
+                            "lessons": [
                                 {
-                                    "description": "Description 2",
                                     "lesson_id": lesson2.id,
-                                },
+                                    "description": "Description 2",
+                                }
                             ],
                         },
                     ],
@@ -438,9 +468,10 @@ def test_pcr_project_create(
         }
     ]
 
-    assert len(pcr.activities.all()) == 2
+    assert len(pcr.overall_assessment_highlights.all()) == 2
     assert len(pcr.additional_comments.all()) == 2
-    assert len(pcr.project_components.all()) == 1
+    assert len(pcr.delay_causes.all()) == 2
+    assert len(pcr.learned_lessons.all()) == 2
     assert len(pcr.gender_mainstreamings.all()) == 1
     assert len(pcr.sustainable_development_goals.all()) == 2
 
@@ -457,9 +488,11 @@ def test_pcr_project_create(
     assert response.data["decisions"][0]["id"] == decision.id
 
     # activities
-    assert len(response.data["activities"]) == 2
-    assert response.data["activities"][0]["agency_id"] == agency.id
-    assert response.data["activities"][1]["agency_id"] == new_agency.id
+    assert len(response.data["overall_assessment_highlights"]) == 2
+    assert response.data["overall_assessment_highlights"][0]["agency_id"] == agency.id
+    assert (
+        response.data["overall_assessment_highlights"][1]["agency_id"] == new_agency.id
+    )
 
     # additional comments
     assert len(response.data["additional_comments"]) == 2
@@ -468,31 +501,36 @@ def test_pcr_project_create(
     assert response.data["additional_comments"][1]["entity"] == "Consultants"
     assert response.data["additional_comments"][1]["comment"] == "Comment 2"
 
-    # project components
-    assert len(response.data["project_components"]) == 1
-    assert response.data["project_components"][0]["agency_id"] == agency.id
-    assert (
-        response.data["project_components"][0]["project_component_option_id"]
-        == project_component_option.id
-    )
-    assert len(response.data["project_components"][0]["delay_causes"]) == 2
-    assert (
-        response.data["project_components"][0]["delay_causes"][0]["delay_id"]
-        == delay1.id
-    )
-    assert (
-        response.data["project_components"][0]["delay_causes"][1]["delay_id"]
-        == delay2.id
-    )
-    assert len(response.data["project_components"][0]["learned_lessons"]) == 2
-    assert (
-        response.data["project_components"][0]["learned_lessons"][0]["lesson_id"]
-        == lesson1.id
-    )
-    assert (
-        response.data["project_components"][0]["learned_lessons"][1]["lesson_id"]
-        == lesson2.id
-    )
+    # delay causes
+    assert len(response.data["delay_causes"]) == 2
+    assert response.data["delay_causes"][0]["agency_id"] == agency.id
+    assert response.data["delay_causes"][0]["delay_cluster"]["id"] == delay_cluster1.id
+    root_causes = response.data["delay_causes"][0]["root_causes_of_delay"]
+    assert root_causes[0]["root_cause_id"] == root_delay1.id
+    assert root_causes[0]["description_roots_causes_of_delay"] == "description 1"
+    assert root_causes[0]["action_taken"] == "text 1"
+    assert root_causes[1]["root_cause_id"] == root_delay2.id
+    assert root_causes[1]["description_roots_causes_of_delay"] == "description 2"
+    assert root_causes[1]["action_taken"] == "text 2"
+
+    assert response.data["delay_causes"][1]["agency_id"] == new_agency.id
+    assert response.data["delay_causes"][1]["delay_cluster"]["id"] == delay_cluster2.id
+    root_causes = response.data["delay_causes"][1]["root_causes_of_delay"]
+    assert root_causes[0]["root_cause_id"] == root_delay2.id
+    assert root_causes[0]["description_roots_causes_of_delay"] == "description 3"
+    assert root_causes[0]["action_taken"] == "text 3"
+
+    # lessons learned
+    assert len(response.data["learned_lessons"]) == 2
+    assert response.data["learned_lessons"][0]["agency_id"] == agency.id
+    lessons = response.data["learned_lessons"][0]["lessons"]
+    assert lessons[0]["lesson_id"] == lesson1.id
+    assert lessons[0]["description"] == "Description 1"
+
+    assert response.data["learned_lessons"][1]["agency_id"] == new_agency.id
+    lessons = response.data["learned_lessons"][1]["lessons"]
+    assert lessons[0]["lesson_id"] == lesson2.id
+    assert lessons[0]["description"] == "Description 2"
 
     # gender mainstreamings
     assert len(response.data["gender_mainstreamings"]) == 1

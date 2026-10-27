@@ -258,11 +258,7 @@ class ProjectFilter(filters.FilterSet):
             return queryset
         invalid_entries = Project.objects.filter(
             meta_project_id=OuterRef("pk"),
-        ).exclude(
-            status__name__in=[
-                "Completed",
-            ]
-        )
+        ).exclude(status__name__in=["Completed", "Transferred"])
         meta_projects = MetaProject.objects.filter(~Exists(invalid_entries))
         for option in value:
             if option == "Yes":
@@ -302,9 +298,9 @@ class ProjectFilter(filters.FilterSet):
         query_filters = Q()
         for option in value:
             if option == "Yes":
-                query_filters |= Q(ad_hoc_pcr=True)
+                query_filters |= Q(meta_project__ad_hoc_pcr=True)
             elif option == "No":
-                query_filters |= Q(ad_hoc_pcr=False)
+                query_filters |= Q(meta_project__ad_hoc_pcr=False)
         if not query_filters:
             return queryset
         return queryset.filter(query_filters)

@@ -470,7 +470,22 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 include_names=[
                     "number_of_production_lines_assisted",
                     "number_of_production_lines_assisted_actual",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.metaproject_fields,
+                source="meta_project",
+                include_names=[
                     "ad_hoc_pcr",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=[
                     "pcr_waived",
                     "total_number_of_technicians_trained",
                     "total_number_of_technicians_trained_actual",

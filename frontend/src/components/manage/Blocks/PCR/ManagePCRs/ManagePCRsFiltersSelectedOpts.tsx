@@ -19,7 +19,7 @@ const ManagePCRsFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: PCRFiltersProps) => {
-  const filtersToClear = omit(filters, 'pcr_submitted', 'pcr_due', 'ad_hoc_pcr')
+  const filtersToClear = omit(filters, 'pcr_submitted', 'pcr_due')
 
   const areFiltersApplied =
     getAreFiltersApplied(filtersToClear) || filters?.search
@@ -44,6 +44,7 @@ const ManagePCRsFiltersSelectedOpts = ({
     {
       entities: formatEntity(fieldToOptionsMapping.completed_only),
       entityIdentifier: 'completed_only',
+      extraLabel: 'Completed',
     },
   ]
 
@@ -64,6 +65,7 @@ const ManagePCRsFiltersSelectedOpts = ({
             handleFilterChange,
             handleParamsChange,
             'id',
+            selectedOpt.extraLabel,
           ),
         )}
         <Typography
@@ -75,16 +77,12 @@ const ManagePCRsFiltersSelectedOpts = ({
             if (inputSearch) {
               inputSearch.value = ''
             }
-            const params = {
-              ...omit(
-                { ...initialParams, completed_only: [] },
-                'pcr_due',
-                'ad_hoc_pcr',
-              ),
-            }
 
-            handleFilterChange({ ...initialFilters, ...params })
-            handleParamsChange({ offset: 0, ...params })
+            const params = { ...initialParams, completed_only: [] }
+            const finalParams = omit(params, 'pcr_due')
+
+            handleFilterChange({ ...initialFilters, ...finalParams })
+            handleParamsChange({ offset: 0, ...finalParams })
           }}
         >
           Clear All

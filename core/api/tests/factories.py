@@ -58,11 +58,11 @@ from core.models.enterprise import (
 from core.models.project_completion_report import (
     PCR,
     PCRGoal,
-    PCRDelayCategory,
     PCRLearnedLessonCategory,
-    PCRProjectComponentOption,
+    PCRDelayCluster,
     PCRProject,
     PCRProjectEnterprise,
+    PCRRootCausesOfDelay,
     PCRSupportingEvidenceSection,
 )
 from core.models.project_metadata import (
@@ -928,9 +928,9 @@ class PCRProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     address = factory.Faker("pystr", max_chars=100)
 
 
-class PCRDelayCategoryFactory(factory.django.DjangoModelFactory):
+class PCRRootCausesOfDelayFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = PCRDelayCategory
+        model = PCRRootCausesOfDelay
 
 
 class PCRLearnedLessonCategoryFactory(factory.django.DjangoModelFactory):
@@ -940,9 +940,9 @@ class PCRLearnedLessonCategoryFactory(factory.django.DjangoModelFactory):
         model = PCRLearnedLessonCategory
 
 
-class PCRProjectComponentOptionFactory(factory.django.DjangoModelFactory):
+class PCRDelayClusterFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = PCRProjectComponentOption
+        model = PCRDelayCluster
 
 
 class PCRGoalFactory(factory.django.DjangoModelFactory):

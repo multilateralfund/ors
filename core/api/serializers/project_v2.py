@@ -914,6 +914,15 @@ class ProjectV2OdsOdpCreateUpdateSerializer(
         return super(ProjectV2OdsOdpListSerializer, self).validate(attrs)
 
 
+def set_meta_project_ad_hoc_pcr(project, ad_hoc_pcr):
+    """
+    ad_hoc_pcr is stored on the meta project; projects without one are skipped.
+    """
+    if project.meta_project:
+        project.meta_project.ad_hoc_pcr = ad_hoc_pcr
+        project.meta_project.save()
+
+
 class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSerializer):
     """
     ProjectSerializer class
@@ -940,6 +949,11 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         required=False,
         allow_null=True,
         queryset=ProjectType.objects.all(),
+    )
+
+    # Stored on the meta project
+    ad_hoc_pcr = serializers.BooleanField(
+        allow_null=True, required=False, write_only=True
     )
 
     # This field is not on the Project model, but is used for input only
@@ -1150,6 +1164,8 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         ods_odp_data = validated_data.pop("ods_odp", [])
         subsectors_data = validated_data.pop("subsector_ids", [])
         associate_project_id = validated_data.pop("associate_project_id", None)
+        # set by the view on the meta project, after the meta project is assigned
+        validated_data.pop("ad_hoc_pcr", None)
 
         status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
@@ -1194,6 +1210,8 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         user = self.context["request"].user
         subsectors_data = validated_data.pop("subsector_ids", None)
         ods_odp_data = validated_data.pop("ods_odp", None)
+        if "ad_hoc_pcr" in validated_data:
+            set_meta_project_ad_hoc_pcr(instance, validated_data.pop("ad_hoc_pcr"))
         bp_activity = validated_data.get("bp_activity", None)
         if not bp_activity:
             validated_data["bp_activity_json"] = None
@@ -1296,6 +1314,10 @@ class ProjectV2EditApprovalFieldsSerializer(
     """
 
     ods_odp = ProjectV2OdsOdpEditApprovalFieldsSerializer(many=True)
+    # Stored on the meta project
+    ad_hoc_pcr = serializers.BooleanField(
+        allow_null=True, required=False, write_only=True
+    )
 
     class Meta:
         model = Project
@@ -1334,6 +1356,8 @@ class ProjectV2EditApprovalFieldsSerializer(
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
             self._update_or_create_ods_odp(instance, ods_odp_data)
+        if "ad_hoc_pcr" in validated_data:
+            set_meta_project_ad_hoc_pcr(instance, validated_data.pop("ad_hoc_pcr"))
 
         super().update(instance, validated_data)
 

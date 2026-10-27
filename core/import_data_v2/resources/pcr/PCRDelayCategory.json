@@ -1,6 +1,6 @@
 [
     {
-        "model": "core.pcrdelaycategory",
+        "model": "core.pcrrootcausesofdelay",
         "pk": 1,
         "fields": {
             "name": "Implementing/cooperating agency",
@@ -9,16 +9,7 @@
         }
     },
     {
-        "model": "core.pcrdelaycategory",
-        "pk": 11,
-        "fields": {
-            "name": "Other (describe)",
-            "sort_order": 110.0,
-            "obsolete": false
-        }
-    },
-    {
-        "model": "core.pcrdelaycategory",
+        "model": "core.pcrrootcausesofdelay",
         "pk": 12,
         "fields": {
             "name": "Due to governmental delays (NOU structure changes, ministry/institution structure changes)",
@@ -27,7 +18,7 @@
         }
     },
     {
-        "model": "core.pcrdelaycategory",
+        "model": "core.pcrrootcausesofdelay",
         "pk": 13,
         "fields": {
             "name": "Project design, preparation and implementation process (timeframe, beneficiaries’ profile (e.g., gender participation, beneficiaries’ skills, etc.)",
@@ -36,7 +27,7 @@
         }
     },
     {
-        "model": "core.pcrdelaycategory",
+        "model": "core.pcrrootcausesofdelay",
         "pk": 14,
         "fields": {
             "name": "Procurement delay (Enterprise and supplier delays)",
@@ -45,7 +36,7 @@
         }
     },
     {
-        "model": "core.pcrdelaycategory",
+        "model": "core.pcrrootcausesofdelay",
         "pk": 15,
         "fields": {
             "name": "Policy and regulatory framework (e.g., relevant legislation, etc.)",
@@ -54,7 +45,7 @@
         }
     },
     {
-        "model": "core.pcrdelaycategory",
+        "model": "core.pcrrootcausesofdelay",
         "pk": 16,
         "fields": {
             "name": "Exogenous factors (beyond the control of the implementers, such as natural disasters, political instability, pandemics, etc.)",
@@ -63,7 +54,7 @@
         }
     },
     {
-        "model": "core.pcrdelaycategory",
+        "model": "core.pcrrootcausesofdelay",
         "pk": 17,
         "fields": {
             "name": "Availability of alternative technology",
@@ -72,11 +63,20 @@
         }
     },
     {
-        "model": "core.pcrdelaycategory",
+        "model": "core.pcrrootcausesofdelay",
         "pk": 18,
         "fields": {
             "name": "Funding process (delays in funding following tranches, low disbursement of funds)",
             "sort_order": 80.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrrootcausesofdelay",
+        "pk": 11,
+        "fields": {
+            "name": "Other (describe)",
+            "sort_order": 110.0,
             "obsolete": false
         }
     }

@@ -1,127 +1,113 @@
 import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
-import {
-  expandMetaproject,
-  defaultColDef,
-  getNumberColsValue,
-} from '../PCRListing/schema'
-import { PCRUpdatedMetaproject } from '../interfaces'
+import { defaultColDef } from '../PCRListing/schema'
 import { pcrFieldsMapping } from '../constants'
+import { formatDate } from '../utils'
 
-import { MdExpandLess, MdExpandMore } from 'react-icons/md'
 import { Checkbox, Chip, Tooltip } from '@mui/material'
+import { isNil } from 'lodash'
 import {
   ICellRendererParams,
   ValueGetterParams,
   ITooltipParams,
 } from 'ag-grid-community'
-import { find, isNil, uniq } from 'lodash'
-import { formatDate } from '../utils'
+
+export const TitleColumn = (props: ICellRendererParams) => (
+  <>
+    <div className="flex min-w-0 flex-1 flex-col">
+      <span className="overflow-hidden truncate whitespace-nowrap text-sm font-medium">
+        {props.value ?? 'N/A'}
+      </span>
+      {props.data.type === 'Individual' && (
+        <span className="line-clamp-3 min-w-0 whitespace-normal break-words text-sm font-medium">
+          {props.data.projects[0].title}
+        </span>
+      )}
+      <span className="overflow-hidden truncate whitespace-nowrap text-xs text-gray-600">
+        {props.data.country ?? 'N/A'} · {props.data.lead_agency ?? '[agency]'}
+      </span>
+    </div>
+    <div className="flex min-w-14 shrink-0 justify-end">
+      {props.data.ad_hoc_pcr && (
+        <Tooltip title="Ad-hoc PCR" placement="top">
+          <Chip
+            label="Ad-hoc"
+            className="border-sky-300 bg-sky-50 text-sky-700"
+            variant="outlined"
+            size="small"
+          />
+        </Tooltip>
+      )}
+    </div>
+  </>
+)
 
 const getColumnDefs = (
-  pcrProjectsData: PCRUpdatedMetaproject[],
   projectIds: number[],
   setProjectIds: (ids: number[]) => void,
 ) => ({
   columnDefs: [
     {
-      headerName: 'Title / country / agency',
+      headerName: 'Metacode / Title / Country / Agency',
       field: 'umbrella_code',
       minWidth: 300,
+      autoHeight: true,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
-      cellRenderer: (props: ICellRendererParams) => {
-        const hasAdHocPcr = find(
-          props.data.projects,
-          (project) => project.ad_hoc_pcr,
-        )
+      cellRenderer: (props: ICellRendererParams) => (
+        <div className="flex items-center gap-1 p-1">
+          <Checkbox
+            checked={projectIds.includes(props.data.id)}
+            onChange={(event) => {
+              const metaprojectId = props.data.id
 
-        return (
-          <div className="flex items-center gap-1 p-2">
-            <div className="flex w-14 shrink-0 items-center">
-              <Checkbox
-                checked={projectIds.includes(props.data.metaprojectId)}
-                onChange={(event) => {
-                  const isChecked = event.target.checked
-                  const metaprojectId = props.data.metaprojectId
-
-                  setProjectIds(
-                    isChecked
-                      ? [...projectIds, metaprojectId]
-                      : projectIds.filter((item) => item !== metaprojectId),
-                  )
-                }}
-                sx={{ color: 'black' }}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-col gap-0">
-                <span className="overflow-hidden truncate whitespace-nowrap text-sm font-medium leading-5">
-                  {props.value ?? 'N/A'}
-                </span>
-                <span className="overflow-hidden truncate whitespace-nowrap text-xs leading-4 text-gray-600">
-                  {props.data.country ?? 'N/A'} ·{' '}
-                  {props.data.lead_agency ?? '[agency]'}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
-              {hasAdHocPcr && (
-                <Tooltip title="Ad-hoc PCR" placement="top" arrow>
-                  <Chip
-                    label="Ad-hoc"
-                    className="border-sky-300 bg-sky-50 text-sky-700"
-                    variant="outlined"
-                    size="small"
-                  />
-                </Tooltip>
-              )}
-            </div>
-          </div>
-        )
-      },
-      tooltipValueGetter: (props: any) =>
-        `${props.value ?? 'N/A'} · ${props.data?.country ?? 'N/A'} · ${props.data?.lead_agency ?? '[agency]'}`,
+              setProjectIds(
+                event.target.checked
+                  ? [...projectIds, metaprojectId]
+                  : projectIds.filter((id) => id !== metaprojectId),
+              )
+            }}
+            sx={{ color: 'black' }}
+          />
+          {TitleColumn(props)}
+        </div>
+      ),
+      tooltipValueGetter: (props: ITooltipParams) =>
+        `${props.value ?? 'N/A'} ${
+          props.data.type === 'Individual'
+            ? ` · ${props.data.projects[0].title}`
+            : ''
+        } · ${props.data.country ?? 'N/A'} · ${props.data.lead_agency ?? '[agency]'}`,
+    },
+    {
+      headerName: 'Status',
+      field: 'status',
+      tooltipField: 'status',
     },
     {
       headerName: pcrFieldsMapping.cluster,
       valueGetter: (params: ValueGetterParams) =>
-        params.data.projects?.[0]?.cluster ?? '-',
+        params.data.projects[0].cluster,
       tooltipValueGetter: (params: ITooltipParams) =>
-        params.data.projects?.[0]?.cluster ?? '-',
+        params.data.projects[0].cluster,
       minWidth: 150,
     },
     {
       headerName: 'Date completed',
       valueGetter: (params: ValueGetterParams) =>
-        formatDate(params.data.date_completion),
+        formatDate(params.data.date_of_completion),
       tooltipValueGetter: (params: ITooltipParams) =>
-        formatDate(params.data.date_completion),
+        formatDate(params.data.date_of_completion),
     },
     {
-      headerName: 'Funding approved',
-      valueGetter: (params: ValueGetterParams) => {
-        const totalFund = getNumberColsValue(params, 'funds_approved')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, funds_approved: totalFund },
-        }
-
-        return !isNil(totalFund)
-          ? '$' + formatNumberColumns(updatedParams, 'funds_approved')
-          : ''
-      },
-      tooltipValueGetter: (params: ITooltipParams) => {
-        const totalFund = getNumberColsValue(params, 'funds_approved')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, funds_approved: totalFund },
-        }
-
-        return formatNumberColumns(updatedParams, 'funds_approved', {
+      headerName: 'Funding',
+      valueGetter: (params: ValueGetterParams) =>
+        !isNil(params.data.total_funding)
+          ? '$' + formatNumberColumns(params, 'total_funding')
+          : '',
+      tooltipValueGetter: (params: ITooltipParams) =>
+        formatNumberColumns(params, 'total_funding', {
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
-        })
-      },
+        }),
     },
   ],
   defaultColDef,

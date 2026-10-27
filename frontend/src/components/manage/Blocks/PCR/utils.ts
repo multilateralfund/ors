@@ -1,6 +1,7 @@
 import { getProjectDuration } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import {
+  cdField,
   pcrFieldsMapping,
   pcrFieldsErrorsMapping,
   requiredMessage,
@@ -12,8 +13,7 @@ import {
   PCREquipmentType,
   PCRSummaryOfKeyDataType,
   PCRResultsAssessmentData,
-  CauseOfDelayProjectComponent,
-  LessonLearnedProjectComponent,
+  PCRCausesOfDelayData,
   PCRGenderMainstreamingData,
   PCRSupportingEvidencesData,
   FormattedSupportingEvidencesData,
@@ -279,32 +279,6 @@ export const getErrorIndex = (
   )
 }
 
-export const formatNestedPcErrors = (
-  pc: CauseOfDelayProjectComponent | LessonLearnedProjectComponent,
-  updatedErrors: Record<string, any>,
-  existingErrors: Record<string, any>,
-  field: string,
-  idField: string,
-) => {
-  const entries = (pc as Record<string, any>)[field]
-
-  if (field in pc) {
-    updatedErrors[field] = map(entries, (entry, index) => {
-      const existingEntryErrors = existingErrors[field]?.[index] ?? {}
-
-      let entryErrors = { ...existingEntryErrors }
-
-      if (!entry[idField]) {
-        entryErrors[idField] = [requiredMessage]
-      } else if (entryErrors[idField]?.includes(requiredMessage)) {
-        entryErrors = omit(entryErrors, [idField])
-      }
-
-      return entryErrors
-    })
-  }
-}
-
 const hasErrorMessage = (errors: Record<string, any>): boolean => {
   if (typeof errors === 'string') {
     return errors === requiredMessage
@@ -373,8 +347,8 @@ export const getFormData = (
   const {
     overview,
     results_assessment,
-    causes_of_delay,
-    lessons_learned,
+    delay_causes,
+    learned_lessons,
     gender_mainstreaming,
     sdgs_contribution,
     supporting_evidences,
@@ -410,41 +384,29 @@ export const getFormData = (
 
   const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
     results_assessment,
-    'activities',
+    'overall_assessment_highlights',
   )
 
-  const causesOfDelayProjectComponents = flatMap(
-    causes_of_delay,
-    ({ agency_id, project_components }) =>
-      map(
-        project_components,
-        ({ project_component_option_id, delay_causes }) => ({
-          agency_id,
-          project_component_option_id,
-          delay_causes,
-          learned_lessons: [],
-        }),
-      ),
-  )
+  // const causesOfDelayProjectComponents = flatMap(
+  //   delay_causes,
+  //   ({ agency_id, project_components }) =>
+  //     map(
+  //       project_components,
+  //       ({ project_component_option_id, delay_causes }) => ({
+  //         agency_id,
+  //         project_component_option_id,
+  //         delay_causes,
+  //         learned_lessons: [],
+  //       }),
+  //     ),
+  // )
 
-  const lessonsLearnedProjectComponents = flatMap(
-    lessons_learned,
-    ({ agency_id, project_components }) =>
-      map(
-        project_components,
-        ({ project_component_option_id, learned_lessons }) => ({
-          agency_id,
-          project_component_option_id,
-          delay_causes: [],
-          learned_lessons,
-        }),
-      ),
-  )
+  // const projectComponentsData = [...causesOfDelayProjectComponents]
 
-  const projectComponentsData = [
-    ...causesOfDelayProjectComponents,
-    ...lessonsLearnedProjectComponents,
-  ]
+  const causesOfDelayData = formatAgencyData<PCRCausesOfDelayData>(
+    delay_causes,
+    cdField,
+  )
 
   const genderMainstreamingsData = formatAgencyData<PCRGenderMainstreamingData>(
     gender_mainstreaming,
@@ -473,8 +435,10 @@ export const getFormData = (
     ...overviewPrefilledData,
     ...overviewData,
     pcr_projects: filteredSummaryOfKeyData,
-    activities: resultsAssessmentData,
-    project_components: projectComponentsData,
+    overall_assessment_highlights: resultsAssessmentData,
+    // project_components: projectComponentsData,
+    delay_causes: causesOfDelayData,
+    learned_lessons,
     gender_mainstreamings: genderMainstreamingsData,
     sustainable_development_goals: sdgsContributionData,
     supporting_evidences: supportingEvidencesData,
@@ -494,8 +458,8 @@ export const isSubmitDisabled = (errors: Record<string, any>) => {
   const hasResultsAssessmentDefaultErrors = hasErrorMessage(
     errors.results_assessment,
   )
-  const hasCausesOfDelayDefaultErrors = hasErrorMessage(errors.causes_of_delay)
-  const hasLessonsLearnedDefaultErrors = hasErrorMessage(errors.lessons_learned)
+  const hasCausesOfDelayDefaultErrors = hasErrorMessage(errors.delay_causes)
+  const hasLessonsLearnedDefaultErrors = hasErrorMessage(errors.learned_lessons)
   const hasGenderMainstreamingDefaultErrors = hasErrorMessage(
     errors.gender_mainstreaming,
   )
