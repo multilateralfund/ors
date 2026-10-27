@@ -12,6 +12,7 @@ import YearRangeWidget from '@ors/components/manage/Widgets/YearRangeWidget'
 import PopoverInput from '../StatusOfTheFund/editDialogs/PopoverInput'
 import { IPopoverInputProps } from '../StatusOfTheFund/types'
 import DateInput from './DateInput'
+import TypeableDateInput from './TypeableDateInput'
 import FormattedNumberInput from './FormattedNumberInput'
 import Input from './Input'
 import MultiSelect from './MultiSelect'
@@ -31,6 +32,7 @@ import {
 
 export {
   DateInput,
+  TypeableDateInput,
   FormattedNumberInput,
   Input,
   MultiSelect,

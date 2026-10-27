@@ -3,8 +3,8 @@ import { useMemo, useRef, useState } from 'react'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import { TypeableDateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import {
   RedirectBackButton,
@@ -32,7 +32,6 @@ import { CircularProgress, Modal, Typography, Box } from '@mui/material'
 import { unionBy, upperFirst } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import cx from 'classnames'
-import dayjs from 'dayjs'
 
 const ManagePCRsWrapper = () => {
   const form = useRef<any>()
@@ -206,11 +205,10 @@ const ManagePCRsWrapper = () => {
               <div className="my-4 flex flex-row flex-wrap items-center gap-2">
                 <Label>PCR due date</Label>
                 <div className="flex items-center">
-                  <DateInput
+                  <TypeableDateInput
                     id="pcr_due_date"
                     className="BPListUpload !ml-0 h-10 w-40 !flex-grow-0"
                     value={pcrDueDate}
-                    formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
                     onChange={(event) => {
                       setPcrDueDate(event.target.value || '')
                     }}
