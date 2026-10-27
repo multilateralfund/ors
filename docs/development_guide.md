@@ -38,3 +38,11 @@ To add a new dependency:
   ```
   pip freeze > requirements.txt
   ```
+
+### Optional pre-commit checks
+
+Runs black, pylint and pytest in the `mlf.app` container before each commit:
+
+    git config core.hooksPath .github/hooks
+
+Skip once with `git commit --no-verify`. Turn off with `git config --unset core.hooksPath`.
