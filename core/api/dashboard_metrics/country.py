@@ -750,7 +750,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         metric_id="kf_funding_approved",
         label="Total funding approved",
         section="Key figures",
-        kind=Kind.BREAKDOWN,
+        kind=Kind.SCALAR,
         unit=Unit.USD,
         disposition=Disposition.COMPUTE,
         formula=(
@@ -759,7 +759,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         ),
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund + support_cost_psc",
-        compute=lambda context: funds_pair(context.projects, True),
+        compute=theme_total,
     ),
     Metric(
         metric_id="kf_funding_disbursed",
