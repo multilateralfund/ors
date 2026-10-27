@@ -20,7 +20,7 @@ const getColumnDefsPcrDue = (unmarkProjects: (ids: number[]) => void) => ({
       autoHeight: true,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => (
-        <div className="relative flex items-center gap-1 p-1">
+        <div className="relative flex items-center gap-1 p-1 px-[4.5rem]">
           {TitleColumn(props)}
         </div>
       ),
