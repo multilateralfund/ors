@@ -3,7 +3,6 @@ import { TitleColumn } from './schema'
 import { formatDate } from '../utils'
 
 import { IoClose } from 'react-icons/io5'
-import { find } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
@@ -19,19 +18,12 @@ const getColumnDefsPcrDue = (unmarkProjects: (ids: number[]) => void) => ({
       field: 'umbrella_code',
       minWidth: 300,
       autoHeight: true,
+      headerClass: 'ag-text-center !pl-1 !pr-[60px]',
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
-      cellRenderer: (props: ICellRendererParams) => {
-        const hasAdHocPcr = find(
-          props.data.projects,
-          (project) => project.ad_hoc_pcr,
-        )
+      cellRenderer: (props: ICellRendererParams) => (
+        <div className="flex items-center gap-1 p-1">{TitleColumn(props)}</div>
+      ),
 
-        return (
-          <div className="flex items-center gap-1 p-1">
-            {TitleColumn(props, hasAdHocPcr)}
-          </div>
-        )
-      },
       tooltipValueGetter: (props: ITooltipParams) =>
         `${props.value ?? 'N/A'} ${
           props.data.type === 'Individual'
@@ -41,6 +33,7 @@ const getColumnDefsPcrDue = (unmarkProjects: (ids: number[]) => void) => ({
     },
     {
       headerName: 'PCR due',
+      headerClass: 'ag-text-center !pl-[11px] !pr-[39px]',
       valueGetter: (params: ValueGetterParams) =>
         formatDate(params.data.pcr_due_date),
       tooltipValueGetter: (params: ITooltipParams) =>
