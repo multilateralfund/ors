@@ -27,7 +27,7 @@ from core.models.substance import Substance
 from core.models.utils import SubstancesType, get_protected_storage
 from core.models.project_pcr_exclusion import ProjectPCRRequiredExclusionRule
 
-# pylint: disable=C0302
+# pylint: disable=C0302,R0904
 
 OLD_FIELD_HELP_TEXT = """
     Old field from the initial imported data/implementation of projects.
@@ -118,6 +118,11 @@ class MetaProject(models.Model):
         help_text="Marked as True by PCR admin if the meta-project is approved as pcr due",
     )
     pcr_due_date = models.DateField(null=True, blank=True)
+    ad_hoc_pcr = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Ad-hoc PCR",
+    )
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -365,7 +370,7 @@ class ProjectQuerySet(models.QuerySet["Project"]):
     def pcr_required_pcr_or_ad_hoc(self):
         result = self.exclude(
             models.Q(ProjectPCRRequiredExclusionRule.objects.active_project_q())
-            & models.Q(ad_hoc_pcr=False)
+            & models.Q(meta_project__ad_hoc_pcr=False)
             & models.Q(meta_project__pcr_due=False)
         )
         return result
@@ -1119,11 +1124,6 @@ class Project(models.Model):
         related_name="projects",
         help_text="Funding window",
     )
-    ad_hoc_pcr = models.BooleanField(
-        null=True,
-        blank=True,
-        help_text="Ad-hoc PCR",
-    )
     pcr_waived = models.BooleanField(
         null=True,
         blank=True,
@@ -1578,6 +1578,10 @@ class Project(models.Model):
                     ) + substance_phase_out_mt
 
         return data
+
+    @property
+    def ad_hoc_pcr(self):
+        return self.meta_project.ad_hoc_pcr if self.meta_project else None
 
     @property
     def consumption_phase_out_odp(self):

@@ -11,7 +11,9 @@ from core.api.tests.factories import (
     MetaProjectFactory,
     PCRFactory,
     PCRProjectFactory,
+    ProjectStatusFactory,
 )
+from core.models import MetaProject
 import pytest
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-statements
@@ -43,10 +45,16 @@ def setup_pcr_meta_project_list(
     country_ro.parent = country_europe
     country_ro.save()
     meta_project1 = MetaProjectFactory(
-        country=new_country, umbrella_code="xyz1", cluster=project_cluster_kip
+        country=new_country,
+        umbrella_code="xyz1",
+        cluster=project_cluster_kip,
+        ad_hoc_pcr=True,
     )
     meta_project2 = MetaProjectFactory(
-        country=country_ro, umbrella_code="xyz2", cluster=project_cluster_kpp
+        country=country_ro,
+        umbrella_code="xyz2",
+        cluster=project_cluster_kpp,
+        ad_hoc_pcr=False,
     )
     pcr2 = PCRFactory(meta_project=meta_project2, submission_date="2026-08-08")
 
@@ -60,7 +68,6 @@ def setup_pcr_meta_project_list(
         project_type=project_type,
         country=new_country,
         meta_project=meta_project1,
-        ad_hoc_pcr=True,
         submission_status=project_approved_status,
         metacode=meta_project1.umbrella_code,
         cluster=project_cluster_kip,
@@ -78,7 +85,6 @@ def setup_pcr_meta_project_list(
         country=country_ro,
         project_type=new_project_type,
         meta_project=meta_project2,
-        ad_hoc_pcr=False,
         submission_status=project_approved_status,
         metacode=meta_project2.umbrella_code,
         cluster=project_cluster_kpp,
@@ -97,7 +103,6 @@ def setup_pcr_meta_project_list(
         sector=sector_other,
         project_type=new_project_type,
         meta_project=meta_project2,
-        ad_hoc_pcr=False,
         submission_status=project_draft_status,
         metacode=meta_project2.umbrella_code,
         cluster=project_cluster_kpp,
@@ -201,6 +206,91 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert project_data["odp_phase_out_actual"] == 8.0
         assert project_data["hfc_phase_down_co2_approved"] == "3456.000000000000000"
         assert project_data["hfc_phase_down_co2_actual"] == 3500.0
+
+    def test_date_of_completion_and_total_funding(
+        self, admin_user, project_approved_status
+    ):
+        meta_project = MetaProjectFactory(
+            umbrella_code="PCR-DATE", type=MetaProject.MetaProjectType.MYA
+        )
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=AnnualProgressReportFactory(year=2025, endorsed=True)
+        )
+        for completion_date, total_fund, support_cost_psc in [
+            (date(2025, 6, 30), 1000.0, 70.0),
+            (date(2025, 9, 15), 500.0, None),
+            (None, None, 35.0),
+        ]:
+            project = ProjectFactory.create(
+                meta_project=meta_project,
+                metacode=meta_project.umbrella_code,
+                submission_status=project_approved_status,
+                total_fund=total_fund,
+                support_cost_psc=support_cost_psc,
+            )
+            if completion_date:
+                AnnualProjectReportFactory(
+                    project=project,
+                    report=agency_report,
+                    date_actual_completion=completion_date,
+                )
+
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.get(
+            reverse("pcr-metaprojects-detail", args=[meta_project.id])
+        )
+
+        assert response.status_code == 200
+        assert response.data["date_of_completion"] == "2025-09-15"
+        assert response.data["total_funding"] == 1605.0
+
+    def test_status(
+        self,
+        admin_user,
+        project_approved_status,
+        project_ongoing_status,
+        project_completed_status,
+    ):
+        transferred_status = ProjectStatusFactory.create(name="Transferred", code="TRF")
+        ind_meta_project = MetaProjectFactory(
+            umbrella_code="PCR-IND", type=MetaProject.MetaProjectType.IND
+        )
+        ProjectFactory.create(
+            meta_project=ind_meta_project,
+            metacode=ind_meta_project.umbrella_code,
+            submission_status=project_approved_status,
+            status=project_ongoing_status,
+        )
+        mya_meta_project = MetaProjectFactory(
+            umbrella_code="PCR-MYA", type=MetaProject.MetaProjectType.MYA
+        )
+        for status in [project_completed_status, transferred_status]:
+            ProjectFactory.create(
+                meta_project=mya_meta_project,
+                metacode=mya_meta_project.umbrella_code,
+                submission_status=project_approved_status,
+                status=status,
+            )
+
+        self.client.force_authenticate(user=admin_user)
+
+        def get_status(meta_project):
+            response = self.client.get(
+                reverse("pcr-metaprojects-detail", args=[meta_project.id])
+            )
+            assert response.status_code == 200
+            return response.data["status"]
+
+        assert get_status(ind_meta_project) == "Ongoing"
+        assert get_status(mya_meta_project) == "Completed"
+
+        ProjectFactory.create(
+            meta_project=mya_meta_project,
+            metacode=mya_meta_project.umbrella_code,
+            submission_status=project_approved_status,
+            status=project_ongoing_status,
+        )
+        assert get_status(mya_meta_project) == "Not completed"
 
     def test_filters(
         self,
@@ -365,16 +455,16 @@ class TestPCRMetaprojectsViewSet(BaseTest):
 
     def test_set_pcr_or_ad_hoc(self):
         url = reverse("pcr-metaprojects-set-pcr-or-ad-hoc")
-        meta_project = MetaProjectFactory(umbrella_code="PCR-CALC", pcr_due=False)
+        meta_project = MetaProjectFactory(
+            umbrella_code="PCR-CALC", pcr_due=False, ad_hoc_pcr=False
+        )
         project1 = ProjectFactory.create(
             meta_project=meta_project,
             metacode=meta_project.umbrella_code,
-            ad_hoc_pcr=False,
         )
         project2 = ProjectFactory.create(
             meta_project=meta_project,
             metacode=meta_project.umbrella_code,
-            ad_hoc_pcr=False,
         )
         data = {
             "meta_projects": [
@@ -388,10 +478,9 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         project2.refresh_from_db()
         assert project1.ad_hoc_pcr is True
         assert project2.ad_hoc_pcr is True
-        project1.ad_hoc_pcr = False
-        project1.save()
-        project2.ad_hoc_pcr = False
-        project2.save()
+        meta_project.refresh_from_db()
+        meta_project.ad_hoc_pcr = False
+        meta_project.save()
 
         data = {
             "meta_projects": [

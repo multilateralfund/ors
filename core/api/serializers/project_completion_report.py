@@ -1014,6 +1014,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
             "agency_id",
             "cluster",
             "cluster_id",
+            "category",
             "code",
             "country",
             "country_id",
@@ -1077,17 +1078,24 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
 
     projects = serializers.SerializerMethodField()
     pcr_id = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    date_of_completion = serializers.SerializerMethodField()
+    total_funding = serializers.SerializerMethodField()
     country = serializers.SlugRelatedField("name", read_only=True)
     country_id = serializers.IntegerField(read_only=True, source="country.id")
     lead_agency = serializers.SlugRelatedField("name", read_only=True)
     lead_agency_id = serializers.IntegerField(read_only=True, source="lead_agency.id")
 
+    MYA_COMPLETED_STATUSES = ["Completed", "Transferred"]
+
     class Meta:
         model = MetaProject
         fields = [
             "id",
+            "ad_hoc_pcr",
             "country",
             "country_id",
+            "date_of_completion",
             "lead_agency",
             "lead_agency_id",
             "type",
@@ -1095,14 +1103,61 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "pcr_id",
             "pcr_due",
             "pcr_due_date",
+            "status",
+            "total_funding",
             "umbrella_code",
         ]
 
+    def _get_projects(self, obj):
+        # Use filtered_projects if available, otherwise fallback to all projects
+        return getattr(obj, "filtered_projects", obj.projects.all())
+
+    def _get_projects_data(self, obj):
+        # Serialized once per meta project, as it is reused by other fields
+        if not hasattr(obj, "pcr_projects_data"):
+            obj.pcr_projects_data = ProjectListForPCRSerializer(
+                self._get_projects(obj), many=True
+            ).data
+        return obj.pcr_projects_data
+
     @extend_schema_field(ProjectListForPCRSerializer(many=True))
     def get_projects(self, obj):
-        # Use filtered_projects if available, otherwise fallback to all projects
-        projects = getattr(obj, "filtered_projects", obj.projects.all())
-        return ProjectListForPCRSerializer(projects, many=True).data
+        return self._get_projects_data(obj)
+
+    @extend_schema_field(serializers.DateField(allow_null=True))
+    def get_date_of_completion(self, obj):
+        # ISO formatted dates, so the greatest string is the latest date
+        return max(
+            (
+                project["actual_date_of_completion"]
+                for project in self._get_projects_data(obj)
+                if project["actual_date_of_completion"]
+            ),
+            default=None,
+        )
+
+    @extend_schema_field(serializers.FloatField())
+    def get_total_funding(self, obj):
+        return sum(
+            (project.total_fund or 0) + (project.support_cost_psc or 0)
+            for project in self._get_projects(obj)
+        )
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_status(self, obj):
+        projects = list(self._get_projects(obj))
+        if obj.type == MetaProject.MetaProjectType.IND:
+            # an individual meta project has a single project
+            project = projects[0] if projects else None
+            return project.status.name if project and project.status else None
+        if obj.type == MetaProject.MetaProjectType.MYA:
+            if all(
+                project.status and project.status.name in self.MYA_COMPLETED_STATUSES
+                for project in projects
+            ):
+                return "Completed"
+            return "Not completed"
+        return None
 
     def get_pcr_id(self, obj):
         pcr = PCR.objects.filter(meta_project=obj).first()

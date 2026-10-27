@@ -31,6 +31,7 @@ from core.api.serializers.project_v2 import (
     ProjectV2EditActualFieldsSerializer,
     ProjectV2EditApprovalFieldsSerializer,
     SerializeProjectFieldHistory,
+    set_meta_project_ad_hoc_pcr,
     HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS,
     HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
 )
@@ -533,6 +534,10 @@ class ProjectV2ViewSet(
         project, warnings = serializer.save(request=request)
         project.meta_project = get_meta_project(project)
         project.save()
+        if "ad_hoc_pcr" in serializer.validated_data:
+            set_meta_project_ad_hoc_pcr(
+                project, serializer.validated_data["ad_hoc_pcr"]
+            )
         response_data = ProjectDetailsV2Serializer(project).data
         headers = self.get_success_headers(response_data)
         response_data["warnings"] = warnings

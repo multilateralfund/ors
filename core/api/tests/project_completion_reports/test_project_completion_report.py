@@ -111,6 +111,9 @@ def _pcr_listing_data():
         title="Unique Alpha Completion Title",
         metacode="PCR-META-001",
         category=Project.Category.IND,
+        meta_project=MetaProjectFactory.create(
+            type=Project.Category.IND, ad_hoc_pcr=False
+        ),
         country=country_a,
         agency=coop_agency_a,
         lead_agency=lead_agency_a,
@@ -118,7 +121,6 @@ def _pcr_listing_data():
         cluster=cluster_a,
         project_type=type_a,
         sector=sector_a,
-        ad_hoc_pcr=False,
     )
     project_a.subsectors.set([subsector_a])
 
@@ -126,7 +128,9 @@ def _pcr_listing_data():
         title="Unique Beta Completion Title",
         metacode="PCR-META-002",
         category=Project.Category.MYA,
-        ad_hoc_pcr=False,
+        meta_project=MetaProjectFactory.create(
+            type=Project.Category.MYA, ad_hoc_pcr=False
+        ),
         country=country_b,
         agency=coop_agency_b,
         lead_agency=lead_agency_b,

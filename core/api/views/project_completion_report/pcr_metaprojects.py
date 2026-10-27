@@ -57,7 +57,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         projects_queryset = self.filter_project_permissions_queryset(
             Project.objects.filter(submission_status__name="Approved").exclude(
-                category="IND", status__name="Transferred"
+                category="Individual", status__name="Transferred"
             )
         )
         project_filter = ProjectFilter(self.request.GET, queryset=projects_queryset)
@@ -150,9 +150,8 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
                 )
                 meta_project.save()
             if serializer.validated_data.get("ad_hoc_pcr", None) is not None:
-                for project in meta_project.projects.all():
-                    project.ad_hoc_pcr = serializer.validated_data.get(
-                        "ad_hoc_pcr", False
-                    )
-                    project.save()
+                meta_project.ad_hoc_pcr = serializer.validated_data.get(
+                    "ad_hoc_pcr", False
+                )
+                meta_project.save()
         return Response({}, status=status.HTTP_200_OK)
