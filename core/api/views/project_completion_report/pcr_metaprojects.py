@@ -1,18 +1,67 @@
-from drf_spectacular.utils import extend_schema
-from django.db.models import Count, Prefetch, Q
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from django.db.models import Count, Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.decorators import action
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
-from core.api.filters.project import ProjectFilter, ProjectFilterBackend
+from core.api.filters.project import (
+    ProjectFilter,
+    ProjectFilterBackend,
+    project_has_cooperating_agency_q,
+)
 from core.api.permissions import HasPCRViewAccess
 from core.api.serializers.project_completion_report import (
     PCRMetaProjectSerializer,
     PCRProjectSetAdHocOrPcrDueSerializer,
 )
+from core.api.views.utils import get_available_values, get_country_regions
 from core.models.annual_project_report import AnnualProjectReport
+from core.models.country import Country
 from core.models.project import MetaProject, Project
+
+
+def get_regions(queryset: QuerySet[Project]):
+    countries = Country.objects.filter(
+        id__in=queryset.values_list("country_id", flat=True)
+    ).distinct()
+    regions = get_country_regions()
+    result = {}
+    for country in countries:
+        region = regions.get(country.id, {"id": country.id, "name": country.name})
+        result[region["id"]] = region
+    return sorted(result.values(), key=lambda region: region["name"])
+
+
+def get_cooperating_agencies(queryset: QuerySet[Project]):
+    return get_available_values(
+        queryset.filter(project_has_cooperating_agency_q()), "agency"
+    )
+
+
+def get_subsectors(queryset: QuerySet[Project]):
+    values = (
+        queryset.order_by("subsectors__name")
+        .values_list("subsectors__id", "subsectors__name")
+        .distinct()
+    )
+    return [{"id": pk, "name": name} for pk, name in values if pk is not None]
+
+
+def get_categories(queryset: QuerySet[Project]):
+    category_labels = dict(Project.Category.choices)
+    values = (
+        queryset.exclude(category__isnull=True)
+        .exclude(category="")
+        .order_by("category")
+        .values_list("category", flat=True)
+        .distinct()
+    )
+    return [
+        {"id": category, "name": category_labels.get(category, category)}
+        for category in values
+    ]
 
 
 class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
@@ -30,8 +79,8 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PCRMetaProjectSerializer
     search_fields = [
         "title",
-        "meta_project__pcrs__project_components__delay_causes__delay__name",
-        "meta_project__pcrs__project_components__learned_lessons__lesson__name",
+        "meta_project__pcrs__delay_causes__root_causes_of_delay__name",
+        "meta_project__pcrs__learned_lessons__lessons__name",
     ]
 
     def filter_project_permissions_queryset(self, queryset):
@@ -54,18 +103,37 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             ).distinct()
         return queryset.none()
 
-    def get_queryset(self):
+    def _get_filtered_projects_queryset(self, params):
         projects_queryset = self.filter_project_permissions_queryset(
-            Project.objects.filter(submission_status__name="Approved")
+            Project.objects.filter(submission_status__name="Approved").exclude(
+                category="Individual", status__name="Transferred"
+            )
         )
-        project_filter = ProjectFilter(self.request.GET, queryset=projects_queryset)
+        project_filter = ProjectFilter(params, queryset=projects_queryset)
         filtered_projects_qs = project_filter.qs
 
         search_filter = filters.SearchFilter()
         # SearchFilter expects a view instance, so pass self
-        filtered_projects_qs = search_filter.filter_queryset(
-            self.request, filtered_projects_qs, self
+        return search_filter.filter_queryset(self.request, filtered_projects_qs, self)
+
+    def _get_meta_projects_queryset(self, filtered_projects_qs):
+        return (
+            MetaProject.objects.annotate(
+                pcr_waived_count=Count(
+                    "projects",
+                    filter=Q(projects__pcr_waived=True),
+                )
+            )
+            .filter(
+                is_draft=False,
+                projects__in=filtered_projects_qs,
+                pcr_waived_count__lt=1,
+            )
+            .distinct()
         )
+
+    def get_queryset(self):
+        filtered_projects_qs = self._get_filtered_projects_queryset(self.request.GET)
 
         prefetch = Prefetch(
             "projects",
@@ -93,18 +161,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         queryset = (
-            MetaProject.objects.annotate(
-                pcr_waived_count=Count(
-                    "projects",
-                    filter=Q(projects__pcr_waived=True),
-                )
-            )
-            .filter(
-                is_draft=False,
-                projects__in=filtered_projects_qs,
-                pcr_waived_count__lt=1,
-            )
-            .distinct()
+            self._get_meta_projects_queryset(filtered_projects_qs)
             .select_related("lead_agency")
             .prefetch_related(prefetch)
         )
@@ -122,6 +179,51 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @extend_schema(
+        # not detected as a list view, so the listing filters are not added otherwise
+        filters=True,
+        parameters=[
+            OpenApiParameter(
+                name="pcr_due_union",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "When true, the pcr_due filter is ignored and the values are "
+                    "obtained from the union of the PCR due and not PCR due listings."
+                ),
+                type=OpenApiTypes.BOOL,
+            ),
+        ],
+    )
+    @action(methods=["GET"], detail=False)
+    def list_filters(self, request, *args, **kwargs):
+        """
+        List available filter values for the PCR metaprojects listing. The same
+        filters as in the main list endpoint should be used here as well for the
+        same results.
+        """
+        params = request.query_params.copy()
+        if params.get("pcr_due_union", "false").lower() == "true":
+            # the same filter is used by the PCR due and not PCR due listings
+            params["pcr_due"] = "Yes,No"
+        filtered_projects_qs = self._get_filtered_projects_queryset(params)
+        # only the projects shown in the listing
+        queryset = filtered_projects_qs.filter(
+            meta_project__in=self._get_meta_projects_queryset(filtered_projects_qs)
+        )
+        result = {
+            "region": get_regions(queryset),
+            "country": get_available_values(queryset, "country"),
+            "lead_agency": get_available_values(queryset, "lead_agency"),
+            "cooperating_agency": get_cooperating_agencies(queryset),
+            "cluster": get_available_values(queryset, "cluster"),
+            "project_type": get_available_values(queryset, "project_type"),
+            "sector": get_available_values(queryset, "sector"),
+            "subsector": get_subsectors(queryset),
+            "category": get_categories(queryset),
+            "status": get_available_values(queryset, "status"),
+        }
+        return Response(result)
 
     @extend_schema(
         description="""
@@ -148,9 +250,8 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
                 )
                 meta_project.save()
             if serializer.validated_data.get("ad_hoc_pcr", None) is not None:
-                for project in meta_project.projects.all():
-                    project.ad_hoc_pcr = serializer.validated_data.get(
-                        "ad_hoc_pcr", False
-                    )
-                    project.save()
+                meta_project.ad_hoc_pcr = serializer.validated_data.get(
+                    "ad_hoc_pcr", False
+                )
+                meta_project.save()
         return Response({}, status=status.HTTP_200_OK)

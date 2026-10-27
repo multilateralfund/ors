@@ -33,7 +33,7 @@ import {
 
 const PCRResultsAssessment = () => {
   const sectionIdentifier = 'results_assessment'
-  const activityField = 'activities'
+  const activityField = 'overall_assessment_highlights'
 
   const { PCRData, setPCRData, errors, setErrors } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)

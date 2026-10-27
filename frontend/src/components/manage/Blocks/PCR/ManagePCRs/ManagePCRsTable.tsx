@@ -1,17 +1,20 @@
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import {
   getPaginationPageSize,
   getPaginationSelectorOpts,
 } from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import getColumnDefsPcrDue from './schemaPcrDue'
 import getColumnDefs from './schema'
 import { ManagePCRsTableProps } from '../interfaces'
 
 const ManagePCRsTable = ({
+  type,
   pcrProjects,
   projectIds,
   setProjectIds,
+  unmarkProjects,
   filters,
 }: ManagePCRsTableProps) => {
   const gridRef = useRef(null)
@@ -21,43 +24,20 @@ const ManagePCRsTable = ({
   const paginationPageSize = getPaginationPageSize(count, 50)
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
 
-  const pcrProjectsData = useMemo(
-    () =>
-      results.map((metaproject) => {
-        const projects = [...metaproject.projects]
-
-        return {
-          ...metaproject,
-          projects,
-          isMetaproject: true,
-          isExpanded: false,
-          metaprojectId: metaproject.id,
-        }
-      }),
-    [results],
-  )
-
-  const { defaultColDef, columnDefs } = getColumnDefs(
-    pcrProjectsData,
-    projectIds,
-    setProjectIds,
-  )
+  const { defaultColDef, columnDefs } =
+    type === 'due'
+      ? getColumnDefsPcrDue(unmarkProjects!)
+      : getColumnDefs(projectIds!, setProjectIds!)
 
   return (
     loaded && (
       <ViewTable
         gridRef={gridRef}
         key={JSON.stringify(filters)}
-        getRowId={(params) =>
-          `${params.data.isMetaproject ? 'metaproject' : 'project'}-${params.data.id}`
-        }
-        rowClassRules={{
-          'pcr-metaproject': (params) => params.data.isMetaproject,
-          'pcr-expanded-metaproject': (params) => params.data.isExpanded,
-        }}
+        getRowId={(params) => params.data.id}
         domLayout="normal"
         className="projects-table pcr-listing"
-        rowData={pcrProjectsData}
+        rowData={results}
         rowCount={count}
         rowBuffer={100}
         rowsVisible={90}

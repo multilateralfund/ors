@@ -16,6 +16,8 @@ import {
   sdgsField,
   supportingEvidencesField,
   evidencesField,
+  cdField,
+  llField,
 } from '@ors/components/manage/Blocks/PCR/constants'
 import {
   PCRData,
@@ -54,8 +56,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     overview: initialOverviewData,
     summary_of_key_data: [],
     results_assessment: [],
-    causes_of_delay: [],
-    lessons_learned: [],
+    delay_causes: [],
+    learned_lessons: [],
     gender_mainstreaming: [],
     sdgs_contribution: [],
     supporting_evidences: [],
@@ -91,46 +93,76 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const formatResultsAssessmentErrors = (errors: Record<string, any[]>) => {
     const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
       PCRData.results_assessment || [],
-      'activities',
+      'overall_assessment_highlights',
     )
 
     const agenciesErrors = map(resultsAssessmentData, (data, index) => ({
       agency_id: data.agency_id,
-      errors: errors?.activities?.[index] ?? {},
+      errors: errors?.overall_assessment_highlights?.[index] ?? {},
     }))
 
-    return { activities: groupBy(agenciesErrors, 'agency_id') }
+    return {
+      overall_assessment_highlights: groupBy(agenciesErrors, 'agency_id'),
+    }
   }
 
-  const formatProjectComponentsErrors = (errors: Record<string, any[]>) => {
-    let crtErrorIndex = 0
+  // const formatProjectComponentsErrors = (errors: Record<string, any[]>) => {
+  //   let crtErrorIndex = 0
 
-    const formatAgencyErrors = (
-      data: (PCRCausesOfDelayData | PCRLessonsLearnedData)[],
-    ) =>
-      groupBy(
-        map(
-          filter(data || [], (entry) => entry.project_components.length > 0),
-          ({ agency_id, project_components }) => ({
-            agency_id,
-            errors: map(project_components, () => {
-              const pcErrors = errors?.project_components?.[crtErrorIndex] ?? {}
-              crtErrorIndex++
+  //   const formatAgencyErrors = (
+  //     data: (PCRCausesOfDelayData | PCRLessonsLearnedData)[],
+  //   ) =>
+  //     groupBy(
+  //       map(
+  //         filter(data || [], (entry) => entry.project_components.length > 0),
+  //         ({ agency_id, project_components }) => ({
+  //           agency_id,
+  //           errors: map(project_components, () => {
+  //             const pcErrors = errors?.project_components?.[crtErrorIndex] ?? {}
+  //             crtErrorIndex++
 
-              return pcErrors
-            }),
-          }),
-        ),
-        'agency_id',
-      )
+  //             return pcErrors
+  //           }),
+  //         }),
+  //       ),
+  //       'agency_id',
+  //     )
 
-    const causesOfDelayErrors = formatAgencyErrors(PCRData.causes_of_delay)
-    const lessonsLearnedErrors = formatAgencyErrors(PCRData.lessons_learned)
+  //   const causesOfDelayErrors = formatAgencyErrors(PCRData.delay_causes)
+  //   const lessonsLearnedErrors = formatAgencyErrors(PCRData.learned_lessons)
 
-    return {
-      causes_of_delay: { project_components: causesOfDelayErrors },
-      lessons_learned: { project_components: lessonsLearnedErrors },
-    }
+  //   return {
+  //     delay_causes: { project_components: causesOfDelayErrors },
+  //     learned_lessons: { project_components: lessonsLearnedErrors },
+  //   }
+  // }
+
+  const formatCausesOfDelayErrors = (errors: Record<string, any[]>) => {
+    const dcData = formatAgencyData<PCRCausesOfDelayData>(
+      PCRData.delay_causes || [],
+      cdField,
+    )
+
+    const agenciesErrors = map(dcData, (data, index) => ({
+      agency_id: data.agency_id,
+      errors: errors?.[cdField]?.[index] ?? {},
+    }))
+
+    return { [cdField]: groupBy(agenciesErrors, 'agency_id') }
+  }
+
+  const formatLessonsLearnedErrors = (errors: Record<string, any[]>) => {
+    const llData = formatAgencyData<PCRLessonsLearnedData>(
+      PCRData.learned_lessons || [],
+      llField,
+    )
+
+    const agenciesErrors = map(llData, (data, index) => ({
+      agency_id: data.agency_id,
+      errors: errors?.[llField]?.[index] ?? {},
+    }))
+
+    return { [llField]: groupBy(agenciesErrors, 'agency_id') }
   }
 
   const formatGenderMainstreamingErrors = (errors: Record<string, any[]>) => {
@@ -202,8 +234,14 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     const resultsAssessmentErrors = formatResultsAssessmentErrors(
       pick(errors, 'activities'),
     )
-    const projectComponentsErrors = formatProjectComponentsErrors(
-      pick(errors, 'project_components'),
+    // const projectComponentsErrors = formatProjectComponentsErrors(
+    //   pick(errors, 'project_components'),
+    // )
+    const causesOfDelayErrors = formatCausesOfDelayErrors(
+      pick(errors, 'delay_causes'),
+    )
+    const lessonsLearnedErrors = formatLessonsLearnedErrors(
+      pick(errors, 'learned_lessons'),
     )
     const genderMainstreamingErrors = formatGenderMainstreamingErrors(
       pick(errors, ppField),
@@ -217,8 +255,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       overview: overviewErrors,
       summary_of_key_data: summaryOfKeyDataErrors,
       results_assessment: resultsAssessmentErrors,
-      causes_of_delay: projectComponentsErrors.causes_of_delay,
-      lessons_learned: projectComponentsErrors.lessons_learned,
+      delay_causes: causesOfDelayErrors,
+      learned_lessons: lessonsLearnedErrors,
       gender_mainstreaming: genderMainstreamingErrors,
       sdgs_contribution: sdgsErrors,
       supporting_evidences: evidencesErrors,
@@ -347,19 +385,19 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     [substances],
   )
 
-  const { data: projectComponentOptions } = useApi({
+  const { data: delayClusterOptions } = useApi({
     options: { withStoreCache: true },
-    path: 'api/project-completion-report/project-component-option/',
+    path: 'api/project-completion-reports/delay-cluster-options/',
   })
 
-  const { data: causeOfDelayOptions } = useApi({
+  const { data: rootCauseOfDelayOptions } = useApi({
     options: { withStoreCache: true },
-    path: 'api/project-completion-report/delay-category/',
+    path: 'api/project-completion-reports/root-causes-of-delay-options/',
   })
 
   const { data: lessonLearnedOptions } = useApi({
     options: { withStoreCache: true },
-    path: 'api/project-completion-report/learned-lesson-category/',
+    path: 'api/project-completion-reports/learned-lesson-categories/',
   })
 
   const { data: sdgsOptions } = useApi({
@@ -385,8 +423,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       entityOptions,
       completionReportDoneByOptions,
       substanceOptions,
-      projectComponentOptions,
-      causeOfDelayOptions,
+      delayClusterOptions,
+      rootCauseOfDelayOptions,
       lessonLearnedOptions,
       sdgsOptions,
       fileSectionOptions,
@@ -403,8 +441,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       entityOptions,
       completionReportDoneByOptions,
       substanceOptions,
-      projectComponentOptions,
-      causeOfDelayOptions,
+      delayClusterOptions,
+      rootCauseOfDelayOptions,
       lessonLearnedOptions,
       sdgsOptions,
       fileSectionOptions,

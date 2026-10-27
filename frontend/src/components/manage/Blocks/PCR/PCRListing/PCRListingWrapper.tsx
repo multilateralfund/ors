@@ -13,12 +13,8 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
 import PCRTable from './PCRTable'
+import { initialFilters, categoryOpts, booleanFieldsOpts } from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
-import {
-  initialFilters,
-  categoryOpts,
-  filtersBooleanFieldsOpts,
-} from '../constants'
 import { useStore } from '@ors/store'
 
 import { filter } from 'lodash'
@@ -35,7 +31,7 @@ const PCRListingWrapper = () => {
 
   const updatedInitialFilters = {
     ...initialFilters,
-    pcr_submitted: [filtersBooleanFieldsOpts[1]],
+    pcr_submitted: [booleanFieldsOpts[1]],
   }
   const updatedInitialParams = { ...initialFilters, pcr_submitted: ['No'] }
 
@@ -56,8 +52,8 @@ const PCRListingWrapper = () => {
     sector: sectors,
     category: categoryOpts,
     status: statuses,
-    pcr_due: filtersBooleanFieldsOpts,
-    ad_hoc_pcr: filtersBooleanFieldsOpts,
+    pcr_due: booleanFieldsOpts,
+    ad_hoc_pcr: booleanFieldsOpts,
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {
@@ -93,9 +89,7 @@ const PCRListingWrapper = () => {
     }
 
     const pcrSubmitted =
-      value === 'table'
-        ? filtersBooleanFieldsOpts[0]
-        : filtersBooleanFieldsOpts[1]
+      value === 'table' ? booleanFieldsOpts[0] : booleanFieldsOpts[1]
 
     handleFilterChange({ pcr_submitted: [pcrSubmitted] })
     handleParamsChange({ pcr_submitted: pcrSubmitted.id, offset: 0 })
@@ -113,19 +107,22 @@ const PCRListingWrapper = () => {
             <RedirectBackButton />
             <PageHeading>Project Completion Reports</PageHeading>
           </div>
-          <div className="ml-auto mt-auto flex flex-wrap justify-end gap-2.5">
-            <CreateButton
-              title="Raise a PCR"
-              href={`/pcr/${projectId}/create`}
-              isDisabled={!projectId || !!pcrId}
-              className="!mb-0"
-            />
-            <CreateButton
-              title="Edit PCR"
-              href={`/pcr/${projectId}/${pcrId}/edit`}
-              isDisabled={!projectId || !pcrId}
-              className="!mb-0"
-            />
+          <div className="ml-auto mt-auto">
+            {view === 'list' ? (
+              <CreateButton
+                title="Raise a PCR"
+                href={`/pcr/${projectId}/create`}
+                isDisabled={!projectId || !!pcrId}
+                className="!mb-0"
+              />
+            ) : (
+              <CreateButton
+                title="Edit PCR"
+                href={`/pcr/${projectId}/${pcrId}/edit`}
+                isDisabled={!projectId || !pcrId}
+                className="!mb-0"
+              />
+            )}
           </div>
         </div>
       </HeaderTitle>

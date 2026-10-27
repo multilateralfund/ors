@@ -16,7 +16,7 @@ import {
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import useApi from '@ors/hooks/useApi'
 
-import { filter, groupBy, keys, map, pick, uniq } from 'lodash'
+import { groupBy, keyBy, keys, map, pick, uniq } from 'lodash'
 import { Redirect, useParams } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
@@ -75,29 +75,45 @@ const PCREditWrapper = () => {
       return
     }
 
-    const groupedActivities = groupDataByAgency(pcrData.activities)
+    const groupedActivities = groupDataByAgency(
+      pcrData.overall_assessment_highlights,
+    )
     const resultsAssessment = map(agencyIds, (agency_id) => ({
       agency_id,
-      activities: groupedActivities[agency_id] ?? [],
+      overall_assessment_highlights: groupedActivities[agency_id] ?? [],
     }))
 
-    const groupedProjectComponents = groupDataByAgency(
-      pcrData.project_components,
-    )
+    const groupedCausesOfDelay = groupDataByAgency(pcrData.delay_causes)
 
     const causesOfDelay = map(agencyIds, (agency_id) => ({
       agency_id,
-      project_components: filter(
-        groupedProjectComponents[agency_id],
-        (pc) => pc.delay_causes.length > 0,
+      causes_of_delay: map(
+        groupedCausesOfDelay[agency_id],
+        ({ delay_cluster_id, root_causes_of_delay }) => ({
+          delay_cluster_id,
+          root_causes_of_delay: map(
+            root_causes_of_delay,
+            ({
+              root_cause_id,
+              description_roots_causes_of_delay,
+              action_taken,
+            }) => ({
+              root_cause_id,
+              description_roots_causes_of_delay,
+              action_taken,
+            }),
+          ),
+        }),
       ),
     }))
 
+    const lessonsLearnedByAgency = keyBy(pcrData.learned_lessons, 'agency_id')
+
     const lessonsLearned = map(agencyIds, (agency_id) => ({
       agency_id,
-      project_components: filter(
-        groupedProjectComponents[agency_id],
-        (pc) => pc.learned_lessons.length > 0,
+      lessons: map(
+        lessonsLearnedByAgency[agency_id]?.lessons,
+        ({ lesson_id, description }) => ({ lesson_id, description }),
       ),
     }))
 
@@ -107,7 +123,14 @@ const PCREditWrapper = () => {
 
     const genderMainstreamings = map(agencyIds, (agency_id) => ({
       agency_id,
-      gender_mainstreamings: groupedGenderMainstreamings[agency_id] ?? [],
+      gender_mainstreamings: map(
+        groupedGenderMainstreamings[agency_id],
+        ({ project_preparation, prefilled, qualitative_description }) => ({
+          project_preparation,
+          prefilled: prefilled ? 'Yes' : 'No',
+          qualitative_description,
+        }),
+      ),
     }))
 
     const groupedSdgsContribution = groupDataByAgency(
@@ -148,8 +171,8 @@ const PCREditWrapper = () => {
         equipments: ensureRows(pcrProject.equipments, emptyEquipment),
       })),
       results_assessment: resultsAssessment,
-      causes_of_delay: causesOfDelay,
-      lessons_learned: lessonsLearned,
+      delay_causes: causesOfDelay,
+      learned_lessons: lessonsLearned,
       gender_mainstreaming: genderMainstreamings,
       sdgs_contribution: sdgsContribution,
       supporting_evidences: supportingEvidences,

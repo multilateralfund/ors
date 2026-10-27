@@ -140,18 +140,18 @@ from core.api.views.projects_v2 import (
 from core.api.views.project_completion_report.metadata import (
     PCRRatingView,
     PCRCompletedByView,
-    PCRDelayCategoryView,
+    PCRDelayClusterView,
     PCREntityView,
     PCRGoalView,
     PCRLearnedLessonCategoryView,
-    PCRProjectComponentOptionView,
+    PCRRootCausesOfDelayView,
     PCRSupportingEvidenceSectionView,
 )
 from core.api.views.project_completion_report.pcr import PCRProjectViewSet
 from core.api.views.project_completion_report.pcr import (
-    PCRDelayCategoryListView,
+    PCRDelayClusterListView,
     PCRLearnedLessonCategoryListView,
-    PCRProjectComponentOptionListView,
+    PCRRootCausesOfDelayListView,
 )
 from core.api.views.project_completion_report.pcr_metaprojects import (
     PCRMetaprojectsViewSet,
@@ -328,14 +328,14 @@ urlpatterns = [
         name="project-settings",
     ),
     path(
-        "project-completion-reports/project-component-options/",
-        PCRProjectComponentOptionListView.as_view(),
-        name="pcr-project-component-option-list",
+        "project-completion-reports/delay-cluster-options/",
+        PCRDelayClusterListView.as_view(),
+        name="pcr-delay-cluster-options-list",
     ),
     path(
-        "project-completion-reports/delay-categories/",
-        PCRDelayCategoryListView.as_view(),
-        name="pcr-delay-category-list",
+        "project-completion-reports/root-causes-of-delay-options/",
+        PCRRootCausesOfDelayListView.as_view(),
+        name="pcr-root-causes-of-delay-options-list",
     ),
     path(
         "project-completion-reports/learned-lesson-categories/",
@@ -359,7 +359,7 @@ urlpatterns = [
     ),
     path(
         "project-completion-report/delay-category/",
-        PCRDelayCategoryView.as_view(),
+        PCRRootCausesOfDelayView.as_view(),
         name="project-completion-report-delay-category",
     ),
     path(
@@ -374,7 +374,7 @@ urlpatterns = [
     ),
     path(
         "project-completion-report/project-component-option/",
-        PCRProjectComponentOptionView.as_view(),
+        PCRDelayClusterView.as_view(),
         name="project-completion-report-project-component-option",
     ),
     path(

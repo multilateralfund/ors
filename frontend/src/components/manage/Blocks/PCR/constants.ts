@@ -76,9 +76,10 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   planned_output: 'Planned output(s)',
   actual_activity_output: 'Actual output(s)',
   additional_remarks: 'Additional remarks, if applicable',
-  project_component_option_id: 'Project component',
+  delay_cluster_id: 'Delay cluster',
   delay_id: 'Cause of delay',
   description: 'Description',
+  description_roots_causes_of_delay: 'Description',
   action_taken: 'Action taken',
   lesson_id: 'Lesson learned',
   project_preparation: 'Project cycle phase',
@@ -108,7 +109,7 @@ export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   alternative_technologies: 'Alternative technology',
   enterprises: 'Enterprise',
   equipments: 'Equipment',
-  activities: 'Activity',
+  overall_assessment_highlights: 'Activity',
   project_components: 'Project component',
   delay_causes: 'Cause of delay',
   learned_lessons: 'Lesson learned',
@@ -127,12 +128,11 @@ export const categoryOpts = [
 export const booleanFieldsOpts = [
   { id: 'Yes', name: 'Yes' },
   { id: 'No', name: 'No' },
-  { id: 'N/A', name: 'N/A' },
 ]
 
-export const filtersBooleanFieldsOpts = [
-  { id: 'Yes', name: 'Yes' },
-  { id: 'No', name: 'No' },
+export const extendedBooleanFieldsOpts = [
+  ...booleanFieldsOpts,
+  { id: 'N/A', name: 'N/A' },
 ]
 
 export const financialFiguresTypeOptions = [
@@ -184,9 +184,10 @@ export const defaultSummaryOfKeyDataErrors = {
 export const requiredMessage = 'This field is required.'
 
 export const summaryOfKeyDataField = 'pcr_projects'
-export const pcField = 'project_components'
-export const cdField = 'delay_causes'
-export const llField = 'learned_lessons'
+export const delayField = 'delay_causes'
+export const cdField = 'causes_of_delay'
+export const dcField = 'root_causes_of_delay'
+export const llField = 'lessons'
 export const ppField = 'gender_mainstreamings'
 export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
