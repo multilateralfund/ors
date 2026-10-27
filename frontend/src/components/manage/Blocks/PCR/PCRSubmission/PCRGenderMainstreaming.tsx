@@ -11,7 +11,7 @@ import {
   ppField,
   pcrFieldsMapping,
   projectPhaseOptions,
-  filtersBooleanFieldsOpts,
+  booleanFieldsOpts,
   borderedContainerClassname,
 } from '../constants'
 
@@ -181,7 +181,7 @@ const PCRGenderMainstreaming = () => {
                         <PCRSelectWidget
                           {...{ PCRData, setPCRData, sectionIdentifier }}
                           field="prefilled"
-                          options={filtersBooleanFieldsOpts}
+                          options={booleanFieldsOpts}
                           errors={agencyErrors}
                           indexes={[crtTab, ppIndex]}
                           subFields={['', ppField]}

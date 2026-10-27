@@ -17,7 +17,7 @@ import {
 import { getOtherOptionId } from '../utils'
 import {
   pcrFieldsMapping,
-  booleanFieldsOpts,
+  extendedBooleanFieldsOpts,
   borderedContainerClassname,
 } from '../constants'
 
@@ -116,7 +116,7 @@ const PCROverview = () => {
             <PCRSelectWidget
               {...{ PCRData, setPCRData, sectionIdentifier }}
               field="project_goal_achieved"
-              options={booleanFieldsOpts}
+              options={extendedBooleanFieldsOpts}
               errors={overviewErrors}
             />
             <div className="flex flex-col gap-3 lg:w-1/2">
