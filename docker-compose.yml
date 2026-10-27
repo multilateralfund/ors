@@ -49,6 +49,8 @@ services:
   rabbitmq:
     image: rabbitmq:alpine
     restart: always
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
   redis:
     image: redis:alpine
@@ -86,6 +88,8 @@ volumes:
   app_data:
     driver: local
   nextjs_data:
+    driver: local
+  rabbitmq_data:
     driver: local
   clam_db:
     driver: local
