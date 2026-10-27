@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useContext } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -14,7 +14,6 @@ import {
   FieldErrorIndicator,
   SubmitButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
-import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import ManagePCRsFiltersSelectedOpts from './ManagePCRsFiltersSelectedOpts'
 import ManagePCRsFilters from './ManagePCRsFilters'
 import ManagePCRsTable from './ManagePCRsTable'
@@ -26,6 +25,7 @@ import {
   borderedContainerClassname,
 } from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
+import { useGetPcrFilters } from '../hooks/useGetPcrFilters'
 import { api, formatApiUrl } from '@ors/helpers'
 
 import { CircularProgress, Modal, Typography, Box } from '@mui/material'
@@ -36,7 +36,6 @@ import dayjs from 'dayjs'
 
 const ManagePCRsWrapper = () => {
   const form = useRef<any>()
-  const { countries, agencies, clusters } = useContext(ProjectsDataContext)
 
   const updatedInitialFilters = {
     ...initialFilters,
@@ -69,16 +68,23 @@ const ManagePCRsWrapper = () => {
     refetch: refetchPcrDue,
   } = pcrDueProjects
 
+  const pcrFilters = useGetPcrFilters({
+    ...updatedInitialParams,
+    pcr_due_union: true,
+  })
+  const { data: filterOptions, setParams: setParamsFilters } = pcrFilters
+
   const actionText = {
     mark: 'mark as PCR due',
     unmark: 'remove PCR due status',
   }
 
   const fieldToOptionsMapping: Record<string, any[]> = {
-    country: countries,
-    lead_agency: agencies,
-    cluster: clusters,
-    category: categoryOpts,
+    region: filterOptions?.region ?? [],
+    country: filterOptions?.country ?? [],
+    lead_agency: filterOptions?.lead_agency ?? [],
+    cluster: filterOptions?.cluster ?? [],
+    category: filterOptions?.category ?? [],
     completed_only: booleanFieldsOpts,
   }
 
@@ -89,6 +95,7 @@ const ManagePCRsWrapper = () => {
   const handleParamsChange = (params: { [key: string]: any }) => {
     setParams(params)
     setParamsPcrDue(params)
+    setParamsFilters(params)
   }
 
   const filtersProps = {
