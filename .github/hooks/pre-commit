@@ -1,0 +1,30 @@
+#!/bin/sh
+# Runs the backend checks from CI (black, pylint, pytest) before each commit.
+# Enable once per clone with: git config core.hooksPath .github/hooks
+# Skip for a single commit with: git commit --no-verify
+
+CONTAINER="${PRE_COMMIT_CONTAINER:-mlf.app}"
+
+if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+    echo "pre-commit: container '$CONTAINER' is not running, start it with docker compose up." >&2
+    exit 1
+fi
+
+fail() {
+    echo "pre-commit: $1 failed, commit aborted." >&2
+    exit 1
+}
+
+# Only the files git knows about, as CI does, so local scripts are not checked
+on_python_files() {
+    git ls-files -z '*.py' | xargs -0 docker exec -w /app "$CONTAINER" "$@"
+}
+
+echo "pre-commit: black"
+on_python_files black --check || fail black
+
+echo "pre-commit: pylint"
+on_python_files pylint || fail pylint
+
+echo "pre-commit: pytest"
+docker exec -w /app "$CONTAINER" pytest -q -p no:warnings || fail pytest
