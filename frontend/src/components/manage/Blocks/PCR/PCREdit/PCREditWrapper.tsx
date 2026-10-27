@@ -75,10 +75,12 @@ const PCREditWrapper = () => {
       return
     }
 
-    const groupedActivities = groupDataByAgency(pcrData.activities)
+    const groupedActivities = groupDataByAgency(
+      pcrData.overall_assessment_highlights,
+    )
     const resultsAssessment = map(agencyIds, (agency_id) => ({
       agency_id,
-      activities: groupedActivities[agency_id] ?? [],
+      overall_assessment_highlights: groupedActivities[agency_id] ?? [],
     }))
 
     const groupedProjectComponents = groupDataByAgency(

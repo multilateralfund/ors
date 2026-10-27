@@ -15,7 +15,12 @@ import {
   NoDataReported,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
-import { pcField, cdField, borderedContainerClassname } from '../constants'
+import {
+  delayField,
+  cdField,
+  dcField,
+  borderedContainerClassname,
+} from '../constants'
 
 import { filter, find, map, omit } from 'lodash'
 import cx from 'classnames'
@@ -29,34 +34,32 @@ import {
 } from '@mui/material'
 
 const PCRCausesOfDelay = () => {
-  const sectionIdentifier = 'causes_of_delay'
-
   const { agencies } = useContext(ProjectsDataContext)
   const {
     PCRData,
     setPCRData,
-    projectComponentOptions,
-    causeOfDelayOptions,
+    delayClusterOptions,
+    rootCauseOfDelayOptions,
     errors,
     setErrors,
   } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const sectionData = PCRData[sectionIdentifier] || []
-  const pcData = sectionData[crtTab][pcField] || []
+  const sectionData = PCRData[delayField] || []
+  const dcData = sectionData[crtTab][cdField] || []
   const crtAgencyId = sectionData[crtTab].agency_id
   const crtAgencies = getSectionAgencies(agencies, sectionData)
 
-  const { causes_of_delay: causesOfDelayErrors } = errors
-  const pcErrors = causesOfDelayErrors[pcField]
+  const { delay_causes: delayCausesErrors } = errors
+  const dcErrors = delayCausesErrors[cdField]
 
-  const agencyErrors = map(pcErrors[crtAgencyId], 'errors')
+  const agencyErrors = map(dcErrors[crtAgencyId], 'errors')
   const formattedAgencyErrors = formatErrors(
-    { [pcField]: agencyErrors },
-    cdField,
+    { [cdField]: agencyErrors },
+    dcField,
   )
-  const delayCausesErrors = map(agencyErrors, (error) => map(error, cdField))
+  const causesOfDelayErrors = map(agencyErrors, (error) => map(error, dcField))
 
   const DataHeader = (
     <div className="mb-5 grid flex-1 grid-cols-2 gap-4">
@@ -67,142 +70,151 @@ const PCRCausesOfDelay = () => {
 
   const onAddDelayCluster = () => {
     setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
-      const initialProjectComponentData = {
-        project_component_option_id: null,
-        [cdField]: [],
+      const sectionData = prevData[delayField] || []
+      const initialDelayClusterData = {
+        delay_cluster_id: null,
+        [dcField]: [],
       }
 
       return {
         ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+        [delayField]: sectionData.map((data, dataIndex) =>
           dataIndex === crtTab
             ? {
                 ...data,
-                [pcField]: [...data[pcField], initialProjectComponentData],
+                [cdField]: [...(data[cdField] || []), initialDelayClusterData],
               }
             : data,
         ),
       }
-    }, pcField)
+    }, cdField)
   }
 
-  const onRemoveDelayCluster = (pcIndex: number) => {
+  const onRemoveDelayCluster = (dcIndex: number) => {
     setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
+      const sectionData = prevData[delayField] || []
 
       return {
         ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+        [delayField]: sectionData.map((data, dataIndex) =>
           dataIndex === crtTab
             ? {
                 ...data,
-                [pcField]: data[pcField].filter(
-                  (_, crtPcIndex) => crtPcIndex !== pcIndex,
+                [cdField]: filter(
+                  data[cdField],
+                  (_, crtDcIndex) => crtDcIndex !== dcIndex,
                 ),
               }
             : data,
         ),
       }
-    }, pcField)
+    }, cdField)
 
     setErrors((prevData: Record<string, any[]>) => {
       const errorIndex = getErrorIndex(
         sectionData,
-        pcField,
+        cdField,
         crtAgencyId,
-        pcIndex,
+        dcIndex,
       )
 
       return {
         ...prevData,
-        [pcField]: filter(
-          prevData[pcField],
+        [cdField]: filter(
+          prevData[cdField],
           (_, index) => index !== errorIndex,
         ),
       }
     })
   }
 
-  const onAddCauseOfDelay = (pcIndex: number, cdId: number) => {
+  const onAddCauseOfDelay = (dcIndex: number, cdId: number) => {
     setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
+      const sectionData = prevData[delayField] || []
       const initialCauseOfDelay = {
-        delay_id: cdId,
-        description: '',
+        root_cause_id: cdId,
+        description_roots_causes_of_delay: '',
         action_taken: '',
       }
 
       return {
         ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+        [delayField]: sectionData.map((data, dataIndex) =>
           dataIndex === crtTab
             ? {
                 ...data,
-                [pcField]: data[pcField].map((pc, crtPcIndex) =>
-                  crtPcIndex === pcIndex
+                [cdField]: data[cdField].map((cd, crtCdIndex) =>
+                  crtCdIndex === dcIndex
                     ? {
-                        ...pc,
-                        [cdField]: [...pc[cdField], initialCauseOfDelay],
+                        ...cd,
+                        [dcField]: [
+                          ...(cd[dcField] || []),
+                          initialCauseOfDelay,
+                        ],
                       }
-                    : pc,
+                    : cd,
                 ),
               }
             : data,
         ),
       }
-    }, cdField)
+    }, dcField)
   }
 
-  const onRemoveCauseOfDelay = (cdId: number, pcIndex: number) => {
+  const onRemoveCauseOfDelay = (cdId: number, dcIndex: number) => {
     setPCRData((prevData) => {
-      const sectionData = prevData[sectionIdentifier] || []
+      const sectionData = prevData[delayField] || []
 
       return {
         ...prevData,
-        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+        [delayField]: sectionData.map((data, dataIndex) =>
           dataIndex === crtTab
             ? {
                 ...data,
-                [pcField]: map(data[pcField], (pc, crtPcIndex) =>
-                  crtPcIndex === pcIndex
+                [cdField]: map(data[cdField], (dc, crtDcIndex) =>
+                  crtDcIndex === dcIndex
                     ? {
-                        ...pc,
-                        [cdField]: pc[cdField].filter(
-                          (cd) => cd.delay_id !== cdId,
+                        ...dc,
+                        [dcField]: filter(
+                          dc[dcField],
+                          (cd) => cd.root_cause_id !== cdId,
                         ),
                       }
-                    : pc,
+                    : dc,
                 ),
               }
             : data,
         ),
       }
-    }, cdField)
+    }, dcField)
+
+    const cdIndex = (
+      sectionData[crtTab]?.[cdField]?.[dcIndex]?.[dcField] || []
+    ).findIndex((cd) => cd.root_cause_id === cdId)
 
     setErrors((prevData: Record<string, any[]>) => {
       const errorIndex = getErrorIndex(
         sectionData,
-        pcField,
+        cdField,
         crtAgencyId,
-        pcIndex,
+        dcIndex,
       )
 
       return {
         ...prevData,
-        [pcField]: map(prevData[pcField], (component, index) => {
+        [cdField]: map(prevData[cdField], (component, index) => {
           if (index !== errorIndex) {
             return component
           }
 
           const updatedCausesOfDelay = filter(
-            component[cdField],
-            (delay) => delay.delay_id !== cdId,
+            component[dcField] as any[],
+            (_, crtCdIndex) => crtCdIndex !== cdIndex,
           )
 
           return updatedCausesOfDelay.length
-            ? { ...component, [cdField]: updatedCausesOfDelay }
-            : omit(component, [cdField])
+            ? { ...component, [dcField]: updatedCausesOfDelay }
+            : omit(component, [dcField])
         }),
       }
     })
@@ -232,7 +244,7 @@ const PCRCausesOfDelay = () => {
               aria-controls={agency.name}
               id={agency.name}
               label={
-                <TabLabel field={pcField} errors={pcErrors} {...{ agency }} />
+                <TabLabel field={cdField} errors={dcErrors} {...{ agency }} />
               }
             />
           ))}
@@ -244,8 +256,8 @@ const PCRCausesOfDelay = () => {
           <ErrorsList errors={formattedAgencyErrors} />
         )}
         <div className="mb-2 flex flex-col gap-y-6">
-          {map(pcData, (pc, pcIndex) => {
-            const cdData = pc[cdField] || []
+          {map(dcData, (pc, pcIndex) => {
+            const cdData = pc[dcField] || []
 
             return (
               <div key={pcIndex} className="flex">
@@ -254,12 +266,13 @@ const PCRCausesOfDelay = () => {
                     Delay clusters
                   </span>
                   <PCRSelectWidget
-                    {...{ PCRData, setPCRData, sectionIdentifier }}
-                    field="project_component_option_id"
-                    options={projectComponentOptions}
+                    {...{ PCRData, setPCRData }}
+                    sectionIdentifier={delayField}
+                    field="delay_cluster_id"
+                    options={delayClusterOptions}
                     errors={agencyErrors}
                     indexes={[crtTab, pcIndex]}
-                    subFields={['', pcField]}
+                    subFields={['', cdField]}
                     excludeLabel={true}
                   />
                   <Divider className="my-4 opacity-20" />
@@ -277,7 +290,7 @@ const PCRCausesOfDelay = () => {
                     />
                   </div>
                   <FormGroup className="mt-2">
-                    {causeOfDelayOptions.map((option) => (
+                    {map(rootCauseOfDelayOptions, (option) => (
                       <FormControlLabel
                         key={option.name}
                         label={option.name}
@@ -285,7 +298,8 @@ const PCRCausesOfDelay = () => {
                           <Checkbox
                             size="small"
                             checked={cdData.some(
-                              (cd) => Number(cd.delay_id) === Number(option.id),
+                              (cd) =>
+                                Number(cd.root_cause_id) === Number(option.id),
                             )}
                             onChange={(event) => {
                               if (event.target.checked) {
@@ -336,8 +350,8 @@ const PCRCausesOfDelay = () => {
                       {map(cdData, (cd, cdIndex) => {
                         const crtCdName =
                           find(
-                            causeOfDelayOptions,
-                            (cdOpt) => cdOpt.id === cd.delay_id,
+                            rootCauseOfDelayOptions,
+                            (cdOpt) => cdOpt.id === cd.root_cause_id,
                           )?.name ?? '-'
 
                         return (
@@ -353,20 +367,22 @@ const PCRCausesOfDelay = () => {
                               </div>
                               <div />
                               <PCRTextAreaWidget
-                                {...{ PCRData, setPCRData, sectionIdentifier }}
-                                field="description"
-                                errors={delayCausesErrors}
+                                {...{ PCRData, setPCRData }}
+                                sectionIdentifier={delayField}
+                                field="description_roots_causes_of_delay"
+                                errors={causesOfDelayErrors}
                                 indexes={[crtTab, pcIndex, cdIndex]}
-                                subFields={['', pcField, cdField]}
+                                subFields={['', cdField, dcField]}
                                 rows={2}
                                 className="md:!min-w-full"
                               />
                               <PCRTextAreaWidget
-                                {...{ PCRData, setPCRData, sectionIdentifier }}
+                                {...{ PCRData, setPCRData }}
+                                sectionIdentifier={delayField}
                                 field="action_taken"
-                                errors={delayCausesErrors}
+                                errors={causesOfDelayErrors}
                                 indexes={[crtTab, pcIndex, cdIndex]}
-                                subFields={['', pcField, cdField]}
+                                subFields={['', cdField, dcField]}
                                 rows={2}
                                 excludeLabel={true}
                                 className="mt-[37px] md:!min-w-full"
@@ -393,7 +409,7 @@ const PCRCausesOfDelay = () => {
         <AddEntityButton
           title="Add delay cluster"
           action={onAddDelayCluster}
-          nrEntities={pcData.length}
+          nrEntities={dcData.length}
         />
       </div>
     </>

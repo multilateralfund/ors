@@ -11,7 +11,7 @@ import {
 import { PCRResponse } from '../../interfaces'
 import {
   pcrFieldsMapping,
-  cdField,
+  delayField,
   pcTitleClassname,
   textareaClassname,
   borderedContainerClassname,
@@ -36,7 +36,7 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
 
   const pcData = filter(
     pcr.project_components,
-    (pc) => pc.agency_id === Number(crtAgencyId) && pc[cdField].length > 0,
+    (pc) => pc.agency_id === Number(crtAgencyId) && pc[delayField].length > 0,
   )
 
   return (
@@ -65,7 +65,7 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
         {pcData.length > 0 ? (
           <div className="flex flex-col gap-y-6">
             {map(pcData, (pc, pcIndex) => {
-              const cdData = pcData[pcIndex][cdField] || []
+              const cdData = pcData[pcIndex][delayField] || []
 
               return (
                 <div key={pcIndex} className="flex">

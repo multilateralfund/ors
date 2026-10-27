@@ -76,7 +76,7 @@ export type Activity = {
 
 export interface PCRResultsAssessmentData {
   agency_id: number
-  activities: Activity[]
+  overall_assessment_highlights: Activity[]
 }
 
 export interface PCRAlternativeTechnologyType {
@@ -132,20 +132,20 @@ export type PCRResponse = {
   completed_by: string
   completion_date: string
   pcr_projects: PCRProjectResponse[]
-  activities: (Activity & { agency_id: number })[]
-  project_components: {
+  overall_assessment_highlights: (Activity & { agency_id: number })[]
+  delay_causes: {
     agency_id: number
-    project_component_option_id: number | null
-    project_component_option: { name: string }
-    delay_causes: {
-      delay_id: number | null
-      delay: { name: string }
-      description: string
+    delay_cluster_id: number | null
+    causes_of_delay: {
+      root_cause_id: number | null
+      description_roots_causes_of_delay: string
       action_taken: string
     }[]
-    learned_lessons: {
+  }[]
+  learned_lessons: {
+    agency_id: number
+    lessons: {
       lesson_id: number | null
-      lesson: { name: string }
       description: string
     }[]
   }[]
@@ -164,28 +164,27 @@ export type PCRResponse = {
   }[]
 }
 
-type CauseOfDelay = { delay_id: number | null; description: string }
+type DelayCluster = {
+  root_cause_id: number | null
+  description_roots_causes_of_delay: string
+  action_taken: string
+}
 
-export type CauseOfDelayProjectComponent = {
-  project_component_option_id: number | null
-  delay_causes: CauseOfDelay[]
+export type CauseOfDelay = {
+  delay_cluster_id: number | null
+  root_causes_of_delay: DelayCluster[]
 }
 
 export interface PCRCausesOfDelayData {
   agency_id: number
-  project_components: CauseOfDelayProjectComponent[]
+  causes_of_delay: CauseOfDelay[]
 }
 
 type LessonLearned = { lesson_id: number | null; description: string }
 
-export type LessonLearnedProjectComponent = {
-  project_component_option_id: number | null
-  learned_lessons: LessonLearned[]
-}
-
 export interface PCRLessonsLearnedData {
   agency_id: number
-  project_components: LessonLearnedProjectComponent[]
+  lessons: LessonLearned[]
 }
 
 export type ProjectPhase = {
@@ -226,8 +225,8 @@ export interface PCRData {
   overview: PCROverviewData
   summary_of_key_data: PCRSummaryOfKeyDataType[]
   results_assessment: PCRResultsAssessmentData[]
-  causes_of_delay: PCRCausesOfDelayData[]
-  lessons_learned: PCRLessonsLearnedData[]
+  delay_causes: PCRCausesOfDelayData[]
+  learned_lessons: PCRLessonsLearnedData[]
   gender_mainstreaming: PCRGenderMainstreamingData[]
   sdgs_contribution: PCRSdgsData[]
   supporting_evidences: PCRSupportingEvidencesData[]

@@ -23,12 +23,19 @@ const PCRCreateWrapper = () => {
     [data],
   )
   const initialResultsAssessment = useMemo(
-    () => map(agencyIds, (agency_id) => ({ agency_id, activities: [] })),
+    () =>
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        overall_assessment_highlights: [],
+      })),
     [agencyIds],
   )
-  const initialProjectComponentData = useMemo(
-    () =>
-      map(agencyIds, (agency_id) => ({ agency_id, project_components: [] })),
+  const initialCausesOfDelayData = useMemo(
+    () => map(agencyIds, (agency_id) => ({ agency_id, causes_of_delay: [] })),
+    [agencyIds],
+  )
+  const initialLessonsLearnedData = useMemo(
+    () => map(agencyIds, (agency_id) => ({ agency_id, lessons: [] })),
     [agencyIds],
   )
   const initialGenderMainstreamingData = useMemo(
@@ -55,15 +62,16 @@ const PCRCreateWrapper = () => {
     setPCRData((prevData) => ({
       ...prevData,
       results_assessment: initialResultsAssessment,
-      causes_of_delay: initialProjectComponentData,
-      lessons_learned: initialProjectComponentData,
+      delay_causes: initialCausesOfDelayData,
+      learned_lessons: initialLessonsLearnedData,
       gender_mainstreaming: initialGenderMainstreamingData,
       sdgs_contribution: initialSdgsData,
       supporting_evidences: initialSupportingEvidencesData,
     }))
   }, [
     initialResultsAssessment,
-    initialProjectComponentData,
+    initialCausesOfDelayData,
+    initialLessonsLearnedData,
     initialGenderMainstreamingData,
     initialSdgsData,
     initialSupportingEvidencesData,

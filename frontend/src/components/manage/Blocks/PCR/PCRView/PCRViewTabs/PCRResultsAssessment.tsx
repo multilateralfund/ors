@@ -39,7 +39,7 @@ const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
   )
 
   const activitiesData = filter(
-    pcr.activities,
+    pcr.overall_assessment_highlights,
     ({ agency_id }) => agency_id === Number(crtAgencyId),
   )
 
