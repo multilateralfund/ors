@@ -64,7 +64,6 @@ export interface PCROverviewData {
   rating_explanation: string
   additional_comments: AdditionalCommentType[]
   completed_by: string
-  completion_date: string
 }
 
 export type Activity = {
@@ -130,7 +129,6 @@ export type PCRResponse = {
   rating_explanation: string
   additional_comments: { entity: string; comment: string }[]
   completed_by: string
-  completion_date: string
   pcr_projects: PCRProjectResponse[]
   overall_assessment_highlights: (Activity & { agency_id: number })[]
   delay_causes: {
