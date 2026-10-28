@@ -228,3 +228,9 @@ export const SelectedEntity = (entity: string) => (
     {entity}
   </h4>
 )
+
+export const NrEntity = (index: number) => (
+  <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-mlfs-hlYellow">
+    {index + 1}
+  </div>
+)

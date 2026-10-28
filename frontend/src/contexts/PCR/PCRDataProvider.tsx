@@ -58,6 +58,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     results_assessment: [],
     delay_causes: [],
     learned_lessons: [],
+    future_project_recommendations: [],
     gender_mainstreaming: [],
     sdgs_contribution: [],
     supporting_evidences: [],

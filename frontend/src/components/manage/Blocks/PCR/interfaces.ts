@@ -64,7 +64,6 @@ export interface PCROverviewData {
   rating_explanation: string
   additional_comments: AdditionalCommentType[]
   completed_by: string
-  completion_date: string
 }
 
 export type Activity = {
@@ -130,7 +129,6 @@ export type PCRResponse = {
   rating_explanation: string
   additional_comments: { entity: string; comment: string }[]
   completed_by: string
-  completion_date: string
   pcr_projects: PCRProjectResponse[]
   overall_assessment_highlights: (Activity & { agency_id: number })[]
   delay_causes: {
@@ -152,6 +150,7 @@ export type PCRResponse = {
       description: string
     }[]
   }[]
+  future_project_recommendations: (Recommendation & { agency_id: number })[]
   gender_mainstreamings: (Omit<ProjectPhase, 'prefilled'> & {
     agency_id: number
     prefilled: boolean
@@ -191,6 +190,13 @@ type LessonLearned = { lesson_id: number | null; description: string }
 export interface PCRLessonsLearnedData {
   agency_id: number
   lessons: LessonLearned[]
+}
+
+export type Recommendation = { title: string; description: string }
+
+export interface PCRProjectRecommendationsData {
+  agency_id: number
+  recommendations: Recommendation[]
 }
 
 export type ProjectPhase = {
@@ -233,6 +239,7 @@ export interface PCRData {
   results_assessment: PCRResultsAssessmentData[]
   delay_causes: PCRCausesOfDelayData[]
   learned_lessons: PCRLessonsLearnedData[]
+  future_project_recommendations: PCRProjectRecommendationsData[]
   gender_mainstreaming: PCRGenderMainstreamingData[]
   sdgs_contribution: PCRSdgsData[]
   supporting_evidences: PCRSupportingEvidencesData[]

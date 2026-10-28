@@ -1,14 +1,9 @@
 import { useContext } from 'react'
 
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { PCRSelectWidget, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import { EditSectionIndicator } from './EditHelperComponents'
-import {
-  PCRSelectWidget,
-  PCRTextWidget,
-  PCRTextAreaWidget,
-  PCRDateWidget,
-} from './PCRWidgets'
 import {
   SubSectionTitle,
   UserInfo,
@@ -238,21 +233,11 @@ const PCROverview = () => {
           ))}
         </div>
       </div>
-      <div
-        className={cx(
-          'flex flex-wrap gap-x-8 gap-y-4 bg-white p-6 pt-3',
-          borderedContainerClassname,
-        )}
-      >
+      <div className={cx('bg-white p-6 pt-3', borderedContainerClassname)}>
         <PCRSelectWidget
           {...{ PCRData, setPCRData, sectionIdentifier }}
           field="completed_by"
           options={completionReportDoneByOptions}
-          errors={overviewErrors}
-        />
-        <PCRDateWidget
-          {...{ PCRData, setPCRData, sectionIdentifier }}
-          field="completion_date"
           errors={overviewErrors}
         />
       </div>

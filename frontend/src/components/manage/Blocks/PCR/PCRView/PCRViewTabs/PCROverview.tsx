@@ -2,7 +2,6 @@ import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import {
   SubSectionTitle,
   detailItem,
-  dateDetailItem,
   SelectedEntity,
 } from './ViewHelperComponents'
 import { getValueClassName } from '../../utils'
@@ -74,19 +73,21 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
               '!text-mlfs-hlYellow bg-primary border-primary',
             ),
           )}
-          <div
-            className={cx(
-              'mt-3 flex',
-              overviewTextareaClassname.containerClassname,
-            )}
-          >
-            <div className={spacingClassname} />
-            {detailItem(
-              pcrFieldsMapping.rating_explanation_other,
-              pcr.rating_explanation_other,
-              explanationClassname,
-            )}
-          </div>
+          {pcr.rating.includes('Other') && (
+            <div
+              className={cx(
+                'mt-3 flex',
+                overviewTextareaClassname.containerClassname,
+              )}
+            >
+              <div className={spacingClassname} />
+              {detailItem(
+                pcrFieldsMapping.rating_explanation_other,
+                pcr.rating_explanation_other,
+                explanationClassname,
+              )}
+            </div>
+          )}
           <div
             className={cx(
               'mt-3 flex',
@@ -138,19 +139,8 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
           )}
         </div>
       </div>
-      <div
-        className={cx(
-          'flex flex-col flex-wrap gap-y-4 bg-white p-6 md:flex-row',
-          borderedContainerClassname,
-        )}
-      >
+      <div className={cx('bg-white p-6', borderedContainerClassname)}>
         {detailItem(pcrFieldsMapping.completed_by, pcr.completed_by)}
-        <Divider
-          className="mx-8 hidden md:block"
-          orientation="vertical"
-          flexItem
-        />
-        {dateDetailItem(pcrFieldsMapping.completion_date, pcr.completion_date)}
       </div>
     </>
   )

@@ -200,7 +200,7 @@ const PCRGenderMainstreaming = () => {
                           rows={2}
                         />
                       </TableCell>
-                      <TableCell className="w-[4%] text-center align-middle">
+                      <TableCell className="w-[4%] text-center">
                         <IoTrash
                           className="mx-auto min-h-6 min-w-6 cursor-pointer fill-[#8a2323]"
                           size={16}

@@ -117,6 +117,14 @@ const PCREditWrapper = () => {
       ),
     }))
 
+    const groupedRecommendations = groupDataByAgency(
+      pcrData.future_project_recommendations,
+    )
+    const projectRecommendations = map(agencyIds, (agency_id) => ({
+      agency_id,
+      recommendations: groupedRecommendations[agency_id] ?? [],
+    }))
+
     const groupedGenderMainstreamings = groupDataByAgency(
       pcrData.gender_mainstreamings,
     )
@@ -173,6 +181,7 @@ const PCREditWrapper = () => {
       results_assessment: resultsAssessment,
       delay_causes: causesOfDelay,
       learned_lessons: lessonsLearned,
+      future_project_recommendations: projectRecommendations,
       gender_mainstreaming: genderMainstreamings,
       sdgs_contribution: sdgsContribution,
       supporting_evidences: supportingEvidences,

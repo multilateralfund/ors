@@ -1,8 +1,8 @@
-import { useContext, useEffect, useMemo } from 'react'
+import { useContext, useEffect } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
@@ -14,77 +14,59 @@ const PCRCreateWrapper = () => {
   const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
 
-  if (data?.pcr_id) {
-    return <Redirect to="/pcr" />
-  }
+  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
-  const agencyIds = useMemo(
-    () => uniq(map(data?.projects, 'agency_id')),
-    [data],
-  )
-  const initialResultsAssessment = useMemo(
-    () =>
-      map(agencyIds, (agency_id) => ({
+  const projects = data?.projects
+
+  useEffect(() => {
+    if (!projects) return
+
+    const agencyIds = uniq(map(projects, 'agency_id'))
+
+    setPCRData((prevData) => ({
+      ...prevData,
+      results_assessment: map(agencyIds, (agency_id) => ({
         agency_id,
         overall_assessment_highlights: [],
       })),
-    [agencyIds],
-  )
-  const initialCausesOfDelayData = useMemo(
-    () => map(agencyIds, (agency_id) => ({ agency_id, causes_of_delay: [] })),
-    [agencyIds],
-  )
-  const initialLessonsLearnedData = useMemo(
-    () => map(agencyIds, (agency_id) => ({ agency_id, lessons: [] })),
-    [agencyIds],
-  )
-  const initialGenderMainstreamingData = useMemo(
-    () =>
-      map(agencyIds, (agency_id) => ({ agency_id, gender_mainstreamings: [] })),
-    [agencyIds],
-  )
-  const initialSdgsData = useMemo(
-    () =>
-      map(agencyIds, (agency_id) => ({
+      delay_causes: map(agencyIds, (agency_id) => ({
+        agency_id,
+        causes_of_delay: [],
+      })),
+      learned_lessons: map(agencyIds, (agency_id) => ({
+        agency_id,
+        lessons: [],
+      })),
+      future_project_recommendations: map(agencyIds, (agency_id) => ({
+        agency_id,
+        recommendations: [],
+      })),
+      gender_mainstreaming: map(agencyIds, (agency_id) => ({
+        agency_id,
+        gender_mainstreamings: [],
+      })),
+      sdgs_contribution: map(agencyIds, (agency_id) => ({
         agency_id,
         sdg_applying: true,
         sdg_not_applying_explanation: '',
         goals: [],
       })),
-    [agencyIds],
-  )
-  const initialSupportingEvidencesData = useMemo(
-    () => map(agencyIds, (agency_id) => ({ agency_id, evidences: [] })),
-    [agencyIds],
-  )
-
-  useEffect(() => {
-    setPCRData((prevData) => ({
-      ...prevData,
-      results_assessment: initialResultsAssessment,
-      delay_causes: initialCausesOfDelayData,
-      learned_lessons: initialLessonsLearnedData,
-      gender_mainstreaming: initialGenderMainstreamingData,
-      sdgs_contribution: initialSdgsData,
-      supporting_evidences: initialSupportingEvidencesData,
+      supporting_evidences: map(agencyIds, (agency_id) => ({
+        agency_id,
+        evidences: [],
+      })),
     }))
-  }, [
-    initialResultsAssessment,
-    initialCausesOfDelayData,
-    initialLessonsLearnedData,
-    initialGenderMainstreamingData,
-    initialSdgsData,
-    initialSupportingEvidencesData,
-    setPCRData,
-  ])
-
-  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
+  }, [projects, setPCRData])
 
   useEffect(() => {
     clearUpdatedFields()
   }, [clearUpdatedFields])
 
   useVisibilityChange(updatedFields.size > 0)
+
+  if (data?.pcr_id) {
+    return <Redirect to="/pcr" />
+  }
 
   return (
     <>
