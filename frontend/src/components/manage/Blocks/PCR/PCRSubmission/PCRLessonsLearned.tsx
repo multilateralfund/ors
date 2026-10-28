@@ -3,21 +3,19 @@ import { useContext, useState } from 'react'
 import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import PCRProjectRecommendations from './PCRProjectRecommendations'
+import { EditSectionIndicator } from './EditHelperComponents'
 import { TabLabel, PCRTextAreaWidget } from './PCRWidgets'
-import {
-  EditSectionIndicator,
-  AddEntityButton,
-  DeleteEntityButton,
-} from './EditHelperComponents'
 import {
   SubSectionTitle,
   UserInfo,
+  NrEntity,
   NoDataReported,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import { llField, borderedContainerClassname } from '../constants'
 
-import { filter, find, map, omit } from 'lodash'
+import { filter, find, map } from 'lodash'
 import cx from 'classnames'
 import {
   Tabs,
@@ -125,8 +123,7 @@ const PCRLessonsLearned = () => {
               aria-controls={agency.name}
               id={agency.name}
               label={
-                // <TabLabel field={llField} errors={llErrors} {...{ agency }} />
-                <TabLabel field={llField} errors={{}} {...{ agency }} />
+                <TabLabel field={llField} errors={llErrors} {...{ agency }} />
               }
             />
           ))}
@@ -134,9 +131,9 @@ const PCRLessonsLearned = () => {
         <EditSectionIndicator />
       </div>
       <div className="border-0 border-t border-solid border-primary pt-6">
-        {/* {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
+        {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />
-        )} */}
+        )}
         <div className="mb-2 flex flex-col gap-y-6">
           <div className="flex">
             <div className="w-1/4 bg-primary px-6 py-4">
@@ -210,9 +207,7 @@ const PCRLessonsLearned = () => {
                     return (
                       <div key={llIndex}>
                         <div className="flex gap-3">
-                          <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-mlfs-hlYellow">
-                            {llIndex + 1}
-                          </div>
+                          {NrEntity(llIndex)}
                           <div className="flex-1">
                             <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
                               {crtLlName}
@@ -224,8 +219,7 @@ const PCRLessonsLearned = () => {
                                 sectionIdentifier,
                               }}
                               field="description"
-                              // errors={llErrors}
-                              errors={{}}
+                              errors={llErrors}
                               indexes={[crtTab, llIndex]}
                               subFields={['', llField]}
                               rows={2}
@@ -247,6 +241,7 @@ const PCRLessonsLearned = () => {
               )}
             </div>
           </div>
+          <PCRProjectRecommendations {...{ crtTab }} />
         </div>
       </div>
     </>

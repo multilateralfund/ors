@@ -14,6 +14,7 @@ import {
   PCRSummaryOfKeyDataType,
   PCRResultsAssessmentData,
   PCRCausesOfDelayData,
+  PCRProjectRecommendationsData,
   PCRGenderMainstreamingData,
   PCRSupportingEvidencesData,
   FormattedSupportingEvidencesData,
@@ -349,6 +350,7 @@ export const getFormData = (
     results_assessment,
     delay_causes,
     learned_lessons,
+    future_project_recommendations,
     gender_mainstreaming,
     sdgs_contribution,
     supporting_evidences,
@@ -408,6 +410,12 @@ export const getFormData = (
     cdField,
   )
 
+  const projectRecommendationsData =
+    formatAgencyData<PCRProjectRecommendationsData>(
+      future_project_recommendations,
+      'recommendations',
+    )
+
   const genderMainstreamingsData = formatAgencyData<PCRGenderMainstreamingData>(
     gender_mainstreaming,
     'gender_mainstreamings',
@@ -439,6 +447,7 @@ export const getFormData = (
     // project_components: projectComponentsData,
     delay_causes: causesOfDelayData,
     learned_lessons,
+    future_project_recommendations: projectRecommendationsData,
     gender_mainstreamings: genderMainstreamingsData,
     sustainable_development_goals: sdgsContributionData,
     supporting_evidences: supportingEvidencesData,

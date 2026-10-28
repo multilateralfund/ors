@@ -6,9 +6,9 @@ import { Button } from '@mui/material'
 import cx from 'classnames'
 
 export const EditSectionIndicator = () => (
-  <div className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-3 py-1 text-lg leading-none text-mlfs-hlYellow">
+  <div className="inline-flex h-8 items-center gap-2 self-center rounded-full bg-primary px-3 py-1 text-lg text-mlfs-hlYellow">
     <FiEdit3 size={18} />
-    <span>Edit</span>
+    <span className="mt-0.5">Edit</span>
   </div>
 )
 
