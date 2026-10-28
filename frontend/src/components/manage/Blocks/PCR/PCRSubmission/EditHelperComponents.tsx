@@ -48,3 +48,12 @@ export const DeleteEntityButton = ({
     {title}
   </Button>
 )
+
+export const SubmissionStatus = (status: string) => (
+  <div className="mt-4 flex items-center gap-3">
+    <span>Submission status:</span>
+    <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+      {status}
+    </span>
+  </div>
+)

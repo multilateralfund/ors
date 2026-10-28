@@ -7,24 +7,15 @@ import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListin
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { SubmissionStatus } from '../PCRSubmission/EditHelperComponents'
+import WorkflowButtons from '../PCRWorkflow/WorkflowButtons'
 import PCRView from './PCRView'
-import { PCRResponse } from '../interfaces'
-import useApi from '@ors/hooks/useApi'
 
 import { useParams } from 'wouter'
 
 const PCRViewWrapper = () => {
   const { pcr_id, project_id } = useParams<Record<string, string>>()
-  const { pcrMetaproject } = useContext(PCRDataContext)
-
-  const pcr = useApi<PCRResponse>({
-    options: {
-      triggerIf: !!pcr_id,
-      withStoreCache: false,
-    },
-    path: pcr_id ? `api/project-completion-reports/${pcr_id}/` : '',
-    reactivePath: true,
-  })
+  const { pcr, pcrMetaproject } = useContext(PCRDataContext)
 
   const loading = pcr.loading || pcrMetaproject.loading || !pcr.loaded
 
@@ -63,8 +54,10 @@ const PCRViewWrapper = () => {
                 >
                   Edit
                 </Link>
+                <WorkflowButtons />
               </div>
             </div>
+            {SubmissionStatus(pcr.data.status)}
           </HeaderTitle>
           <PCRView pcr={pcr.data} />
         </>

@@ -118,6 +118,7 @@ export type PCRResponse = {
   id: number
   meta_project_id: number
   submission_date: string | null
+  status: string
   total_number_of_enterprises: string
   financial_figures_status: string
   financial_figures_status_explanation: string

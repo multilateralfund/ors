@@ -7,17 +7,15 @@ import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import { initialOverviewData } from '../constants'
 import {
-  PCRResponse,
   PCROverviewData,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
 } from '../interfaces'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
-import useApi from '@ors/hooks/useApi'
 
 import { groupBy, keyBy, keys, map, pick, uniq } from 'lodash'
-import { Redirect, useParams } from 'wouter'
+import { Redirect } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
   substance_from: null,
@@ -41,19 +39,9 @@ const ensureRows = <T,>(rows: T[] | undefined, fallback: () => T) =>
   rows && rows.length > 0 ? rows : [fallback()]
 
 const PCREditWrapper = () => {
-  const { pcr_id } = useParams<Record<string, string>>()
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
-  const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
+  const { pcr, pcrMetaproject, setPCRData } = useContext(PCRDataContext)
   const { data } = pcrMetaproject
-
-  const pcr = useApi<PCRResponse>({
-    options: {
-      triggerIf: !!pcr_id,
-      withStoreCache: false,
-    },
-    path: pcr_id ? `api/project-completion-reports/${pcr_id}/` : '',
-    reactivePath: true,
-  })
 
   const loading = pcr.loading || pcrMetaproject.loading || !pcr.loaded
 

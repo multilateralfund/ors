@@ -8,6 +8,7 @@ import {
 
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
+import { useGetPCR } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCR'
 import {
   initialOverviewData,
   summaryOfKeyDataField,
@@ -43,8 +44,9 @@ import { useParams } from 'wouter'
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
 
-  const { project_id } = useParams<Record<string, string>>()
+  const { pcr_id, project_id } = useParams<Record<string, string>>()
   const pcrDefaultData = useGetPCRDefaults(project_id)
+  const pcr = useGetPCR(pcr_id)
 
   const pcrMetaproject = useGetPCRProject(project_id)
   const { data: metaproject } = pcrMetaproject
@@ -413,6 +415,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
   const value = useMemo(
     () => ({
+      pcr,
       pcrMetaproject,
       pcrDefaultData,
       PCRData,
@@ -431,6 +434,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       fileSectionOptions,
     }),
     [
+      pcr,
       pcrMetaproject,
       pcrDefaultData,
       PCRData,

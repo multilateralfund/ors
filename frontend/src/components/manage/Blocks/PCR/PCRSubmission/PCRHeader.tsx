@@ -8,6 +8,7 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRCreateActionButtons from '../PCRCreate/PCRCreateActionButtons'
 import PCREditActionButtons from '../PCREdit/PCREditActionButtons'
+import { SubmissionStatus } from './EditHelperComponents'
 
 import { CircularProgress } from '@mui/material'
 import { useLocation } from 'wouter'
@@ -15,7 +16,7 @@ import { useLocation } from 'wouter'
 const PCRHeader = ({ mode }: { mode: string }) => {
   const [_, setLocation] = useLocation()
 
-  const { pcrMetaproject } = useContext(PCRDataContext)
+  const { pcr, pcrMetaproject } = useContext(PCRDataContext)
   const { updatedFields } = useUpdatedFields()
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -69,6 +70,7 @@ const PCRHeader = ({ mode }: { mode: string }) => {
           )}
         </div>
       </div>
+      {mode === 'edit' && !!pcr.data && SubmissionStatus(pcr.data.status)}
     </HeaderTitle>
   )
 }
