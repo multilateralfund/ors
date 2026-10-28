@@ -13,6 +13,7 @@ from core.api.tests.factories import (
     BlendFactory,
     BusinessPlanFactory,
     BPActivityFactory,
+    GroupFactory,
     MetaProjectFactory,
     ProjectOdsOdpFactory,
     ProjectFactory,
@@ -538,6 +539,31 @@ class TestProjectsRetrieve:
         assert response.status_code == 200
         assert response.data["id"] == project.id
         assert response.data["substance_category"] == "Production"
+
+    @pytest.mark.parametrize(
+        "substance_type, group_ids, expected",
+        [
+            ("CFC", ["CI"], "CFC"),
+            (None, ["CI"], "HCFC"),
+            (None, ["F"], "HFC"),
+            (None, ["F", "CI"], "HCFC"),
+            (None, ["AI"], None),
+            (None, [], None),
+        ],
+    )
+    def test_project_substance_type_from_cluster(
+        self, admin_user, project_url, project, substance_type, group_ids, expected
+    ):
+        project.substance_type = substance_type
+        project.save()
+        project.cluster.annex_groups.set(
+            [GroupFactory(group_id=group_id) for group_id in group_ids]
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.get(project_url)
+        assert response.status_code == 200
+        assert response.data["substance_type"] == expected
 
 
 class TestCreateProjects(BaseTest):

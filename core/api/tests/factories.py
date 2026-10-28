@@ -114,6 +114,8 @@ class GroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Group
 
+    # fixtures create groups with fixed low ids (e.g. groupA), keep clear of them
+    id = factory.Sequence(lambda n: 1000 + n)
     name = factory.Faker("pystr", max_chars=100)
     name_alt = factory.Faker("pystr", max_chars=100)
     annex = factory.Faker("pystr", max_chars=50)
