@@ -472,8 +472,30 @@ class PCRSustainableDevelopmentGoalSerializer(serializers.ModelSerializer):
             "agency",
             "agency_id",
             "pcr_id",
+            "sdg_applying",
+            "sdg_not_applying_explanation",
             "goals",
         ]
+
+    def validate(self, attrs):
+        goals = attrs.get("pcrsustainabledevelopmentgoaldescription_set") or []
+        if attrs.get("sdg_applying", True):
+            # The explanation is only relevant when the project did not contribute
+            attrs["sdg_not_applying_explanation"] = None
+            return attrs
+
+        errors = {}
+        if not (attrs.get("sdg_not_applying_explanation") or "").strip():
+            errors["sdg_not_applying_explanation"] = (
+                "An explanation is required if the project did not contribute to any SDGs."
+            )
+        if goals:
+            errors["goals"] = (
+                "SDGs can't be selected if the project did not contribute to any SDGs."
+            )
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
 
 class PCRHistorySerializer(serializers.ModelSerializer):
@@ -863,7 +885,7 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
                 PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
             )
             sustainable_development_goal = PCRSustainableDevelopmentGoal.objects.create(
-                pcr=instance, agency_id=sustainable_development_goal_data["agency_id"]
+                pcr=instance, **sustainable_development_goal_data
             )
             replace_nested_data(
                 sustainable_development_goal,

@@ -37,6 +37,7 @@ from core.models.project_completion_report import (
     PCRProject,
     PCRProjectEnterprise,
     PCRSupportingEvidence,
+    PCRSustainableDevelopmentGoal,
 )
 from core.models.project_pcr_exclusion import ProjectPCRRequiredExclusionRule
 
@@ -358,7 +359,7 @@ def test_pcr_project_create(
                         {
                             "agency_id": agency.id,
                             "project_preparation": "Project preparation",
-                            "prefilled": True,
+                            "prefilled": "Not applicable",
                             "qualitative_description": "Description 1",
                         },
                     ],
@@ -540,7 +541,7 @@ def test_pcr_project_create(
         response.data["gender_mainstreamings"][0]["project_preparation"]
         == "Project preparation"
     )
-    assert response.data["gender_mainstreamings"][0]["prefilled"] is True
+    assert response.data["gender_mainstreamings"][0]["prefilled"] == "Not applicable"
     assert (
         response.data["gender_mainstreamings"][0]["qualitative_description"]
         == "Description 1"
@@ -1286,3 +1287,156 @@ def test_pcr_project_list_filters_are_scoped_to_pcr_queryset(
         {"id": pcr_listing_data["coop_agency_a"].id, "name": "PCR Coop Agency A"}
     ]
     assert {option["name"] for option in response.data["pcr_due"]} == {"Yes", "No"}
+
+
+@pytest.mark.parametrize("prefilled", [True, "Maybe", ""])
+def test_pcr_update_rejects_invalid_gender_mainstreaming_prefilled(
+    client, admin_user, prefilled
+):
+    meta_project = MetaProjectFactory.create()
+    pcr = PCR.objects.create(meta_project=meta_project)
+    agency = AgencyFactory.create()
+    client.force_authenticate(user=admin_user)
+
+    response = client.patch(
+        reverse("project-completion-report-detail", args=[pcr.id]),
+        {
+            "metadata": json.dumps(
+                {
+                    "gender_mainstreamings": [
+                        {
+                            "agency_id": agency.id,
+                            "project_preparation": "Project preparation",
+                            "prefilled": prefilled,
+                            "qualitative_description": "Description",
+                        },
+                    ],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
+        },
+        format="multipart",
+    )
+
+    assert response.status_code == 400
+    assert "prefilled" in str(response.data)
+    assert not pcr.gender_mainstreamings.exists()
+
+
+def _patch_sdgs(client, pcr, sustainable_development_goals):
+    return client.patch(
+        reverse("project-completion-report-detail", args=[pcr.id]),
+        {
+            "metadata": json.dumps(
+                {"sustainable_development_goals": sustainable_development_goals},
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
+        },
+        format="multipart",
+    )
+
+
+def test_pcr_update_sdg_applying(client, admin_user):
+    pcr = PCR.objects.create(meta_project=MetaProjectFactory.create())
+    agency = AgencyFactory.create()
+    other_agency = AgencyFactory.create()
+    goal = PCRGoalFactory.create()
+    client.force_authenticate(user=admin_user)
+
+    response = _patch_sdgs(
+        client,
+        pcr,
+        [
+            {
+                "agency_id": agency.id,
+                "sdg_applying": False,
+                "sdg_not_applying_explanation": "Not relevant for this project",
+            },
+            {
+                "agency_id": other_agency.id,
+                "sdg_applying": True,
+                # dropped, as it only applies when the project did not contribute
+                "sdg_not_applying_explanation": "Stale explanation",
+                "goals": [{"goal_id": goal.id, "description": "Contribution"}],
+            },
+        ],
+    )
+
+    assert response.status_code == 200
+    sdgs = {sdg.agency_id: sdg for sdg in pcr.sustainable_development_goals.all()}
+    assert sdgs[agency.id].sdg_applying is False
+    assert (
+        sdgs[agency.id].sdg_not_applying_explanation == "Not relevant for this project"
+    )
+    assert not sdgs[agency.id].goals.exists()
+    assert sdgs[other_agency.id].sdg_applying is True
+    assert sdgs[other_agency.id].sdg_not_applying_explanation is None
+    assert list(sdgs[other_agency.id].goals.all()) == [goal]
+
+    response = client.get(reverse("project-completion-report-detail", args=[pcr.id]))
+    returned = {
+        sdg["agency_id"]: sdg for sdg in response.data["sustainable_development_goals"]
+    }
+    assert returned[agency.id]["sdg_applying"] is False
+    assert (
+        returned[agency.id]["sdg_not_applying_explanation"]
+        == "Not relevant for this project"
+    )
+    assert returned[other_agency.id]["sdg_applying"] is True
+
+
+@pytest.mark.parametrize(
+    "sdg_data,error_field",
+    [
+        ({"sdg_applying": False}, "sdg_not_applying_explanation"),
+        (
+            {"sdg_applying": False, "sdg_not_applying_explanation": "  "},
+            "sdg_not_applying_explanation",
+        ),
+        (
+            {
+                "sdg_applying": False,
+                "sdg_not_applying_explanation": "Explanation",
+                "goals": "WITH_GOAL",
+            },
+            "goals",
+        ),
+    ],
+)
+def test_pcr_update_rejects_invalid_sdg_applying(
+    client, admin_user, sdg_data, error_field
+):
+    pcr = PCR.objects.create(meta_project=MetaProjectFactory.create())
+    agency = AgencyFactory.create()
+    if sdg_data.get("goals") == "WITH_GOAL":
+        goal = PCRGoalFactory.create()
+        sdg_data = {
+            **sdg_data,
+            "goals": [{"goal_id": goal.id, "description": "Contribution"}],
+        }
+    client.force_authenticate(user=admin_user)
+
+    response = _patch_sdgs(client, pcr, [{"agency_id": agency.id, **sdg_data}])
+
+    assert response.status_code == 400
+    assert error_field in str(response.data)
+    assert not pcr.sustainable_development_goals.exists()
+
+
+def test_increase_version_copies_sdg_applying(admin_user):
+    pcr = PCR.objects.create(meta_project=MetaProjectFactory.create())
+    PCRSustainableDevelopmentGoal.objects.create(
+        pcr=pcr,
+        agency=AgencyFactory.create(),
+        sdg_applying=False,
+        sdg_not_applying_explanation="Not relevant",
+    )
+
+    pcr.increase_version(admin_user)
+
+    archived = PCR.objects.really_all().get(latest_pcr=pcr)
+    archived_sdg = archived.sustainable_development_goals.get()
+    assert archived_sdg.sdg_applying is False
+    assert archived_sdg.sdg_not_applying_explanation == "Not relevant"

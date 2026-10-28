@@ -780,6 +780,11 @@ class PCRGenderMainstreaming(models.Model):
             "Monitoring and Reporting",
         )
 
+    class Prefilled(models.TextChoices):
+        YES = "Yes", "Yes"
+        NO = "No", "No"
+        NOT_APPLICABLE = "Not applicable", "Not applicable"
+
     pcr = models.ForeignKey(
         PCR, on_delete=models.PROTECT, related_name="gender_mainstreamings"
     )
@@ -791,7 +796,11 @@ class PCRGenderMainstreaming(models.Model):
         choices=ProjectPreparation.choices,
         help_text="",
     )
-    prefilled = models.BooleanField()
+    prefilled = models.CharField(
+        max_length=16,
+        choices=Prefilled.choices,
+        help_text="Gender policy implemented",
+    )
     qualitative_description = models.TextField()
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -830,6 +839,15 @@ class PCRSustainableDevelopmentGoal(models.Model):
         PCRGoal,
         through="PCRSustainableDevelopmentGoalDescription",
         related_name="sustainable_development_goals",
+    )
+    sdg_applying = models.BooleanField(
+        default=True,
+        help_text="Did the project contribute to any Sustainable Development Goals (SDGs)?",
+    )
+    sdg_not_applying_explanation = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Explanation if the project did not contribute to any SDGs",
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
