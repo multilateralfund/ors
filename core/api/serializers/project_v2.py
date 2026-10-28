@@ -40,6 +40,7 @@ from core.models.project_metadata import (
     ProjectType,
 )
 from core.utils import get_project_sub_code
+from core.models.utils import SUBSTANCE_GROUP_ID_TO_CATEGORY
 from core.api.utils import (
     log_project_history,
     TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES,
@@ -67,6 +68,10 @@ HISTORY_ASSOCIATION_MADE = """Associate project to meta project {}.\n
                             Old metacode: {}\n
                             New metacode: {}\n
                            """
+
+
+# checked in order, so a cluster with both C/I and F groups is HCFC
+CLUSTER_GROUP_IDS_FOR_SUBSTANCE_TYPE = ["CI", "F"]
 
 
 class UpdateOdsOdpEntries:
@@ -388,7 +393,22 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if instance.submission_status.name != "Approved":
             if "code" in data:
                 data["code"] = None
+        if "substance_type" in data and not data["substance_type"]:
+            data["substance_type"] = self.get_substance_type_from_cluster(instance)
         return data
+
+    def get_substance_type_from_cluster(self, obj: Project):
+        """
+        Projects without a substance type take it from the cluster's annex groups:
+        C/I is HCFC and F is HFC.
+        """
+        if not obj.cluster:
+            return None
+        group_ids = {group.group_id for group in obj.cluster.annex_groups.all()}
+        for group_id in CLUSTER_GROUP_IDS_FOR_SUBSTANCE_TYPE:
+            if group_id in group_ids:
+                return SUBSTANCE_GROUP_ID_TO_CATEGORY[group_id]
+        return None
 
     def get_umbrella_code(self, obj: Project):
         if obj.meta_project:

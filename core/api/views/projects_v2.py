@@ -412,6 +412,7 @@ class ProjectV2ViewSet(
                 "bp_activity__values",
                 "ods_odp__ods_blend",
                 "ods_odp__ods_substance",
+                "cluster__annex_groups",
             )
             .annotate(
                 filtered_code=Case(
