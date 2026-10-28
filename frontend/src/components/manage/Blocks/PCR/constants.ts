@@ -64,7 +64,6 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   entity: 'Entity user inputting the comment on behalf',
   comment: 'Comment',
   completed_by: 'Completion report done by',
-  completion_date: 'Date',
   funds_disbursed: 'Funds disbursed',
   planned_date_of_completion: 'Planned date of completion',
   substance_from: 'Substance converted from',
@@ -105,7 +104,6 @@ export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   rating_explanation: 'Rating explanation',
   additional_comments: 'Additional comment',
   comment: 'Comment',
-  completion_date: 'Completion date',
   alternative_technologies: 'Alternative technology',
   enterprises: 'Enterprise',
   equipments: 'Equipment',
@@ -164,7 +162,6 @@ export const initialOverviewData = {
   rating_explanation: '',
   additional_comments: [],
   completed_by: '',
-  completion_date: '',
 }
 
 export const initialActivitiesData = {
