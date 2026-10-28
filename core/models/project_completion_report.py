@@ -14,7 +14,7 @@ from core.models.meeting import Decision
 from core.models.substance import Substance
 from core.models.utils import get_protected_storage
 
-# pylint: disable=no-member
+# pylint: disable=no-member,too-many-lines
 
 PCR_RELATED_MODELS = [
     "PCRProject",
@@ -207,7 +207,14 @@ class PCR(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-    submission_date = models.DateField(null=True, blank=True)
+    submission_date = models.DateField(
+        null=True, blank=True, help_text="Initial submission date (version 1)"
+    )
+    revised_submission_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Latest resubmission date, after adjustments were requested",
+    )
     objects = PCRManager()
 
     def __str__(self):
@@ -217,6 +224,11 @@ class PCR(models.Model):
     def is_editable(self):
         """Archived versions and the final version are locked"""
         return self.latest_pcr_id is None and self.status != self.Status.FINAL
+
+    @property
+    def is_locked(self):
+        """The lead agency can't work on the PCR while it is with MLFS or final"""
+        return self.status in [self.Status.SUBMITTED, self.Status.FINAL]
 
     @cached_property
     def total_number_of_enterprises(self):
@@ -286,6 +298,47 @@ class PCR(models.Model):
         self.version += 1
         self.version_created_by = user
         self.save()
+
+
+class PCRHistory(models.Model):
+    class LockAction(models.TextChoices):
+        LOCKED = "Locked", "Locked"
+        UNLOCKED = "Unlocked", "Unlocked"
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Creation date",
+    )
+
+    pcr = models.ForeignKey(
+        "PCR",
+        on_delete=models.CASCADE,
+        related_name="pcr_history",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="updated_pcrs",
+        help_text="User who updated the PCR",
+    )
+
+    description = models.TextField(blank=True)
+
+    lock_action = models.CharField(
+        max_length=16,
+        choices=LockAction.choices,
+        null=True,
+        blank=True,
+        help_text="Set if the event locked or unlocked the PCR for the lead agency",
+    )
+
+    class Meta:
+        verbose_name_plural = "PCR history"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.pcr} - {self.description}"
 
 
 class PCRProject(models.Model):

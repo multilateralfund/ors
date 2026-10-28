@@ -11,8 +11,13 @@ from rest_framework.decorators import action
 from core.api.serializers.project_completion_report import (
     PCRDetailSerializer,
     PCRVersionSerializer,
+    HISTORY_DESCRIPTION_SUBMIT_V1,
+    HISTORY_DESCRIPTION_RESUBMIT_V2,
+    HISTORY_DESCRIPTION_REQUEST_ADJUSTMENTS_V2,
+    HISTORY_DESCRIPTION_APPROVE_V3,
 )
-from core.models.project_completion_report import PCR
+from core.api.utils import log_pcr_history
+from core.models.project_completion_report import PCR, PCRHistory
 from core.tasks import send_pcr_notification
 
 
@@ -35,10 +40,11 @@ class PCRWorkflowMixin:
 
     @extend_schema(
         description="""
-        Submit the PCR for MLFS review.
+        Submit the PCR for MLFS review, locking it for the lead agency.
         A version 1 'Draft' PCR is archived and the PCR is increased to version 2.
+        The submission date is set to the current date.
         A version 2 PCR that had adjustments requested is resubmitted without
-        creating a new version.
+        creating a new version and the revised submission date is set to the current date.
         An email notification is sent to MLFS.
         """,
         request=None,
@@ -62,9 +68,19 @@ class PCRWorkflowMixin:
                 )
             if is_initial_submission:
                 pcr.increase_version(request.user)
+                pcr.submission_date = timezone.now().date()
+                history_description = HISTORY_DESCRIPTION_SUBMIT_V1
+            else:
+                pcr.revised_submission_date = timezone.now().date()
+                history_description = HISTORY_DESCRIPTION_RESUBMIT_V2
             pcr.status = PCR.Status.SUBMITTED
-            pcr.submission_date = timezone.now().date()
             pcr.save()
+            log_pcr_history(
+                pcr,
+                request.user,
+                history_description,
+                lock_action=PCRHistory.LockAction.LOCKED,
+            )
 
         if config.PCR_NOTIFICATIONS_ENABLED:
             send_pcr_notification.delay(pcr.id)
@@ -73,7 +89,7 @@ class PCRWorkflowMixin:
 
     @extend_schema(
         description="""
-        Send the PCR back to the lead agency for adjustments.
+        Send the PCR back to the lead agency for adjustments, unlocking it.
         The PCR should be in 'Submitted' status and version 2.
         The version is not changed.
         """,
@@ -94,6 +110,12 @@ class PCRWorkflowMixin:
                 )
             pcr.status = PCR.Status.ADJUSTMENTS_REQUESTED
             pcr.save()
+            log_pcr_history(
+                pcr,
+                request.user,
+                HISTORY_DESCRIPTION_REQUEST_ADJUSTMENTS_V2,
+                lock_action=PCRHistory.LockAction.UNLOCKED,
+            )
 
         return Response(PCRDetailSerializer(pcr).data, status=status.HTTP_200_OK)
 
@@ -122,6 +144,7 @@ class PCRWorkflowMixin:
             pcr.increase_version(request.user)
             pcr.status = PCR.Status.FINAL
             pcr.save()
+            log_pcr_history(pcr, request.user, HISTORY_DESCRIPTION_APPROVE_V3)
 
         if config.PCR_NOTIFICATIONS_ENABLED:
             send_pcr_notification.delay(pcr.id, is_final=True)

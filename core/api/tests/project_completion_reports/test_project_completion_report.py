@@ -434,7 +434,8 @@ def test_pcr_project_create(
         (agency.id, section1.id, "doc1.pdf"),
         (new_agency.id, section2.id, "doc2.pdf"),
     }
-    assert str(pcr.submission_date) == "2026-07-10"
+    # submission_date is filled by the server on submit
+    assert pcr.submission_date is None
     assert pcr.financial_figures_status == PCR.FinancialFiguresStatus.FINAL
     assert pcr.project_goal_achieved == PCR.ProjectGoalAchieved.YES
     assert pcr.rating == PCR.Rating.SATISFACTORY_PLANNED
@@ -477,7 +478,7 @@ def test_pcr_project_create(
 
     assert response.data["id"] == pcr.id
     assert response.data["meta_project_id"] == meta_project.id
-    assert response.data["submission_date"] == "2026-07-10"
+    assert response.data["submission_date"] is None
     assert response.data["project_date_approved"] == "2026-07-20"
     assert response.data["project_date_completion"] == "2026-07-21"
     assert Decimal(response.data["phase_out_ods_approved"]) == Decimal(10)
@@ -983,7 +984,9 @@ def test_pcr_retrieve(client, admin_user):
 
 
 @pytest.mark.parametrize("method", ["patch", "put"])
-def test_pcr_update_submission_date_and_nested_project(client, admin_user, method):
+def test_pcr_update_ignores_submission_date_and_updates_nested_project(
+    client, admin_user, method
+):
     meta_project = MetaProjectFactory.create()
     projects = ProjectFactory.create_batch(2, meta_project=meta_project)
     pcr = PCR.objects.create(meta_project=meta_project)
@@ -1050,7 +1053,8 @@ def test_pcr_update_submission_date_and_nested_project(client, admin_user, metho
     pcr.refresh_from_db()
     for pcr_project in pcr_projects:
         pcr_project.refresh_from_db()
-    assert str(pcr.submission_date) == "2026-07-10"
+    # submission_date is filled by the server on submit
+    assert pcr.submission_date is None
     assert pcr_projects[0].funds_disbursed == Decimal("9876.540000000000000")
     assert str(pcr_projects[0].planned_date_of_completion) == "2026-08-31"
     assert not PCRProjectEnterprise.objects.filter(id=existing_enterprise.id).exists()
@@ -1073,7 +1077,7 @@ def test_pcr_update_submission_date_and_nested_project(client, admin_user, metho
     ]
     assert pcr_projects[1].alternative_technologies.count() == 0
     assert response.data["id"] == pcr.id
-    assert response.data["submission_date"] == "2026-07-10"
+    assert response.data["submission_date"] is None
     assert response.data["addresses"] == "Updated address"
     assert response.data["pcr_projects"][0]["funds_disbursed"] == (
         "9876.540000000000000"
