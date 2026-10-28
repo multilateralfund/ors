@@ -22,6 +22,15 @@ class Replenishment(models.Model):
     start_year = models.IntegerField()
     end_year = models.IntegerField()
     amount = models.DecimalField(max_digits=30, decimal_places=15)
+    unused_amount = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+
+    @property
+    def contributions_amount(self):
+        if not self.unused_amount:
+            return Decimal(self.amount)
+        return Decimal(self.amount) - Decimal(self.unused_amount)
 
     def __str__(self):
         return f"Replenishment ({self.start_year} - {self.end_year})"
@@ -155,7 +164,7 @@ class ScaleOfAssessment(models.Model):
             return None
 
         return (
-            Decimal(self.version.replenishment.amount)
+            self.version.replenishment.contributions_amount
             * self.adjusted_scale_of_assessment
             / Decimal("100")
         )

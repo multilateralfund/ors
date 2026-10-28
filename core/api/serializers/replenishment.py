@@ -43,6 +43,9 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False, read_only=True
     )
+    unused_amount = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False, read_only=True
+    )
     scales_of_assessment_versions = ScaleOfAssessmentVersionSerializer(
         many=True, read_only=True
     )
