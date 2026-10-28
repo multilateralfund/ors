@@ -221,6 +221,7 @@ export type PCRMetaProjectType = {
   id: number
   type: string
   umbrella_code: string
+  lead_agency_id: number | null
   projects: ProjectType[]
   pcr_id: number | null
 }

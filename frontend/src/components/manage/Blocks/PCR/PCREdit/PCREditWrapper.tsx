@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo } from 'react'
+import { useContext, useEffect } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
@@ -14,7 +14,7 @@ import {
 } from '../interfaces'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
-import { groupBy, keyBy, keys, map, pick, uniq } from 'lodash'
+import { groupBy, keyBy, keys, map, pick } from 'lodash'
 import { Redirect } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
@@ -40,19 +40,11 @@ const ensureRows = <T,>(rows: T[] | undefined, fallback: () => T) =>
 
 const PCREditWrapper = () => {
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
-  const { pcr, pcrMetaproject, setPCRData } = useContext(PCRDataContext)
+  const { pcr, pcrMetaproject, agencyIds, setPCRData } =
+    useContext(PCRDataContext)
   const { data } = pcrMetaproject
 
   const loading = pcr.loading || pcrMetaproject.loading || !pcr.loaded
-
-  if (!loading && !data?.pcr_id) {
-    return <Redirect to="/pcr" />
-  }
-
-  const agencyIds = useMemo(
-    () => uniq(map(data?.projects, 'agency_id')),
-    [data],
-  )
 
   const groupDataByAgency = (data: Record<string, any>) =>
     groupBy(data, 'agency_id')
@@ -178,6 +170,10 @@ const PCREditWrapper = () => {
   }, [clearUpdatedFields, pcr.data, agencyIds, setPCRData])
 
   useVisibilityChange(updatedFields.size > 0)
+
+  if (!loading && !data?.pcr_id) {
+    return <Redirect to="/pcr" />
+  }
 
   return (
     <>

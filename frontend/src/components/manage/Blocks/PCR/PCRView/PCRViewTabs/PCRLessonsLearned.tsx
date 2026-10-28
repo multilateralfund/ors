@@ -18,16 +18,15 @@ import {
 } from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { find, keys, map } from 'lodash'
+import { find, map } from 'lodash'
 import cx from 'classnames'
 
 const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
-  const { fundsByAgency } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
+  const { agencyIds } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
   const crtAgencyId = agencyIds[crtTab]
   const crtAgencies = map(
     agencyIds,
@@ -35,8 +34,8 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
   )
 
   const llData =
-    find(pcr.learned_lessons, (ll) => ll.agency_id === Number(crtAgencyId))
-      ?.lessons ?? []
+    find(pcr.learned_lessons, (ll) => ll.agency_id === crtAgencyId)?.lessons ??
+    []
 
   return (
     <>

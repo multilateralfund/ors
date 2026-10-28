@@ -16,6 +16,7 @@ type PCRDataContextProps = PCRFormData & {
   pcrMetaproject: ReturnType<typeof useGetPCRProject>
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
   pcr: ReturnType<typeof useGetPCR>
+  agencyIds: number[]
   fundsByAgency: PCROverviewProps
   ratingOptions: OptionsType[]
   entityOptions: OptionsType[]

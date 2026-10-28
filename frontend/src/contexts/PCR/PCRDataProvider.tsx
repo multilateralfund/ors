@@ -38,7 +38,17 @@ import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 import { ApiSubstance } from '@ors/types/api_substances'
 
-import { filter, forEach, groupBy, keys, map, pick, reduce } from 'lodash'
+import {
+  compact,
+  filter,
+  forEach,
+  groupBy,
+  keys,
+  map,
+  pick,
+  reduce,
+  uniq,
+} from 'lodash'
 import { useParams } from 'wouter'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
@@ -51,6 +61,14 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const pcrMetaproject = useGetPCRProject(project_id)
   const { data: metaproject } = pcrMetaproject
   const projects = metaproject?.projects ?? []
+
+  const agencyIds = useMemo(
+    () =>
+      uniq(
+        compact([metaproject?.lead_agency_id, ...map(projects, 'agency_id')]),
+      ),
+    [metaproject],
+  )
 
   const { addUpdatedField } = useUpdatedFields()
 
@@ -417,6 +435,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     () => ({
       pcr,
       pcrMetaproject,
+      agencyIds,
       pcrDefaultData,
       PCRData,
       setPCRData,
@@ -436,6 +455,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     [
       pcr,
       pcrMetaproject,
+      agencyIds,
       pcrDefaultData,
       PCRData,
       setPCRData,

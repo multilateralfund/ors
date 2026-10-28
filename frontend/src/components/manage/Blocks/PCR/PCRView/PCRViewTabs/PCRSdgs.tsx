@@ -18,7 +18,7 @@ import {
   borderedContainerClassname,
 } from '../../constants'
 
-import { filter, find, keys, map } from 'lodash'
+import { filter, find, map } from 'lodash'
 import cx from 'classnames'
 import {
   Tabs,
@@ -34,12 +34,11 @@ import {
 } from '@mui/material'
 
 const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
-  const { fundsByAgency } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
+  const { agencyIds } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
   const crtAgencyId = agencyIds[crtTab]
   const crtAgencies = map(
     agencyIds,
@@ -48,7 +47,7 @@ const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
 
   const agencySdgsData = filter(
     pcr.sustainable_development_goals,
-    ({ agency_id }) => agency_id === Number(crtAgencyId),
+    ({ agency_id }) => agency_id === crtAgencyId,
   )
   const sdgApplying = agencySdgsData.length > 0 ? true : null
   // agencySdgsData.length > 0 ? agencySdgsData[0].sdg_applying : null

@@ -7,21 +7,17 @@ import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
-import { map, uniq } from 'lodash'
 import { Redirect } from 'wouter'
+import { map } from 'lodash'
 
 const PCRCreateWrapper = () => {
-  const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
+  const { pcrMetaproject, agencyIds, setPCRData } = useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
-  const projects = data?.projects
-
   useEffect(() => {
-    if (!projects) return
-
-    const agencyIds = uniq(map(projects, 'agency_id'))
+    if (!data) return
 
     setPCRData((prevData) => ({
       ...prevData,
@@ -56,7 +52,7 @@ const PCRCreateWrapper = () => {
         evidences: [],
       })),
     }))
-  }, [projects, setPCRData])
+  }, [data, agencyIds, setPCRData])
 
   useEffect(() => {
     clearUpdatedFields()
