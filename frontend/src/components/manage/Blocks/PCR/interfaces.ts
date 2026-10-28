@@ -152,6 +152,7 @@ export type PCRResponse = {
       description: string
     }[]
   }[]
+  future_project_recommendations: (Recommendation & { agency_id: number })[]
   gender_mainstreamings: (Omit<ProjectPhase, 'prefilled'> & {
     agency_id: number
     prefilled: boolean
@@ -191,6 +192,13 @@ type LessonLearned = { lesson_id: number | null; description: string }
 export interface PCRLessonsLearnedData {
   agency_id: number
   lessons: LessonLearned[]
+}
+
+export type Recommendation = { title: string; description: string }
+
+export interface PCRProjectRecommendationsData {
+  agency_id: number
+  recommendations: Recommendation[]
 }
 
 export type ProjectPhase = {
@@ -233,6 +241,7 @@ export interface PCRData {
   results_assessment: PCRResultsAssessmentData[]
   delay_causes: PCRCausesOfDelayData[]
   learned_lessons: PCRLessonsLearnedData[]
+  future_project_recommendations: PCRProjectRecommendationsData[]
   gender_mainstreaming: PCRGenderMainstreamingData[]
   sdgs_contribution: PCRSdgsData[]
   supporting_evidences: PCRSupportingEvidencesData[]

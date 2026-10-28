@@ -12,6 +12,7 @@ import {
 import {
   SubSectionTitle,
   UserInfo,
+  NrEntity,
   NoDataReported,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
@@ -358,9 +359,7 @@ const PCRCausesOfDelay = () => {
                           <div key={cdIndex}>
                             <div className="grid grid-cols-2 gap-4">
                               <div className="flex gap-3">
-                                <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-mlfs-hlYellow">
-                                  {cdIndex + 1}
-                                </div>
+                                {NrEntity(cdIndex)}
                                 <h4 className="m-0 text-lg font-semibold text-primary">
                                   {crtCdName}
                                 </h4>
