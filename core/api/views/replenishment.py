@@ -271,8 +271,12 @@ class ScaleOfAssessmentViewSet(
                 {"replenishment_id": "Replenishment does not exist."}
             ) from exc
 
-        if input_data.get("amount"):
-            replenishment.amount = input_data["amount"]
+        if input_data.get("amount") or "unused_amount" in input_data:
+            if input_data.get("amount"):
+                replenishment.amount = input_data["amount"]
+            if "unused_amount" in input_data:
+                # Clearing the UI input sends an empty value, meaning no unused sum
+                replenishment.unused_amount = input_data["unused_amount"] or 0
             replenishment.save()
 
         should_create_new_version = input_data.get("createNewVersion")

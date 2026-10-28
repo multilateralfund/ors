@@ -257,6 +257,36 @@ class TestScalesOfAssessment(BaseTest):
         response = self.client.get(self.url)
         assert response.status_code == 403
 
+    def test_scales_of_assessment_export_unused_amount(self, stakeholder_user):
+        replenishment = ReplenishmentFactory.create(
+            start_year=2027,
+            end_year=2029,
+            amount=Decimal("950000000"),
+            unused_amount=Decimal("584000000"),
+        )
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, version=0
+        )
+        ScaleOfAssessmentFactory.create(
+            version=version, override_adjusted_scale_of_assessment=Decimal("60")
+        )
+        ScaleOfAssessmentFactory.create(
+            version=version, override_adjusted_scale_of_assessment=Decimal("40")
+        )
+
+        self.client.force_authenticate(user=stakeholder_user)
+
+        response = self.client.get(
+            reverse("replenishment-scales-of-assessment-export"),
+            {"start_year": 2027, "version": 0},
+        )
+        assert response.status_code == 200
+
+        ws = openpyxl.load_workbook(io.BytesIO(response.getvalue())).active
+        yearly_amounts = sorted(ws.cell(row=row, column=5).value for row in (2, 3))
+        # (950M triannual budget - 584M previously unused) / 3 years = 122M per year
+        assert yearly_amounts == pytest.approx([48800000, 73200000])
+
 
 class TestStatusOfContributions:
     client = APIClient()
@@ -2057,6 +2087,49 @@ class TestScaleOfAssessmentWorkflow:
             )
             == post_data["data"]
         )
+
+    def test_update_scales_of_assessment_unused_amount(self, treasurer_user):
+        replenishment = ReplenishmentFactory.create(
+            start_year=2021, end_year=2023, amount=500
+        )
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, version=0, is_final=False
+        )
+        soa = ScaleOfAssessmentFactory.create(version=version)
+
+        self.client.force_authenticate(user=treasurer_user)
+
+        post_data = {
+            "replenishment_id": replenishment.id,
+            "amount": 1000,
+            "unused_amount": 400,
+            "data": [
+                {
+                    "country_id": soa.country_id,
+                    "average_inflation_rate": Decimal("4.5"),
+                    "exchange_rate": Decimal("0.9"),
+                    "currency": "",
+                    "un_scale_of_assessment": Decimal("0.005"),
+                }
+            ],
+            "final": False,
+        }
+        response = self.client.post(
+            self.url_scale_of_assessment, post_data, format="json"
+        )
+        assert response.status_code == 200
+        replenishment.refresh_from_db()
+        assert replenishment.amount == 1000
+        assert replenishment.unused_amount == 400
+
+        # Clearing the input resets the unused sum
+        post_data["unused_amount"] = ""
+        response = self.client.post(
+            self.url_scale_of_assessment, post_data, format="json"
+        )
+        assert response.status_code == 200
+        replenishment.refresh_from_db()
+        assert replenishment.unused_amount == 0
 
     def test_update_scales_of_assessment_final(self, treasurer_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")

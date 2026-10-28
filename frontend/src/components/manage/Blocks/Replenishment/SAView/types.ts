@@ -134,6 +134,7 @@ export interface SaveManagerProps {
   data: SAContributionForSave[]
   replenishmentAmount: string
   replenishmentId?: number
+  unusedAmount: string
   version: ApiReplenishmentSoAVersion | null
   versions: ApiReplenishmentSoAVersion[]
 }
@@ -145,4 +146,5 @@ export interface SaveData extends Pick<SaveManagerProps, 'comment' | 'data'> {
   decision_pdf?: File | FileForUpload | null
   final?: boolean
   replenishment_id: string
+  unused_amount: string
 }
