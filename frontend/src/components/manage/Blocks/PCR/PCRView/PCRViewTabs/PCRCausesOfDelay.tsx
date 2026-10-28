@@ -5,6 +5,7 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
   SectionTitle,
   SubSectionTitle,
+  NrEntity,
   NoDataReported,
   detailItem,
 } from './ViewHelperComponents'
@@ -110,9 +111,7 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
                           <div key={cdIndex}>
                             <div className="grid grid-cols-2 gap-4">
                               <div className="flex gap-3">
-                                <div className="flex h-6 min-h-6 w-6 min-w-6 items-center justify-center rounded-full bg-primary text-lg font-medium text-mlfs-hlYellow">
-                                  {cdIndex + 1}
-                                </div>
+                                {NrEntity(cdIndex)}
                                 <h4 className="m-0 text-lg font-semibold text-primary">
                                   {cd.root_cause || '-'}
                                 </h4>
