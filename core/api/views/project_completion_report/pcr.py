@@ -15,6 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import serializers
+import openpyxl
 
 # pylint: disable=broad-exception-caught
 
@@ -38,6 +39,8 @@ from core.api.serializers.project_completion_report import (
     PCRUpdateSerializer,
     PCRVersionSerializer,
 )
+from core.api.export.project_completion_report import PCRSubmissionLogWriter
+from core.api.utils import workbook_response
 from core.api.views.project_completion_report.pcr_workflow import PCRWorkflowMixin
 from core.api.views.utils import get_country_regions
 from core.models.country import Country
@@ -96,6 +99,8 @@ class PCRProjectViewSet(
         "project__sector__name",
         "project__title",
         "date_created",
+        "pcr__submission_date",
+        "pcr__revised_submission_date",
     ]
     search_fields = [
         "project__code",
@@ -115,7 +120,7 @@ class PCRProjectViewSet(
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "list_filters", "retrieve", "versions"]:
+        if self.action in ["list", "list_filters", "export", "retrieve", "versions"]:
             return [HasPCRViewAccess]
         if self.action in [
             "create",
@@ -139,7 +144,7 @@ class PCRProjectViewSet(
                 return PCRVersionSerializer
             case "update" | "partial_update":
                 return PCRUpdateSerializer
-            case "list":
+            case "list" | "export":
                 return PCRProjectListSerializer
             case _:
                 raise ValueError(f"Unmapped or invalid action: '${self.action}'")
@@ -300,6 +305,29 @@ class PCRProjectViewSet(
             "pcr_due": self._get_pcr_due_values(queryset),
         }
         return Response(result)
+
+    @extend_schema(
+        description="""
+        Export the PCR submission log as xlsx. The same filters as the listing
+        are applied. Archived PCR versions are not included.
+        """,
+        responses={
+            (
+                status.HTTP_200_OK,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ): OpenApiTypes.BINARY
+        },
+    )
+    @action(methods=["GET"], detail=False)
+    def export(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        wb = openpyxl.Workbook()
+        PCRSubmissionLogWriter(wb).write(queryset)
+
+        # delete default sheet
+        del wb[wb.sheetnames[0]]
+
+        return workbook_response("PCR submission log", wb)
 
     @staticmethod
     def _build_initial_data(meta_project, pcr):
