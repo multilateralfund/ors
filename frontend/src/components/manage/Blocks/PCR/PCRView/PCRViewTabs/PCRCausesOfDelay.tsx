@@ -85,7 +85,7 @@ const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
                                 {cdIndex + 1}
                               </div>
                               <h4 className="m-0 text-lg font-normal text-white">
-                                {cd.root_cause || '-'}
+                                {cd.root_cause?.split('(')[0].trim() || '-'}
                               </h4>
                             </div>
                           </div>

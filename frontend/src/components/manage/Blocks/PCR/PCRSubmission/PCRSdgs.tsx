@@ -383,9 +383,10 @@ const PCRSdgs = () => {
                                 indexes={[crtTab, sdgIndex]}
                                 subFields={['', sdgsField]}
                                 placeholder="Describe the project’s contribution to this SDG…"
+                                excludeLabel
                               />
                             </TableCell>
-                            <TableCell className="w-[4%] text-center align-middle">
+                            <TableCell className="w-[4%] text-center">
                               <IoTrash
                                 className="mx-auto min-h-6 min-w-6 cursor-pointer fill-[#8a2323]"
                                 size={16}
