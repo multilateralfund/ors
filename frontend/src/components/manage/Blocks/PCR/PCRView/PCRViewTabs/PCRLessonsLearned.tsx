@@ -76,7 +76,7 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
                         {llIndex + 1}
                       </div>
                       <h4 className="m-0 text-lg font-normal text-white">
-                        {ll.lesson || '-'}
+                        {ll.lesson?.split('(')[0].trim() || '-'}
                       </h4>
                     </div>
                   </div>

@@ -48,14 +48,10 @@ const PCRProjectRecommendations = ({
             <div className="flex gap-3">
               {NrEntity(prIndex)}
               <div>
-                <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
+                <h4 className="m-0 text-lg font-semibold text-primary">
                   {pr.title || '-'}
                 </h4>
-                {detailItem(
-                  pcrFieldsMapping.description,
-                  pr.description,
-                  textareaClassname,
-                )}
+                {detailItem('', pr.description, textareaClassname, false, true)}
               </div>
             </div>
             {prIndex !== prData.length - 1 && <Divider className="my-4" />}
