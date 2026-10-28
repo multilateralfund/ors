@@ -74,19 +74,21 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
               '!text-mlfs-hlYellow bg-primary border-primary',
             ),
           )}
-          <div
-            className={cx(
-              'mt-3 flex',
-              overviewTextareaClassname.containerClassname,
-            )}
-          >
-            <div className={spacingClassname} />
-            {detailItem(
-              pcrFieldsMapping.rating_explanation_other,
-              pcr.rating_explanation_other,
-              explanationClassname,
-            )}
-          </div>
+          {pcr.rating.includes('Other') && (
+            <div
+              className={cx(
+                'mt-3 flex',
+                overviewTextareaClassname.containerClassname,
+              )}
+            >
+              <div className={spacingClassname} />
+              {detailItem(
+                pcrFieldsMapping.rating_explanation_other,
+                pcr.rating_explanation_other,
+                explanationClassname,
+              )}
+            </div>
+          )}
           <div
             className={cx(
               'mt-3 flex',

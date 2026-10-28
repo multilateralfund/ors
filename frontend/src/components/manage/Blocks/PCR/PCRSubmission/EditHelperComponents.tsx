@@ -42,7 +42,7 @@ export const DeleteEntityButton = ({
     size="small"
     variant="outlined"
     startIcon={<IoTrash size={14} className="mb-0.5" />}
-    className="h-8 items-center rounded border-[#9ca3af] bg-white px-3 py-1 normal-case text-[#8a2323]"
+    className="h-8 items-center rounded border-[#e5e7eb] bg-white px-3 py-1 normal-case text-[#8a2323]"
     onClick={onAction}
   >
     {title}

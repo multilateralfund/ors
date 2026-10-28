@@ -212,7 +212,7 @@ const PCRResultsAssessment = () => {
                             </TableCell>
                           ),
                         )}
-                        <TableCell className="text-center align-middle">
+                        <TableCell className="text-center">
                           <IoTrash
                             className="mx-auto min-h-6 min-w-6 cursor-pointer fill-[#8a2323]"
                             size={16}
