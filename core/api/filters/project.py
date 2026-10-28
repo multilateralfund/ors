@@ -10,6 +10,7 @@ from core.models.project import (
     MetaProject,
     Project,
 )
+from core.models.project_completion_report import PCRProject
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -118,7 +119,7 @@ class ProjectFilter(filters.FilterSet):
     )
 
     pcr_submission_date = filters.DateFromToRangeFilter(
-        field_name="pcr_projects__pcr__submission_date",
+        method="filter_pcr_submission_date",
         help_text="Filter by PCR submission date range. Format: YYYY-MM-DD",
     )  ### pcr submission date
     pcr_due_by_rules = filters.MultipleChoiceFilter(
@@ -250,13 +251,29 @@ class ProjectFilter(filters.FilterSet):
             | Q(country__parent__parent__in=region_ids)
         )
 
+    def filter_pcr_submission_date(self, queryset, name, value):
+        # Only the current PCR version is checked, archived versions are ignored
+        pcr_project_filters = {"pcr__latest_pcr__isnull": True}
+        if value.start:
+            pcr_project_filters["pcr__submission_date__gte"] = value.start
+        if value.stop:
+            pcr_project_filters["pcr__submission_date__lte"] = value.stop
+        return queryset.filter(
+            Exists(
+                PCRProject.objects.filter(project=OuterRef("pk"), **pcr_project_filters)
+            )
+        )
+
     def filter_pcr_submitted(self, queryset, name, value):
         if not value:
             return queryset
         query_filters = Q()
         for option in value:
             if option == "Yes":
-                query_filters |= Q(pcr_projects__isnull=False)
+                # Exists avoids duplicated rows for PCRs with archived versions
+                query_filters |= Q(
+                    Exists(PCRProject.objects.filter(project=OuterRef("pk")))
+                )
             elif option in ["No", "N/A"]:
                 query_filters |= Q(pcr_projects__isnull=True)
         if not query_filters:

@@ -36,7 +36,9 @@ from core.api.serializers.project_completion_report import (
     PCRDetailSerializer,
     PCRRootCausesOfDelaySerializer,
     PCRUpdateSerializer,
+    PCRVersionSerializer,
 )
+from core.api.views.project_completion_report.pcr_workflow import PCRWorkflowMixin
 from core.api.views.utils import get_country_regions
 from core.models.country import Country
 from core.models.project import MetaProject, Project
@@ -68,6 +70,7 @@ class PCRLearnedLessonCategoryListView(generics.ListAPIView):
 
 
 class PCRProjectViewSet(
+    PCRWorkflowMixin,
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -100,12 +103,29 @@ class PCRProjectViewSet(
         "project__metacode",
         "project__title",
     ]
+    PCR_DETAIL_ACTIONS = [
+        "retrieve",
+        "update",
+        "partial_update",
+        "submit",
+        "request_adjustments",
+        "approve",
+        "versions",
+    ]
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "list_filters", "retrieve"]:
+        if self.action in ["list", "list_filters", "retrieve", "versions"]:
             return [HasPCRViewAccess]
-        if self.action in ["create", "create_defaults", "update", "partial_update"]:
+        if self.action in [
+            "create",
+            "create_defaults",
+            "update",
+            "partial_update",
+            "submit",
+            "request_adjustments",
+            "approve",
+        ]:
             return [HasPCREditAccess]
         return [DenyAll]
 
@@ -113,8 +133,10 @@ class PCRProjectViewSet(
         match self.action:
             case "create" | "create_defaults":
                 return PCRCreateSerializer
-            case "retrieve":
+            case "retrieve" | "submit" | "request_adjustments" | "approve":
                 return PCRDetailSerializer
+            case "versions":
+                return PCRVersionSerializer
             case "update" | "partial_update":
                 return PCRUpdateSerializer
             case "list":
@@ -134,7 +156,7 @@ class PCRProjectViewSet(
         return context
 
     def filter_queryset(self, queryset):
-        if self.action in ["retrieve", "update", "partial_update"]:
+        if self.action in self.PCR_DETAIL_ACTIONS:
             return queryset
         return super().filter_queryset(queryset)
 
@@ -163,8 +185,14 @@ class PCRProjectViewSet(
         return queryset.none()
 
     def get_queryset(self):
-        if self.action in ["retrieve", "update", "partial_update"]:
-            return PCR.objects.select_related("meta_project").prefetch_related(
+        if self.action in self.PCR_DETAIL_ACTIONS:
+            # Archived versions can be viewed, but not edited or moved in the workflow
+            manager_queryset = (
+                PCR.objects.really_all()
+                if self.action in ["retrieve", "versions"]
+                else PCR.objects.all()
+            )
+            return manager_queryset.select_related("meta_project").prefetch_related(
                 "pcr_projects",
                 "pcr_projects__alternative_technologies",
                 "pcr_projects__enterprises",
@@ -190,6 +218,7 @@ class PCRProjectViewSet(
             .prefetch_related(
                 "project__subsectors",
             )
+            .filter(pcr__latest_pcr__isnull=True)
             .annotate(pcr_due_value=Exists(pcr_required_project))
         )
         return self._filter_project_permissions_queryset(queryset)
@@ -421,6 +450,11 @@ class PCRProjectViewSet(
             metadata = raw_metadata or {}
 
         instance = self.get_object()
+        if not instance.is_editable:
+            return Response(
+                {"error": "The final version of the PCR can no longer be edited."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         serializer = self.get_serializer(
             instance, data=metadata, partial=kwargs.get("partial", False)
         )

@@ -84,6 +84,12 @@ class PCR(models.Model):
         LOCAL_EXECUTING_AGENCY = "Local executing agency", "Local executing agency"
         OTHER = "Other", "Other"
 
+    class Status(models.TextChoices):
+        DRAFT = "Draft", "Draft"
+        SUBMITTED = "Submitted", "Submitted"
+        ADJUSTMENTS_REQUESTED = "Adjustments requested", "Adjustments requested"
+        FINAL = "Final", "Final"
+
     meta_project = models.ForeignKey(
         "MetaProject", on_delete=models.PROTECT, related_name="pcrs"
     )
@@ -97,6 +103,12 @@ class PCR(models.Model):
         help_text="User who created this PCR version",
     )
     version = models.IntegerField(default=1)
+    status = models.CharField(
+        max_length=32,
+        choices=Status.choices,
+        default=Status.DRAFT,
+        help_text="Workflow status of the PCR",
+    )
     latest_pcr = models.ForeignKey(
         "self",
         on_delete=models.PROTECT,
@@ -200,6 +212,11 @@ class PCR(models.Model):
 
     def __str__(self):
         return self.meta_project.umbrella_code
+
+    @property
+    def is_editable(self):
+        """Archived versions and the final version are locked"""
+        return self.latest_pcr_id is None and self.status != self.Status.FINAL
 
     @cached_property
     def total_number_of_enterprises(self):

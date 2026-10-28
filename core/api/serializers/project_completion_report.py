@@ -478,6 +478,9 @@ class PCRDetailSerializer(serializers.ModelSerializer):
         source="decisions", many=True, read_only=True
     )
     meta_project_id = serializers.IntegerField(read_only=True)
+    latest_pcr_id = serializers.IntegerField(read_only=True)
+    version_created_by = serializers.StringRelatedField(read_only=True)
+    is_editable = serializers.BooleanField(read_only=True)
     pcr_projects = serializers.SerializerMethodField()
     delay_causes = PCRDelayCauseSerializer(many=True)
     learned_lessons = PCRLearnedLessonSerializer(many=True)
@@ -490,6 +493,11 @@ class PCRDetailSerializer(serializers.ModelSerializer):
         model = PCR
         fields = [
             "id",
+            "version",
+            "status",
+            "latest_pcr_id",
+            "version_created_by",
+            "is_editable",
             "additional_comments",
             "addresses",
             "country",
@@ -843,9 +851,28 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
         return PCRDetailSerializer(instance, context=self.context).data
 
 
+class PCRVersionSerializer(serializers.ModelSerializer):
+    version_created_by = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = PCR
+        fields = [
+            "id",
+            "version",
+            "status",
+            "latest_pcr_id",
+            "version_created_by",
+            "submission_date",
+            "date_created",
+            "date_updated",
+        ]
+
+
 class PCRProjectListSerializer(serializers.ModelSerializer):
     project_id = serializers.IntegerField(source="project.id", read_only=True)
     pcr_id = serializers.IntegerField(source="pcr.id", read_only=True)
+    pcr_version = serializers.IntegerField(source="pcr.version", read_only=True)
+    pcr_status = serializers.CharField(source="pcr.status", read_only=True)
     project_metacode = serializers.CharField(source="project.metacode", read_only=True)
     country = serializers.SerializerMethodField()
     country_id = serializers.IntegerField(source="project.country_id", read_only=True)
@@ -939,6 +966,8 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "pcr_id",
+            "pcr_version",
+            "pcr_status",
             "project_id",
             "project_metacode",
             "country",
