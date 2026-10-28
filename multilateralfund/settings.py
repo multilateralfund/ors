@@ -299,6 +299,16 @@ EMAILS_CONSTANCE_FIELDS = OrderedDict(
             "Email addresses that receive agency submission notifications (comma-separated)",
             str,
         ),
+        "PCR_NOTIFICATIONS_ENABLED": (
+            False,
+            "Enable PCR submission and final version notifications",
+            bool,
+        ),
+        "PCR_NOTIFICATIONS_EMAILS": (
+            "",
+            "Email addresses that receive PCR submission and final version notifications (comma-separated)",
+            str,
+        ),
     }
 )
 
