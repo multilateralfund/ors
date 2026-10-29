@@ -111,14 +111,7 @@ const PCREditWrapper = () => {
 
     const genderMainstreamings = map(agencyIds, (agency_id) => ({
       agency_id,
-      gender_mainstreamings: map(
-        groupedGenderMainstreamings[agency_id],
-        ({ project_preparation, prefilled, qualitative_description }) => ({
-          project_preparation,
-          prefilled: prefilled ? 'Yes' : 'No',
-          qualitative_description,
-        }),
-      ),
+      gender_mainstreamings: groupedGenderMainstreamings[agency_id] ?? [],
     }))
 
     const groupedSdgsContribution = groupDataByAgency(

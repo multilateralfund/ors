@@ -419,10 +419,7 @@ export const getFormData = (
   const genderMainstreamingsData = formatAgencyData<PCRGenderMainstreamingData>(
     gender_mainstreaming,
     'gender_mainstreamings',
-  ).map((item) => ({
-    ...item,
-    prefilled: item.prefilled === 'Yes',
-  }))
+  )
   const sdgsContributionData = filter(
     sdgs_contribution,
     (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,

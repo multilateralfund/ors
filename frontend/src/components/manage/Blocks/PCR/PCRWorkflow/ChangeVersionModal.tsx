@@ -1,8 +1,8 @@
 import { useContext, useState } from 'react'
 
 import CustomLink from '@ors/components/ui/Link/Link'
-import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { CancelButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { api } from '@ors/helpers'
 
 import { Modal, Box, Typography, CircularProgress } from '@mui/material'
@@ -20,33 +20,56 @@ const ChangeVersionModal = ({
   editPCR?: (showSuccess?: boolean) => Promise<boolean>
 }) => {
   const { pcr_id, project_id } = useParams<Record<string, string>>()
-  const [_, setLocation] = useLocation()
-
   const { pcr } = useContext(PCRDataContext)
+  const [_, setLocation] = useLocation()
 
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const modalTitle = modalType === 'submit' ? 'submit' : ''
+  const actions: Record<
+    string,
+    { title: string; endpoint: string; successMessage: string }
+  > = {
+    submit: {
+      title: 'submit',
+      endpoint: 'submit',
+      successMessage: 'PCR submitted successfully.',
+    },
+    'request changes': {
+      title: 'request changes for',
+      endpoint: 'request_adjustments',
+      successMessage: 'Changes requested successfully for PCR.',
+    },
+    approve: {
+      title: 'approve',
+      endpoint: 'approve',
+      successMessage: 'PCR approved successfully.',
+    },
+  }
 
-  const submitPCR = async () => {
+  const action = modalType ? actions[modalType] : null
+  const modalTitle = action?.title ?? ''
+
+  const changePCRStatus = async () => {
+    if (!action) {
+      return
+    }
+
     try {
-      await api(`api/project-completion-reports/${pcr_id}/submit/`, {
-        method: 'POST',
-      })
+      await api(
+        `api/project-completion-reports/${pcr_id}/${action.endpoint}/`,
+        { method: 'POST' },
+      )
+
       pcr.refetch()
       setLocation(`/pcr/${project_id}/${pcr_id}`)
-      enqueueSnackbar(<>PCR submitted successfully.</>, {
-        variant: 'success',
-      })
+      enqueueSnackbar(<>{action.successMessage}</>, { variant: 'success' })
     } catch (error) {
       const data =
         error instanceof Response ? await error.json().catch(() => null) : null
 
       enqueueSnackbar(
-        <>{data?.error ?? 'Could not submit PCR. Please try again.'}</>,
-        {
-          variant: 'error',
-        },
+        <>{data?.error ?? `Could not ${modalTitle} PCR. Please try again.`}</>,
+        { variant: 'error' },
       )
     }
   }
@@ -57,9 +80,7 @@ const ChangeVersionModal = ({
     const isSaved = editPCR ? await editPCR(false) : true
 
     if (isSaved) {
-      if (modalType === 'submit') {
-        await submitPCR()
-      }
+      await changePCRStatus()
     }
 
     setIsProcessing(false)

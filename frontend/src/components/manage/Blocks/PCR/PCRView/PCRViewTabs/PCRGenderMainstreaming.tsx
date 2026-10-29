@@ -92,7 +92,7 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
                 </TableHead>
                 <TableBody>
                   {map(ppData, (pp, ppIndex) => {
-                    const prefilled = pp.prefilled ? 'Yes' : 'No'
+                    const prefilled = pp.prefilled
 
                     return (
                       <TableRow key={ppIndex}>

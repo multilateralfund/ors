@@ -152,10 +152,7 @@ export type PCRResponse = {
     }[]
   }[]
   future_project_recommendations: (Recommendation & { agency_id: number })[]
-  gender_mainstreamings: (Omit<ProjectPhase, 'prefilled'> & {
-    agency_id: number
-    prefilled: boolean
-  })[]
+  gender_mainstreamings: (ProjectPhase & { agency_id: number })[]
   sustainable_development_goals: {
     agency_id: number
     sdg_applying: boolean
