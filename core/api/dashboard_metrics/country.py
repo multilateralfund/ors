@@ -279,7 +279,7 @@ def kf_funding_disbursed(context: MetricContext) -> float | None:
     """What has actually been paid out to the country."""
     result = context.apr.funds_disbursed()["all_time"] if context.apr else None
     if result:
-        return format_number(result)
+        return format_number(result, 0, "$")
     return
 
 

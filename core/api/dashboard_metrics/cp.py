@@ -116,7 +116,7 @@ class CountryProgrammeTrends:
             _grouped_series(self.ods_consumption.get(country_name)),
             "ODS Consumption",
             "",
-            "ODP",
+            "ODP-T",
             ODS_CONSUMPTION_COLORS,
         )
         return result
@@ -127,7 +127,7 @@ class CountryProgrammeTrends:
             _series(self.hfc_consumption.get(country_name)),
             "HFC Consumption",
             "",
-            "CO2",
+            "CO₂ EQ-T",
             HFC_CONSUMPTION_COLOR,
         )
 
@@ -142,7 +142,7 @@ class CountryProgrammeTrends:
                 _grouped_series(by_group),
                 "ODS Production",
                 "",
-                "ODP",
+                "ODP-T",
                 ODS_PRODUCTION_COLORS,
             )
             if produced
