@@ -1187,6 +1187,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
 
     projects = serializers.SerializerMethodField()
     pcr_id = serializers.SerializerMethodField()
+    pcr_status = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     date_of_completion = serializers.SerializerMethodField()
     total_funding = serializers.SerializerMethodField()
@@ -1210,6 +1211,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "type",
             "projects",
             "pcr_id",
+            "pcr_status",
             "pcr_due",
             "pcr_due_date",
             "status",
@@ -1268,10 +1270,23 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             return "Not completed"
         return None
 
+    def _get_pcr(self, obj):
+        # Fetched once per meta project, as it is reused by other fields
+        if not hasattr(obj, "current_pcr"):
+            obj.current_pcr = PCR.objects.filter(meta_project=obj).first()
+        return obj.current_pcr
+
     def get_pcr_id(self, obj):
-        pcr = PCR.objects.filter(meta_project=obj).first()
+        pcr = self._get_pcr(obj)
         if pcr:
             return pcr.id
+        return None
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_pcr_status(self, obj):
+        pcr = self._get_pcr(obj)
+        if pcr:
+            return pcr.status
         return None
 
 
