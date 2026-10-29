@@ -1658,7 +1658,7 @@ class TestCountryValues(BaseTest):
 
         assert metrics["kf_odp_phased"]["value"] == "5"
         assert metrics["kf_co2_phased"]["value"] == "300"
-        assert metrics["kf_funding_disbursed"]["value"] == "250"
+        assert metrics["kf_funding_disbursed"]["value"] == "$250"
         assert metrics["kf_odp_approved"]["value"] == "99"
 
 
