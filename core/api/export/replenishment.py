@@ -673,6 +673,22 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
             if key == "exchange_rate":
                 cell.value = value.replace("(01 Jan - 30 June 2023)", "")
 
+    def write(self):
+        super().write()
+
+        # The template's UN scale "Total" cell holds a hardcoded value instead of a SUM;
+        # replace it like the other totals.
+        last_data_row = self.TEMPLATE_FIRST_DATA_ROW + len(self.data) - 1
+        column = get_column_letter(
+            self.DATA_MAPPING["un_scale_of_assessment"]["column"]
+        )
+        cell = self.sheet[f"{column}{last_data_row + 1}"]
+        cell.value = (
+            f"=SUM({column}{self.TEMPLATE_FIRST_DATA_ROW}:{column}{last_data_row})"
+        )
+        # Its comment only explains the old value
+        cell.comment = None
+
 
 class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
     """
