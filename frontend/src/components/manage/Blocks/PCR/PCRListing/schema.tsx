@@ -172,6 +172,16 @@ const getColumnDefs = (
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
       minWidth: 80,
     },
+    ...(view === 'table'
+      ? [
+          {
+            headerName: 'PCR status',
+            field: 'pcr_status',
+            tooltipField: 'pcr_status',
+            cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+          },
+        ]
+      : []),
     {
       headerName: pcrFieldsMapping.country,
       field: 'country',

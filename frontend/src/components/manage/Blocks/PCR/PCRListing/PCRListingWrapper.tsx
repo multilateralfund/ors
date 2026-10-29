@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useContext } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -9,25 +9,15 @@ import {
   RedirectBackButton,
   CreateButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
-import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
 import PCRTable from './PCRTable'
-import { initialFilters, categoryOpts, booleanFieldsOpts } from '../constants'
+import { initialFilters, booleanFieldsOpts } from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
-import { useStore } from '@ors/store'
-
-import { filter } from 'lodash'
+import { useGetPcrFilters } from '../hooks/useGetPcrFilters'
 
 const PCRListingWrapper = () => {
   const form = useRef<any>()
-
-  const { countries, agencies, clusters, project_types, sectors } =
-    useContext(ProjectsDataContext)
-  const projectsSlice = useStore((state) => state.projects)
-  const statuses = filter(projectsSlice.statuses.data, (status) =>
-    ['Completed', 'Financially completed'].includes(status.name),
-  )
 
   const updatedInitialFilters = {
     ...initialFilters,
@@ -44,14 +34,18 @@ const PCRListingWrapper = () => {
   const pcrProjects = useGetPCRProjects(updatedInitialParams)
   const { loading, setParams } = pcrProjects
 
+  const pcrFilters = useGetPcrFilters(updatedInitialParams)
+  const { data: filterOptions, setParams: setParamsFilters } = pcrFilters
+
   const fieldToOptionsMapping: Record<string, any[]> = {
-    country: countries,
-    lead_agency: agencies,
-    cluster: clusters,
-    project_type: project_types,
-    sector: sectors,
-    category: categoryOpts,
-    status: statuses,
+    country: filterOptions?.country ?? [],
+    lead_agency: filterOptions?.lead_agency ?? [],
+    cluster: filterOptions?.cluster ?? [],
+    project_type: filterOptions?.project_type ?? [],
+    sector: filterOptions?.sector ?? [],
+    category: filterOptions?.category ?? [],
+    status: filterOptions?.status ?? [],
+    pcr_status: filterOptions?.pcr_status ?? [],
     pcr_due: booleanFieldsOpts,
     ad_hoc_pcr: booleanFieldsOpts,
   }
@@ -62,6 +56,7 @@ const PCRListingWrapper = () => {
 
   const handleParamsChange = (params: { [key: string]: any }) => {
     setParams(params)
+    setParamsFilters(params)
   }
 
   const filtersProps = {
@@ -77,15 +72,20 @@ const PCRListingWrapper = () => {
 
     if (value === 'list') {
       handleFilterChange({
+        pcr_status: [],
         pcr_submission_date_after: '',
         pcr_submission_date_before: '',
       })
 
       handleParamsChange({
+        pcr_status: '',
         pcr_submission_date_after: '',
         pcr_submission_date_before: '',
         offset: 0,
       })
+    } else {
+      handleFilterChange({ pcr_due: [] })
+      handleParamsChange({ pcr_due: '', offset: 0 })
     }
 
     const pcrSubmitted =

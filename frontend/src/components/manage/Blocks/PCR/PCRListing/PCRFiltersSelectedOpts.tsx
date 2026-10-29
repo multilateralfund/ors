@@ -59,6 +59,10 @@ const PCRFiltersSelectedOpts = ({
       entityIdentifier: 'status_id',
     },
     {
+      entities: formatEntity(fieldToOptionsMapping.pcr_status),
+      entityIdentifier: 'pcr_status',
+    },
+    {
       entities: formatEntity(fieldToOptionsMapping.pcr_due),
       entityIdentifier: 'pcr_due',
       extraLabel: pcrFieldsMapping.pcr_due,
