@@ -14,17 +14,13 @@ const HistoryItem = ({ item }: { item: PCRHistoryItem }) => {
   const { first_name, last_name, username, email } = item.user
   const fullName = [first_name, last_name].filter(Boolean).join(' ') || username
 
-  const formattedDateTime = dayjs(item.created_at).format(
-    'MMMM DD, YYYY at h:mm A',
-  )
+  const creationDate = dayjs(item.created_at).format('MMMM DD, YYYY at h:mm A')
 
   return (
-    <div className="flex grow flex-wrap items-center justify-between gap-x-3 gap-y-2 text-pretty px-4 py-3 pl-0">
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-pretty py-3 pr-4">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="my-1 min-w-24 text-sm font-normal text-gray-500">
-          {formattedDateTime}
-        </p>
-        <p className="text-md my-1 whitespace-pre-line font-medium text-gray-900">
+        <p className="my-1 text-sm text-gray-500">{creationDate}</p>
+        <p className="my-1 whitespace-pre-line font-medium text-gray-900">
           {item.description}
         </p>
         {item.lock_action && (
@@ -41,7 +37,7 @@ const HistoryItem = ({ item }: { item: PCRHistoryItem }) => {
           </span>
         )}
       </div>
-      <p className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500">
+      <p className="my-1 rounded bg-gray-100 px-1 text-sm text-gray-500">
         {fullName} - {email} ({username})
       </p>
     </div>

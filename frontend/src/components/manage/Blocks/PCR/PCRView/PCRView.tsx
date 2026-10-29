@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRGenderMainstreaming from './PCRViewTabs/PCRGenderMainstreaming'
 import PCRResultsAssessment from './PCRViewTabs/PCRResultsAssessment'
 import PCRSummaryOfKeyData from './PCRViewTabs/PCRSummaryOfKeyData'
@@ -14,6 +15,8 @@ import PCRSdgs from './PCRViewTabs/PCRSdgs'
 import { Tabs, Tab } from '@mui/material'
 
 const PCRView = () => {
+  const { pcr } = useContext(PCRDataContext)
+
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const tabs = [
@@ -57,11 +60,15 @@ const PCRView = () => {
       label: 'Other supporting evidence',
       component: <PCRDocumentation />,
     },
-    {
-      id: 'history',
-      label: 'History',
-      component: <PCRHistory />,
-    },
+    ...(!pcr.data?.latest_pcr_id
+      ? [
+          {
+            id: 'history',
+            label: 'History',
+            component: <PCRHistory />,
+          },
+        ]
+      : []),
   ]
 
   return (
