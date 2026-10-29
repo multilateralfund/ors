@@ -10,7 +10,7 @@ from core.models.project import (
     MetaProject,
     Project,
 )
-from core.models.project_completion_report import PCRProject
+from core.models.project_completion_report import PCR, PCRProject
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -158,6 +158,11 @@ class ProjectFilter(filters.FilterSet):
         widget=CSVWidget,
         method="filter_ad_hoc_pcr",
     )
+    pcr_status = filters.MultipleChoiceFilter(
+        choices=PCR.Status.choices,
+        widget=CSVWidget,
+        method="filter_pcr_status",
+    )
     pcr_submitted = filters.MultipleChoiceFilter(
         choices=[
             ("Yes", True),
@@ -279,6 +284,19 @@ class ProjectFilter(filters.FilterSet):
         if not query_filters:
             return queryset
         return queryset.filter(query_filters)
+
+    def filter_pcr_status(self, queryset, name, value):
+        if not value:
+            return queryset
+        # Only the current PCR version is checked, archived versions are ignored
+        return queryset.filter(
+            Exists(
+                PCR.objects.filter(
+                    meta_project=OuterRef("meta_project"),
+                    status__in=value,
+                )
+            )
+        )
 
     def filter_completed_only(self, queryset, name, value):
         if not value:

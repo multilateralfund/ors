@@ -68,6 +68,26 @@ class PCRCompletedByView(BaseMetadataView):
         return Response(choices)
 
 
+class PCRStatusView(BaseMetadataView):
+    """
+    View to return a list of all PCR Status choices
+    """
+
+    @extend_schema(
+        responses={200: list[tuple[str, str]]},
+        examples=[
+            OpenApiExample(
+                "PCR status choices",
+                value=PCR.Status.choices,
+                response_only=True,
+            )
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        choices = PCR.Status.choices
+        return Response(choices)
+
+
 class PCREntityView(BaseMetadataView):
     """
     View to return a list of all PCRAdditionalComment Entity choices
