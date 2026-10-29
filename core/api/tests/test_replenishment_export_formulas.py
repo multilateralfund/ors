@@ -247,7 +247,7 @@ class TestScaleOfAssessmentFormulas:
         ws = self._write(count)
         last_data_row = self.FIRST_DATA_ROW + count - 1
         totals_row = last_data_row + 1
-        for col in "DE":
+        for col in "CDE":
             assert (
                 ws[f"{col}{totals_row}"].value
                 == f"=SUM({col}{self.FIRST_DATA_ROW}:{col}{last_data_row})"
