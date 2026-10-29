@@ -25,9 +25,10 @@ import {
   Paper,
 } from '@mui/material'
 
-const PCRResultsAssessment = ({ pcr }: { pcr: PCRResponse }) => {
+const PCRResultsAssessment = () => {
   const { agencies } = useContext(ProjectsDataContext)
-  const { agencyIds } = useContext(PCRDataContext)
+  const { pcr: pcrData, agencyIds } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
 
   const [crtTab, setCrtTab] = useState(0)
 

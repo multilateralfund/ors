@@ -44,22 +44,24 @@ const PCRViewWrapper = () => {
               </div>
               <div className="ml-auto mt-auto flex flex-wrap items-center justify-end gap-2.5">
                 <CancelLinkButton title="Cancel" href="/pcr" />
-                <Link
-                  className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary hover:text-mlfs-hlYellow"
-                  href={`/pcr/${project_id}/${pcr_id}/edit`}
-                  variant="contained"
-                  color="secondary"
-                  size="large"
-                  button
-                >
-                  Edit
-                </Link>
+                {pcr.data.status !== 'Final' && (
+                  <Link
+                    className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary hover:text-mlfs-hlYellow"
+                    href={`/pcr/${project_id}/${pcr_id}/edit`}
+                    variant="contained"
+                    color="secondary"
+                    size="large"
+                    button
+                  >
+                    Edit
+                  </Link>
+                )}
                 <WorkflowButtons />
               </div>
             </div>
             {SubmissionStatus(pcr.data.status)}
           </HeaderTitle>
-          <PCRView pcr={pcr.data} />
+          <PCRView />
         </>
       )}
     </>

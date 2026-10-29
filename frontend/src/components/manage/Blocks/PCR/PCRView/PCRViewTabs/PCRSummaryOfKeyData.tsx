@@ -64,8 +64,14 @@ const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
 const getValueToDisplay = (options: OptionsType[], value: number | null) =>
   options.find((option) => option.id === value)?.name ?? ''
 
-const PCRSummaryOfKeyData = ({ pcr }: { pcr: PCRResponse }) => {
-  const { pcrMetaproject, substanceOptions } = useContext(PCRDataContext)
+const PCRSummaryOfKeyData = () => {
+  const {
+    pcr: pcrData,
+    pcrMetaproject,
+    substanceOptions,
+  } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
+
   const [crtProjectId, setCrtProjectId] = useState<number | null>(null)
   const [currentTab, setCurrentTab] = useState(0)
   const [summaryData, setSummaryData] =

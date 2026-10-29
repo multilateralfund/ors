@@ -8,54 +8,59 @@ import PCRLessonsLearned from './PCRViewTabs/PCRLessonsLearned'
 import PCRCausesOfDelay from './PCRViewTabs/PCRCausesOfDelay'
 import PCRDocumentation from './PCRViewTabs/PCRDocumentation'
 import PCROverview from './PCRViewTabs/PCROverview'
+import PCRHistory from './PCRViewTabs/PCRHistory'
 import PCRSdgs from './PCRViewTabs/PCRSdgs'
-import { PCRResponse } from '../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 
-const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
+const PCRView = () => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const tabs = [
     {
       id: 'overview',
       label: 'Overview',
-      component: <PCROverview {...{ pcr }} />,
+      component: <PCROverview />,
     },
     {
       id: 'summary_of_key_data',
       label: 'Summary of key data',
-      component: <PCRSummaryOfKeyData {...{ pcr }} />,
+      component: <PCRSummaryOfKeyData />,
     },
     {
       id: 'results_assessment',
       label: 'Project results',
-      component: <PCRResultsAssessment {...{ pcr }} />,
+      component: <PCRResultsAssessment />,
     },
     {
       id: 'causes_of_delay',
       label: 'Causes of delay',
-      component: <PCRCausesOfDelay {...{ pcr }} />,
+      component: <PCRCausesOfDelay />,
     },
     {
       id: 'lessons_learned',
       label: 'Lessons learned',
-      component: <PCRLessonsLearned {...{ pcr }} />,
+      component: <PCRLessonsLearned />,
     },
     {
       id: 'gender_mainstreaming',
       label: 'Gender mainstreaming',
-      component: <PCRGenderMainstreaming {...{ pcr }} />,
+      component: <PCRGenderMainstreaming />,
     },
     {
       id: 'sdgs_contribution',
       label: 'SDGs',
-      component: <PCRSdgs {...{ pcr }} />,
+      component: <PCRSdgs />,
     },
     {
       id: 'supporting_evidences',
       label: 'Other supporting evidence',
-      component: <PCRDocumentation {...{ pcr }} />,
+      component: <PCRDocumentation />,
+    },
+    {
+      id: 'history',
+      label: 'History',
+      component: <PCRHistory />,
     },
   ]
 

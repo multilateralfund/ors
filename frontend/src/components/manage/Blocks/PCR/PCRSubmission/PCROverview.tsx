@@ -12,7 +12,7 @@ import {
 import { getOtherOptionId } from '../utils'
 import {
   pcrFieldsMapping,
-  extendedBooleanFieldsOpts,
+  booleanFieldsOpts,
   borderedContainerClassname,
 } from '../constants'
 
@@ -45,6 +45,11 @@ const PCROverview = () => {
   const suggestedWordLimit = (
     <span>Suggested 150-250 words · no character limit</span>
   )
+
+  const extendedBooleanFieldsOpts = [
+    ...booleanFieldsOpts,
+    { id: 'N/A', name: 'N/A' },
+  ]
 
   const onAddAdditionalComment = (entity: string) => {
     setPCRData((prevData) => {

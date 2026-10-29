@@ -71,7 +71,7 @@ const PCRCreateWrapper = () => {
         active={loading}
       />
       <PCRHeader mode="add" />
-      <PCRForm />
+      <PCRForm mode="add" />
     </>
   )
 }

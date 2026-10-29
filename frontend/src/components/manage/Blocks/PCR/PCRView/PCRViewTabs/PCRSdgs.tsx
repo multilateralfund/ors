@@ -33,9 +33,10 @@ import {
   Divider,
 } from '@mui/material'
 
-const PCRSdgs = ({ pcr }: { pcr: PCRResponse }) => {
+const PCRSdgs = () => {
   const { agencies } = useContext(ProjectsDataContext)
-  const { agencyIds } = useContext(PCRDataContext)
+  const { pcr: pcrData, agencyIds } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
 
   const [crtTab, setCrtTab] = useState(0)
 

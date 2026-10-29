@@ -15,7 +15,7 @@ import {
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
 import { groupBy, keyBy, keys, map, pick } from 'lodash'
-import { Redirect } from 'wouter'
+import { Redirect, useParams } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
   substance_from: null,
@@ -39,6 +39,7 @@ const ensureRows = <T,>(rows: T[] | undefined, fallback: () => T) =>
   rows && rows.length > 0 ? rows : [fallback()]
 
 const PCREditWrapper = () => {
+  const { pcr_id, project_id } = useParams<Record<string, string>>()
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
   const { pcr, pcrMetaproject, agencyIds, setPCRData } =
     useContext(PCRDataContext)
@@ -168,6 +169,10 @@ const PCREditWrapper = () => {
     return <Redirect to="/pcr" />
   }
 
+  if (pcr.data?.status === 'Final') {
+    return <Redirect to={`/pcr/${project_id}/${pcr_id}`} />
+  }
+
   return (
     <>
       <Loading
@@ -175,7 +180,7 @@ const PCREditWrapper = () => {
         active={loading}
       />
       <PCRHeader mode="edit" />
-      <PCRForm />
+      <PCRForm mode="edit" />
     </>
   )
 }

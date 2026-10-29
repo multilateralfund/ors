@@ -21,9 +21,10 @@ import { Tabs, Tab, Divider } from '@mui/material'
 import { find, map } from 'lodash'
 import cx from 'classnames'
 
-const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
+const PCRLessonsLearned = () => {
   const { agencies } = useContext(ProjectsDataContext)
-  const { agencyIds } = useContext(PCRDataContext)
+  const { pcr: pcrData, agencyIds } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
 
   const [crtTab, setCrtTab] = useState(0)
 
@@ -120,7 +121,7 @@ const PCRLessonsLearned = ({ pcr }: { pcr: PCRResponse }) => {
               <NoDataReported text="No data reported." />
             </div>
           )}
-          <PCRProjectRecommendations {...{ pcr, crtTab }} />
+          <PCRProjectRecommendations crtTab={crtTab} />
         </div>
       </div>
     </>

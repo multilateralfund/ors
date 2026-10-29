@@ -19,15 +19,9 @@ import { filter, map } from 'lodash'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
-const PCRProjectRecommendations = ({
-  pcr,
-  crtTab,
-}: {
-  pcr: PCRResponse
-  crtTab: number
-}) => {
-  const { agencyIds } = useContext(PCRDataContext)
-
+const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
+  const { pcr: pcrData, agencyIds } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
   const crtAgencyId = agencyIds[crtTab]
 
   const prData = filter(

@@ -128,11 +128,6 @@ export const booleanFieldsOpts = [
   { id: 'No', name: 'No' },
 ]
 
-export const extendedBooleanFieldsOpts = [
-  ...booleanFieldsOpts,
-  { id: 'N/A', name: 'N/A' },
-]
-
 export const financialFiguresTypeOptions = [
   { id: 'Provisional', name: 'Provisional' },
   { id: 'Final', name: 'Final' },

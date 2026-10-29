@@ -165,6 +165,20 @@ export type PCRResponse = {
     filename: string
     file: string
   }[]
+  history: PCRHistoryItem[]
+}
+
+export type PCRHistoryItem = {
+  created_at: string
+  user: {
+    id: number
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+  }
+  description: string
+  lock_action: string | null
 }
 
 type DelayCluster = {
