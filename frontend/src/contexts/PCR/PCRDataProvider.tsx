@@ -7,6 +7,7 @@ import {
 } from 'react'
 
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
+import { useGetPCRVersions } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRVersions'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import { useGetPCR } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCR'
 import {
@@ -57,6 +58,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const { pcr_id, project_id } = useParams<Record<string, string>>()
   const pcrDefaultData = useGetPCRDefaults(project_id)
   const pcr = useGetPCR(pcr_id)
+  const pcrVersions = useGetPCRVersions(pcr_id)
 
   const pcrMetaproject = useGetPCRProject(project_id)
   const { data: metaproject } = pcrMetaproject
@@ -434,6 +436,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const value = useMemo(
     () => ({
       pcr,
+      pcrVersions,
       pcrMetaproject,
       agencyIds,
       pcrDefaultData,
@@ -454,6 +457,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     }),
     [
       pcr,
+      pcrVersions,
       pcrMetaproject,
       agencyIds,
       pcrDefaultData,

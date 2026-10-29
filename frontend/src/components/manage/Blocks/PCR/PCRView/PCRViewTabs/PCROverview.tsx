@@ -79,7 +79,7 @@ const PCROverview = () => {
               '!text-mlfs-hlYellow bg-primary border-primary',
             ),
           )}
-          {pcr.rating.includes('Other') && (
+          {pcr.rating?.includes('Other') && (
             <div
               className={cx(
                 'mt-3 flex',

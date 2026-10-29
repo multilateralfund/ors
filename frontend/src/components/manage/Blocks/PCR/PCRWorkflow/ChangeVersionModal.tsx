@@ -20,7 +20,7 @@ const ChangeVersionModal = ({
   editPCR?: (showSuccess?: boolean) => Promise<boolean>
 }) => {
   const { pcr_id, project_id } = useParams<Record<string, string>>()
-  const { pcr } = useContext(PCRDataContext)
+  const { pcr, pcrVersions } = useContext(PCRDataContext)
   const [_, setLocation] = useLocation()
 
   const [isProcessing, setIsProcessing] = useState(false)
@@ -61,6 +61,7 @@ const ChangeVersionModal = ({
       )
 
       pcr.refetch()
+      pcrVersions.refetch()
       setLocation(`/pcr/${project_id}/${pcr_id}`)
       enqueueSnackbar(<>{action.successMessage}</>, { variant: 'success' })
     } catch (error) {

@@ -169,7 +169,7 @@ const PCREditWrapper = () => {
     return <Redirect to="/pcr" />
   }
 
-  if (pcr.data?.status === 'Final') {
+  if (pcr.data?.status === 'Final' || pcr.data?.latest_pcr_id) {
     return <Redirect to={`/pcr/${project_id}/${pcr_id}`} />
   }
 

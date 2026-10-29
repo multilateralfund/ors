@@ -117,8 +117,10 @@ type PCRProjectResponse = {
 export type PCRResponse = {
   id: number
   meta_project_id: number
-  submission_date: string | null
   status: string
+  version: number
+  latest_pcr_id: number | null
+  submission_date: string | null
   total_number_of_enterprises: string
   financial_figures_status: string
   financial_figures_status_explanation: string
@@ -166,6 +168,13 @@ export type PCRResponse = {
     file: string
   }[]
   history: PCRHistoryItem[]
+}
+
+export type PCRVersion = {
+  id: number
+  version: number
+  status: string
+  latest_pcr_id: number
 }
 
 export type PCRHistoryItem = {
