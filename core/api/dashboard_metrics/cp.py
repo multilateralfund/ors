@@ -63,6 +63,33 @@ OTHER_GROUP_NAME = "Other substances"
 
 GROUP_KEY_BY_ID = {group_id: key for group_id, key, _name in ANNEX_GROUPS}
 
+# Line colour per group key, one palette per chart.
+ODS_CONSUMPTION_COLORS = {
+    "annex_a_group_1": "#49237C",
+    "annex_a_group_2": "#5C2C9D",
+    "annex_b_group_1": "#7135BF",
+    "annex_b_group_2": "#843EDF",
+    "annex_b_group_3": "#9747FF",
+    "annex_c_group_1": "#A25EFD",
+    "annex_c_group_2": "#AD72FA",
+    "annex_c_group_3": "#BD91FE",
+    "annex_e": "#CDAEFE",
+    OTHER_GROUP_KEY: "#EFE6FE",
+}
+HFC_CONSUMPTION_COLOR = "#034869"
+ODS_PRODUCTION_COLORS = {
+    "annex_a_group_1": "#6F3601",
+    "annex_a_group_2": "#8C4704",
+    "annex_b_group_1": "#AB5803",
+    "annex_b_group_2": "#CC6900",
+    "annex_b_group_3": "#E57901",
+    "annex_c_group_1": "#FF8A00",
+    "annex_c_group_2": "#FFA547",
+    "annex_c_group_3": "#FEBD71",
+    "annex_e": "#FECC93",
+    OTHER_GROUP_KEY: "#FCE8D2",
+}
+
 # [[year, value], ...] ascending.
 Series = dict[str, dict[str, dict[int, float]]]
 ByYear = dict[str, dict[int, float]]
@@ -90,6 +117,7 @@ class CountryProgrammeTrends:
             "ODS Consumption",
             "",
             "ODP",
+            ODS_CONSUMPTION_COLORS,
         )
         return result
 
@@ -100,6 +128,7 @@ class CountryProgrammeTrends:
             "HFC Consumption",
             "",
             "CO2",
+            HFC_CONSUMPTION_COLOR,
         )
 
     def production_odp_by_group(self, country_name: str) -> GroupedSeries | None:
@@ -114,6 +143,7 @@ class CountryProgrammeTrends:
                 "ODS Production",
                 "",
                 "ODP",
+                ODS_PRODUCTION_COLORS,
             )
             if produced
             else None
@@ -304,6 +334,7 @@ def _grouped_series(
     }
     grouped["values"] = [
         {
+            "key": key,
             "name": name,
             "values": [
                 round(by_group.get(key, {}).get(year, 0.0), 2) for year in years
@@ -317,6 +348,7 @@ def _grouped_series(
     if residual:
         grouped["values"].append(
             {
+                "key": OTHER_GROUP_KEY,
                 "name": OTHER_GROUP_NAME,
                 "values": [round(residual.get(year, 0.0), 2) for year in years],
             }
@@ -329,6 +361,7 @@ def _prepare_line_chart_grouped_trend(
     title: str,
     subtitle: str,
     y_axis_label: str,
+    colors: dict[str, str],
 ) -> dict[str, Any]:
     """Prepare the grouped series data for line chart visualization."""
 
@@ -340,33 +373,6 @@ def _prepare_line_chart_grouped_trend(
             "categories": [],
             "series": [],
         }
-    if title == "ODS Production":
-        colors = [
-            "var(--deep-teal)",
-            "var(--data-orange-shade)",
-            "var(--data-orange)",
-            "var(--data-orange-tint-1)",
-            "var(--data-orange-tint-2)",
-            "var(--data-orange-tint-3)",
-        ]
-    else:
-        colors = [
-            "var(--deep-teal)",
-            "var(--data-purple-shade-2)",
-            "var(--data-purple-shade-1)",
-            "var(--data-purple)",
-            "var(--data-purple-tint-1)",
-            "var(--data-purple-tint-2)",
-            "var(--un-light-grey)",
-        ]
-
-    colors = [
-        "var(--deep-teal)",
-        "var(--purple)",
-        "var(--purple-mid)",
-        "var(--purple-tint)",
-    ]
-
     return {
         "type": "line",
         "title": title,
@@ -375,17 +381,17 @@ def _prepare_line_chart_grouped_trend(
         "series": [
             {
                 "name": series["name"],
-                "color": colors[i % len(colors)],
+                "color": colors[series["key"]],
                 "data": series["values"],
             }
-            for i, series in enumerate(grouped_series["values"])
+            for series in grouped_series["values"]
         ],
         "meta": {"y_axis_label": y_axis_label},
     }
 
 
 def _prepare_line_chart_trend(
-    series: Series, title: str, subtitle: str, y_axis_label: str
+    series: Series, title: str, subtitle: str, y_axis_label: str, color: str
 ) -> dict[str, Any]:
     """Prepare the grouped series data for line chart visualization."""
 
@@ -405,7 +411,7 @@ def _prepare_line_chart_trend(
         "series": [
             {
                 "name": "Annex F",
-                "color": "var(--deep-teal)",
+                "color": color,
                 "data": series["values"],
             }
         ],

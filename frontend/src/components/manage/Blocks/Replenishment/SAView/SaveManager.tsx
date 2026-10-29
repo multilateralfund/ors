@@ -25,6 +25,7 @@ export function SaveManager(props: SaveManagerProps) {
     data,
     replenishmentAmount,
     replenishmentId,
+    unusedAmount,
     version,
     versions,
   } = props
@@ -78,6 +79,7 @@ export function SaveManager(props: SaveManagerProps) {
       comment,
       data,
       replenishment_id: replenishmentId?.toString() ?? '',
+      unused_amount: unusedAmount,
     }
 
     saveData['final'] = isFinal

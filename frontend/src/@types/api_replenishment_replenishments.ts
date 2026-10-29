@@ -8,6 +8,7 @@ export type ApiReplenishment = {
   id: number
   scales_of_assessment_versions: ApiReplenishmentSoAVersion[]
   start_year: number
+  unused_amount: number
 }
 
 export type ApiReplenishments = ApiReplenishment[]

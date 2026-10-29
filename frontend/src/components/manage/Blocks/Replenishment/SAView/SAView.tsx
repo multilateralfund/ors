@@ -277,6 +277,11 @@ function SAView(props: SAViewProps) {
         setReplenishmentAmount(
           asDecimal(ctxSoA.replenishment.amount).toString(),
         )
+        setUnusedAmount(
+          ctxSoA.replenishment.unused_amount
+            ? asDecimal(ctxSoA.replenishment.unused_amount).toString()
+            : '',
+        )
       }
     },
     [contributions, ctxSoA.replenishment],
@@ -585,6 +590,7 @@ function SAView(props: SAViewProps) {
           data={transformForSave(tableData)}
           replenishmentAmount={replenishmentAmount}
           replenishmentId={ctxSoA.replenishment?.id}
+          unusedAmount={unusedAmount}
           version={version}
           versions={versions}
         />
