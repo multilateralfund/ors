@@ -346,7 +346,7 @@ def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
     return {
         "type": "bar_list",
         "title": "Funding by project theme",
-        "subtitle": "Approved funding split by project theme",
+        "subtitle": "",
         "subtitle_note": None,
         "groups": groups,
         "total": {
