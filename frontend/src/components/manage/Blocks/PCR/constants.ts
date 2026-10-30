@@ -24,7 +24,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   project_type: 'Type',
   sector: 'Sector',
   subsectors: 'Subsector',
-  category: 'IND/MYA',
+  category: 'Category',
   pcr_due: 'PCR due',
   ad_hoc_pcr: 'Ad-hoc PCR',
   pcr_submission_date: 'PCR submission date',
@@ -130,6 +130,11 @@ export const booleanFieldsOpts = [
   { id: 'No', name: 'No' },
 ]
 
+export const extendedBooleanFieldsOpts = [
+  ...booleanFieldsOpts,
+  { id: 'Not applicable', name: 'N/A' },
+]
+
 export const financialFiguresTypeOptions = [
   { id: 'Provisional', name: 'Provisional' },
   { id: 'Final', name: 'Final' },
@@ -185,6 +190,7 @@ export const llField = 'lessons'
 export const ppField = 'gender_mainstreamings'
 export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
+export const sdgAgencyErrorsField = 'sdg_agency_errors'
 export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
 

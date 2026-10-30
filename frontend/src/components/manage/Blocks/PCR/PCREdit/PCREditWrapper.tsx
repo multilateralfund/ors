@@ -118,14 +118,16 @@ const PCREditWrapper = () => {
     const groupedSdgsContribution = groupDataByAgency(
       pcrData.sustainable_development_goals,
     )
-    const sdgsContribution = map(agencyIds, (agency_id) => ({
-      agency_id,
-      sdg_applying: true,
-      // sdg_applying: groupedSdgsContribution[agency_id]?.[0]?.sdg_applying,
-      sdg_not_applying_explanation:
-        groupedSdgsContribution[agency_id]?.[0]?.sdg_not_applying_explanation,
-      goals: groupedSdgsContribution[agency_id]?.[0]?.goals ?? [],
-    }))
+    const sdgsContribution = map(agencyIds, (agency_id) => {
+      const sdg = groupedSdgsContribution[agency_id]?.[0]
+
+      return {
+        agency_id,
+        sdg_applying: sdg?.sdg_applying ?? true,
+        sdg_not_applying_explanation: sdg?.sdg_not_applying_explanation ?? '',
+        goals: sdg?.goals ?? [],
+      }
+    })
 
     const groupedSupportingEvidences = groupDataByAgency(
       pcrData.supporting_evidences,

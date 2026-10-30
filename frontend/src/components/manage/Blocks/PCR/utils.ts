@@ -420,9 +420,15 @@ export const getFormData = (
     gender_mainstreaming,
     'gender_mainstreamings',
   )
-  const sdgsContributionData = filter(
-    sdgs_contribution,
-    (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
+  const sdgsContributionData = map(
+    filter(
+      sdgs_contribution,
+      (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
+    ),
+    (sdg) =>
+      sdg.sdg_applying
+        ? { ...sdg, sdg_not_applying_explanation: '' }
+        : { ...sdg, goals: [] },
   )
 
   const formattedSupportingEvidence =

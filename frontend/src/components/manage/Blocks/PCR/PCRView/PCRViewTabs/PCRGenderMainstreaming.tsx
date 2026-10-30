@@ -11,6 +11,7 @@ import { getValueClassName } from '../../utils'
 import { PCRResponse } from '../../interfaces'
 import {
   pcrFieldsMapping,
+  extendedBooleanFieldsOpts,
   borderedContainerClassname,
   borderedValueClassname,
 } from '../../constants'
@@ -93,7 +94,9 @@ const PCRGenderMainstreaming = () => {
                 </TableHead>
                 <TableBody>
                   {map(ppData, (pp, ppIndex) => {
-                    const prefilled = pp.prefilled
+                    const prefilled = find(extendedBooleanFieldsOpts, {
+                      id: pp.prefilled,
+                    })?.name
 
                     return (
                       <TableRow key={ppIndex}>

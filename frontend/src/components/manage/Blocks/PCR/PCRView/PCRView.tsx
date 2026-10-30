@@ -71,6 +71,9 @@ const PCRView = () => {
       : []),
   ]
 
+  const prevTab = tabs[currentTab - 1]
+  const nextTab = tabs[currentTab + 1]
+
   return (
     <>
       <Tabs
@@ -92,31 +95,25 @@ const PCRView = () => {
           <Tab key={id} aria-controls={id} {...{ id, label }} />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {tabs
-          .filter((_, index) => index === currentTab)
-          .map(({ id, component }) => (
-            <span key={id}>
-              {component}
-              <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
-                {currentTab !== 0 && (
-                  <NavigationButton
-                    type="previous"
-                    setCurrentTab={setCurrentTab}
-                    className="!h-10"
-                    extraText={tabs[currentTab - 1].label}
-                  />
-                )}
-                {currentTab !== tabs.length - 1 && (
-                  <NavigationButton
-                    setCurrentTab={setCurrentTab}
-                    className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
-                    extraText={tabs[currentTab + 1].label}
-                  />
-                )}
-              </div>
-            </span>
-          ))}
+      <div className="rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {tabs[currentTab].component}
+        <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
+          {prevTab && (
+            <NavigationButton
+              type="previous"
+              className="!h-10"
+              extraText={prevTab.label}
+              setCurrentTab={setCurrentTab}
+            />
+          )}
+          {nextTab && (
+            <NavigationButton
+              className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
+              extraText={nextTab.label}
+              setCurrentTab={setCurrentTab}
+            />
+          )}
+        </div>
       </div>
     </>
   )

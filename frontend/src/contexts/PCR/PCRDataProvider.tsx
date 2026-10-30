@@ -16,6 +16,7 @@ import {
   ppField,
   sdgsContributionField,
   sdgsField,
+  sdgAgencyErrorsField,
   supportingEvidencesField,
   evidencesField,
   cdField,
@@ -44,8 +45,10 @@ import {
   filter,
   forEach,
   groupBy,
+  isEmpty,
   keys,
   map,
+  omit,
   pick,
   reduce,
   uniq,
@@ -231,7 +234,29 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       errors: formattedErrors?.[index] ?? {},
     }))
 
-    return { [sdgsContributionField]: groupBy(agenciesErrors, 'agency_id') }
+    const agencyLevelErrors = reduce(
+      filteredSdgs,
+      (acc: Record<string, any[]>, entry, index) => {
+        const crtAgencyErrors = omit(
+          errors?.[sdgsContributionField]?.[index],
+          sdgsField,
+        )
+
+        if (!isEmpty(crtAgencyErrors)) {
+          acc[entry.agency_id] = [
+            { agency_id: entry.agency_id, errors: crtAgencyErrors },
+          ]
+        }
+
+        return acc
+      },
+      {},
+    )
+
+    return {
+      [sdgsContributionField]: groupBy(agenciesErrors, 'agency_id'),
+      [sdgAgencyErrorsField]: agencyLevelErrors,
+    }
   }
 
   const formatEvidencesErrors = (errors: Record<string, any[]>) => {

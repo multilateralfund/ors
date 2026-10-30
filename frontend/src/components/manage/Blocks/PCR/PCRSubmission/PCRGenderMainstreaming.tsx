@@ -11,7 +11,7 @@ import {
   ppField,
   pcrFieldsMapping,
   projectPhaseOptions,
-  booleanFieldsOpts,
+  extendedBooleanFieldsOpts,
   borderedContainerClassname,
 } from '../constants'
 
@@ -39,12 +39,6 @@ const PCRGenderMainstreaming = () => {
 
   const agencyErrors = map(ppErrors[crtAgencyId], 'errors')
   const formattedAgencyErrors = formatErrors({ [ppField]: agencyErrors })
-
-  const extendedBooleanFieldsOpts = [
-    ...booleanFieldsOpts,
-    { id: 'Not applicable', name: 'N/A' },
-  ]
-
   const onAddProjectPhase = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
