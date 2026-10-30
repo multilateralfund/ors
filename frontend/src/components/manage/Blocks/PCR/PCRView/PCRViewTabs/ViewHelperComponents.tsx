@@ -1,16 +1,27 @@
-import { ReactNode, useState } from 'react'
+import {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useState,
+} from 'react'
 
+import Link from '@ors/components/ui/Link/Link'
 import { getFormattedNumericValue } from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { PCRVersion } from '../../interfaces'
 import {
   borderedContainerClassname,
   borderedValueClassname,
 } from '../../constants'
+import useClickOutside from '@ors/hooks/useClickOutside'
 import { ProjectType } from '@ors/types/api_projects'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Divider, Paper, Popper } from '@mui/material'
 import { FaCheck } from 'react-icons/fa6'
 import { FiInfo } from 'react-icons/fi'
+import { useParams } from 'wouter'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -234,3 +245,90 @@ export const NrEntity = (index: number) => (
     {index + 1}
   </div>
 )
+
+export const VersionsList = ({
+  showVersionsMenu,
+  setShowVersionsMenu,
+}: {
+  showVersionsMenu: boolean
+  setShowVersionsMenu: Dispatch<SetStateAction<boolean>>
+}) => {
+  const { pcr, pcrVersions } = useContext(PCRDataContext)
+  const { version, status, latest_pcr_id } = pcr.data ?? {}
+  const versions = pcrVersions.data ?? []
+
+  if (versions.length <= 1) {
+    return null
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <VersionsDropdown
+        {...{ versions, showVersionsMenu, setShowVersionsMenu }}
+      />
+      <span className="self-baseline whitespace-nowrap rounded bg-mlfs-hlYellow p-1 font-medium uppercase leading-none">
+        {latest_pcr_id ? `Version ${version}: ${status}` : 'Latest'}
+      </span>
+    </div>
+  )
+}
+
+const VersionsDropdown = ({
+  versions,
+  showVersionsMenu,
+  setShowVersionsMenu,
+}: {
+  versions: PCRVersion[]
+  showVersionsMenu: boolean
+  setShowVersionsMenu: Dispatch<SetStateAction<boolean>>
+}) => {
+  const { project_id } = useParams<Record<string, string>>()
+
+  const ref = useClickOutside<HTMLDivElement>(() => {
+    setShowVersionsMenu(false)
+  })
+
+  const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
+
+  return (
+    <div className="relative">
+      <div
+        ref={ref}
+        onClick={toggleShowVersionsMenu}
+        className="flex cursor-pointer items-center justify-between gap-x-2"
+      >
+        <IoChevronDown className="text-5xl font-bold text-gray-700" />
+      </div>
+      <div
+        className={cx(
+          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all sm:left-auto sm:right-0',
+          {
+            'collapse scale-y-0': !showVersionsMenu,
+            'scale-y-100 opacity-100': showVersionsMenu,
+          },
+        )}
+      >
+        {[...versions]
+          .reverse()
+          .map(({ id, version, status, latest_pcr_id }) => (
+            <Link
+              key={id}
+              href={`/pcr/${project_id}/${id}`}
+              className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
+            >
+              <div className="flex items-center justify-between gap-2 whitespace-nowrap hover:text-white">
+                <div className="ml-1">
+                  Version {version}: {status}
+                </div>
+                {!latest_pcr_id && (
+                  <span className="mx-1 rounded-md bg-gray-400 p-1 text-xs uppercase text-white">
+                    Latest
+                  </span>
+                )}
+              </div>
+            </Link>
+          ))}
+      </div>
+    </div>
+  )
+}

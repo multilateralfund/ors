@@ -5,6 +5,7 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import WorkflowButtons from '../PCRWorkflow/WorkflowButtons'
 import { getFormData, isSubmitDisabled } from '../utils'
 import { PCRActionButtons } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
@@ -32,7 +33,7 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
   const isSaveDisabled = !metaProjectId || isSubmitDisabled(errors)
 
-  const editPCR = async () => {
+  const editPCR = async (showSuccess = true) => {
     setIsLoading(true)
 
     try {
@@ -65,15 +66,20 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
         throw data ?? { message: 'An error occurred' }
       }
-      enqueueSnackbar(<>PCR updated successfully.</>, {
-        variant: 'success',
-      })
+      if (showSuccess) {
+        enqueueSnackbar(<>PCR updated successfully.</>, {
+          variant: 'success',
+        })
+      }
       clearUpdatedFields()
-      setLocation('/pcr')
+
+      return true
     } catch (error) {
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
       })
+
+      return false
     } finally {
       setIsLoading(false)
     }
@@ -92,10 +98,11 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
       <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       <SubmitButton
         title="Update PCR"
-        onSubmit={editPCR}
+        onSubmit={() => editPCR()}
         isDisabled={isSaveDisabled}
         className="!py-2"
       />
+      <WorkflowButtons {...{ editPCR, isSaveDisabled }} />
       {isCancelModalOpen && setIsCancelModalOpen && (
         <CancelWarningModal
           mode="PCR updating"

@@ -4,6 +4,7 @@ import {
   cdField,
   pcrFieldsMapping,
   pcrFieldsErrorsMapping,
+  summaryOfKeyDataField,
   requiredMessage,
 } from './constants'
 import {
@@ -29,8 +30,8 @@ import {
   filter,
   find,
   findIndex,
-  flatMap,
   forEach,
+  isObject,
   keys,
   lowerCase,
   map,
@@ -59,12 +60,21 @@ const cleanNumber = (value: string) => {
 
 const cleanDate = (value: string) => value.trim() || undefined
 
+const isAlternativeTechnologySent = (entry: PCRAlternativeTechnologyType) =>
+  entry.substance_from !== null || entry.substance_to !== null
+
+const isEnterpriseSent = (entry: PCREnterpriseType) =>
+  hasText(entry.name) || hasText(entry.address)
+
+const isEquipmentSent = (entry: PCREquipmentType) =>
+  hasText(entry.name) ||
+  hasText(entry.description) ||
+  entry.disposal_type !== null ||
+  hasText(entry.disposal_date)
+
 const cleanAlternativeTechnologies = (
   entries: PCRAlternativeTechnologyType[],
-) =>
-  entries.filter(
-    (entry) => entry.substance_from !== null || entry.substance_to !== null,
-  )
+) => entries.filter(isAlternativeTechnologySent)
 
 const cleanEnterprises = (entries: PCREnterpriseType[]) =>
   entries
@@ -72,7 +82,7 @@ const cleanEnterprises = (entries: PCREnterpriseType[]) =>
       name: entry.name.trim(),
       address: entry.address.trim(),
     }))
-    .filter((entry) => hasText(entry.name) || hasText(entry.address))
+    .filter(isEnterpriseSent)
 
 const cleanEquipments = (entries: PCREquipmentType[]) =>
   entries
@@ -82,13 +92,7 @@ const cleanEquipments = (entries: PCREquipmentType[]) =>
       disposal_type: entry.disposal_type,
       disposal_date: entry.disposal_date,
     }))
-    .filter(
-      (entry) =>
-        hasText(entry.name) ||
-        hasText(entry.description) ||
-        entry.disposal_type !== null ||
-        hasText(entry.disposal_date),
-    )
+    .filter(isEquipmentSent)
 
 export const buildPCRProjectPayload = (
   entry: PCRSummaryOfKeyDataType,
@@ -121,6 +125,71 @@ export const buildPCRProjectPayload = (
   }
 
   return payload
+}
+
+const isProjectSent = (entry: PCRSummaryOfKeyDataType) =>
+  keys(buildPCRProjectPayload(entry)).length > 1
+
+const alignRowErrors = (
+  rows: any[],
+  isSent: (row: any) => boolean,
+  rowErrors: unknown,
+) => {
+  if (!Array.isArray(rowErrors) || !rowErrors.every(isObject)) {
+    return rowErrors
+  }
+
+  let sentIndex = 0
+
+  return map(rows, (row) => (isSent(row) ? (rowErrors[sentIndex++] ?? {}) : {}))
+}
+
+export const alignSummaryOfKeyDataErrors = (
+  errors: Record<string, any>,
+  summaryOfKeyData: PCRSummaryOfKeyDataType[],
+) => {
+  const projectsErrors = errors?.[summaryOfKeyDataField]
+
+  if (!Array.isArray(projectsErrors)) {
+    return errors
+  }
+
+  let sentIndex = 0
+
+  const alignedErrors = map(summaryOfKeyData, (entry) => {
+    if (!isProjectSent(entry)) {
+      return {}
+    }
+
+    const projectErrors = projectsErrors[sentIndex++] ?? {}
+
+    return {
+      ...projectErrors,
+      ...(projectErrors.alternative_technologies && {
+        alternative_technologies: alignRowErrors(
+          entry.alternative_technologies,
+          isAlternativeTechnologySent,
+          projectErrors.alternative_technologies,
+        ),
+      }),
+      ...(projectErrors.enterprises && {
+        enterprises: alignRowErrors(
+          entry.enterprises,
+          isEnterpriseSent,
+          projectErrors.enterprises,
+        ),
+      }),
+      ...(projectErrors.equipments && {
+        equipments: alignRowErrors(
+          entry.equipments,
+          isEquipmentSent,
+          projectErrors.equipments,
+        ),
+      }),
+    }
+  })
+
+  return { ...errors, [summaryOfKeyDataField]: alignedErrors }
 }
 
 export const getOtherOptionId = (options: OptionsType[]) =>
@@ -419,13 +488,16 @@ export const getFormData = (
   const genderMainstreamingsData = formatAgencyData<PCRGenderMainstreamingData>(
     gender_mainstreaming,
     'gender_mainstreamings',
-  ).map((item) => ({
-    ...item,
-    prefilled: item.prefilled === 'Yes',
-  }))
-  const sdgsContributionData = filter(
-    sdgs_contribution,
-    (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
+  )
+  const sdgsContributionData = map(
+    filter(
+      sdgs_contribution,
+      (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
+    ),
+    (sdg) =>
+      sdg.sdg_applying
+        ? { ...sdg, sdg_not_applying_explanation: '' }
+        : { ...sdg, goals: [] },
   )
 
   const formattedSupportingEvidence =

@@ -7,13 +7,16 @@ import {
 } from 'react'
 
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
+import { useGetPCRVersions } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRVersions'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
+import { useGetPCR } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCR'
 import {
   initialOverviewData,
   summaryOfKeyDataField,
   ppField,
   sdgsContributionField,
   sdgsField,
+  sdgAgencyErrorsField,
   supportingEvidencesField,
   evidencesField,
   cdField,
@@ -31,24 +34,47 @@ import {
 import {
   formatAgencyData,
   formatOptions,
+  alignSummaryOfKeyDataErrors,
 } from '@ors/components/manage/Blocks/PCR/utils'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 import { ApiSubstance } from '@ors/types/api_substances'
 
-import { filter, forEach, groupBy, keys, map, pick, reduce } from 'lodash'
 import { useParams } from 'wouter'
+import {
+  compact,
+  filter,
+  forEach,
+  groupBy,
+  isEmpty,
+  keys,
+  map,
+  omit,
+  pick,
+  reduce,
+  uniq,
+} from 'lodash'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
 
-  const { project_id } = useParams<Record<string, string>>()
+  const { pcr_id, project_id } = useParams<Record<string, string>>()
   const pcrDefaultData = useGetPCRDefaults(project_id)
+  const pcr = useGetPCR(pcr_id)
+  const pcrVersions = useGetPCRVersions(pcr_id)
 
   const pcrMetaproject = useGetPCRProject(project_id)
   const { data: metaproject } = pcrMetaproject
   const projects = metaproject?.projects ?? []
+
+  const agencyIds = useMemo(
+    () =>
+      uniq(
+        compact([metaproject?.lead_agency_id, ...map(projects, 'agency_id')]),
+      ),
+    [metaproject],
+  )
 
   const { addUpdatedField } = useUpdatedFields()
 
@@ -63,7 +89,18 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     sdgs_contribution: [],
     supporting_evidences: [],
   })
-  const [initialErrors, setErrors] = useState({})
+  const [initialErrors, setInitialErrors] = useState({})
+
+  const setErrors = useCallback(
+    (updater: any) => {
+      setInitialErrors(
+        typeof updater === 'function'
+          ? updater
+          : alignSummaryOfKeyDataErrors(updater, PCRData.summary_of_key_data),
+      )
+    },
+    [PCRData.summary_of_key_data],
+  )
 
   const setPCRData = useCallback(
     (updater: SetStateAction<PCRData>, fieldName?: string) => {
@@ -209,7 +246,29 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       errors: formattedErrors?.[index] ?? {},
     }))
 
-    return { [sdgsContributionField]: groupBy(agenciesErrors, 'agency_id') }
+    const agencyLevelErrors = reduce(
+      filteredSdgs,
+      (acc: Record<string, any[]>, entry, index) => {
+        const crtAgencyErrors = omit(
+          errors?.[sdgsContributionField]?.[index],
+          sdgsField,
+        )
+
+        if (!isEmpty(crtAgencyErrors)) {
+          acc[entry.agency_id] = [
+            { agency_id: entry.agency_id, errors: crtAgencyErrors },
+          ]
+        }
+
+        return acc
+      },
+      {},
+    )
+
+    return {
+      [sdgsContributionField]: groupBy(agenciesErrors, 'agency_id'),
+      [sdgAgencyErrorsField]: agencyLevelErrors,
+    }
   }
 
   const formatEvidencesErrors = (errors: Record<string, any[]>) => {
@@ -233,7 +292,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pick(errors, summaryOfKeyDataField),
     )
     const resultsAssessmentErrors = formatResultsAssessmentErrors(
-      pick(errors, 'activities'),
+      pick(errors, 'overall_assessment_highlights'),
     )
     // const projectComponentsErrors = formatProjectComponentsErrors(
     //   pick(errors, 'project_components'),
@@ -413,7 +472,10 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
   const value = useMemo(
     () => ({
+      pcr,
+      pcrVersions,
       pcrMetaproject,
+      agencyIds,
       pcrDefaultData,
       PCRData,
       setPCRData,
@@ -431,7 +493,10 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       fileSectionOptions,
     }),
     [
+      pcr,
+      pcrVersions,
       pcrMetaproject,
+      agencyIds,
       pcrDefaultData,
       PCRData,
       setPCRData,

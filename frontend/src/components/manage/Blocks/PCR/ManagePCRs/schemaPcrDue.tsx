@@ -27,6 +27,13 @@ const getColumnDefsPcrDue = (unmarkProjects: (ids: number[]) => void) => ({
       tooltipValueGetter: (props: ITooltipParams) => TooltipTitleColumn(props),
     },
     {
+      headerName: 'Date completed',
+      valueGetter: (params: ValueGetterParams) =>
+        formatDate(params.data.date_of_completion),
+      tooltipValueGetter: (params: ITooltipParams) =>
+        formatDate(params.data.date_of_completion),
+    },
+    {
       headerName: 'PCR due',
       minWidth: 150,
       valueGetter: (params: ValueGetterParams) =>

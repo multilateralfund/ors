@@ -8,6 +8,8 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.api.serializers.meeting import DecisionSerializer
+from core.api.serializers.project_history import UserSerializer
+from core.api.utils import log_pcr_history
 from core.api.export.projects_inventory_report import project_actual_fund
 from core.api.export.projects_inventory_report import project_apr_co2_actual
 from core.api.export.projects_inventory_report import project_apr_date_completed
@@ -23,6 +25,7 @@ from core.models.project_completion_report import (
     PCRFutureProjectRecommendation,
     PCRGenderMainstreaming,
     PCRGoal,
+    PCRHistory,
     PCRLearnedLessonCategory,
     PCRLearnedLesson,
     PCRLearnedLessonDescription,
@@ -40,6 +43,13 @@ from core.models.project_completion_report import (
 from core.models.substance import Substance
 
 # pylint: disable=too-many-locals,abstract-method,dangerous-default-value
+
+HISTORY_DESCRIPTION_CREATE = "PCR created"
+HISTORY_DESCRIPTION_SAVE = "PCR saved"
+HISTORY_DESCRIPTION_SUBMIT_V1 = "PCR initial submission"
+HISTORY_DESCRIPTION_RESUBMIT_V2 = "PCR resubmission after adjustments"
+HISTORY_DESCRIPTION_REQUEST_ADJUSTMENTS_V2 = "Adjustment requested from Lead Agency"
+HISTORY_DESCRIPTION_APPROVE_V3 = "PCR approved"
 
 
 class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
@@ -462,7 +472,42 @@ class PCRSustainableDevelopmentGoalSerializer(serializers.ModelSerializer):
             "agency",
             "agency_id",
             "pcr_id",
+            "sdg_applying",
+            "sdg_not_applying_explanation",
             "goals",
+        ]
+
+    def validate(self, attrs):
+        goals = attrs.get("pcrsustainabledevelopmentgoaldescription_set") or []
+        if attrs.get("sdg_applying", True):
+            # The explanation is only relevant when the project did not contribute
+            attrs["sdg_not_applying_explanation"] = None
+            return attrs
+
+        errors = {}
+        if not (attrs.get("sdg_not_applying_explanation") or "").strip():
+            errors["sdg_not_applying_explanation"] = (
+                "An explanation is required if the project did not contribute to any SDGs."
+            )
+        if goals:
+            errors["goals"] = (
+                "SDGs can't be selected if the project did not contribute to any SDGs."
+            )
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
+
+class PCRHistorySerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = PCRHistory
+        fields = [
+            "created_at",
+            "user",
+            "description",
+            "lock_action",
         ]
 
 
@@ -478,6 +523,11 @@ class PCRDetailSerializer(serializers.ModelSerializer):
         source="decisions", many=True, read_only=True
     )
     meta_project_id = serializers.IntegerField(read_only=True)
+    latest_pcr_id = serializers.IntegerField(read_only=True)
+    version_created_by = serializers.StringRelatedField(read_only=True)
+    is_editable = serializers.BooleanField(read_only=True)
+    is_locked = serializers.BooleanField(read_only=True)
+    history = serializers.SerializerMethodField()
     pcr_projects = serializers.SerializerMethodField()
     delay_causes = PCRDelayCauseSerializer(many=True)
     learned_lessons = PCRLearnedLessonSerializer(many=True)
@@ -490,6 +540,13 @@ class PCRDetailSerializer(serializers.ModelSerializer):
         model = PCR
         fields = [
             "id",
+            "version",
+            "status",
+            "latest_pcr_id",
+            "version_created_by",
+            "is_editable",
+            "is_locked",
+            "history",
             "additional_comments",
             "addresses",
             "country",
@@ -518,6 +575,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "rating_explanation",
             "rating_explanation_other",
             "submission_date",
+            "revised_submission_date",
             "supporting_evidences",
             "sustainable_development_goals",
             "total_number_of_enterprises",
@@ -525,6 +583,12 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "total_funds_disbursed",
             "total_funds_returned",
         ]
+
+    def get_history(self, instance):
+        # The history is kept on the current version, archived versions share it
+        current_pcr = instance.latest_pcr or instance
+        queryset = current_pcr.pcr_history.all().select_related("user")
+        return PCRHistorySerializer(queryset, many=True).data
 
     def get_pcr_projects(self, instance):
         return PCRProjectSerializer(
@@ -590,6 +654,8 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "supporting_evidences",
             "submission_date",
         ]
+        # Filled by the server on submit
+        read_only_fields = ["submission_date"]
 
     def validate_meta_project_id(self, meta_project):
         project_ids = meta_project.projects.values_list("id", flat=True)
@@ -694,6 +760,11 @@ class PCRCreateSerializer(serializers.ModelSerializer):
                 file=file_obj,
             )
 
+        user = self.context["request"].user
+        pcr.version_created_by = user
+        pcr.save(update_fields=["version_created_by"])
+        log_pcr_history(pcr, user, HISTORY_DESCRIPTION_CREATE)
+
         return pcr
 
     def to_representation(self, instance):
@@ -746,6 +817,8 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
             "sustainable_development_goals",
             "completed_by",
         ]
+        # Filled by the server on submit
+        read_only_fields = ["submission_date"]
 
     def _get_files_by_name(self):
         return {file_obj.name: file_obj for file_obj in self.context.get("files", [])}
@@ -812,7 +885,7 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
                 PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
             )
             sustainable_development_goal = PCRSustainableDevelopmentGoal.objects.create(
-                pcr=instance, agency_id=sustainable_development_goal_data["agency_id"]
+                pcr=instance, **sustainable_development_goal_data
             )
             replace_nested_data(
                 sustainable_development_goal,
@@ -837,15 +910,45 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
             )
             ids.append(supporting_evidence.id)
         PCRSupportingEvidence.objects.filter(pcr=instance).exclude(id__in=ids).delete()
+        log_pcr_history(
+            instance, self.context["request"].user, HISTORY_DESCRIPTION_SAVE
+        )
         return instance
 
     def to_representation(self, instance):
         return PCRDetailSerializer(instance, context=self.context).data
 
 
+class PCRVersionSerializer(serializers.ModelSerializer):
+    version_created_by = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = PCR
+        fields = [
+            "id",
+            "version",
+            "status",
+            "latest_pcr_id",
+            "version_created_by",
+            "submission_date",
+            "revised_submission_date",
+            "date_created",
+            "date_updated",
+        ]
+
+
 class PCRProjectListSerializer(serializers.ModelSerializer):
     project_id = serializers.IntegerField(source="project.id", read_only=True)
     pcr_id = serializers.IntegerField(source="pcr.id", read_only=True)
+    pcr_version = serializers.IntegerField(source="pcr.version", read_only=True)
+    pcr_status = serializers.CharField(source="pcr.status", read_only=True)
+    pcr_is_locked = serializers.BooleanField(source="pcr.is_locked", read_only=True)
+    initial_submission_date = serializers.DateField(
+        source="pcr.submission_date", read_only=True
+    )
+    revised_submission_date = serializers.DateField(
+        source="pcr.revised_submission_date", read_only=True
+    )
     project_metacode = serializers.CharField(source="project.metacode", read_only=True)
     country = serializers.SerializerMethodField()
     country_id = serializers.IntegerField(source="project.country_id", read_only=True)
@@ -939,6 +1042,11 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "pcr_id",
+            "pcr_version",
+            "pcr_status",
+            "pcr_is_locked",
+            "initial_submission_date",
+            "revised_submission_date",
             "project_id",
             "project_metacode",
             "country",
@@ -1079,6 +1187,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
 
     projects = serializers.SerializerMethodField()
     pcr_id = serializers.SerializerMethodField()
+    pcr_status = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     date_of_completion = serializers.SerializerMethodField()
     total_funding = serializers.SerializerMethodField()
@@ -1102,6 +1211,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "type",
             "projects",
             "pcr_id",
+            "pcr_status",
             "pcr_due",
             "pcr_due_date",
             "status",
@@ -1160,10 +1270,23 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             return "Not completed"
         return None
 
+    def _get_pcr(self, obj):
+        # Fetched once per meta project, as it is reused by other fields
+        if not hasattr(obj, "current_pcr"):
+            obj.current_pcr = PCR.objects.filter(meta_project=obj).first()
+        return obj.current_pcr
+
     def get_pcr_id(self, obj):
-        pcr = PCR.objects.filter(meta_project=obj).first()
+        pcr = self._get_pcr(obj)
         if pcr:
             return pcr.id
+        return None
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_pcr_status(self, obj):
+        pcr = self._get_pcr(obj)
+        if pcr:
+            return pcr.status
         return None
 
 

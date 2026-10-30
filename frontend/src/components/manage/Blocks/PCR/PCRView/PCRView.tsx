@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRGenderMainstreaming from './PCRViewTabs/PCRGenderMainstreaming'
 import PCRResultsAssessment from './PCRViewTabs/PCRResultsAssessment'
 import PCRSummaryOfKeyData from './PCRViewTabs/PCRSummaryOfKeyData'
@@ -8,56 +9,70 @@ import PCRLessonsLearned from './PCRViewTabs/PCRLessonsLearned'
 import PCRCausesOfDelay from './PCRViewTabs/PCRCausesOfDelay'
 import PCRDocumentation from './PCRViewTabs/PCRDocumentation'
 import PCROverview from './PCRViewTabs/PCROverview'
+import PCRHistory from './PCRViewTabs/PCRHistory'
 import PCRSdgs from './PCRViewTabs/PCRSdgs'
-import { PCRResponse } from '../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 
-const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
+const PCRView = () => {
+  const { pcr } = useContext(PCRDataContext)
+
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const tabs = [
     {
       id: 'overview',
       label: 'Overview',
-      component: <PCROverview {...{ pcr }} />,
+      component: <PCROverview />,
     },
     {
       id: 'summary_of_key_data',
       label: 'Summary of key data',
-      component: <PCRSummaryOfKeyData {...{ pcr }} />,
+      component: <PCRSummaryOfKeyData />,
     },
     {
       id: 'results_assessment',
       label: 'Project results',
-      component: <PCRResultsAssessment {...{ pcr }} />,
+      component: <PCRResultsAssessment />,
     },
     {
       id: 'causes_of_delay',
       label: 'Causes of delay',
-      component: <PCRCausesOfDelay {...{ pcr }} />,
+      component: <PCRCausesOfDelay />,
     },
     {
       id: 'lessons_learned',
       label: 'Lessons learned',
-      component: <PCRLessonsLearned {...{ pcr }} />,
+      component: <PCRLessonsLearned />,
     },
     {
       id: 'gender_mainstreaming',
       label: 'Gender mainstreaming',
-      component: <PCRGenderMainstreaming {...{ pcr }} />,
+      component: <PCRGenderMainstreaming />,
     },
     {
       id: 'sdgs_contribution',
       label: 'SDGs',
-      component: <PCRSdgs {...{ pcr }} />,
+      component: <PCRSdgs />,
     },
     {
       id: 'supporting_evidences',
       label: 'Other supporting evidence',
-      component: <PCRDocumentation {...{ pcr }} />,
+      component: <PCRDocumentation />,
     },
+    ...(!pcr.data?.latest_pcr_id
+      ? [
+          {
+            id: 'history',
+            label: 'History',
+            component: <PCRHistory />,
+          },
+        ]
+      : []),
   ]
+
+  const prevTab = tabs[currentTab - 1]
+  const nextTab = tabs[currentTab + 1]
 
   return (
     <>
@@ -80,31 +95,25 @@ const PCRView = ({ pcr }: { pcr: PCRResponse }) => {
           <Tab key={id} aria-controls={id} {...{ id, label }} />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {tabs
-          .filter((_, index) => index === currentTab)
-          .map(({ id, component }) => (
-            <span key={id}>
-              {component}
-              <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
-                {currentTab !== 0 && (
-                  <NavigationButton
-                    type="previous"
-                    setCurrentTab={setCurrentTab}
-                    className="!h-10"
-                    extraText={tabs[currentTab - 1].label}
-                  />
-                )}
-                {currentTab !== tabs.length - 1 && (
-                  <NavigationButton
-                    setCurrentTab={setCurrentTab}
-                    className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
-                    extraText={tabs[currentTab + 1].label}
-                  />
-                )}
-              </div>
-            </span>
-          ))}
+      <div className="rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {tabs[currentTab].component}
+        <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
+          {prevTab && (
+            <NavigationButton
+              type="previous"
+              className="!h-10"
+              extraText={prevTab.label}
+              setCurrentTab={setCurrentTab}
+            />
+          )}
+          {nextTab && (
+            <NavigationButton
+              className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
+              extraText={nextTab.label}
+              setCurrentTab={setCurrentTab}
+            />
+          )}
+        </div>
       </div>
     </>
   )

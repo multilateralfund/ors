@@ -357,8 +357,8 @@ const PCRSummaryOfKeyData = () => {
 
   const summaryOfKeyDataErrors = errors.summary_of_key_data
   const projectsErrors = summaryOfKeyDataErrors[summaryOfKeyDataField]
-  const projectErrorIndex = Object.keys(projectsErrors).indexOf(
-    String(editingProjectId),
+  const projectErrorIndex = PCRData.summary_of_key_data.findIndex(
+    (entry) => entry.project_id === editingProjectId,
   )
 
   const groupedErrors = useMemo(
@@ -562,13 +562,10 @@ const PCRSummaryOfKeyData = () => {
         const filteredErrors = filter(
           error[field],
           (_, entryErrorIndex) => Number(entryErrorIndex) !== index,
-        ).filter(checkHasErrors)
+        )
 
-        return filteredErrors.length > 0
-          ? {
-              ...error,
-              [field]: filteredErrors,
-            }
+        return filteredErrors.some(checkHasErrors)
+          ? { ...error, [field]: filteredErrors }
           : omit(error, field)
       }),
     }))
@@ -723,20 +720,23 @@ const PCRSummaryOfKeyData = () => {
                           Planned date of completion
                         </Label>
                         <div className="flex items-center">
-                          <DateInput
-                            id={`planned-date-of-completion-${editingProject.id}`}
-                            className="!m-0 w-40 grow-0"
-                            value={summaryData.planned_date_of_completion}
-                            formatValue={(value) =>
-                              dayjs(value).format('DD/MM/YYYY')
-                            }
-                            onChange={(event) =>
-                              updateSummaryData((projectData) => ({
-                                ...projectData,
-                                planned_date_of_completion: event.target.value,
-                              }))
-                            }
-                          />
+                          <div className="w-40">
+                            <DateInput
+                              id={`planned-date-of-completion-${editingProject.id}`}
+                              className="!m-0 w-40 grow-0"
+                              value={summaryData.planned_date_of_completion}
+                              formatValue={(value) =>
+                                dayjs(value).format('DD/MM/YYYY')
+                              }
+                              onChange={(event) =>
+                                updateSummaryData((projectData) => ({
+                                  ...projectData,
+                                  planned_date_of_completion:
+                                    event.target.value,
+                                }))
+                              }
+                            />
+                          </div>
                           <FieldErrorIndicator
                             errors={groupedErrors.general}
                             field="planned_date_of_completion"

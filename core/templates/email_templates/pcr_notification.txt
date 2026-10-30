@@ -1,0 +1,11 @@
+{% load settings_value %}
+
+Dear MLFS user,
+
+{% if is_final %}The following project completion report has been approved and its final version is available:{% else %}The following project completion report has been submitted for MLFS review:{% endif %}
+
+    Metacode: {{ pcr.meta_project.umbrella_code }}
+    Country: {{ pcr.meta_project.country }}
+    Lead agency: {{ pcr.meta_project.lead_agency }}
+    Version: {{ pcr.version }}
+    Link: {% frontend_host %}/pcr/{{ pcr.meta_project_id }}/{{ pcr.id }}/

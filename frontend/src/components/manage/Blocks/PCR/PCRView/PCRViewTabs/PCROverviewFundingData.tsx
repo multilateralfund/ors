@@ -11,17 +11,16 @@ import {
   fundingFields,
 } from '../../constants'
 
-import { find, keys, map } from 'lodash'
+import { find, map } from 'lodash'
 
 const PCROverviewFundingData = ({
   isFundingExpanded,
 }: {
   isFundingExpanded: boolean
 }) => {
-  const { fundsByAgency } = useContext(PCRDataContext)
+  const { agencyIds, fundsByAgency } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
 
-  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
   const crtAgencies = map(
     agencyIds,
     (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
@@ -60,7 +59,7 @@ const PCROverviewFundingData = ({
                     ],
                     formatAgencyFundFields(
                       formattedField as keyof PCROverviewProps,
-                      !isTotal ? Number(agencyIds[index]) : undefined,
+                      !isTotal ? agencyIds[index] : undefined,
                     ),
                     'decimal',
                     '!text-3xl',

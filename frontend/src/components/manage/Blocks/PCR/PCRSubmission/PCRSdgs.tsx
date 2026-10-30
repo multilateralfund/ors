@@ -19,6 +19,7 @@ import { getSectionAgencies, formatErrors } from '../utils'
 import {
   sdgsContributionField,
   sdgsField,
+  sdgAgencyErrorsField,
   pcrFieldsMapping,
   borderedContainerClassname,
 } from '../constants'
@@ -43,6 +44,26 @@ import {
   Radio,
 } from '@mui/material'
 
+const SelectedRadioIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18">
+    <circle cx="9" cy="9" r="8" fill="#DFFF00" />
+    <circle cx="9" cy="9" r="3" fill="#092D3A" />
+  </svg>
+)
+
+const UnselectedRadioIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18">
+    <circle
+      cx="9"
+      cy="9"
+      r="7.5"
+      fill="white"
+      stroke="#94A3B8"
+      strokeWidth="1.2"
+    />
+  </svg>
+)
+
 const PCRSdgs = () => {
   const sectionIdentifier = 'sdgs_contribution'
 
@@ -62,10 +83,34 @@ const PCRSdgs = () => {
   const { sdgs_contribution: sdgsContributionErrors } = errors
   const sdgsErrors = sdgsContributionErrors[sdgsContributionField]
 
-  const agencyErrors = map(sdgsErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors({
-    [sdgsContributionField]: agencyErrors,
+  const sdgAgencyErrors = sdgsContributionErrors[sdgAgencyErrorsField] ?? {}
+  const crtAgencyLevelErrors = sdgAgencyErrors[crtAgencyId]?.[0]?.errors ?? {}
+
+  const getTabErrors = (agencyId: number) => ({
+    [agencyId]: [
+      ...(sdgsErrors[agencyId] ?? []),
+      ...(sdgAgencyErrors[agencyId] ?? []),
+    ],
   })
+
+  const agencyErrors = map(sdgsErrors[crtAgencyId], 'errors')
+  const formattedAgencyErrors = [
+    ...formatErrors(crtAgencyLevelErrors),
+    ...formatErrors({ [sdgsContributionField]: agencyErrors }),
+  ]
+
+  const handleChangeSdgApplying = (value: boolean) => {
+    setPCRData((prevData) => {
+      const sectionData = prevData[sectionIdentifier] || []
+
+      return {
+        ...prevData,
+        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+          dataIndex === crtTab ? { ...data, sdg_applying: value } : data,
+        ),
+      }
+    }, 'sdg_applying')
+  }
 
   const onAddSdg = (sdgId: number) => {
     setPCRData((prevData) => {
@@ -107,7 +152,10 @@ const PCRSdgs = () => {
 
     setErrors((prevData: Record<string, any[]>) => {
       const pcrSdgs = PCRData.sdgs_contribution || []
-      const filteredSdgs = filter(pcrSdgs, (sdg) => sdg.goals.length > 0)
+      const filteredSdgs = filter(
+        pcrSdgs,
+        (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
+      )
 
       const crtAgencyIndex = filteredSdgs.findIndex(
         (entry) => entry.agency_id === crtAgencyId,
@@ -136,13 +184,39 @@ const PCRSdgs = () => {
     })
   }
 
-  const handleChangeSdgApplying = (value: boolean) => {
+  const onClearSdgs = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
-      sectionData[crtTab] = { ...sectionData[crtTab], sdg_applying: value }
 
-      return { ...prevData, sectionIdentifier: sectionData }
-    }, 'sdg_applying')
+      return {
+        ...prevData,
+        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+          dataIndex === crtTab ? { ...data, [sdgsField]: [] } : data,
+        ),
+      }
+    }, sdgsField)
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const filteredSdgs = filter(
+        PCRData.sdgs_contribution || [],
+        (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
+      )
+      const crtAgencyIndex = filteredSdgs.findIndex(
+        (entry) => entry.agency_id === crtAgencyId,
+      )
+
+      if (crtAgencyIndex === -1) {
+        return prevData
+      }
+
+      return {
+        ...prevData,
+        [sdgsContributionField]: filter(
+          prevData[sdgsContributionField],
+          (_, index) => index !== crtAgencyIndex,
+        ),
+      }
+    })
   }
 
   const buttonStyle = (value: boolean) => ({
@@ -161,26 +235,6 @@ const PCRSdgs = () => {
       color: `${sdgsApplying === value ? '#FFF' : 'var(--color-primary)'} !important`,
     },
   })
-
-  const SelectedRadioIcon = () => (
-    <svg width="18" height="18" viewBox="0 0 18 18">
-      <circle cx="9" cy="9" r="8" fill="#DFFF00" />
-      <circle cx="9" cy="9" r="3" fill="#092D3A" />
-    </svg>
-  )
-
-  const UnselectedRadioIcon = () => (
-    <svg width="18" height="18" viewBox="0 0 18 18">
-      <circle
-        cx="9"
-        cy="9"
-        r="7.5"
-        fill="white"
-        stroke="#94A3B8"
-        strokeWidth="1.2"
-      />
-    </svg>
-  )
 
   return (
     <>
@@ -208,7 +262,7 @@ const PCRSdgs = () => {
               label={
                 <TabLabel
                   field={sdgsContributionField}
-                  errors={sdgsErrors}
+                  errors={getTabErrors(agency.id)}
                   {...{ agency }}
                 />
               }
@@ -237,7 +291,7 @@ const PCRSdgs = () => {
               onClick={() => handleChangeSdgApplying(true)}
             >
               <Radio
-                checked={sectionData[crtTab].sdg_applying}
+                checked={sdgsApplying}
                 checkedIcon={<SelectedRadioIcon />}
                 icon={<UnselectedRadioIcon />}
                 sx={{ p: 0 }}
@@ -251,7 +305,7 @@ const PCRSdgs = () => {
               onClick={() => handleChangeSdgApplying(false)}
             >
               <Radio
-                checked={!sectionData[crtTab].sdg_applying}
+                checked={!sdgsApplying}
                 checkedIcon={<SelectedRadioIcon />}
                 icon={<UnselectedRadioIcon />}
                 sx={{ p: 0 }}
@@ -279,7 +333,7 @@ const PCRSdgs = () => {
                 )}
                 onChange={(_, __, reason, details) => {
                   if (reason === 'clear') {
-                    sdgsData.forEach((sdg) => onRemoveSdg(Number(sdg.goal_id)))
+                    onClearSdgs()
                     return
                   }
 
@@ -364,11 +418,11 @@ const PCRSdgs = () => {
                       {map(sdgsData, (sdg, sdgIndex) => {
                         const crtSdgId = sdg.goal_id
                         const crtSdgName =
-                          find(sdgsOptions, (sdg) => sdg.id === crtSdgId)
+                          find(sdgsOptions, (opt) => opt.id === crtSdgId)
                             ?.name ?? '-'
 
                         return (
-                          <TableRow key={sdgIndex}>
+                          <TableRow key={crtSdgId}>
                             <TableCell>
                               <EntryIndex index={sdgIndex} />
                             </TableCell>
@@ -391,7 +445,7 @@ const PCRSdgs = () => {
                                 className="mx-auto min-h-6 min-w-6 cursor-pointer fill-[#8a2323]"
                                 size={16}
                                 onClick={() => {
-                                  if (!!crtSdgId) {
+                                  if (crtSdgId) {
                                     onRemoveSdg(crtSdgId)
                                   }
                                 }}
@@ -409,7 +463,7 @@ const PCRSdgs = () => {
             <PCRTextAreaWidget
               {...{ PCRData, setPCRData, sectionIdentifier }}
               field="sdg_not_applying_explanation"
-              errors={agencyErrors}
+              errors={crtAgencyLevelErrors}
               indexes={[crtTab]}
             />
           )}

@@ -11,11 +11,12 @@ import { getValueClassName } from '../../utils'
 import { PCRResponse } from '../../interfaces'
 import {
   pcrFieldsMapping,
+  extendedBooleanFieldsOpts,
   borderedContainerClassname,
   borderedValueClassname,
 } from '../../constants'
 
-import { filter, find, keys, map } from 'lodash'
+import { filter, find, map } from 'lodash'
 import cx from 'classnames'
 import {
   Tabs,
@@ -29,13 +30,13 @@ import {
   Paper,
 } from '@mui/material'
 
-const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
-  const { fundsByAgency } = useContext(PCRDataContext)
+const PCRGenderMainstreaming = () => {
   const { agencies } = useContext(ProjectsDataContext)
+  const { pcr: pcrData, agencyIds } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
   const crtAgencyId = agencyIds[crtTab]
   const crtAgencies = map(
     agencyIds,
@@ -44,7 +45,7 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
 
   const ppData = filter(
     pcr.gender_mainstreamings,
-    ({ agency_id }) => agency_id === Number(crtAgencyId),
+    ({ agency_id }) => agency_id === crtAgencyId,
   )
 
   return (
@@ -93,7 +94,9 @@ const PCRGenderMainstreaming = ({ pcr }: { pcr: PCRResponse }) => {
                 </TableHead>
                 <TableBody>
                   {map(ppData, (pp, ppIndex) => {
-                    const prefilled = pp.prefilled ? 'Yes' : 'No'
+                    const prefilled = find(extendedBooleanFieldsOpts, {
+                      id: pp.prefilled,
+                    })?.name
 
                     return (
                       <TableRow key={ppIndex}>

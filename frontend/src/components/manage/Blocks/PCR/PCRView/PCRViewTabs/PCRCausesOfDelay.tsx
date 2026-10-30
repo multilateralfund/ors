@@ -18,26 +18,23 @@ import {
 } from '../../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, find, keys, map } from 'lodash'
+import { filter, find, map } from 'lodash'
 import cx from 'classnames'
 
-const PCRCausesOfDelay = ({ pcr }: { pcr: PCRResponse }) => {
-  const { fundsByAgency } = useContext(PCRDataContext)
+const PCRCausesOfDelay = () => {
   const { agencies } = useContext(ProjectsDataContext)
+  const { pcr: pcrData, agencyIds } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
   const crtAgencyId = agencyIds[crtTab]
   const crtAgencies = map(
     agencyIds,
     (id) => find(agencies, (agency) => agency.id === Number(id))?.name,
   )
 
-  const pcData = filter(
-    pcr.delay_causes,
-    (dc) => dc.agency_id === Number(crtAgencyId),
-  )
+  const pcData = filter(pcr.delay_causes, (dc) => dc.agency_id === crtAgencyId)
 
   return (
     <>
