@@ -34,12 +34,14 @@ import {
 import {
   formatAgencyData,
   formatOptions,
+  alignSummaryOfKeyDataErrors,
 } from '@ors/components/manage/Blocks/PCR/utils'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 import { ApiSubstance } from '@ors/types/api_substances'
 
+import { useParams } from 'wouter'
 import {
   compact,
   filter,
@@ -53,7 +55,6 @@ import {
   reduce,
   uniq,
 } from 'lodash'
-import { useParams } from 'wouter'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
@@ -88,7 +89,18 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     sdgs_contribution: [],
     supporting_evidences: [],
   })
-  const [initialErrors, setErrors] = useState({})
+  const [initialErrors, setInitialErrors] = useState({})
+
+  const setErrors = useCallback(
+    (updater: any) => {
+      setInitialErrors(
+        typeof updater === 'function'
+          ? updater
+          : alignSummaryOfKeyDataErrors(updater, PCRData.summary_of_key_data),
+      )
+    },
+    [PCRData.summary_of_key_data],
+  )
 
   const setPCRData = useCallback(
     (updater: SetStateAction<PCRData>, fieldName?: string) => {
@@ -280,7 +292,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pick(errors, summaryOfKeyDataField),
     )
     const resultsAssessmentErrors = formatResultsAssessmentErrors(
-      pick(errors, 'activities'),
+      pick(errors, 'overall_assessment_highlights'),
     )
     // const projectComponentsErrors = formatProjectComponentsErrors(
     //   pick(errors, 'project_components'),

@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
@@ -214,7 +215,13 @@ const PCROverview = () => {
               className={cx('rounded-lg p-6', borderedContainerClassname)}
             >
               <div className="flex items-center justify-between">
-                {detailItem(pcrFieldsMapping.entity, comment.entity)}
+                <div className="flex gap-2">
+                  {detailItem(pcrFieldsMapping.entity, comment.entity)}
+                  <FieldErrorIndicator
+                    errors={additionalCommentsErrors?.[commentIndex]}
+                    field="entity"
+                  />
+                </div>
                 <IoClose
                   className="min-h-6 min-w-6 cursor-pointer fill-gray-600"
                   size={16}
