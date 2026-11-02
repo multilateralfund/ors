@@ -46,8 +46,8 @@ const PCRListingWrapper = () => {
     category: filterOptions?.category ?? [],
     status: filterOptions?.status ?? [],
     pcr_status: filterOptions?.pcr_status ?? [],
-    pcr_due: booleanFieldsOpts,
-    ad_hoc_pcr: booleanFieldsOpts,
+    pcr_due: filterOptions?.pcr_due ?? [],
+    ad_hoc_pcr: filterOptions?.ad_hoc_pcr ?? [],
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {
