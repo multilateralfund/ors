@@ -9,6 +9,7 @@ export const initialParams = {
   sector_id: [],
   category: [],
   status_id: [],
+  pcr_status: [],
   pcr_due: [],
   ad_hoc_pcr: [],
   pcr_submission_date_after: '',
@@ -23,7 +24,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   project_type: 'Type',
   sector: 'Sector',
   subsectors: 'Subsector',
-  category: 'IND/MYA',
+  category: 'Category',
   pcr_due: 'PCR due',
   ad_hoc_pcr: 'Ad-hoc PCR',
   pcr_submission_date: 'PCR submission date',
@@ -31,6 +32,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   title: 'Title',
   metacode: 'Metacode',
   status: 'Status',
+  pcr_status: 'PCR status',
   code: 'Code',
   tranche: 'Tranche',
   agency: 'Agency',
@@ -130,7 +132,7 @@ export const booleanFieldsOpts = [
 
 export const extendedBooleanFieldsOpts = [
   ...booleanFieldsOpts,
-  { id: 'N/A', name: 'N/A' },
+  { id: 'Not applicable', name: 'N/A' },
 ]
 
 export const financialFiguresTypeOptions = [
@@ -188,6 +190,7 @@ export const llField = 'lessons'
 export const ppField = 'gender_mainstreamings'
 export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
+export const sdgAgencyErrorsField = 'sdg_agency_errors'
 export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
 

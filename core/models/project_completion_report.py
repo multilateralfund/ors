@@ -14,7 +14,7 @@ from core.models.meeting import Decision
 from core.models.substance import Substance
 from core.models.utils import get_protected_storage
 
-# pylint: disable=no-member
+# pylint: disable=no-member,too-many-lines
 
 PCR_RELATED_MODELS = [
     "PCRProject",
@@ -84,6 +84,12 @@ class PCR(models.Model):
         LOCAL_EXECUTING_AGENCY = "Local executing agency", "Local executing agency"
         OTHER = "Other", "Other"
 
+    class Status(models.TextChoices):
+        DRAFT = "Draft", "Draft"
+        SUBMITTED = "Submitted", "Submitted"
+        ADJUSTMENTS_REQUESTED = "Adjustments requested", "Adjustments requested"
+        FINAL = "Final", "Final"
+
     meta_project = models.ForeignKey(
         "MetaProject", on_delete=models.PROTECT, related_name="pcrs"
     )
@@ -97,6 +103,12 @@ class PCR(models.Model):
         help_text="User who created this PCR version",
     )
     version = models.IntegerField(default=1)
+    status = models.CharField(
+        max_length=32,
+        choices=Status.choices,
+        default=Status.DRAFT,
+        help_text="Workflow status of the PCR",
+    )
     latest_pcr = models.ForeignKey(
         "self",
         on_delete=models.PROTECT,
@@ -195,11 +207,28 @@ class PCR(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-    submission_date = models.DateField(null=True, blank=True)
+    submission_date = models.DateField(
+        null=True, blank=True, help_text="Initial submission date (version 1)"
+    )
+    revised_submission_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Latest resubmission date, after adjustments were requested",
+    )
     objects = PCRManager()
 
     def __str__(self):
         return self.meta_project.umbrella_code
+
+    @property
+    def is_editable(self):
+        """Archived versions and the final version are locked"""
+        return self.latest_pcr_id is None and self.status != self.Status.FINAL
+
+    @property
+    def is_locked(self):
+        """The lead agency can't work on the PCR while it is with MLFS or final"""
+        return self.status in [self.Status.SUBMITTED, self.Status.FINAL]
 
     @cached_property
     def total_number_of_enterprises(self):
@@ -269,6 +298,47 @@ class PCR(models.Model):
         self.version += 1
         self.version_created_by = user
         self.save()
+
+
+class PCRHistory(models.Model):
+    class LockAction(models.TextChoices):
+        LOCKED = "Locked", "Locked"
+        UNLOCKED = "Unlocked", "Unlocked"
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Creation date",
+    )
+
+    pcr = models.ForeignKey(
+        "PCR",
+        on_delete=models.CASCADE,
+        related_name="pcr_history",
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="updated_pcrs",
+        help_text="User who updated the PCR",
+    )
+
+    description = models.TextField(blank=True)
+
+    lock_action = models.CharField(
+        max_length=16,
+        choices=LockAction.choices,
+        null=True,
+        blank=True,
+        help_text="Set if the event locked or unlocked the PCR for the lead agency",
+    )
+
+    class Meta:
+        verbose_name_plural = "PCR history"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.pcr} - {self.description}"
 
 
 class PCRProject(models.Model):
@@ -710,6 +780,11 @@ class PCRGenderMainstreaming(models.Model):
             "Monitoring and Reporting",
         )
 
+    class Prefilled(models.TextChoices):
+        YES = "Yes", "Yes"
+        NO = "No", "No"
+        NOT_APPLICABLE = "Not applicable", "Not applicable"
+
     pcr = models.ForeignKey(
         PCR, on_delete=models.PROTECT, related_name="gender_mainstreamings"
     )
@@ -721,7 +796,11 @@ class PCRGenderMainstreaming(models.Model):
         choices=ProjectPreparation.choices,
         help_text="",
     )
-    prefilled = models.BooleanField()
+    prefilled = models.CharField(
+        max_length=16,
+        choices=Prefilled.choices,
+        help_text="Gender policy implemented",
+    )
     qualitative_description = models.TextField()
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -760,6 +839,15 @@ class PCRSustainableDevelopmentGoal(models.Model):
         PCRGoal,
         through="PCRSustainableDevelopmentGoalDescription",
         related_name="sustainable_development_goals",
+    )
+    sdg_applying = models.BooleanField(
+        default=True,
+        help_text="Did the project contribute to any Sustainable Development Goals (SDGs)?",
+    )
+    sdg_not_applying_explanation = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Explanation if the project did not contribute to any SDGs",
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)

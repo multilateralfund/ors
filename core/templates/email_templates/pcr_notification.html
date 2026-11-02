@@ -1,0 +1,25 @@
+{% extends 'registration/base.html' %}
+{% load settings_value %}
+
+{% block content %}
+  <p>Dear MLFS user,</p>
+  <p>
+    {% if is_final %}
+      The following project completion report has been approved and its final version is available:
+    {% else %}
+      The following project completion report has been submitted for MLFS review:
+    {% endif %}
+  </p>
+
+  <p>
+    <strong>Metacode:</strong> {{ pcr.meta_project.umbrella_code }}<br/>
+    <strong>Country:</strong> {{ pcr.meta_project.country }}<br/>
+    <strong>Lead agency:</strong> {{ pcr.meta_project.lead_agency }}<br/>
+    <strong>Version:</strong> {{ pcr.version }}<br/>
+
+    <a href="{% frontend_host %}/pcr/{{ pcr.meta_project_id }}/{{ pcr.id }}/" target="_blank">
+      View PCR details
+    </a>
+  </p>
+
+{% endblock %}

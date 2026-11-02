@@ -140,6 +140,7 @@ from core.api.views.projects_v2 import (
 from core.api.views.project_completion_report.metadata import (
     PCRRatingView,
     PCRCompletedByView,
+    PCRStatusView,
     PCRDelayClusterView,
     PCREntityView,
     PCRGoalView,
@@ -351,6 +352,11 @@ urlpatterns = [
         "project-completion-report/completed-by/",
         PCRCompletedByView.as_view(),
         name="project-completion-report-completed-by",
+    ),
+    path(
+        "project-completion-report/status/",
+        PCRStatusView.as_view(),
+        name="project-completion-report-status",
     ),
     path(
         "project-completion-report/entity/",

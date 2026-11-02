@@ -7,6 +7,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRGenderMainstreaming from './PCRGenderMainstreaming'
+import PCRHistory from '../PCRView/PCRViewTabs/PCRHistory'
 import PCRResultsAssessment from './PCRResultsAssessment'
 import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 import PCRLessonsLearned from './PCRLessonsLearned'
@@ -29,7 +30,7 @@ import {
 import { flatMap, map, omit } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
 
-const PCRForm = () => {
+const PCRForm = ({ mode }: { mode: string }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const { PCRData, errors, setErrors } = useContext(PCRDataContext)
@@ -61,6 +62,7 @@ const PCRForm = () => {
       title: 'Other supporting evidence',
       errors: errors.supporting_evidences,
     },
+    history: { title: 'History', errors: {} },
   }
 
   const TabLabel = ({ field }: { field: keyof typeof tabMapping }) => (
@@ -121,6 +123,15 @@ const PCRForm = () => {
       title: 'Other supporting evidence',
       component: <PCRDocumentation />,
     },
+    ...(mode === 'edit'
+      ? [
+          {
+            id: 'history',
+            label: <TabLabel field="history" />,
+            component: <PCRHistory />,
+          },
+        ]
+      : []),
   ]
   const additionalCommentsField = 'additional_comments'
 
