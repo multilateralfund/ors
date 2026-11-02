@@ -1204,6 +1204,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
     projects = serializers.SerializerMethodField()
     pcr_id = serializers.SerializerMethodField()
     pcr_status = serializers.SerializerMethodField()
+    pcr_editable = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     date_of_completion = serializers.SerializerMethodField()
     total_funding = serializers.SerializerMethodField()
@@ -1228,6 +1229,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "projects",
             "pcr_id",
             "pcr_status",
+            "pcr_editable",
             "pcr_due",
             "pcr_due_date",
             "status",
@@ -1303,6 +1305,16 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
         pcr = self._get_pcr(obj)
         if pcr:
             return pcr.status
+        return None
+
+    @extend_schema_field(serializers.BooleanField(allow_null=True))
+    def get_pcr_editable(self, obj):
+        # whether the current user can edit the meta project's PCR
+        pcr = self._get_pcr(obj)
+        if pcr:
+            return pcr.is_editable and pcr.id in self.context.get(
+                "edit_queryset_ids", set()
+            )
         return None
 
 

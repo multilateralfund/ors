@@ -22,6 +22,7 @@ from core.api.serializers.project_completion_report import (
     PCRProjectSetAdHocOrPcrDueSerializer,
 )
 from core.api.views.project_completion_report.utils import (
+    filter_pcr_permissions,
     filter_pcr_projects_permissions,
 )
 from core.api.views.utils import get_available_values, get_country_regions
@@ -122,6 +123,17 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == "set_pcr_or_ad_hoc":
             return [HasPCRMarkPCRDueAccess]
         return [DenyAll]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.action in ["list", "retrieve"]:
+            # used to set pcr_editable on serializer
+            context["edit_queryset_ids"] = set(
+                filter_pcr_permissions(
+                    self.request.user, PCR.objects.all(), results_for_edit=True
+                ).values_list("id", flat=True)
+            )
+        return context
 
     def _get_filtered_projects_queryset(self, params):
         projects_queryset = filter_pcr_projects_permissions(

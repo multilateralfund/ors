@@ -231,6 +231,42 @@ class TestEdit:
         response = client.get(reverse("project-completion-report-list"))
         assert [row["pcr_editable"] for row in response.data] == [True]
 
+    def test_metaprojects_editable(
+        self,
+        client,
+        pcr_inputter,
+        pcr_viewer,
+        own_pcr,
+        agency,
+        project_approved_status,
+    ):
+        submitted_pcr = _create_pcr(agency, status=PCR.Status.SUBMITTED)
+        meta_project_without_pcr = MetaProjectFactory.create()
+        ProjectFactory.create(meta_project=meta_project_without_pcr, agency=agency)
+        for meta_project in [
+            own_pcr.meta_project,
+            submitted_pcr.meta_project,
+            meta_project_without_pcr,
+        ]:
+            meta_project.projects.update(submission_status=project_approved_status)
+
+        def _editable(user):
+            client.force_authenticate(user=user)
+            response = client.get(reverse("pcr-metaprojects-list"))
+            assert response.status_code == 200
+            return {row["id"]: row["pcr_editable"] for row in response.data}
+
+        assert _editable(pcr_inputter) == {
+            own_pcr.meta_project_id: True,
+            submitted_pcr.meta_project_id: False,
+            meta_project_without_pcr.id: None,
+        }
+        assert _editable(pcr_viewer) == {
+            own_pcr.meta_project_id: False,
+            submitted_pcr.meta_project_id: False,
+            meta_project_without_pcr.id: None,
+        }
+
 
 class TestCreate:
     @staticmethod

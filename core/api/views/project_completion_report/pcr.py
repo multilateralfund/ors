@@ -46,11 +46,13 @@ from core.api.export.project_completion_report import PCRSubmissionLogWriter
 from core.api.utils import workbook_response
 from core.api.views.project_completion_report.pcr_workflow import PCRWorkflowMixin
 from core.api.views.project_completion_report.utils import (
+    filter_pcr_permissions,
     filter_pcr_projects_permissions,
+    get_pcr_accessible_meta_projects,
 )
 from core.api.views.utils import get_country_regions
 from core.models.country import Country
-from core.models.project import MetaProject, Project
+from core.models.project import Project
 from core.models.project_completion_report import (
     PCR,
     PCRLearnedLessonCategory,
@@ -188,34 +190,15 @@ class PCRProjectViewSet(
         return super().filter_queryset(queryset)
 
     def _get_accessible_meta_projects(self):
-        user = cast(User, self.request.user)
-        if user.is_superuser:
-            return MetaProject.objects.all()
-        projects = filter_pcr_projects_permissions(user, Project.objects.all())
-        return MetaProject.objects.filter(
-            Exists(projects.filter(meta_project=OuterRef("pk")))
-        )
+        return get_pcr_accessible_meta_projects(cast(User, self.request.user))
 
     def filter_pcr_permissions_queryset(self, queryset, results_for_edit=False):
-        """
-        Filter a PCR queryset to the PCRs of the meta projects the user can access.
-        For edit, the PCRs submitted to MLFS are locked for the agencies.
-        """
-        user = cast(User, self.request.user)
-        if user.is_superuser:
-            return queryset
-
-        queryset = queryset.filter(
-            meta_project__in=self._get_accessible_meta_projects()
+        return filter_pcr_permissions(
+            cast(User, self.request.user),
+            queryset,
+            results_for_edit=results_for_edit
+            or self.action in ["update", "partial_update"],
         )
-
-        if self.action in ["update", "partial_update"] or results_for_edit:
-            if not user.has_perm("core.has_pcr_edit_access"):
-                return queryset.none()
-            if not user.has_perm("core.has_pcr_edit_submitted_access"):
-                queryset = queryset.exclude(status=PCR.Status.SUBMITTED)
-
-        return queryset
 
     def get_queryset(self):
         if self.action in self.PCR_DETAIL_ACTIONS:
