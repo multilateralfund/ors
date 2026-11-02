@@ -306,14 +306,20 @@
         "model_name": "pcr"
     },
     {
-        "permission_codename": "has_pcr_lock_access",
-        "permission_name": "Has PCR lock access",
+        "permission_codename": "has_pcr_edit_submitted_access",
+        "permission_name": "Has PCR edit access while submitted to MLFS",
         "app_label": "core",
         "model_name": "pcr"
     },
     {
-        "permission_codename": "has_pcr_unlock_access",
-        "permission_name": "Has PCR unlock access",
+        "permission_codename": "has_pcr_request_adjustments_access",
+        "permission_name": "Has PCR request adjustments access",
+        "app_label": "core",
+        "model_name": "pcr"
+    },
+    {
+        "permission_codename": "has_pcr_approve_access",
+        "permission_name": "Has PCR approve access",
         "app_label": "core",
         "model_name": "pcr"
     },

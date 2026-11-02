@@ -527,6 +527,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
     version_created_by = serializers.StringRelatedField(read_only=True)
     is_editable = serializers.BooleanField(read_only=True)
     is_locked = serializers.BooleanField(read_only=True)
+    editable = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
     pcr_projects = serializers.SerializerMethodField()
     delay_causes = PCRDelayCauseSerializer(many=True)
@@ -546,6 +547,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "version_created_by",
             "is_editable",
             "is_locked",
+            "editable",
             "history",
             "additional_comments",
             "addresses",
@@ -583,6 +585,12 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "total_funds_disbursed",
             "total_funds_returned",
         ]
+
+    def get_editable(self, instance):
+        # whether the current user can edit this PCR
+        return instance.is_editable and instance.id in self.context.get(
+            "edit_queryset_ids", set()
+        )
 
     def get_history(self, instance):
         # The history is kept on the current version, archived versions share it
@@ -943,6 +951,7 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
     pcr_version = serializers.IntegerField(source="pcr.version", read_only=True)
     pcr_status = serializers.CharField(source="pcr.status", read_only=True)
     pcr_is_locked = serializers.BooleanField(source="pcr.is_locked", read_only=True)
+    pcr_editable = serializers.SerializerMethodField()
     initial_submission_date = serializers.DateField(
         source="pcr.submission_date", read_only=True
     )
@@ -1037,6 +1046,12 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
     def get_pcr_due(self, obj):
         return bool(obj.pcr_due_value)
 
+    def get_pcr_editable(self, obj):
+        # whether the current user can edit this PCR
+        return obj.pcr.is_editable and obj.pcr_id in self.context.get(
+            "edit_queryset_ids", set()
+        )
+
     class Meta:
         model = PCRProject
         fields = [
@@ -1045,6 +1060,7 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
             "pcr_version",
             "pcr_status",
             "pcr_is_locked",
+            "pcr_editable",
             "initial_submission_date",
             "revised_submission_date",
             "project_id",

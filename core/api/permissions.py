@@ -456,6 +456,30 @@ class HasPCRSubmitAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_pcr_submit_access")
 
 
+class HasPCRRequestAdjustmentsAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to send a PCR back to the lead agency.
+        """
+        return request.user.has_perm("core.has_pcr_request_adjustments_access")
+
+
+class HasPCRApproveAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to approve a PCR.
+        """
+        return request.user.has_perm("core.has_pcr_approve_access")
+
+
+class HasPCRMarkPCRDueAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to mark a project as 'PCR due'.
+        """
+        return request.user.has_perm("core.has_project_v2_pcr_mark_pcr_due_access")
+
+
 class DenyAll(permissions.BasePermission):
     def has_permission(self, request, view):
         return False

@@ -375,14 +375,18 @@
     {
         "name": "PCR - Viewer",
         "permissions": [
-            "has_pcr_view_access"
+            "has_pcr_view_access",
+            "can_view_production_projects",
+            "can_view_only_own_agency"
         ]
     },
     {
         "name": "PCR - Inputter",
         "permissions": [
             "has_pcr_view_access",
-            "has_pcr_edit_access"
+            "has_pcr_edit_access",
+            "can_view_production_projects",
+            "can_view_only_own_agency"
         ]
     },
     {
@@ -390,16 +394,22 @@
         "permissions": [
             "has_pcr_view_access",
             "has_pcr_edit_access",
-            "has_pcr_submit_access"
+            "has_pcr_submit_access",
+            "can_view_production_projects",
+            "can_view_only_own_agency"
         ]
     },
     {
         "name": "PCR - Secretariat",
         "permissions": [
             "has_pcr_view_access",
+            "has_pcr_request_adjustments_access",
+            "has_pcr_approve_access",
             "has_pcr_admin_log_access",
             "has_project_v2_view_access",
-            "has_project_v2_pcr_mark_pcr_due_access"
+            "has_project_v2_pcr_mark_pcr_due_access",
+            "can_view_all_agencies",
+            "is_mlfs_user"
         ]
     },
     {
@@ -407,13 +417,16 @@
         "permissions": [
             "has_pcr_view_access",
             "has_pcr_edit_access",
+            "has_pcr_edit_submitted_access",
             "has_pcr_submit_access",
-            "has_pcr_lock_access",
-            "has_pcr_unlock_access",
+            "has_pcr_request_adjustments_access",
+            "has_pcr_approve_access",
             "has_pcr_admin_log_access",
             "has_project_v2_view_access",
             "has_project_v2_pcr_waive_pcr_access",
-            "has_project_v2_pcr_mark_pcr_due_access"
+            "has_project_v2_pcr_mark_pcr_due_access",
+            "can_view_all_agencies",
+            "is_mlfs_user"
         ]
     }
 

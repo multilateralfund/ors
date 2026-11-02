@@ -12,10 +12,17 @@ from core.api.filters.project import (
     completed_meta_projects,
     project_has_cooperating_agency_q,
 )
-from core.api.permissions import HasPCRViewAccess
+from core.api.permissions import (
+    DenyAll,
+    HasPCRMarkPCRDueAccess,
+    HasPCRViewAccess,
+)
 from core.api.serializers.project_completion_report import (
     PCRMetaProjectSerializer,
     PCRProjectSetAdHocOrPcrDueSerializer,
+)
+from core.api.views.project_completion_report.utils import (
+    filter_pcr_projects_permissions,
 )
 from core.api.views.utils import get_available_values, get_country_regions
 from core.models.annual_project_report import AnnualProjectReport
@@ -96,7 +103,6 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
     allow the creation of a project completion report (PCR) for each project in the metaproject.
     """
 
-    permission_classes = [HasPCRViewAccess]
     filter_backends = [
         ProjectFilterBackend,
         DjangoFilterBackend,
@@ -109,31 +115,20 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         "meta_project__pcrs__learned_lessons__lessons__name",
     ]
 
-    def filter_project_permissions_queryset(self, queryset):
-        """
-        Filter the queryset based on the user's permissions.
-        """
-        user = self.request.user
-        if user.is_superuser:
-            return queryset
-
-        if not user.has_perm("core.can_view_production_projects"):
-            queryset = queryset.filter(production=False)
-
-        if user.has_perm("core.can_view_all_agencies"):
-            return queryset
-
-        if user.has_perm("core.can_view_only_own_agency"):
-            return queryset.filter(
-                Q(agency=user.agency) | Q(lead_agency=user.agency)
-            ).distinct()
-        return queryset.none()
+    @property
+    def permission_classes(self):
+        if self.action in ["list", "retrieve", "list_filters"]:
+            return [HasPCRViewAccess]
+        if self.action == "set_pcr_or_ad_hoc":
+            return [HasPCRMarkPCRDueAccess]
+        return [DenyAll]
 
     def _get_filtered_projects_queryset(self, params):
-        projects_queryset = self.filter_project_permissions_queryset(
+        projects_queryset = filter_pcr_projects_permissions(
+            self.request.user,
             Project.objects.filter(submission_status__name="Approved").exclude(
                 category="Individual", status__name="Transferred"
-            )
+            ),
         )
         project_filter = ProjectFilter(params, queryset=projects_queryset)
         filtered_projects_qs = project_filter.qs
@@ -270,7 +265,19 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         )
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        for meta_project in serializer.validated_data.get("meta_projects", []):
+        meta_projects = serializer.validated_data.get("meta_projects", [])
+        if not request.user.is_superuser:
+            accessible_meta_project_ids = set(
+                filter_pcr_projects_permissions(request.user, Project.objects.all())
+                .filter(meta_project__in=meta_projects)
+                .values_list("meta_project_id", flat=True)
+            )
+            if any(mp.id not in accessible_meta_project_ids for mp in meta_projects):
+                return Response(
+                    {"error": "You do not have access to all the meta projects."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        for meta_project in meta_projects:
             if serializer.validated_data.get("pcr_due", None) is not None:
                 meta_project.pcr_due = serializer.validated_data.get("pcr_due", False)
                 meta_project.pcr_due_date = serializer.validated_data.get(

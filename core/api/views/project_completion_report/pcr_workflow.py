@@ -85,7 +85,7 @@ class PCRWorkflowMixin:
         if config.PCR_NOTIFICATIONS_ENABLED:
             send_pcr_notification.delay(pcr.id)
 
-        return Response(PCRDetailSerializer(pcr).data, status=status.HTTP_200_OK)
+        return Response(self.get_serializer(pcr).data, status=status.HTTP_200_OK)
 
     @extend_schema(
         description="""
@@ -117,7 +117,7 @@ class PCRWorkflowMixin:
                 lock_action=PCRHistory.LockAction.UNLOCKED,
             )
 
-        return Response(PCRDetailSerializer(pcr).data, status=status.HTTP_200_OK)
+        return Response(self.get_serializer(pcr).data, status=status.HTTP_200_OK)
 
     @extend_schema(
         description="""
@@ -149,7 +149,7 @@ class PCRWorkflowMixin:
         if config.PCR_NOTIFICATIONS_ENABLED:
             send_pcr_notification.delay(pcr.id, is_final=True)
 
-        return Response(PCRDetailSerializer(pcr).data, status=status.HTTP_200_OK)
+        return Response(self.get_serializer(pcr).data, status=status.HTTP_200_OK)
 
     @extend_schema(
         description="""
