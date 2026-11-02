@@ -405,7 +405,6 @@
             "has_pcr_view_access",
             "has_pcr_request_adjustments_access",
             "has_pcr_approve_access",
-            "has_pcr_admin_log_access",
             "has_project_v2_view_access",
             "has_project_v2_pcr_mark_pcr_due_access",
             "can_view_all_agencies",
@@ -421,9 +420,7 @@
             "has_pcr_submit_access",
             "has_pcr_request_adjustments_access",
             "has_pcr_approve_access",
-            "has_pcr_admin_log_access",
             "has_project_v2_view_access",
-            "has_project_v2_pcr_waive_pcr_access",
             "has_project_v2_pcr_mark_pcr_due_access",
             "can_view_all_agencies",
             "is_mlfs_user"
