@@ -56,7 +56,7 @@ const PCRViewWrapper = () => {
                 <CancelLinkButton title="Cancel" href="/pcr" />
                 {!pcr.data.latest_pcr_id && (
                   <>
-                    {pcr.data.status !== 'Final' && (
+                    {pcr.data.editable && (
                       <Link
                         className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary hover:text-mlfs-hlYellow"
                         href={`/pcr/${project_id}/${pcr_id}/edit`}

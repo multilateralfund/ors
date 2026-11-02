@@ -35,6 +35,7 @@ export interface PermissionsContextProps {
   canEditEnterprise: boolean
   canSetProjectSettings: boolean
   isMlfsUser: boolean
+  isSuperuser: boolean
   canViewOnlyOwnAgency: boolean
   canCommentCPCountry: boolean
   canCommentCPSecretariat: boolean
@@ -46,6 +47,10 @@ export interface PermissionsContextProps {
   canViewPCR: boolean
   canEditPCR: boolean
   canSubmitPCR: boolean
+  canEditSubmittedPCR: boolean
+  canRequestAdjustmentsPCR: boolean
+  canApprovePCR: boolean
+  canMarkPCRDue: boolean
 }
 
 const PermissionsContext = createContext<PermissionsContextProps>(

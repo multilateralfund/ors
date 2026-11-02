@@ -13,6 +13,7 @@ const PCRTable = ({
   projectId,
   setProjectId,
   setPcrId,
+  setPcrEditable,
   filters,
   view,
 }: PCRTableProps) => {
@@ -47,6 +48,7 @@ const PCRTable = ({
     projectId,
     setProjectId,
     setPcrId,
+    setPcrEditable,
     view,
   )
 

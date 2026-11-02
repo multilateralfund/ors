@@ -79,6 +79,7 @@ const getColumnDefs = (
   projectId: number | null,
   setProjectId: (id: number | null) => void,
   setPcrId: (id: number | null) => void,
+  setPcrEditable: (editable: boolean) => void,
   view: ViewSelectorValuesType | null,
 ) => ({
   columnDefs: [
@@ -112,6 +113,7 @@ const getColumnDefs = (
                   const isChecked = event.target.checked
                   setProjectId(isChecked ? props.data.metaprojectId : null)
                   setPcrId(isChecked ? (props.data.pcr_id ?? null) : null)
+                  setPcrEditable(isChecked && !!props.data.pcr_editable)
                 }}
                 sx={{ color: 'black' }}
               />

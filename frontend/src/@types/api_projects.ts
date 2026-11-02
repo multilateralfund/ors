@@ -224,4 +224,5 @@ export type PCRMetaProjectType = {
   lead_agency_id: number | null
   projects: ProjectType[]
   pcr_id: number | null
+  pcr_editable: boolean | null
 }

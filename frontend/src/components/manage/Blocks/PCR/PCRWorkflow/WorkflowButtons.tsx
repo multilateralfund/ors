@@ -1,7 +1,8 @@
 import { useContext, useState } from 'react'
 
-import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { IncreaseVersionButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import ChangeVersionModal from './ChangeVersionModal'
 
 import { Button } from '@mui/material'
@@ -14,6 +15,8 @@ const WorkflowButtons = ({
   editPCR?: (showSuccess?: boolean) => Promise<boolean>
   isSaveDisabled?: boolean
 }) => {
+  const { canSubmitPCR, canApprovePCR, canRequestAdjustmentsPCR } =
+  useContext(PermissionsContext)
   const { pcr } = useContext(PCRDataContext)
   const { status } = pcr.data ?? {}
 
@@ -21,40 +24,41 @@ const WorkflowButtons = ({
 
   return (
     <>
-      {(status === 'Draft' || status === 'Adjustments requested') && (
+      {canSubmitPCR &&
+        (status === 'Draft' || status === 'Adjustments requested') && (
+          <IncreaseVersionButton
+            title="Submit PCR"
+            onSubmit={() => {
+              setModalType('submit')
+            }}
+            isDisabled={isSaveDisabled}
+            className={cx({ 'border border-solid': isSaveDisabled })}
+          />
+        )}
+      {canApprovePCR && status === 'Submitted' && (
         <IncreaseVersionButton
-          title="Submit PCR"
+          title="Approve"
           onSubmit={() => {
-            setModalType('submit')
+            setModalType('approve')
           }}
           isDisabled={isSaveDisabled}
           className={cx({ 'border border-solid': isSaveDisabled })}
         />
       )}
-      {status === 'Submitted' && (
-        <>
-          <IncreaseVersionButton
-            title="Approve"
-            onSubmit={() => {
-              setModalType('approve')
-            }}
-            isDisabled={isSaveDisabled}
-            className={cx({ 'border border-solid': isSaveDisabled })}
-          />
-          <Button
-            className={cx('border border-solid px-4 py-2', {
-              'border-red-900 bg-white text-red-900': !isSaveDisabled,
-            })}
-            size="large"
-            variant="outlined"
-            onClick={() => {
-              setModalType('request changes')
-            }}
-            disabled={isSaveDisabled}
-          >
-            Request changes
-          </Button>
-        </>
+      {canRequestAdjustmentsPCR && status === 'Submitted' && (
+        <Button
+          className={cx('border border-solid px-4 py-2', {
+            'border-red-900 bg-white text-red-900': !isSaveDisabled,
+          })}
+          size="large"
+          variant="outlined"
+          onClick={() => {
+            setModalType('request changes')
+          }}
+          disabled={isSaveDisabled}
+        >
+          Request changes
+        </Button>
       )}
       <ChangeVersionModal {...{ modalType, setModalType, editPCR }} />
     </>

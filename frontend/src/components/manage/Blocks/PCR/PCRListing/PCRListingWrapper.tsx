@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 
 import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -9,6 +9,7 @@ import {
   RedirectBackButton,
   CreateButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
 import PCRTable from './PCRTable'
@@ -19,6 +20,8 @@ import { useGetPcrFilters } from '../hooks/useGetPcrFilters'
 const PCRListingWrapper = () => {
   const form = useRef<any>()
 
+  const { canEditPCR } = useContext(PermissionsContext)
+
   const updatedInitialFilters = {
     ...initialFilters,
     pcr_submitted: [booleanFieldsOpts[1]],
@@ -28,6 +31,7 @@ const PCRListingWrapper = () => {
   const [view, setView] = useState<ViewSelectorValuesType | null>('list')
   const [projectId, setProjectId] = useState<number | null>(null)
   const [pcrId, setPcrId] = useState<number | null>(null)
+  const [pcrEditable, setPcrEditable] = useState(false)
   const [filters, setFilters] = useState(updatedInitialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
@@ -69,6 +73,9 @@ const PCRListingWrapper = () => {
 
   const handleChangeViewSelector = (value: ViewSelectorValuesType) => {
     setView(value)
+    setProjectId(null)
+    setPcrId(null)
+    setPcrEditable(false)
 
     if (value === 'list') {
       handleFilterChange({
@@ -112,14 +119,14 @@ const PCRListingWrapper = () => {
               <CreateButton
                 title="Raise a PCR"
                 href={`/pcr/${projectId}/create`}
-                isDisabled={!projectId || !!pcrId}
+                isDisabled={!canEditPCR || !projectId || !!pcrId}
                 className="!mb-0"
               />
             ) : (
               <CreateButton
                 title="Edit PCR"
                 href={`/pcr/${projectId}/${pcrId}/edit`}
-                isDisabled={!projectId || !pcrId}
+                isDisabled={!pcrEditable || !projectId || !pcrId}
                 className="!mb-0"
               />
             )}
@@ -144,7 +151,15 @@ const PCRListingWrapper = () => {
           <PCRFiltersSelectedOpts {...filtersProps} />
         </div>
         <PCRTable
-          {...{ pcrProjects, projectId, setProjectId, setPcrId, filters, view }}
+          {...{
+            pcrProjects,
+            projectId,
+            setProjectId,
+            setPcrId,
+            setPcrEditable,
+            filters,
+            view,
+          }}
         />
       </div>
     </>
