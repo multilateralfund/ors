@@ -15,25 +15,18 @@ import {
 } from '../../constants'
 
 import { MdOutlineLightbulb } from 'react-icons/md'
-import { filter, keys, map } from 'lodash'
+import { filter, map } from 'lodash'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
-const PCRProjectRecommendations = ({
-  pcr,
-  crtTab,
-}: {
-  pcr: PCRResponse
-  crtTab: number
-}) => {
-  const { fundsByAgency } = useContext(PCRDataContext)
-
-  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
+const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
+  const { pcr: pcrData, agencyIds } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
   const crtAgencyId = agencyIds[crtTab]
 
   const prData = filter(
     pcr.future_project_recommendations,
-    ({ agency_id }) => agency_id === Number(crtAgencyId),
+    ({ agency_id }) => agency_id === crtAgencyId,
   )
 
   return (

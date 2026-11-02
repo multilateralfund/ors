@@ -1,3 +1,6 @@
+import { useContext } from 'react'
+
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import {
   SubSectionTitle,
@@ -18,7 +21,10 @@ import { Divider } from '@mui/material'
 import { map } from 'lodash'
 import cx from 'classnames'
 
-const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
+const PCROverview = () => {
+  const { pcr: pcrData } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
+
   const spacingClassname = 'hidden lg:mt-0.5 lg:block lg:w-[20%] lg:self-start'
   const explanationClassname = {
     ...overviewTextareaClassname,
@@ -33,7 +39,7 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
 
   return (
     <>
-      <PCROverviewPrefilledData {...{ pcr }} />
+      <PCROverviewPrefilledData />
       <div className={cx('mb-10 flex flex-col', borderedContainerClassname)}>
         <div className="bg-[#f4f5f6] px-6 py-4">
           <SubSectionTitle>Indicators</SubSectionTitle>
@@ -73,7 +79,7 @@ const PCROverview = ({ pcr }: { pcr: PCRResponse }) => {
               '!text-mlfs-hlYellow bg-primary border-primary',
             ),
           )}
-          {pcr.rating.includes('Other') && (
+          {pcr.rating?.includes('Other') && (
             <div
               className={cx(
                 'mt-3 flex',

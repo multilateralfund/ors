@@ -185,7 +185,7 @@ const PCRResultsAssessment = () => {
                           <PCRTextWidget
                             {...{ PCRData, setPCRData, sectionIdentifier }}
                             field="activity_title"
-                            className="w-full md:!min-w-full"
+                            className="w-full md:!min-w-[calc(100%-25px)]"
                             errors={agencyErrors}
                             indexes={[crtTab, activityIndex]}
                             subFields={['', activityField]}
@@ -207,7 +207,7 @@ const PCRResultsAssessment = () => {
                                 indexes={[crtTab, activityIndex]}
                                 subFields={['', activityField]}
                                 excludeLabel={true}
-                                className="md:!min-w-full"
+                                className="md:!min-w-[calc(100%-25px)]"
                               />
                             </TableCell>
                           ),

@@ -122,7 +122,7 @@ const ProjectsHeader = ({
 
   return (
     <HeaderTitle>
-      <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
+      <div className="align-center flex flex-wrap justify-between gap-4">
         <div className="flex flex-col">
           <RedirectBackButton withRedirect={false} onAction={onCancel} />
           <div className="flex flex-wrap gap-2 sm:flex-nowrap">

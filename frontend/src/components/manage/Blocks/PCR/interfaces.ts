@@ -117,6 +117,9 @@ type PCRProjectResponse = {
 export type PCRResponse = {
   id: number
   meta_project_id: number
+  status: string
+  version: number
+  latest_pcr_id: number | null
   submission_date: string | null
   total_number_of_enterprises: string
   financial_figures_status: string
@@ -151,10 +154,7 @@ export type PCRResponse = {
     }[]
   }[]
   future_project_recommendations: (Recommendation & { agency_id: number })[]
-  gender_mainstreamings: (Omit<ProjectPhase, 'prefilled'> & {
-    agency_id: number
-    prefilled: boolean
-  })[]
+  gender_mainstreamings: (ProjectPhase & { agency_id: number })[]
   sustainable_development_goals: {
     agency_id: number
     sdg_applying: boolean
@@ -167,6 +167,27 @@ export type PCRResponse = {
     filename: string
     file: string
   }[]
+  history: PCRHistoryItem[]
+}
+
+export type PCRVersion = {
+  id: number
+  version: number
+  status: string
+  latest_pcr_id: number
+}
+
+export type PCRHistoryItem = {
+  created_at: string
+  user: {
+    id: number
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+  }
+  description: string
+  lock_action: string | null
 }
 
 type DelayCluster = {

@@ -36,6 +36,7 @@ from core.models import (
     AnnualAgencyProjectReport,
     AnnualProjectReport,
     AnnualProgressReport,
+    PCR,
     ProjectStatus,
 )
 
@@ -435,6 +436,37 @@ def send_project_recommended_notification(project_ids):
             recipients,
             subject_template_name,
         )
+
+
+# Project Completion Reports
+@app.task()
+def send_pcr_notification(pcr_id, is_final=False):
+    """
+    Notify MLFS that a PCR was submitted for review or,
+    if `is_final` is set, that the final PCR version is available.
+    """
+    pcr = PCR.objects.select_related("meta_project").get(id=pcr_id)
+
+    recipients = config.PCR_NOTIFICATIONS_EMAILS
+    if isinstance(recipients, str):
+        recipients = recipients.split(",")
+    if not recipients:
+        return
+
+    context = {
+        "pcr": pcr,
+        "is_final": is_final,
+    }
+    subject_template_name = ("email_templates/pcr_notification_subject.txt",)
+    email_template_name = ("email_templates/pcr_notification.txt",)
+    html_email_template_name = ("email_templates/pcr_notification.html",)
+    send_html_mail(
+        context,
+        email_template_name,
+        html_email_template_name,
+        recipients,
+        subject_template_name,
+    )
 
 
 # Country Programme

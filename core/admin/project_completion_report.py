@@ -10,6 +10,7 @@ from core.models.project_completion_report import (
     PCRFutureProjectRecommendation,
     PCRGenderMainstreaming,
     PCRGoal,
+    PCRHistory,
     PCRLearnedLesson,
     PCRLearnedLessonCategory,
     PCRLearnedLessonDescription,
@@ -52,6 +53,29 @@ class PCRAdmin(admin.ModelAdmin):
     ]
     filter_horizontal = [
         "decisions",
+    ]
+
+
+@admin.register(PCRHistory)
+class PCRHistoryAdmin(admin.ModelAdmin):
+    admin_group = "PCR"
+    search_fields = [
+        "pcr__meta_project__umbrella_code",
+    ]
+    list_display = [
+        "pcr",
+        "user",
+        "description",
+        "lock_action",
+        "created_at",
+    ]
+    readonly_fields = ("created_at",)
+    list_filter = [
+        AutocompleteFilterFactory("pcr", "pcr"),
+    ]
+    raw_id_fields = [
+        "pcr",
+        "user",
     ]
 
 

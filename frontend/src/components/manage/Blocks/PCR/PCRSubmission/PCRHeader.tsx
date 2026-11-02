@@ -6,8 +6,10 @@ import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListin
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import { VersionsList } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import PCRCreateActionButtons from '../PCRCreate/PCRCreateActionButtons'
 import PCREditActionButtons from '../PCREdit/PCREditActionButtons'
+import { SubmissionStatus } from './EditHelperComponents'
 
 import { CircularProgress } from '@mui/material'
 import { useLocation } from 'wouter'
@@ -15,11 +17,12 @@ import { useLocation } from 'wouter'
 const PCRHeader = ({ mode }: { mode: string }) => {
   const [_, setLocation] = useLocation()
 
-  const { pcrMetaproject } = useContext(PCRDataContext)
+  const { pcr, pcrMetaproject } = useContext(PCRDataContext)
   const { updatedFields } = useUpdatedFields()
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [showVersionsMenu, setShowVersionsMenu] = useState(false)
 
   const onCancel = () => {
     if (updatedFields.size > 0) {
@@ -40,16 +43,19 @@ const PCRHeader = ({ mode }: { mode: string }) => {
               <span>{mode === 'edit' ? 'Edit' : 'Create'} PCR</span>
             </div>
           </div>
-          <PageHeading>
-            {mode === 'edit' ? (
-              <>
-                <span className="font-medium text-[#4D4D4D]">Edit PCR: </span>
-                <span>{pcrMetaproject?.data?.umbrella_code}</span>
-              </>
-            ) : (
-              'New PCR submission'
-            )}
-          </PageHeading>
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+            <PageHeading>
+              {mode === 'edit' ? (
+                <>
+                  <span className="font-medium text-[#4D4D4D]">Edit PCR: </span>
+                  <span>{pcrMetaproject?.data?.umbrella_code}</span>
+                </>
+              ) : (
+                'New PCR submission'
+              )}
+            </PageHeading>
+            <VersionsList {...{ showVersionsMenu, setShowVersionsMenu }} />
+          </div>
         </div>
         {isCancelModalOpen && (
           <CancelWarningModal
@@ -69,6 +75,7 @@ const PCRHeader = ({ mode }: { mode: string }) => {
           )}
         </div>
       </div>
+      {mode === 'edit' && !!pcr.data && SubmissionStatus(pcr.data.status)}
     </HeaderTitle>
   )
 }

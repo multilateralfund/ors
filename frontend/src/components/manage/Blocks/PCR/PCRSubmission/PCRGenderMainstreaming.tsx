@@ -11,7 +11,7 @@ import {
   ppField,
   pcrFieldsMapping,
   projectPhaseOptions,
-  booleanFieldsOpts,
+  extendedBooleanFieldsOpts,
   borderedContainerClassname,
 } from '../constants'
 
@@ -39,7 +39,6 @@ const PCRGenderMainstreaming = () => {
 
   const agencyErrors = map(ppErrors[crtAgencyId], 'errors')
   const formattedAgencyErrors = formatErrors({ [ppField]: agencyErrors })
-
   const onAddProjectPhase = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
@@ -181,7 +180,7 @@ const PCRGenderMainstreaming = () => {
                         <PCRSelectWidget
                           {...{ PCRData, setPCRData, sectionIdentifier }}
                           field="prefilled"
-                          options={booleanFieldsOpts}
+                          options={extendedBooleanFieldsOpts}
                           errors={agencyErrors}
                           indexes={[crtTab, ppIndex]}
                           subFields={['', ppField]}

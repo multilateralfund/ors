@@ -13,16 +13,16 @@ import { formatApiUrl } from '@ors/helpers'
 
 import { IoDownloadOutline } from 'react-icons/io5'
 import { Tabs, Tab, Divider } from '@mui/material'
-import { filter, find, keys, map } from 'lodash'
+import { filter, find, map } from 'lodash'
 import cx from 'classnames'
 
-const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
-  const { fundsByAgency } = useContext(PCRDataContext)
+const PCRDocumentation = () => {
   const { agencies } = useContext(ProjectsDataContext)
+  const { pcr: pcrData, agencyIds } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
 
   const [crtTab, setCrtTab] = useState(0)
 
-  const agencyIds = keys(fundsByAgency.mlf_funding_approved)
   const crtAgencyId = agencyIds[crtTab]
   const crtAgencies = map(
     agencyIds,
@@ -31,7 +31,7 @@ const PCRDocumentation = ({ pcr }: { pcr: PCRResponse }) => {
 
   const evidencesData = filter(
     pcr.supporting_evidences,
-    ({ agency_id }) => agency_id === Number(crtAgencyId),
+    ({ agency_id }) => agency_id === crtAgencyId,
   )
 
   return (

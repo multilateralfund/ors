@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewProjectOverview from './PCROverviewProjectOverview'
 import PCROverviewFundingData from './PCROverviewFundingData'
 import {
@@ -18,7 +19,10 @@ import {
 
 import cx from 'classnames'
 
-const PCROverviewPrefilledData = ({ pcr }: { pcr: PCRResponse }) => {
+const PCROverviewPrefilledData = () => {
+  const { pcr: pcrData } = useContext(PCRDataContext)
+  const pcr = pcrData.data as PCRResponse
+
   const [isFundingExpanded, setIsFundingExpanded] = useState(false)
 
   const collapseFunding = () => {

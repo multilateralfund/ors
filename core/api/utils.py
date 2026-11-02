@@ -17,6 +17,7 @@ from openpyxl.worksheet.page import PageMargins
 from core.models import (
     AnnualProgressReport,
     AnnualAgencyProjectReport,
+    PCRHistory,
     Project,
     ProjectHistory,
 )
@@ -211,6 +212,15 @@ def log_project_history(project, request_user, description):
         project=project,
         description=description,
         user=request_user,
+    )
+
+
+def log_pcr_history(pcr, request_user, description, lock_action=None):
+    PCRHistory.objects.create(
+        pcr=pcr,
+        description=description,
+        user=request_user,
+        lock_action=lock_action,
     )
 
 

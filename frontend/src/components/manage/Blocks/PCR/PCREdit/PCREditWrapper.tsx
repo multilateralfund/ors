@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo } from 'react'
+import { useContext, useEffect } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
@@ -7,16 +7,14 @@ import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import { initialOverviewData } from '../constants'
 import {
-  PCRResponse,
   PCROverviewData,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
 } from '../interfaces'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
-import useApi from '@ors/hooks/useApi'
 
-import { groupBy, keyBy, keys, map, pick, uniq } from 'lodash'
+import { groupBy, keyBy, keys, map, pick } from 'lodash'
 import { Redirect, useParams } from 'wouter'
 
 const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
@@ -41,30 +39,13 @@ const ensureRows = <T,>(rows: T[] | undefined, fallback: () => T) =>
   rows && rows.length > 0 ? rows : [fallback()]
 
 const PCREditWrapper = () => {
-  const { pcr_id } = useParams<Record<string, string>>()
+  const { pcr_id, project_id } = useParams<Record<string, string>>()
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
-  const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
+  const { pcr, pcrMetaproject, agencyIds, setPCRData } =
+    useContext(PCRDataContext)
   const { data } = pcrMetaproject
 
-  const pcr = useApi<PCRResponse>({
-    options: {
-      triggerIf: !!pcr_id,
-      withStoreCache: false,
-    },
-    path: pcr_id ? `api/project-completion-reports/${pcr_id}/` : '',
-    reactivePath: true,
-  })
-
   const loading = pcr.loading || pcrMetaproject.loading || !pcr.loaded
-
-  if (!loading && !data?.pcr_id) {
-    return <Redirect to="/pcr" />
-  }
-
-  const agencyIds = useMemo(
-    () => uniq(map(data?.projects, 'agency_id')),
-    [data],
-  )
 
   const groupDataByAgency = (data: Record<string, any>) =>
     groupBy(data, 'agency_id')
@@ -131,27 +112,22 @@ const PCREditWrapper = () => {
 
     const genderMainstreamings = map(agencyIds, (agency_id) => ({
       agency_id,
-      gender_mainstreamings: map(
-        groupedGenderMainstreamings[agency_id],
-        ({ project_preparation, prefilled, qualitative_description }) => ({
-          project_preparation,
-          prefilled: prefilled ? 'Yes' : 'No',
-          qualitative_description,
-        }),
-      ),
+      gender_mainstreamings: groupedGenderMainstreamings[agency_id] ?? [],
     }))
 
     const groupedSdgsContribution = groupDataByAgency(
       pcrData.sustainable_development_goals,
     )
-    const sdgsContribution = map(agencyIds, (agency_id) => ({
-      agency_id,
-      sdg_applying: true,
-      // sdg_applying: groupedSdgsContribution[agency_id]?.[0]?.sdg_applying,
-      sdg_not_applying_explanation:
-        groupedSdgsContribution[agency_id]?.[0]?.sdg_not_applying_explanation,
-      goals: groupedSdgsContribution[agency_id]?.[0]?.goals ?? [],
-    }))
+    const sdgsContribution = map(agencyIds, (agency_id) => {
+      const sdg = groupedSdgsContribution[agency_id]?.[0]
+
+      return {
+        agency_id,
+        sdg_applying: sdg?.sdg_applying ?? true,
+        sdg_not_applying_explanation: sdg?.sdg_not_applying_explanation ?? '',
+        goals: sdg?.goals ?? [],
+      }
+    })
 
     const groupedSupportingEvidences = groupDataByAgency(
       pcrData.supporting_evidences,
@@ -191,6 +167,14 @@ const PCREditWrapper = () => {
 
   useVisibilityChange(updatedFields.size > 0)
 
+  if (!loading && !data?.pcr_id) {
+    return <Redirect to="/pcr" />
+  }
+
+  if (pcr.data?.status === 'Final' || pcr.data?.latest_pcr_id) {
+    return <Redirect to={`/pcr/${project_id}/${pcr_id}`} />
+  }
+
   return (
     <>
       <Loading
@@ -198,7 +182,7 @@ const PCREditWrapper = () => {
         active={loading}
       />
       <PCRHeader mode="edit" />
-      <PCRForm />
+      <PCRForm mode="edit" />
     </>
   )
 }

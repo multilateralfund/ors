@@ -21,6 +21,7 @@ from core.api.views.utils import get_available_values, get_country_regions
 from core.models.annual_project_report import AnnualProjectReport
 from core.models.country import Country
 from core.models.project import MetaProject, Project
+from core.models.project_completion_report import PCR
 
 
 def get_regions(queryset: QuerySet[Project]):
@@ -72,6 +73,20 @@ def get_categories(queryset: QuerySet[Project]):
     return [
         {"id": category, "name": category_labels.get(category, category)}
         for category in values
+    ]
+
+
+def get_pcr_statuses(queryset: QuerySet[Project]):
+    # PCR.objects only returns the current PCR versions
+    statuses = set(
+        PCR.objects.filter(
+            meta_project__in=queryset.values("meta_project")
+        ).values_list("status", flat=True)
+    )
+    return [
+        {"id": value, "name": label}
+        for value, label in PCR.Status.choices
+        if value in statuses
     ]
 
 
@@ -234,6 +249,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             "category": get_categories(queryset),
             "status": get_available_values(queryset, "status"),
             "completed_only": get_completed_only(queryset),
+            "pcr_status": get_pcr_statuses(queryset),
         }
         return Response(result)
 
