@@ -30,7 +30,7 @@ import { useGetPcrFilters } from '../hooks/useGetPcrFilters'
 import { api, formatApiUrl } from '@ors/helpers'
 
 import { CircularProgress, Modal, Typography, Box } from '@mui/material'
-import { unionBy, upperFirst } from 'lodash'
+import { omit, unionBy, upperFirst } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import cx from 'classnames'
 
@@ -66,9 +66,19 @@ const ManagePCRsWrapper = () => {
   const pcrDueProjects = useGetPCRProjects(pcrDueInitialParams)
   const {
     loading: loadingPcrDue,
+    params: paramsPcrDue,
     setParams: setParamsPcrDue,
     refetch: refetchPcrDue,
   } = pcrDueProjects
+
+  const pcrDueExportUrl = useMemo(
+    () =>
+      formatApiUrl(
+        'api/pcr-metaprojects/export_pcr_due/',
+        omit(paramsPcrDue, ['limit', 'offset']),
+      ),
+    [paramsPcrDue],
+  )
 
   const pcrFilters = useGetPcrFilters({
     ...updatedInitialParams,
@@ -295,7 +305,19 @@ const ManagePCRsWrapper = () => {
               borderedContainerClassname,
             )}
           >
-            <h2 className="px-5 py-1">PCR due</h2>
+            <div className="flex flex-wrap items-center justify-between gap-x-1 px-5 py-1">
+              <h2>PCR due</h2>
+              <CustomLink
+                className="!h-8 px-4 py-1 uppercase"
+                color="secondary"
+                href={pcrDueExportUrl}
+                variant="contained"
+                button
+                download
+              >
+                Export
+              </CustomLink>
+            </div>
             <ManagePCRsTable
               type="due"
               pcrProjects={pcrDueProjects}

@@ -2,10 +2,12 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from django.db.models import Count, Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
+import openpyxl
 
 from rest_framework.decorators import action
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
+from core.api.export.project_completion_report import PCRDueWriter
 from core.api.filters.project import (
     ProjectFilter,
     ProjectFilterBackend,
@@ -21,6 +23,7 @@ from core.api.serializers.project_completion_report import (
     PCRMetaProjectSerializer,
     PCRProjectSetAdHocOrPcrDueSerializer,
 )
+from core.api.utils import workbook_response
 from core.api.views.project_completion_report.utils import (
     filter_pcr_permissions,
     filter_pcr_projects_permissions,
@@ -118,7 +121,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "retrieve", "list_filters"]:
+        if self.action in ["list", "retrieve", "list_filters", "export_pcr_due"]:
             return [HasPCRViewAccess]
         if self.action == "set_pcr_or_ad_hoc":
             return [HasPCRMarkPCRDueAccess]
@@ -165,8 +168,10 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             .distinct()
         )
 
-    def get_queryset(self):
-        filtered_projects_qs = self._get_filtered_projects_queryset(self.request.GET)
+    def get_queryset(self, params=None):
+        if params is None:
+            params = self.request.GET
+        filtered_projects_qs = self._get_filtered_projects_queryset(params)
 
         prefetch = Prefetch(
             "projects",
@@ -259,6 +264,34 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             "pcr_status": get_pcr_statuses(queryset),
         }
         return Response(result)
+
+    @extend_schema(
+        description="""
+        Export the PCR due listing as xlsx. The same filters as the listing are
+        applied, except pcr_due, which is always 'Yes'. Pagination is ignored.
+        """,
+        filters=True,
+        responses={
+            (
+                status.HTTP_200_OK,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ): OpenApiTypes.BINARY
+        },
+    )
+    @action(methods=["GET"], detail=False)
+    def export_pcr_due(self, request, *args, **kwargs):
+        params = request.query_params.copy()
+        params["pcr_due"] = "Yes"
+        queryset = self.get_queryset(params)
+        data = self.get_serializer(queryset, many=True).data
+
+        wb = openpyxl.Workbook()
+        PCRDueWriter(wb).write(data)
+
+        # delete default sheet
+        del wb[wb.sheetnames[0]]
+
+        return workbook_response("PCR due", wb)
 
     @extend_schema(
         description="""
