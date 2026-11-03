@@ -81,6 +81,7 @@ const getColumnDefs = (
   setPcrId: (id: number | null) => void,
   setPcrEditable: (editable: boolean) => void,
   view: ViewSelectorValuesType | null,
+  canEditPCR: boolean,
 ) => ({
   columnDefs: [
     {
@@ -107,16 +108,18 @@ const getColumnDefs = (
               ) : (
                 <div className="w-4" />
               )}
-              <Checkbox
-                checked={projectId == props.data.metaprojectId}
-                onChange={(event) => {
-                  const isChecked = event.target.checked
-                  setProjectId(isChecked ? props.data.metaprojectId : null)
-                  setPcrId(isChecked ? (props.data.pcr_id ?? null) : null)
-                  setPcrEditable(isChecked && !!props.data.pcr_editable)
-                }}
-                sx={{ color: 'black' }}
-              />
+              {(view === 'list' ? canEditPCR : props.data.pcr_editable) && (
+                <Checkbox
+                  checked={projectId == props.data.metaprojectId}
+                  onChange={(event) => {
+                    const isChecked = event.target.checked
+                    setProjectId(isChecked ? props.data.metaprojectId : null)
+                    setPcrId(isChecked ? (props.data.pcr_id ?? null) : null)
+                    setPcrEditable(isChecked && !!props.data.pcr_editable)
+                  }}
+                  sx={{ color: 'black' }}
+                />
+              )}
             </div>
           ) : (
             <div className="flex w-14 shrink-0" />
@@ -133,12 +136,16 @@ const getColumnDefs = (
               {props.value}
             </span>
           )}
-          {props.data.pcr_id && view === 'table' && (
-            <Tooltip title="Has PCR" placement="top" arrow>
-              <span className="text-secondary">
-                <MdCheckCircle size={18} />
-              </span>
-            </Tooltip>
+          {view === 'table' && (
+            <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
+              {props.data.pcr_id && (
+                <Tooltip title="Has PCR" placement="top" arrow>
+                  <span className="text-secondary">
+                    <MdCheckCircle size={18} />
+                  </span>
+                </Tooltip>
+              )}
+            </div>
           )}
           {view === 'list' && (
             <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
