@@ -154,6 +154,7 @@ from core.api.views.project_completion_report.pcr import (
     PCRLearnedLessonCategoryListView,
     PCRRootCausesOfDelayListView,
 )
+from core.api.views.project_completion_report.old_pcr import OldPCRViewSet
 from core.api.views.project_completion_report.pcr_metaprojects import (
     PCRMetaprojectsViewSet,
 )
@@ -219,6 +220,11 @@ router.register(
     "project-completion-reports",
     PCRProjectViewSet,
     basename="project-completion-report",
+)
+router.register(
+    "legacy-project-completion-reports",
+    OldPCRViewSet,
+    basename="legacy-project-completion-report",
 )
 router.register(
     r"projects/v2/(?P<project_id>\d+)/project-files",

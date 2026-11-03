@@ -28,6 +28,7 @@ from core.models.project_completion_report import (
     PCRSupportingEvidence,
     OLD_DelayCategory,
     OLD_LearnedLessonCategory,
+    OLD_PCR,
     OLD_PCRActivity,
     OLD_PCRDelayExplanation,
     OLD_PCRLearnedLessons,
@@ -386,6 +387,25 @@ class PCRProjectEquipmentAdmin(admin.ModelAdmin):
         return get_final_display_list(PCRProjectEquipment, [])
 
 
+@admin.register(OLD_PCR)
+class OLD_PCRAdmin(admin.ModelAdmin):
+    admin_group = "PCR (OBSOLETE)"
+    search_fields = [
+        "meta_project__umbrella_code",
+    ]
+    list_display = [
+        "meta_project",
+        "status",
+        "submission_date",
+    ]
+    list_filter = [
+        "status",
+    ]
+    raw_id_fields = [
+        "meta_project",
+    ]
+
+
 @admin.register(OLD_PCRSector)
 class OLD_PCRSectorAdmin(admin.ModelAdmin):
     admin_group = "PCR (OBSOLETE)"
@@ -404,6 +424,9 @@ class OLD_PCRSectorAdmin(admin.ModelAdmin):
 @admin.register(OLD_PCRActivity)
 class OLD_PCRActivityAdmin(admin.ModelAdmin):
     admin_group = "PCR (OBSOLETE)"
+    raw_id_fields = [
+        "old_pcr",
+    ]
     search_fields = [
         "type_of_activity",
     ]
@@ -433,6 +456,9 @@ class OLD_DelayCategoryAdmin(admin.ModelAdmin):
 @admin.register(OLD_PCRDelayExplanation)
 class OLD_PCRDelayExplanationAdmin(admin.ModelAdmin):
     admin_group = "PCR (OBSOLETE)"
+    raw_id_fields = [
+        "old_pcr",
+    ]
     search_fields = [
         "delay_cause",
     ]
@@ -461,6 +487,9 @@ class OLD_LearnedLessonCategoryAdmin(admin.ModelAdmin):
 @admin.register(OLD_PCRLearnedLessons)
 class OLD_PCRLearnedLessonsAdmin(admin.ModelAdmin):
     admin_group = "PCR (OBSOLETE)"
+    raw_id_fields = [
+        "old_pcr",
+    ]
     search_fields = [
         "description",
     ]

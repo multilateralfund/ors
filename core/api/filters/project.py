@@ -10,7 +10,7 @@ from core.models.project import (
     MetaProject,
     Project,
 )
-from core.models.project_completion_report import PCR, PCRProject
+from core.models.project_completion_report import OLD_PCR, PCR, PCRProject
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -292,6 +292,12 @@ class ProjectFilter(filters.FilterSet):
         return queryset.filter(
             Exists(
                 PCR.objects.filter(
+                    meta_project=OuterRef("meta_project"),
+                    status__in=value,
+                )
+            )
+            | Exists(
+                OLD_PCR.objects.filter(
                     meta_project=OuterRef("meta_project"),
                     status__in=value,
                 )
