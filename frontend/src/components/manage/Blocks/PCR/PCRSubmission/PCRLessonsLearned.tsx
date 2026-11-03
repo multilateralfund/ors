@@ -15,7 +15,12 @@ import {
   NrEntity,
   NoDataReported,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
-import { llField, prField, borderedContainerClassname } from '../constants'
+import {
+  llField,
+  prField,
+  agencyErrorsField,
+  borderedContainerClassname,
+} from '../constants'
 import { getSectionAgencies, formatErrors } from '../utils'
 
 import { filter, find, map } from 'lodash'
@@ -48,13 +53,24 @@ const PCRLessonsLearned = () => {
   const llErrors = lessonsLearnedErrors[llField]
   const prErrors = lessonsLearnedErrors[prField]
 
+  const agencyLevelErrors = lessonsLearnedErrors[agencyErrorsField] ?? {}
+  const crtAgencyLevelErrors = Object.assign(
+    {},
+    ...map(agencyLevelErrors[crtAgencyId], 'errors'),
+  )
+
   const getTabErrors = (agencyId: number) => ({
-    [agencyId]: [...(llErrors[agencyId] ?? []), ...(prErrors[agencyId] ?? [])],
+    [agencyId]: [
+      ...(llErrors[agencyId] ?? []),
+      ...(prErrors[agencyId] ?? []),
+      ...(agencyLevelErrors[agencyId] ?? []),
+    ],
   })
 
   const agencyErrors = map(llErrors[crtAgencyId], 'errors')
   const prAgencyErrors = map(prErrors[prAgencyId], 'errors')
   const formattedAgencyErrors = [
+    ...formatErrors(crtAgencyLevelErrors),
     ...formatErrors({ [llField]: agencyErrors }),
     ...formatErrors({ [prField]: prAgencyErrors }),
   ]

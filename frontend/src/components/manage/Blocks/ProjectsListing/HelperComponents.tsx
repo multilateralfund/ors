@@ -591,9 +591,11 @@ export const LoadingTab = (
 export const FieldErrorIndicator = ({
   errors,
   field,
+  iconClassName,
 }: {
   errors: any
   field: string
+  iconClassName?: string
 }) => {
   const formattedErrors = map(errors?.[field], (error, index) => ({
     id: index,
@@ -606,7 +608,7 @@ export const FieldErrorIndicator = ({
         errors={formattedErrors}
         withExplanatoryText={false}
         className="!cursor-default"
-        iconClassName="align-center h-5 w-5 ml-2 !mb-0"
+        iconClassName={cx('align-center h-5 w-5 ml-2 !mb-0', iconClassName)}
       />
     )
   )

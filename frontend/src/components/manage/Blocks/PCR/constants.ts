@@ -88,6 +88,8 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   lesson_id: 'Lesson learned',
   lessons: 'Lesson learned',
   recommendations: 'Recommendation',
+  goals: 'SDG',
+  evidences: 'Supporting evidence',
   project_preparation: 'Project cycle phase',
   qualitative_description: 'Qualitative description',
   prefilled: 'Gender policy implemented',
@@ -188,6 +190,7 @@ export const defaultSummaryOfKeyDataErrors = {
 }
 
 export const requiredMessage = 'This field is required.'
+export const submitRequiredMessage = 'This field is required for submission.'
 
 export const summaryOfKeyDataField = 'pcr_projects'
 export const delayField = 'delay_causes'
@@ -199,8 +202,27 @@ export const ppField = 'gender_mainstreamings'
 export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'
 export const sdgAgencyErrorsField = 'sdg_agency_errors'
+export const agencyErrorsField = 'agency_errors'
 export const supportingEvidencesField = 'supporting_evidences'
 export const evidencesField = 'evidences'
+
+export const overviewRequiredFields = [
+  'financial_figures_status',
+  'financial_figures_status_explanation',
+  'addresses',
+  'project_goal_achieved',
+  'project_goal_achieved_explanation',
+  'rating',
+  'rating_explanation_other',
+  'rating_explanation',
+  'completed_by',
+] as const
+
+export const summaryOfKeyDataRowFields = {
+  alternative_technologies: ['substance_from', 'substance_to'],
+  enterprises: ['name', 'address'],
+  equipments: ['name', 'description', 'disposal_type', 'disposal_date'],
+} as const
 
 export const borderedValueClassname =
   'rounded border border-solid border-primary px-2 py-1 leading-tight w-fit !font-medium'

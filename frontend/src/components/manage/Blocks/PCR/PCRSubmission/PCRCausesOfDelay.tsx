@@ -23,6 +23,7 @@ import {
   delayField,
   cdField,
   dcField,
+  agencyErrorsField,
   borderedContainerClassname,
 } from '../constants'
 
@@ -58,11 +59,24 @@ const PCRCausesOfDelay = () => {
   const { delay_causes: delayCausesErrors } = errors
   const dcErrors = delayCausesErrors[cdField]
 
-  const agencyErrors = map(dcErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors(
-    { [cdField]: agencyErrors },
-    dcField,
+  const agencyLevelErrors = delayCausesErrors[agencyErrorsField] ?? {}
+  const crtAgencyLevelErrors = Object.assign(
+    {},
+    ...map(agencyLevelErrors[crtAgencyId], 'errors'),
   )
+
+  const getTabErrors = (agencyId: number) => ({
+    [agencyId]: [
+      ...(dcErrors[agencyId] ?? []),
+      ...(agencyLevelErrors[agencyId] ?? []),
+    ],
+  })
+
+  const agencyErrors = map(dcErrors[crtAgencyId], 'errors')
+  const formattedAgencyErrors = [
+    ...formatErrors(crtAgencyLevelErrors),
+    ...formatErrors({ [cdField]: agencyErrors }, dcField),
+  ]
   const causesOfDelayErrors = [map(agencyErrors, dcField)]
 
   const DataHeader = (
@@ -268,7 +282,11 @@ const PCRCausesOfDelay = () => {
               aria-controls={agency.name}
               id={agency.name}
               label={
-                <TabLabel field={cdField} errors={dcErrors} {...{ agency }} />
+                <TabLabel
+                  field={cdField}
+                  errors={getTabErrors(agency.id)}
+                  {...{ agency }}
+                />
               }
             />
           ))}
@@ -304,6 +322,12 @@ const PCRCausesOfDelay = () => {
                     <span className="text-lg uppercase text-mlfs-hlYellow">
                       Root causes of delay
                     </span>
+                    {cdData.length === 0 && (
+                      <FieldErrorIndicator
+                        errors={agencyErrors[pcIndex]}
+                        field={dcField}
+                      />
+                    )}
                     <UserInfo
                       info="Select from the list of the root cause(s) of delay that correspond to the selected delay cluster."
                       className={{
@@ -381,7 +405,7 @@ const PCRCausesOfDelay = () => {
                         return (
                           <div key={cdIndex}>
                             <div className="grid grid-cols-2 gap-4">
-                              <div className="flex gap-3">
+                              <div className="flex items-center gap-3">
                                 {NrEntity(cdIndex)}
                                 <h4 className="m-0 text-lg font-semibold text-primary">
                                   {crtCdName}

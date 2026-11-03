@@ -21,6 +21,8 @@ import {
   sdgsContributionField,
   sdgsField,
   sdgAgencyErrorsField,
+  agencyErrorsField,
+  submitRequiredMessage,
   supportingEvidencesField,
   evidencesField,
 } from '@ors/components/manage/Blocks/PCR/constants'
@@ -54,6 +56,7 @@ import {
   isEmpty,
   keys,
   map,
+  mergeWith,
   omit,
   pick,
   reduce,
@@ -135,6 +138,24 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     return { [summaryOfKeyDataField]: groupBy(projectErrors, 'project_id') }
   }
 
+  const getEmptyAgencyErrors = (data: any[] = [], field: string) =>
+    reduce(
+      data,
+      (acc: Record<string, any[]>, entry) =>
+        isEmpty(entry[field])
+          ? {
+              ...acc,
+              [entry.agency_id]: [
+                {
+                  agency_id: entry.agency_id,
+                  errors: { [field]: [submitRequiredMessage] },
+                },
+              ],
+            }
+          : acc,
+      {},
+    )
+
   const formatResultsAssessmentErrors = (errors: Record<string, any[]>) => {
     const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
       PCRData.results_assessment || [],
@@ -148,6 +169,10 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
     return {
       overall_assessment_highlights: groupBy(agenciesErrors, 'agency_id'),
+      [agencyErrorsField]: getEmptyAgencyErrors(
+        PCRData.results_assessment,
+        'overall_assessment_highlights',
+      ),
     }
   }
 
@@ -162,7 +187,10 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       errors: errors?.[delayField]?.[index] ?? {},
     }))
 
-    return { [cdField]: groupBy(agenciesErrors, 'agency_id') }
+    return {
+      [cdField]: groupBy(agenciesErrors, 'agency_id'),
+      [agencyErrorsField]: getEmptyAgencyErrors(PCRData.delay_causes, cdField),
+    }
   }
 
   const formatLessonsLearnedErrors = (errors: Record<string, any[]>) => {
@@ -206,7 +234,13 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       errors: errors?.[ppField]?.[index] ?? {},
     }))
 
-    return { [ppField]: groupBy(agenciesErrors, 'agency_id') }
+    return {
+      [ppField]: groupBy(agenciesErrors, 'agency_id'),
+      [agencyErrorsField]: getEmptyAgencyErrors(
+        PCRData.gender_mainstreaming,
+        ppField,
+      ),
+    }
   }
 
   const formatSDGsErrors = (errors: Record<string, any[]>) => {
@@ -240,12 +274,18 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     const agencyLevelErrors = reduce(
       pcrSdgs,
       (acc: Record<string, any[]>, entry, index) => {
-        const crtAgencyErrors = omit(
-          errors?.[sdgsContributionField]?.[index],
-          entry.sdg_applying
-            ? [sdgsField, 'sdg_not_applying_explanation']
-            : sdgsField,
-        )
+        const crtAgencyErrors = {
+          ...omit(
+            errors?.[sdgsContributionField]?.[index],
+            entry.sdg_applying
+              ? [sdgsField, 'sdg_not_applying_explanation']
+              : sdgsField,
+          ),
+          ...(entry.sdg_applying &&
+            isEmpty(entry[sdgsField]) && {
+              [sdgsField]: [submitRequiredMessage],
+            }),
+        }
 
         if (!isEmpty(crtAgencyErrors)) {
           acc[entry.agency_id] = [
@@ -275,7 +315,13 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       errors: errors?.[supportingEvidencesField]?.[index] ?? {},
     }))
 
-    return { [supportingEvidencesField]: groupBy(agenciesErrors, 'agency_id') }
+    return {
+      [supportingEvidencesField]: groupBy(agenciesErrors, 'agency_id'),
+      [agencyErrorsField]: getEmptyAgencyErrors(
+        PCRData.supporting_evidences,
+        evidencesField,
+      ),
+    }
   }
 
   const groupErrors = (errors: Record<string, any[]>) => {
@@ -315,6 +361,12 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       learned_lessons: {
         ...lessonsLearnedErrors,
         ...projectRecommendationsErrors,
+        [agencyErrorsField]: mergeWith(
+          getEmptyAgencyErrors(PCRData.learned_lessons, llField),
+          getEmptyAgencyErrors(PCRData.future_project_recommendations, prField),
+          (lessonsErrors, recommendationsErrors) =>
+            lessonsErrors && [...lessonsErrors, ...recommendationsErrors],
+        ),
       },
       gender_mainstreaming: genderMainstreamingErrors,
       sdgs_contribution: sdgsErrors,
@@ -323,10 +375,24 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   }
 
   const sdgsApplying = map(PCRData.sdgs_contribution, 'sdg_applying').join()
+  const entriesCount = JSON.stringify(
+    map(
+      [
+        [PCRData.results_assessment, 'overall_assessment_highlights'],
+        [PCRData.delay_causes, cdField],
+        [PCRData.learned_lessons, llField],
+        [PCRData.future_project_recommendations, prField],
+        [PCRData.gender_mainstreaming, ppField],
+        [PCRData.sdgs_contribution, sdgsField],
+        [PCRData.supporting_evidences, evidencesField],
+      ] as [any[], string][],
+      ([data, field]) => map(data, (entry) => entry[field]?.length),
+    ),
+  )
 
   const errors = useMemo(
     () => groupErrors(initialErrors),
-    [initialErrors, sdgsApplying],
+    [initialErrors, sdgsApplying, entriesCount],
   )
 
   const fundsByAgency = useMemo(() => {

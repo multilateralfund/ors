@@ -333,7 +333,11 @@ export const PCRSelectWidget = ({
           {...formatClassName('min-w-56 md:min-w-[370px]')}
           {...(additionalProperties[field] ?? {})}
         />
-        <FieldErrorIndicator errors={formattedErrors} field={field} />
+        <FieldErrorIndicator
+          errors={formattedErrors}
+          field={field}
+          iconClassName={field === 'delay_cluster_id' ? '!ml-1' : undefined}
+        />
       </div>
     </div>
   )

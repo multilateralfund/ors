@@ -305,6 +305,10 @@ const PCRSdgs = () => {
                 <span className="pt-0.5 leading-none">
                   select from the drop-down list (multiple selection allowed)
                 </span>
+                <FieldErrorIndicator
+                  errors={crtAgencyLevelErrors}
+                  field={sdgsField}
+                />
               </div>
               <Field
                 widget="autocomplete"

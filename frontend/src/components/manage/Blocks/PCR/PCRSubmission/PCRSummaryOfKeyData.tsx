@@ -37,6 +37,7 @@ import { ApiSubstance } from '@ors/types/api_substances'
 import { ProjectType } from '@ors/types/api_projects'
 import {
   groupSummaryOfKeyDataErrors,
+  getSummaryOfKeyDataErrors,
   formatErrors,
   checkHasErrors,
   hasSectionErrors,
@@ -99,7 +100,9 @@ const createEquipment = (): PCREquipmentType => ({
   disposal_type: null,
 })
 
-const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
+export const createSummaryData = (
+  projectId: number,
+): PCRSummaryOfKeyDataType => ({
   project_id: projectId,
   funds_disbursed: '',
   planned_date_of_completion: '',
@@ -363,10 +366,26 @@ const PCRSummaryOfKeyData = () => {
 
   const groupedErrors = useMemo(
     () =>
-      !!editingProjectId
-        ? groupSummaryOfKeyDataErrors(projectsErrors, editingProjectId)
+      !!editingProjectId && !!draftSummaryData
+        ? groupSummaryOfKeyDataErrors(
+            {
+              [editingProjectId]: [
+                {
+                  errors: getSummaryOfKeyDataErrors(
+                    draftSummaryData,
+                    projectsErrors[editingProjectId]?.[0]?.errors,
+                  ),
+                },
+              ],
+            },
+            editingProjectId,
+          )
         : defaultSummaryOfKeyDataErrors,
-    [editingProjectId, JSON.stringify(summaryOfKeyDataErrors)],
+    [
+      editingProjectId,
+      draftSummaryData,
+      JSON.stringify(summaryOfKeyDataErrors),
+    ],
   )
 
   const formattedErrors = useMemo(
@@ -469,7 +488,7 @@ const PCRSummaryOfKeyData = () => {
           )
 
           return (
-            <div className="flex h-full items-center gap-x-2">
+            <div className="flex h-full items-center gap-x-1">
               <IconButton
                 aria-label={`Edit project ${params.data?.code ?? ''}`}
                 className="h-7 w-7"

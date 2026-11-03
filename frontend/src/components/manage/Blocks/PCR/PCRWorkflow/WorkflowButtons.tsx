@@ -4,6 +4,7 @@ import { IncreaseVersionButton } from '@ors/components/manage/Blocks/ProjectsLis
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import ChangeVersionModal from './ChangeVersionModal'
+import { isSubmitPCRDisabled } from '../utils'
 
 import { Button } from '@mui/material'
 import cx from 'classnames'
@@ -17,8 +18,10 @@ const WorkflowButtons = ({
 }) => {
   const { canSubmitPCR, canApprovePCR, canRequestAdjustmentsPCR } =
   useContext(PermissionsContext)
-  const { pcr } = useContext(PCRDataContext)
+  const { pcr, errors } = useContext(PCRDataContext)
   const { status } = pcr.data ?? {}
+
+  const isSubmitDisabled = isSaveDisabled || isSubmitPCRDisabled(errors)
 
   const [modalType, setModalType] = useState<string | null>(null)
 
@@ -31,8 +34,8 @@ const WorkflowButtons = ({
             onSubmit={() => {
               setModalType('submit')
             }}
-            isDisabled={isSaveDisabled}
-            className={cx({ 'border border-solid': isSaveDisabled })}
+            isDisabled={isSubmitDisabled}
+            className={cx({ 'border border-solid': isSubmitDisabled })}
           />
         )}
       {canApprovePCR && status === 'Submitted' && (
@@ -41,8 +44,8 @@ const WorkflowButtons = ({
           onSubmit={() => {
             setModalType('approve')
           }}
-          isDisabled={isSaveDisabled}
-          className={cx({ 'border border-solid': isSaveDisabled })}
+          isDisabled={isSubmitDisabled}
+          className={cx({ 'border border-solid': isSubmitDisabled })}
         />
       )}
       {canRequestAdjustmentsPCR && status === 'Submitted' && (

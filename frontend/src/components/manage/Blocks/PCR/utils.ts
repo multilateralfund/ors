@@ -5,8 +5,10 @@ import {
   pcrFieldsMapping,
   pcrFieldsErrorsMapping,
   summaryOfKeyDataField,
+  summaryOfKeyDataRowFields,
   sdgsContributionField,
   requiredMessage,
+  submitRequiredMessage,
 } from './constants'
 import {
   PCRData,
@@ -33,7 +35,9 @@ import {
   find,
   findIndex,
   forEach,
+  isEmpty,
   isObject,
+  isPlainObject,
   keys,
   lowerCase,
   map,
@@ -351,17 +355,22 @@ export const getErrorIndex = (
   )
 }
 
-const hasErrorMessage = (errors: Record<string, any>): boolean => {
+const hasErrorMessage = (
+  errors: Record<string, any>,
+  messages: string[] = [requiredMessage],
+): boolean => {
   if (typeof errors === 'string') {
-    return errors === requiredMessage
+    return messages.includes(errors)
   }
 
   if (Array.isArray(errors)) {
-    return errors.some((error) => hasErrorMessage(error))
+    return errors.some((error) => hasErrorMessage(error, messages))
   }
 
   if (errors && typeof errors === 'object') {
-    return Object.values(errors).some((error) => hasErrorMessage(error))
+    return Object.values(errors).some((error) =>
+      hasErrorMessage(error, messages),
+    )
   }
 
   return false
@@ -408,6 +417,52 @@ export const normalizeErrors = (errors: Record<string, any>) =>
       return some(value, checkHasErrors)
     }),
   )
+
+export const setRequiredError = (
+  errors: Record<string, any>,
+  field: string,
+  value: unknown,
+  message = submitRequiredMessage,
+) => {
+  if (!String(value ?? '').trim()) {
+    return { ...errors, [field]: [message] }
+  }
+
+  return errors[field]?.includes(message) ? omit(errors, [field]) : errors
+}
+
+export const getSummaryOfKeyDataErrors = (
+  project: PCRSummaryOfKeyDataType,
+  prevErrors: Record<string, any> = {},
+) => {
+  let updatedErrors = setRequiredError(
+    setRequiredError(prevErrors, 'funds_disbursed', project.funds_disbursed),
+    'planned_date_of_completion',
+    project.planned_date_of_completion,
+  )
+
+  forEach(summaryOfKeyDataRowFields, (rowFields, section) => {
+    const rows: Record<string, any>[] =
+      project[section as keyof typeof summaryOfKeyDataRowFields] ?? []
+
+    updatedErrors = {
+      ...updatedErrors,
+      [section]: isEmpty(rows)
+        ? [submitRequiredMessage]
+        : map(rows, (row, rowIndex) => {
+            const prevRowErrors = prevErrors[section]?.[rowIndex]
+
+            return reduce(
+              rowFields,
+              (acc, field) => setRequiredError(acc, field, row[field]),
+              isPlainObject(prevRowErrors) ? prevRowErrors : {},
+            )
+          }),
+    }
+  })
+
+  return normalizeErrors(updatedErrors)
+}
 
 export const groupSummaryOfKeyDataErrors = (
   errors: Record<string, any>,
@@ -539,29 +594,25 @@ export const getFormData = (
   return formData
 }
 
-export const isSubmitDisabled = (errors: Record<string, any>) => {
-  const hasOverviewDefaultErrors = hasErrorMessage(errors.overview)
-  const hasResultsAssessmentDefaultErrors = hasErrorMessage(
-    errors.results_assessment,
-  )
-  const hasCausesOfDelayDefaultErrors = hasErrorMessage(errors.delay_causes)
-  const hasLessonsLearnedDefaultErrors = hasErrorMessage(errors.learned_lessons)
-  const hasGenderMainstreamingDefaultErrors = hasErrorMessage(
-    errors.gender_mainstreaming,
-  )
-  const hasSDGsDefaultErrors = hasErrorMessage(errors.sdgs_contribution)
-  const hasEvidencesDefaultErrors = hasErrorMessage(errors.supporting_evidences)
+const errorSections = [
+  'overview',
+  'summary_of_key_data',
+  'results_assessment',
+  'delay_causes',
+  'learned_lessons',
+  'gender_mainstreaming',
+  'sdgs_contribution',
+  'supporting_evidences',
+]
 
-  return (
-    hasOverviewDefaultErrors ||
-    hasResultsAssessmentDefaultErrors ||
-    hasCausesOfDelayDefaultErrors ||
-    hasLessonsLearnedDefaultErrors ||
-    hasGenderMainstreamingDefaultErrors ||
-    hasSDGsDefaultErrors ||
-    hasEvidencesDefaultErrors
+export const isSubmitDisabled = (errors: Record<string, any>) =>
+  some(errorSections, (section) => hasErrorMessage(errors[section]))
+
+export const isSubmitPCRDisabled = (errors: Record<string, any>) =>
+  some(errorSections, (section) =>
+    hasErrorMessage(errors[section], [requiredMessage, submitRequiredMessage]),
   )
-}
+
 export const formatDate = (date: string | null | undefined) =>
   date ? dayjs(date).format('DD/MM/YYYY') : ''
 
