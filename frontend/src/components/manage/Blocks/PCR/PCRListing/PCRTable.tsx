@@ -1,10 +1,11 @@
-import { useMemo, useRef } from 'react'
+import { useContext, useMemo, useRef } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import {
   getPaginationPageSize,
   getPaginationSelectorOpts,
 } from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import getColumnDefs from './schema'
 import { PCRTableProps } from '../interfaces'
 
@@ -18,6 +19,8 @@ const PCRTable = ({
   view,
 }: PCRTableProps) => {
   const gridRef = useRef(null)
+
+  const { canEditPCR } = useContext(PermissionsContext)
 
   const { results = [], loading, loaded, count, setParams } = pcrProjects
 
@@ -50,6 +53,7 @@ const PCRTable = ({
     setPcrId,
     setPcrEditable,
     view,
+    canEditPCR,
   )
 
   return (
