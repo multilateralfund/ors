@@ -21,8 +21,9 @@ import {
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { formatErrors, hasSectionErrors, normalizeErrors } from '../utils'
 import {
-  cdField,
   ppField,
+  delayField,
+  sdgsContributionField,
   supportingEvidencesField,
   requiredMessage,
 } from '../constants'
@@ -169,10 +170,10 @@ const PCRForm = ({ mode }: { mode: string }) => {
 
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
-      [cdField]: map(cdData, (cd, index) => {
+      [delayField]: map(cdData, (cd, index) => {
         const cdIdField = 'delay_cluster_id'
 
-        const existingErrors = prev[cdField]?.[index] ?? {}
+        const existingErrors = prev[delayField]?.[index] ?? {}
         let updatedErrors = { ...existingErrors }
 
         if (!cd[cdIdField]) {
@@ -212,6 +213,28 @@ const PCRForm = ({ mode }: { mode: string }) => {
       }),
     }))
   }, [JSON.stringify(genderMainstreamingData)])
+
+  const sdgsContributionData = PCRData.sdgs_contribution || []
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [sdgsContributionField]: map(sdgsContributionData, (sdg, index) => {
+        const explanationField = 'sdg_not_applying_explanation'
+
+        const existingErrors = prev[sdgsContributionField]?.[index] ?? {}
+        let updatedErrors = { ...existingErrors }
+
+        if (!sdg.sdg_applying && !sdg[explanationField]?.trim()) {
+          updatedErrors[explanationField] = [requiredMessage]
+        } else if (updatedErrors[explanationField]?.includes(requiredMessage)) {
+          updatedErrors = omit(updatedErrors, [explanationField])
+        }
+
+        return normalizeErrors(updatedErrors)
+      }),
+    }))
+  }, [JSON.stringify(sdgsContributionData)])
 
   const supportingEvidencesData = PCRData[supportingEvidencesField] || []
 

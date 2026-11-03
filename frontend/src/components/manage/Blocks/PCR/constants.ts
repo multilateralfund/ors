@@ -77,12 +77,17 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   planned_output: 'Planned output(s)',
   actual_activity_output: 'Actual output(s)',
   additional_remarks: 'Additional remarks, if applicable',
+  causes_of_delay: 'Cause of delay',
+  root_causes_of_delay: 'Root cause of delay',
+  root_cause_id: 'Root cause',
   delay_cluster_id: 'Delay cluster',
   delay_id: 'Cause of delay',
   description: 'Description',
   description_roots_causes_of_delay: 'Description',
   action_taken: 'Action taken',
   lesson_id: 'Lesson learned',
+  lessons: 'Lesson learned',
+  recommendations: 'Recommendation',
   project_preparation: 'Project cycle phase',
   qualitative_description: 'Qualitative description',
   prefilled: 'Gender policy implemented',
@@ -91,6 +96,8 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   sdg_not_applying_explanation: 'Explanation',
   goal_id: 'SDG',
   section_id: 'Section',
+  filename: 'File name',
+  file: 'File',
 }
 
 export const viewPcrFieldsMapping: { [key: string]: string } = {
@@ -187,6 +194,7 @@ export const delayField = 'delay_causes'
 export const cdField = 'causes_of_delay'
 export const dcField = 'root_causes_of_delay'
 export const llField = 'lessons'
+export const prField = 'recommendations'
 export const ppField = 'gender_mainstreamings'
 export const sdgsContributionField = 'sustainable_development_goals'
 export const sdgsField = 'goals'

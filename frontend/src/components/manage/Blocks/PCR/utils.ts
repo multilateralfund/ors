@@ -5,6 +5,7 @@ import {
   pcrFieldsMapping,
   pcrFieldsErrorsMapping,
   summaryOfKeyDataField,
+  sdgsContributionField,
   requiredMessage,
 } from './constants'
 import {
@@ -17,6 +18,7 @@ import {
   PCRCausesOfDelayData,
   PCRProjectRecommendationsData,
   PCRGenderMainstreamingData,
+  PCRSdgsData,
   PCRSupportingEvidencesData,
   FormattedSupportingEvidencesData,
   OptionsType,
@@ -373,6 +375,29 @@ export const getSectionAgencies = (agencies: ApiAgency[], sectionData: any) =>
       )
     : []
 
+const isSdgInPayload = (sdg: PCRSdgsData) =>
+  sdg.goals.length > 0 || !sdg.sdg_applying
+
+export const alignSdgsErrors = (
+  errors: Record<string, any>,
+  sdgs: PCRSdgsData[],
+) => {
+  const sdgsErrors = errors?.[sdgsContributionField]
+
+  if (!Array.isArray(sdgsErrors)) {
+    return errors
+  }
+
+  let sentIndex = 0
+
+  return {
+    ...errors,
+    [sdgsContributionField]: map(sdgs, (sdg) =>
+      isSdgInPayload(sdg) ? (sdgsErrors[sentIndex++] ?? {}) : {},
+    ),
+  }
+}
+
 export const normalizeErrors = (errors: Record<string, any>) =>
   Object.fromEntries(
     Object.entries(errors).filter(([, value]) => {
@@ -458,22 +483,6 @@ export const getFormData = (
     'overall_assessment_highlights',
   )
 
-  // const causesOfDelayProjectComponents = flatMap(
-  //   delay_causes,
-  //   ({ agency_id, project_components }) =>
-  //     map(
-  //       project_components,
-  //       ({ project_component_option_id, delay_causes }) => ({
-  //         agency_id,
-  //         project_component_option_id,
-  //         delay_causes,
-  //         learned_lessons: [],
-  //       }),
-  //     ),
-  // )
-
-  // const projectComponentsData = [...causesOfDelayProjectComponents]
-
   const causesOfDelayData = formatAgencyData<PCRCausesOfDelayData>(
     delay_causes,
     cdField,
@@ -490,10 +499,7 @@ export const getFormData = (
     'gender_mainstreamings',
   )
   const sdgsContributionData = map(
-    filter(
-      sdgs_contribution,
-      (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
-    ),
+    filter(sdgs_contribution, isSdgInPayload),
     (sdg) =>
       sdg.sdg_applying
         ? { ...sdg, sdg_not_applying_explanation: '' }
@@ -516,7 +522,6 @@ export const getFormData = (
     ...overviewData,
     pcr_projects: filteredSummaryOfKeyData,
     overall_assessment_highlights: resultsAssessmentData,
-    // project_components: projectComponentsData,
     delay_causes: causesOfDelayData,
     learned_lessons,
     future_project_recommendations: projectRecommendationsData,

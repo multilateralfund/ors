@@ -8,22 +8,29 @@ import {
   UserInfo,
   NrEntity,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
-import { borderedContainerClassname } from '../constants'
+import { prField, borderedContainerClassname } from '../constants'
+import { getErrorIndex } from '../utils'
 
 import { MdOutlineLightbulb } from 'react-icons/md'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
-import { map } from 'lodash'
+import { filter, map } from 'lodash'
 import cx from 'classnames'
 
-const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
+const PCRProjectRecommendations = ({
+  crtTab,
+  errors,
+}: {
+  crtTab: number
+  errors: Record<string, any>[]
+}) => {
   const sectionIdentifier = 'future_project_recommendations'
-  const prField = 'recommendations'
 
-  const { PCRData, setPCRData } = useContext(PCRDataContext)
+  const { PCRData, setPCRData, setErrors } = useContext(PCRDataContext)
 
   const sectionData = PCRData[sectionIdentifier] || []
   const prData = sectionData[crtTab][prField] || []
+  const crtAgencyId = sectionData[crtTab].agency_id
 
   const onAddRecommendation = () => {
     const initialRecommendationsData = { title: '', description: '' }
@@ -43,6 +50,26 @@ const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
         ),
       }
     }, prField)
+
+    const errorIndex = getErrorIndex(
+      sectionData,
+      prField,
+      crtAgencyId,
+      prData.length,
+    )
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const prErrors = prevData[sectionIdentifier] ?? []
+
+      return {
+        ...prevData,
+        [sectionIdentifier]: [
+          ...prErrors.slice(0, errorIndex),
+          {},
+          ...prErrors.slice(errorIndex),
+        ],
+      }
+    })
   }
 
   const onRemoveRecommendation = (prIndex: number) => {
@@ -63,6 +90,16 @@ const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
         ),
       }
     }, prField)
+
+    const errorIndex = getErrorIndex(sectionData, prField, crtAgencyId, prIndex)
+
+    setErrors((prevData: Record<string, any[]>) => ({
+      ...prevData,
+      [sectionIdentifier]: filter(
+        prevData[sectionIdentifier],
+        (_, index) => index !== errorIndex,
+      ),
+    }))
   }
 
   return (
@@ -81,8 +118,8 @@ const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
               <PCRTextWidget
                 {...{ PCRData, setPCRData, sectionIdentifier }}
                 field="title"
-                className="w-full md:!min-w-full"
-                errors={{}}
+                className="w-full md:!min-w-[calc(100%-28px)]"
+                errors={errors}
                 indexes={[crtTab, prIndex]}
                 subFields={['', prField]}
                 excludeLabel={true}
@@ -90,11 +127,12 @@ const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
               <PCRTextAreaWidget
                 {...{ PCRData, setPCRData, sectionIdentifier }}
                 field="description"
-                errors={{}}
+                errors={errors}
                 indexes={[crtTab, prIndex]}
                 subFields={['', prField]}
                 rows={2}
                 excludeLabel={true}
+                className="md:!min-w-[calc(100%-28px)]"
               />
             </div>
             <IoTrash

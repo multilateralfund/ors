@@ -133,6 +133,10 @@ const PCRFilesViewer = ({
               >
                 <IoDownloadOutline className="mb-1 min-h-5 min-w-5" />
                 <span className="text-lg font-medium">{fileName}</span>
+                <FieldErrorIndicator
+                  errors={formattedErrors}
+                  field="filename"
+                />
               </a>
               <div className="flex-shrink basis-[270px]">
                 <Label className="!mb-0.5 !text-[15px]">

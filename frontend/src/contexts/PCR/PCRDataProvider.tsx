@@ -14,20 +14,22 @@ import {
   initialOverviewData,
   summaryOfKeyDataField,
   ppField,
+  delayField,
+  cdField,
+  llField,
+  prField,
   sdgsContributionField,
   sdgsField,
   sdgAgencyErrorsField,
   supportingEvidencesField,
   evidencesField,
-  cdField,
-  llField,
 } from '@ors/components/manage/Blocks/PCR/constants'
 import {
   PCRData,
   PCRResultsAssessmentData,
   PCRCausesOfDelayData,
-  PCRLessonsLearnedData,
   PCRGenderMainstreamingData,
+  PCRProjectRecommendationsData,
   PCRSdgsData,
   PCRSupportingEvidencesData,
 } from '@ors/components/manage/Blocks/PCR/interfaces'
@@ -35,6 +37,7 @@ import {
   formatAgencyData,
   formatOptions,
   alignSummaryOfKeyDataErrors,
+  alignSdgsErrors,
 } from '@ors/components/manage/Blocks/PCR/utils'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
@@ -45,6 +48,7 @@ import { useParams } from 'wouter'
 import {
   compact,
   filter,
+  flatMap,
   forEach,
   groupBy,
   isEmpty,
@@ -96,10 +100,13 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       setInitialErrors(
         typeof updater === 'function'
           ? updater
-          : alignSummaryOfKeyDataErrors(updater, PCRData.summary_of_key_data),
+          : alignSdgsErrors(
+              alignSummaryOfKeyDataErrors(updater, PCRData.summary_of_key_data),
+              PCRData.sdgs_contribution,
+            ),
       )
     },
-    [PCRData.summary_of_key_data],
+    [PCRData.summary_of_key_data, PCRData.sdgs_contribution],
   )
 
   const setPCRData = useCallback(
@@ -144,37 +151,6 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     }
   }
 
-  // const formatProjectComponentsErrors = (errors: Record<string, any[]>) => {
-  //   let crtErrorIndex = 0
-
-  //   const formatAgencyErrors = (
-  //     data: (PCRCausesOfDelayData | PCRLessonsLearnedData)[],
-  //   ) =>
-  //     groupBy(
-  //       map(
-  //         filter(data || [], (entry) => entry.project_components.length > 0),
-  //         ({ agency_id, project_components }) => ({
-  //           agency_id,
-  //           errors: map(project_components, () => {
-  //             const pcErrors = errors?.project_components?.[crtErrorIndex] ?? {}
-  //             crtErrorIndex++
-
-  //             return pcErrors
-  //           }),
-  //         }),
-  //       ),
-  //       'agency_id',
-  //     )
-
-  //   const causesOfDelayErrors = formatAgencyErrors(PCRData.delay_causes)
-  //   const lessonsLearnedErrors = formatAgencyErrors(PCRData.learned_lessons)
-
-  //   return {
-  //     delay_causes: { project_components: causesOfDelayErrors },
-  //     learned_lessons: { project_components: lessonsLearnedErrors },
-  //   }
-  // }
-
   const formatCausesOfDelayErrors = (errors: Record<string, any[]>) => {
     const dcData = formatAgencyData<PCRCausesOfDelayData>(
       PCRData.delay_causes || [],
@@ -183,24 +159,39 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
     const agenciesErrors = map(dcData, (data, index) => ({
       agency_id: data.agency_id,
-      errors: errors?.[cdField]?.[index] ?? {},
+      errors: errors?.[delayField]?.[index] ?? {},
     }))
 
     return { [cdField]: groupBy(agenciesErrors, 'agency_id') }
   }
 
   const formatLessonsLearnedErrors = (errors: Record<string, any[]>) => {
-    const llData = formatAgencyData<PCRLessonsLearnedData>(
+    const agenciesErrors = flatMap(
       PCRData.learned_lessons || [],
-      llField,
+      (data, index) =>
+        map(data[llField], (_, llIndex) => ({
+          agency_id: data.agency_id,
+          errors: errors?.learned_lessons?.[index]?.[llField]?.[llIndex] ?? {},
+        })),
     )
 
-    const agenciesErrors = map(llData, (data, index) => ({
+    return { [llField]: groupBy(agenciesErrors, 'agency_id') }
+  }
+
+  const formatProjectRecommendationsErrors = (
+    errors: Record<string, any[]>,
+  ) => {
+    const prData = formatAgencyData<PCRProjectRecommendationsData>(
+      PCRData.future_project_recommendations || [],
+      prField,
+    )
+
+    const agenciesErrors = map(prData, (data, index) => ({
       agency_id: data.agency_id,
-      errors: errors?.[llField]?.[index] ?? {},
+      errors: errors?.future_project_recommendations?.[index] ?? {},
     }))
 
-    return { [llField]: groupBy(agenciesErrors, 'agency_id') }
+    return { [prField]: groupBy(agenciesErrors, 'agency_id') }
   }
 
   const formatGenderMainstreamingErrors = (errors: Record<string, any[]>) => {
@@ -220,18 +211,18 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
   const formatSDGsErrors = (errors: Record<string, any[]>) => {
     const pcrSdgs = PCRData.sdgs_contribution || []
-    const filteredSdgs = filter(
-      pcrSdgs,
-      (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
-    )
 
     const formattedErrors = reduce(
-      filteredSdgs,
+      pcrSdgs,
       (acc: Record<string, any>[], entry, index) => {
         forEach(entry[sdgsField] as object[], (_, subEntryIndex) => {
           const crtAgencyErrors = errors?.[sdgsContributionField]?.[index]
 
-          acc.push(crtAgencyErrors?.[sdgsField]?.[subEntryIndex] ?? {})
+          acc.push(
+            entry.sdg_applying
+              ? (crtAgencyErrors?.[sdgsField]?.[subEntryIndex] ?? {})
+              : {},
+          )
         })
 
         return acc
@@ -247,11 +238,13 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     }))
 
     const agencyLevelErrors = reduce(
-      filteredSdgs,
+      pcrSdgs,
       (acc: Record<string, any[]>, entry, index) => {
         const crtAgencyErrors = omit(
           errors?.[sdgsContributionField]?.[index],
-          sdgsField,
+          entry.sdg_applying
+            ? [sdgsField, 'sdg_not_applying_explanation']
+            : sdgsField,
         )
 
         if (!isEmpty(crtAgencyErrors)) {
@@ -298,10 +291,13 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     //   pick(errors, 'project_components'),
     // )
     const causesOfDelayErrors = formatCausesOfDelayErrors(
-      pick(errors, 'delay_causes'),
+      pick(errors, delayField),
     )
     const lessonsLearnedErrors = formatLessonsLearnedErrors(
       pick(errors, 'learned_lessons'),
+    )
+    const projectRecommendationsErrors = formatProjectRecommendationsErrors(
+      pick(errors, 'future_project_recommendations'),
     )
     const genderMainstreamingErrors = formatGenderMainstreamingErrors(
       pick(errors, ppField),
@@ -316,14 +312,22 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       summary_of_key_data: summaryOfKeyDataErrors,
       results_assessment: resultsAssessmentErrors,
       delay_causes: causesOfDelayErrors,
-      learned_lessons: lessonsLearnedErrors,
+      learned_lessons: {
+        ...lessonsLearnedErrors,
+        ...projectRecommendationsErrors,
+      },
       gender_mainstreaming: genderMainstreamingErrors,
       sdgs_contribution: sdgsErrors,
       supporting_evidences: evidencesErrors,
     }
   }
 
-  const errors = useMemo(() => groupErrors(initialErrors), [initialErrors])
+  const sdgsApplying = map(PCRData.sdgs_contribution, 'sdg_applying').join()
+
+  const errors = useMemo(
+    () => groupErrors(initialErrors),
+    [initialErrors, sdgsApplying],
+  )
 
   const fundsByAgency = useMemo(() => {
     const {
