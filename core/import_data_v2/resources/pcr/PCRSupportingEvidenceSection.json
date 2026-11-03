@@ -10,9 +10,18 @@
     },
     {
         "model": "core.pcrsupportingevidencesection",
-        "pk": 2,
+        "pk": 8,
         "fields": {
             "code": "SEC2",
+            "name": "SUMMARY OF KEY DATA",
+            "sort_order": 15.0
+        }
+    },
+    {
+        "model": "core.pcrsupportingevidencesection",
+        "pk": 2,
+        "fields": {
+            "code": "SEC3",
             "name": "PROJECT RESULTS",
             "sort_order": 20.0
         }
@@ -21,7 +30,7 @@
         "model": "core.pcrsupportingevidencesection",
         "pk": 3,
         "fields": {
-            "code": "SEC3",
+            "code": "SEC4",
             "name": "CAUSES OF DELAY",
             "sort_order": 30.0
         }
@@ -30,7 +39,7 @@
         "model": "core.pcrsupportingevidencesection",
         "pk": 4,
         "fields": {
-            "code": "SEC4",
+            "code": "SEC5",
             "name": "LESSONS LEARNED",
             "sort_order": 40.0
         }
@@ -39,7 +48,7 @@
         "model": "core.pcrsupportingevidencesection",
         "pk": 5,
         "fields": {
-            "code": "SEC5",
+            "code": "SEC6",
             "name": "GENDER MAINSTREAMING",
             "sort_order": 50.0
         }
@@ -48,7 +57,7 @@
         "model": "core.pcrsupportingevidencesection",
         "pk": 6,
         "fields": {
-            "code": "SEC6",
+            "code": "SEC7",
             "name": "SDGS",
             "sort_order": 60.0
         }
