@@ -10,9 +10,9 @@ import { Redirect } from 'wouter'
 export default function PCRListing() {
   usePageTitle('PCR projects listing')
 
-  const { canViewProjects } = useContext(PermissionsContext)
+  const { canViewPCR } = useContext(PermissionsContext)
 
-  if (!canViewProjects) {
+  if (!canViewPCR) {
     return <Redirect to="/projects-listing/listing" />
   }
 
