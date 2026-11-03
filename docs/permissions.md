@@ -207,3 +207,35 @@ only if user has `has_project_v2_edit_post_excom` permission.
 | business-plan-activity/                                               | GET    | has_business_plan_view_access            | |
 | business-plan-activity/{id}/                                          | GET    | has_business_plan_view_access            | |
 | business-plan-activity/{id}/validate_for_removal/                     | GET    | has_business_plan_view_access            | |
+| project-completion-reports/                                           | GET    | has_pcr_view_access                      | Entries filtered by agency (`can_view_all_agencies` / `can_view_only_own_agency`) and `can_view_production_projects`. `pcr_editable` set per user |
+| project-completion-reports/list_filters/                              | GET    | has_pcr_view_access                      | Same filtering as the listing |
+| project-completion-reports/export/                                    | GET    | has_pcr_view_access                      | Same filtering as the listing |
+| project-completion-reports/create/                                    | GET    | has_pcr_edit_access                      | Meta project (and PCR) must be accessible to the user |
+| project-completion-reports/                                           | POST   | has_pcr_edit_access                      | Meta project must be accessible to the user |
+| project-completion-reports/{id}/                                      | GET    | has_pcr_view_access                      | Same filtering as the listing, applied on the meta project's projects. `editable` set per user |
+| project-completion-reports/{id}/                                      | PUT    | has_pcr_edit_access                      | 'Submitted' PCRs are editable only with `has_pcr_edit_submitted_access`. 'Final' PCRs are not editable |
+| project-completion-reports/{id}/                                      | PATCH  | has_pcr_edit_access                      | Same as PUT |
+| project-completion-reports/{id}/versions/                             | GET    | has_pcr_view_access                      | Same filtering as the listing |
+| project-completion-reports/{id}/submit/                               | POST   | has_pcr_submit_access                    | Same filtering as the listing |
+| project-completion-reports/{id}/request_adjustments/                  | POST   | has_pcr_request_adjustments_access       | Same filtering as the listing |
+| project-completion-reports/{id}/approve/                              | POST   | has_pcr_approve_access                   | Same filtering as the listing |
+| project-completion-reports/delay-cluster-options/                     | GET    | has_pcr_view_access                      | |
+| project-completion-reports/root-causes-of-delay-options/              | GET    | has_pcr_view_access                      | |
+| project-completion-reports/learned-lesson-categories/                 | GET    | has_pcr_view_access                      | |
+| project-completion-report/{rating,completed-by,status,entity,...}/    | GET    | has_pcr_view_access                      | Metadata endpoints |
+| pcr-metaprojects/                                                     | GET    | has_pcr_view_access                      | Same filtering as the PCR listing, applied on the projects |
+| pcr-metaprojects/list_filters/                                        | GET    | has_pcr_view_access                      | Same filtering as the listing |
+| pcr-metaprojects/{id}/                                                | GET    | has_pcr_view_access                      | Same filtering as the listing |
+| pcr-metaprojects/set_pcr_or_ad_hoc/                                   | POST   | has_project_v2_pcr_mark_pcr_due_access   | All meta projects must be accessible to the user |
+
+## PCR groups
+
+| Group             | Permissions |
+|-------------------|-------------|
+| PCR - Viewer      | has_pcr_view_access, can_view_production_projects, can_view_only_own_agency |
+| PCR - Inputter    | PCR - Viewer + has_pcr_edit_access |
+| PCR - Submitter   | PCR - Inputter + has_pcr_submit_access |
+| PCR - Secretariat | has_pcr_view_access, has_pcr_request_adjustments_access, has_pcr_approve_access, has_project_v2_view_access, has_project_v2_pcr_mark_pcr_due_access, can_view_all_agencies, is_mlfs_user |
+| PCR - Full access | has_pcr_view_access, has_pcr_edit_access, has_pcr_edit_submitted_access, has_pcr_submit_access, has_pcr_request_adjustments_access, has_pcr_approve_access, has_project_v2_view_access, has_project_v2_pcr_mark_pcr_due_access, can_view_all_agencies, is_mlfs_user |
+
+The MLFS groups don't include `can_view_production_projects`; production PCRs are visible to MLFS users only through their projects groups (e.g. "Projects - MLFS Production Approver").

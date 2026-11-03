@@ -2,7 +2,7 @@ from typing import cast
 import json
 
 from django.shortcuts import get_object_or_404
-from django.db.models import Exists, OuterRef, Q, QuerySet
+from django.db.models import Exists, OuterRef, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_spectacular.types import OpenApiTypes
@@ -26,8 +26,11 @@ from core.api.filters.project_completion_report import (
 )
 from core.api.permissions import (
     DenyAll,
-    HasPCRViewAccess,
+    HasPCRApproveAccess,
     HasPCREditAccess,
+    HasPCRRequestAdjustmentsAccess,
+    HasPCRSubmitAccess,
+    HasPCRViewAccess,
 )
 from core.api.serializers.project_completion_report import (
     PCRCreateSerializer,
@@ -42,9 +45,14 @@ from core.api.serializers.project_completion_report import (
 from core.api.export.project_completion_report import PCRSubmissionLogWriter
 from core.api.utils import workbook_response
 from core.api.views.project_completion_report.pcr_workflow import PCRWorkflowMixin
+from core.api.views.project_completion_report.utils import (
+    filter_pcr_permissions,
+    filter_pcr_projects_permissions,
+    get_pcr_accessible_meta_projects,
+)
 from core.api.views.utils import get_country_regions
 from core.models.country import Country
-from core.models.project import MetaProject, Project
+from core.models.project import Project
 from core.models.project_completion_report import (
     PCR,
     PCRLearnedLessonCategory,
@@ -127,11 +135,14 @@ class PCRProjectViewSet(
             "create_defaults",
             "update",
             "partial_update",
-            "submit",
-            "request_adjustments",
-            "approve",
         ]:
             return [HasPCREditAccess]
+        if self.action == "submit":
+            return [HasPCRSubmitAccess]
+        if self.action == "request_adjustments":
+            return [HasPCRRequestAdjustmentsAccess]
+        if self.action == "approve":
+            return [HasPCRApproveAccess]
         return [DenyAll]
 
     def get_serializer_class(self):
@@ -158,6 +169,19 @@ class PCRProjectViewSet(
             files = list(self.request.FILES.values())
 
         context["files"] = files
+        if self.action in [
+            "list",
+            "retrieve",
+            "submit",
+            "request_adjustments",
+            "approve",
+        ]:
+            # used to set editable on serializer
+            context["edit_queryset_ids"] = set(
+                self.filter_pcr_permissions_queryset(
+                    PCR.objects.all(), results_for_edit=True
+                ).values_list("id", flat=True)
+            )
         return context
 
     def filter_queryset(self, queryset):
@@ -165,29 +189,16 @@ class PCRProjectViewSet(
             return queryset
         return super().filter_queryset(queryset)
 
-    def _filter_project_permissions_queryset(self, queryset):
-        user = cast(User, self.request.user)
-        if user.is_superuser:
-            return queryset
+    def _get_accessible_meta_projects(self):
+        return get_pcr_accessible_meta_projects(cast(User, self.request.user))
 
-        if user.has_perm("core.is_mlfs_user"):
-            queryset = queryset.exclude(project__submission_status__name="Draft")
-
-        if not user.has_perm("core.can_view_production_projects"):
-            queryset = queryset.filter(project__production=False)
-
-        if user.has_perm("core.can_view_all_agencies"):
-            return queryset
-        if user.has_perm("core.can_view_only_own_agency"):
-            return queryset.filter(
-                Q(project__agency=user.agency)
-                | (
-                    Q(project__lead_agency=user.agency)
-                    & Q(project__lead_agency__isnull=False)
-                )
-            )
-
-        return queryset.none()
+    def filter_pcr_permissions_queryset(self, queryset, results_for_edit=False):
+        return filter_pcr_permissions(
+            cast(User, self.request.user),
+            queryset,
+            results_for_edit=results_for_edit
+            or self.action in ["update", "partial_update"],
+        )
 
     def get_queryset(self):
         if self.action in self.PCR_DETAIL_ACTIONS:
@@ -197,12 +208,13 @@ class PCRProjectViewSet(
                 if self.action in ["retrieve", "versions"]
                 else PCR.objects.all()
             )
-            return manager_queryset.select_related("meta_project").prefetch_related(
+            queryset = manager_queryset.select_related("meta_project").prefetch_related(
                 "pcr_projects",
                 "pcr_projects__alternative_technologies",
                 "pcr_projects__enterprises",
                 "pcr_projects__equipments",
             )
+            return self.filter_pcr_permissions_queryset(queryset)
 
         pcr_required_project = Project.objects.filter(
             pk=OuterRef("project_id")
@@ -226,7 +238,9 @@ class PCRProjectViewSet(
             .filter(pcr__latest_pcr__isnull=True)
             .annotate(pcr_due_value=Exists(pcr_required_project))
         )
-        return self._filter_project_permissions_queryset(queryset)
+        return filter_pcr_projects_permissions(
+            self.request.user, queryset, prefix="project__"
+        )
 
     @staticmethod
     def _get_regions(queryset: QuerySet[PCRProject]):
@@ -394,12 +408,17 @@ class PCRProjectViewSet(
         meta_project_id = request.query_params.get("meta_project_id")
         if not meta_project_id:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        meta_project = get_object_or_404(MetaProject, pk=meta_project_id)
+        meta_project = get_object_or_404(
+            self._get_accessible_meta_projects(), pk=meta_project_id
+        )
 
         pcr_id = request.query_params.get("pcr_id")
         pcr = None
         if pcr_id:
-            pcr = get_object_or_404(PCR, pk=pcr_id)
+            pcr = get_object_or_404(
+                self.filter_pcr_permissions_queryset(PCR.objects.really_all()),
+                pk=pcr_id,
+            )
         initial_data = self._build_initial_data(meta_project, pcr)
         return Response(initial_data)
 
@@ -438,6 +457,15 @@ class PCRProjectViewSet(
 
         serializer = self.get_serializer(data=metadata)
         serializer.is_valid(raise_exception=True)
+        if (
+            not self._get_accessible_meta_projects()
+            .filter(pk=serializer.validated_data["meta_project"].pk)
+            .exists()
+        ):
+            return Response(
+                {"error": "You do not have access to this meta project."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         serializer.save()
         headers = self.get_success_headers(serializer.data)
         return Response(

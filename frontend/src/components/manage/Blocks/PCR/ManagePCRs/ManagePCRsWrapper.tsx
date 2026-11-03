@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -14,6 +14,7 @@ import {
   FieldErrorIndicator,
   SubmitButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ManagePCRsFiltersSelectedOpts from './ManagePCRsFiltersSelectedOpts'
 import ManagePCRsFilters from './ManagePCRsFilters'
 import ManagePCRsTable from './ManagePCRsTable'
@@ -34,6 +35,8 @@ import { enqueueSnackbar } from 'notistack'
 import cx from 'classnames'
 
 const ManagePCRsWrapper = () => {
+  const { isSuperuser } = useContext(PermissionsContext)
+
   const form = useRef<any>()
 
   const updatedInitialFilters = {
@@ -181,14 +184,18 @@ const ManagePCRsWrapper = () => {
             <RedirectBackButton />
             <PageHeading>Manage Project Completion Reports</PageHeading>
           </div>
-          <a
-            className="ml-auto mt-auto h-10 rounded-lg border border-solid border-primary bg-primary px-3 py-2 font-medium uppercase text-mlfs-hlYellow no-underline"
-            href={formatApiUrl('/admin/core/projectpcrrequiredexclusionrule/')}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            PCR exclusion rules
-          </a>
+          {isSuperuser && (
+            <a
+              className="ml-auto mt-auto h-10 rounded-lg border border-solid border-primary bg-primary px-3 py-2 font-medium uppercase text-mlfs-hlYellow no-underline"
+              href={formatApiUrl(
+                '/admin/core/projectpcrrequiredexclusionrule/',
+              )}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              PCR exclusion rules
+            </a>
+          )}
         </div>
       </HeaderTitle>
       {!!action && (

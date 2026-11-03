@@ -171,7 +171,7 @@ const PCREditWrapper = () => {
     return <Redirect to="/pcr" />
   }
 
-  if (pcr.data?.status === 'Final' || pcr.data?.latest_pcr_id) {
+  if (pcr.data && !pcr.data.editable) {
     return <Redirect to={`/pcr/${project_id}/${pcr_id}`} />
   }
 

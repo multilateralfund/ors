@@ -36,7 +36,9 @@ class TestUserPermissions(BaseTest):
             response = self.client.get(self.url)
             assert response.status_code == status.HTTP_200_OK
             if is_superuser:
-                permissions = [obj.codename for obj in Permission.objects.all()]
+                permissions = [obj.codename for obj in Permission.objects.all()] + [
+                    "is_superuser"
+                ]
             else:
                 permissions = [
                     obj.codename

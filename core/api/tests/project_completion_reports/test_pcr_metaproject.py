@@ -118,13 +118,6 @@ class TestPCRMetaprojectsViewSet(BaseTest):
 
     url = reverse("pcr-metaprojects-list")
 
-    @pytest.mark.skip(reason="PCR permissions not yet implemented")
-    def test_project_list_permissions(
-        self,
-        _setup_pcr_meta_project_list,
-    ):
-        pass
-
     def test_list(self, admin_user, _setup_pcr_meta_project_list):
         projects = _setup_pcr_meta_project_list
         self.client.force_authenticate(user=admin_user)
@@ -553,7 +546,8 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         wb = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
         assert len(list(wb["PCR due"].iter_rows(values_only=True))) == 1
 
-    def test_set_pcr_or_ad_hoc(self):
+    def test_set_pcr_or_ad_hoc(self, admin_user):
+        self.client.force_authenticate(user=admin_user)
         url = reverse("pcr-metaprojects-set-pcr-or-ad-hoc")
         meta_project = MetaProjectFactory(
             umbrella_code="PCR-CALC", pcr_due=False, ad_hoc_pcr=False

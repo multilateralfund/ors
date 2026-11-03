@@ -113,6 +113,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   )
 
   const isMlfsUser = user_permissions.includes('is_mlfs_user')
+  const isSuperuser = user_permissions.includes('is_superuser')
   const canViewOnlyOwnAgency = user_permissions.includes(
     'can_view_only_own_agency',
   )
@@ -144,6 +145,16 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewPCR = user_permissions.includes('has_pcr_view_access')
   const canEditPCR = user_permissions.includes('has_pcr_edit_access')
   const canSubmitPCR = user_permissions.includes('has_pcr_submit_access')
+  const canEditSubmittedPCR = user_permissions.includes(
+    'has_pcr_edit_submitted_access',
+  )
+  const canRequestAdjustmentsPCR = user_permissions.includes(
+    'has_pcr_request_adjustments_access',
+  )
+  const canApprovePCR = user_permissions.includes('has_pcr_approve_access')
+  const canMarkPCRDue = user_permissions.includes(
+    'has_project_v2_pcr_mark_pcr_due_access',
+  )
 
   return (
     <PermissionsContext.Provider
@@ -182,6 +193,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canEditEnterprise,
         canSetProjectSettings,
         isMlfsUser,
+        isSuperuser,
         canViewOnlyOwnAgency,
         canCommentCPCountry,
         canCommentCPSecretariat,
@@ -193,6 +205,10 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewPCR,
         canEditPCR,
         canSubmitPCR,
+        canEditSubmittedPCR,
+        canRequestAdjustmentsPCR,
+        canApprovePCR,
+        canMarkPCRDue,
       }}
     >
       {children}

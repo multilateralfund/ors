@@ -15,6 +15,7 @@ export type PCRTableProps = {
   projectId: number | null
   setProjectId: (id: number | null) => void
   setPcrId: (id: number | null) => void
+  setPcrEditable: (editable: boolean) => void
   filters: Record<string, any>
   view: ViewSelectorValuesType | null
 }
@@ -120,6 +121,7 @@ export type PCRResponse = {
   status: string
   version: number
   latest_pcr_id: number | null
+  editable: boolean
   submission_date: string | null
   total_number_of_enterprises: string
   financial_figures_status: string

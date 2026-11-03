@@ -20,6 +20,10 @@ class UserPermissionsView(views.APIView):
         else:
             perm_objects = Permission.objects.filter(group__user=user).distinct()
         permissions = [obj.codename for obj in perm_objects]
+        if user.is_superuser:
+            # not a Permission object; used for links to the Django admin
+            # (e.g. the PCR required exclusion rules)
+            permissions.append("is_superuser")
         return Response(permissions)
 
 

@@ -991,6 +991,7 @@ export const getMenus = (
     canUpdatePostExcom,
     canTransferProjects,
     canViewPCR,
+    canMarkPCRDue,
     canViewFundingWindow,
     canViewMyaData,
   } = permissions
@@ -1065,8 +1066,16 @@ export const getMenus = (
       title: 'Reporting',
       menuItems: [
         { title: 'Annual Progress Reports', url: '/apr' },
-        { title: 'Project Completion Reports', url: '/pcr' },
-        { title: 'Manage Project Completion Reports', url: '/manage-pcrs' },
+        {
+          title: 'Project Completion Reports',
+          url: '/pcr',
+          disabled: !canViewPCR,
+        },
+        {
+          title: 'Manage Project Completion Reports',
+          url: '/manage-pcrs',
+          disabled: !canViewPCR || !canMarkPCRDue,
+        },
       ],
     },
   ]
