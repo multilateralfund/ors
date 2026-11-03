@@ -1,4 +1,5 @@
 from datetime import date
+import io
 
 from django.urls import reverse
 from core.api.tests.base import BaseTest
@@ -14,6 +15,7 @@ from core.api.tests.factories import (
     ProjectStatusFactory,
 )
 from core.models import MetaProject
+import openpyxl
 import pytest
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-statements
@@ -507,6 +509,49 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert [meta_project["id"] for meta_project in response.data] == [
             meta_project_pcr_due.id
         ]
+
+    def test_export_pcr_due(self, admin_user, _setup_pcr_meta_project_list):
+        projects = _setup_pcr_meta_project_list
+        meta_project_due = projects[0].meta_project
+        meta_project_due.pcr_due = True
+        meta_project_due.pcr_due_date = date(2026, 9, 1)
+        meta_project_due.save()
+        meta_project_not_due = projects[1].meta_project
+        meta_project_not_due.pcr_due = False
+        meta_project_not_due.save()
+
+        self.client.force_authenticate(user=admin_user)
+        url = reverse("pcr-metaprojects-export-pcr-due")
+        # pcr_due is always forced to 'Yes'
+        response = self.client.get(url, {"pcr_due": "No"})
+        assert response.status_code == 200
+
+        wb = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
+        rows = [list(row) for row in wb["PCR due"].iter_rows(values_only=True)]
+        assert rows[0] == [
+            "Metacode",
+            "Title",
+            "Country",
+            "Agency",
+            "Ad-hoc PCR",
+            "Date completed",
+            "PCR due",
+        ]
+        assert len(rows) == 2
+        assert rows[1][0] == meta_project_due.umbrella_code
+        assert rows[1][1] == "Project 1"
+        assert rows[1][2] == meta_project_due.country.name
+        assert rows[1][3] == (
+            meta_project_due.lead_agency.name if meta_project_due.lead_agency else None
+        )
+        assert rows[1][4] == "Yes"
+        assert rows[1][6] == "01.09.2026"
+
+        # the listing filters are applied
+        response = self.client.get(url, {"search": "Project 2"})
+        assert response.status_code == 200
+        wb = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
+        assert len(list(wb["PCR due"].iter_rows(values_only=True))) == 1
 
     def test_set_pcr_or_ad_hoc(self):
         url = reverse("pcr-metaprojects-set-pcr-or-ad-hoc")
