@@ -94,6 +94,7 @@ import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprR
 import PCRListingPage from '@ors/app/pcr/page'
 import PCRCreatePage from '@ors/app/pcr/create/page'
 import PCRViewPage from '@ors/app/pcr/view/page'
+import PCRArchivePage from '@ors/app/pcr/archive/page'
 import PCREditPage from '@ors/app/pcr/edit/page'
 import ManagePCRsPage from '@ors/app/pcr/manage/page'
 
@@ -484,6 +485,9 @@ export default function App() {
               <PCRViewPage />
             </PCRDataProvider>
           </ProjectsDataProvider>
+        </Route>
+        <Route path="/pcr/:project_id/archive/:archive_id">
+          <PCRArchivePage />
         </Route>
         <Route path="/pcr/:project_id/:pcr_id/edit">
           <ProjectsDataProvider>

@@ -273,14 +273,16 @@ export const VersionsList = ({
   )
 }
 
-const VersionsDropdown = ({
+export const VersionsDropdown = ({
   versions,
   showVersionsMenu,
   setShowVersionsMenu,
+  getVersionHref,
 }: {
   versions: PCRVersion[]
   showVersionsMenu: boolean
   setShowVersionsMenu: Dispatch<SetStateAction<boolean>>
+  getVersionHref?: (id: number) => string
 }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -313,7 +315,9 @@ const VersionsDropdown = ({
           .map(({ id, version, status, latest_pcr_id }) => (
             <Link
               key={id}
-              href={`/pcr/${project_id}/${id}`}
+              href={
+                getVersionHref ? getVersionHref(id) : `/pcr/${project_id}/${id}`
+              }
               className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
             >
               <div className="flex items-center justify-between gap-2 whitespace-nowrap hover:text-white">

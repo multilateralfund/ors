@@ -4,6 +4,7 @@ from core.import_data.import_multi_year_projects import import_multi_year_projec
 from core.import_data.import_pcr_activities import import_pcr_activities
 from core.import_data.import_pcr_delay_explanations import import_pcr_delay_explanations
 from core.import_data.import_pcr_learned_lessons import import_pcr_learned_lessons
+from core.import_data.import_pcr_submissions import import_pcr_submissions
 
 from core.import_data.import_progress_reports import import_progress_reports
 from core.import_data.import_project_comments import import_project_comments
@@ -26,10 +27,11 @@ class Command(BaseCommand):
             - type = comments => project comments
             - type = meta_projects => project meta projects
             - type = all_pcr => all data for project complition reports
-                (activities, delay_explanation, learned_lessons)
+                (activities, delay_explanation, learned_lessons, submissions)
             - type = pcr_activities => project complition report activities
             - type = pcr_delay_explanation => project complition report delay explanation
             - type = pcr_learned_lessons => project complition report learned lessons
+            - type = pcr_submissions => project complition report submission dates
             - type = set_serial_numbers => set project serial numbers
             - type =  all => all of the above
     """
@@ -53,6 +55,7 @@ class Command(BaseCommand):
                 "pcr_activities",
                 "pcr_delay_explanation",
                 "pcr_learned_lessons",
+                "pcr_submissions",
                 "set_serial_numbers",
                 "all",
             ],
@@ -81,5 +84,7 @@ class Command(BaseCommand):
             import_pcr_delay_explanations()
         if imp_type in ["pcr_learned_lessons", "all_pcr", "all"]:
             import_pcr_learned_lessons()
+        if imp_type in ["pcr_submissions", "all_pcr", "all"]:
+            import_pcr_submissions()
         if imp_type in ["set_serial_numbers", "all_projects", "all"]:
             set_project_serial_numbers()

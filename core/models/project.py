@@ -273,6 +273,15 @@ class MetaProject(models.Model):
 
     objects = MetaProjectQuerySet.as_manager()
 
+    @property
+    def has_legacy_pcr(self):
+        # PCR developed outside the platform (OLD_PCR)
+        return hasattr(self, "old_pcr")
+
+    @property
+    def has_pcr(self):
+        return self.has_legacy_pcr or self.pcrs.exists()
+
     @staticmethod
     def approved_mya_projects_base_queryset():
         return Project.objects.filter(
