@@ -111,6 +111,25 @@ class PCRDueWriter(BaseWriter):
                 "method": lambda record: record["lead_agency"],
             },
             {
+                "id": "cooperating_agencies",
+                "headerName": "Cooperating agencies",
+                # only multi-year meta projects have cooperating agencies
+                "method": lambda record: (
+                    "/".join(
+                        sorted(
+                            {
+                                project["agency"]
+                                for project in record["projects"]
+                                if project["agency"]
+                            }
+                        )
+                    )
+                    if record["type"] == "Multi-year agreement"
+                    else None
+                ),
+                "column_width": 30,
+            },
+            {
                 "id": "ad_hoc_pcr",
                 "headerName": "Ad-hoc PCR",
                 "method": lambda record: "Yes" if record["ad_hoc_pcr"] else "No",

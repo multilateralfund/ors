@@ -515,7 +515,9 @@ class TestPCRMetaprojectsViewSet(BaseTest):
             meta_project_pcr_due.id
         ]
 
-    def test_export_pcr_due(self, admin_user, _setup_pcr_meta_project_list):
+    def test_export_pcr_due(
+        self, admin_user, agency, project_approved_status, _setup_pcr_meta_project_list
+    ):
         projects = _setup_pcr_meta_project_list
         meta_project_due = projects[0].meta_project
         meta_project_due.pcr_due = True
@@ -538,6 +540,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
             "Title",
             "Country",
             "Agency",
+            "Cooperating agencies",
             "Ad-hoc PCR",
             "Date completed",
             "PCR due",
@@ -549,14 +552,39 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert rows[1][3] == (
             meta_project_due.lead_agency.name if meta_project_due.lead_agency else None
         )
-        assert rows[1][4] == "Yes"
-        assert rows[1][6] == "01.09.2026"
+        # individual meta projects have no cooperating agencies
+        assert rows[1][4] is None
+        assert rows[1][5] == "Yes"
+        assert rows[1][7] == "01.09.2026"
 
         # the listing filters are applied
         response = self.client.get(url, {"search": "Project 2"})
         assert response.status_code == 200
         wb = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
         assert len(list(wb["PCR due"].iter_rows(values_only=True))) == 1
+
+        # MYA meta projects list the agencies of their projects
+        meta_project_mya = projects[1].meta_project
+        meta_project_mya.type = MetaProject.MetaProjectType.MYA
+        meta_project_mya.pcr_due = True
+        meta_project_mya.save()
+        ProjectFactory.create(
+            title="Project 4",
+            agency=agency,
+            category="Multi-year agreement",
+            meta_project=meta_project_mya,
+            submission_status=project_approved_status,
+            metacode=meta_project_mya.umbrella_code,
+        )
+        response = self.client.get(url)
+        assert response.status_code == 200
+        wb = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
+        rows = {
+            row[0]: row for row in wb["PCR due"].iter_rows(min_row=2, values_only=True)
+        }
+        assert rows[meta_project_mya.umbrella_code][4] == "/".join(
+            sorted([agency.name, projects[1].agency.name])
+        )
 
     def test_set_pcr_or_ad_hoc(self, admin_user):
         self.client.force_authenticate(user=admin_user)
