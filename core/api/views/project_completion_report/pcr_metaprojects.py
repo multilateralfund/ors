@@ -72,6 +72,18 @@ def get_completed_only(queryset: QuerySet[Project]):
     return options
 
 
+def get_meta_project_flag_options(queryset: QuerySet[Project], field_name: str):
+    values = set(
+        queryset.values_list(f"meta_project__{field_name}", flat=True).distinct()
+    )
+    options = []
+    if True in values:
+        options.append({"id": "Yes", "name": "Yes"})
+    if False in values:
+        options.append({"id": "No", "name": "No"})
+    return options
+
+
 def get_categories(queryset: QuerySet[Project]):
     category_labels = dict(Project.Category.choices)
     values = (
@@ -267,6 +279,8 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             "status": get_available_values(queryset, "status"),
             "completed_only": get_completed_only(queryset),
             "pcr_status": get_pcr_statuses(queryset),
+            "pcr_due": get_meta_project_flag_options(queryset, "pcr_due"),
+            "ad_hoc_pcr": get_meta_project_flag_options(queryset, "ad_hoc_pcr"),
         }
         return Response(result)
 

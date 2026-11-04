@@ -314,6 +314,7 @@ export type ManagePCRsTableProps = {
   projectIds?: number[]
   setProjectIds?: (ids: number[]) => void
   unmarkProjects?: (ids: number[]) => void
+  updatePcrDueDate?: (id: number, date: string) => void
   filters: Record<string, any>
 }
 

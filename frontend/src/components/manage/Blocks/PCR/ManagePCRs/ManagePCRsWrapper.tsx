@@ -138,6 +138,30 @@ const ManagePCRsWrapper = () => {
     refetchPcrDue()
   }
 
+  const updatePcrDueDate = async (metaprojectId: number, date: string) => {
+    setIsLoading(true)
+
+    try {
+      await api('api/pcr-metaprojects/set_pcr_or_ad_hoc/', {
+        data: {
+          meta_projects: [metaprojectId],
+          pcr_due: true,
+          pcr_due_date: date,
+        },
+        method: 'POST',
+      })
+
+      enqueueSnackbar(<>PCR due date updated.</>, { variant: 'success' })
+      refetchPcrDue()
+    } catch (e) {
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const updatePcrDueProjects = async () => {
     const isMarking = action === 'mark'
 
@@ -321,7 +345,7 @@ const ManagePCRsWrapper = () => {
             <ManagePCRsTable
               type="due"
               pcrProjects={pcrDueProjects}
-              {...{ unmarkProjects, filters }}
+              {...{ unmarkProjects, updatePcrDueDate, filters }}
             />
           </div>
         </div>
