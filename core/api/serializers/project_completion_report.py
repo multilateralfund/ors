@@ -39,6 +39,10 @@ from core.models.project_completion_report import (
     PCRSupportingEvidenceSection,
     PCRSustainableDevelopmentGoal,
     PCRSustainableDevelopmentGoalDescription,
+    OLD_PCR,
+    OLD_PCRActivity,
+    OLD_PCRDelayExplanation,
+    OLD_PCRLearnedLessons,
 )
 from core.models.substance import Substance
 
@@ -1204,7 +1208,11 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
     projects = serializers.SerializerMethodField()
     pcr_id = serializers.SerializerMethodField()
     pcr_status = serializers.SerializerMethodField()
+    pcr_submission_date = serializers.SerializerMethodField()
     pcr_editable = serializers.SerializerMethodField()
+    has_pcr = serializers.SerializerMethodField()
+    has_legacy_pcr = serializers.SerializerMethodField()
+    legacy_pcr_id = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     date_of_completion = serializers.SerializerMethodField()
     total_funding = serializers.SerializerMethodField()
@@ -1229,7 +1237,11 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "projects",
             "pcr_id",
             "pcr_status",
+            "pcr_submission_date",
             "pcr_editable",
+            "has_pcr",
+            "has_legacy_pcr",
+            "legacy_pcr_id",
             "pcr_due",
             "pcr_due_date",
             "status",
@@ -1294,6 +1306,10 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             obj.current_pcr = PCR.objects.filter(meta_project=obj).first()
         return obj.current_pcr
 
+    def _get_old_pcr(self, obj):
+        # None when the meta project has no legacy PCR
+        return getattr(obj, "old_pcr", None)
+
     def get_pcr_id(self, obj):
         pcr = self._get_pcr(obj)
         if pcr:
@@ -1302,9 +1318,31 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_pcr_status(self, obj):
-        pcr = self._get_pcr(obj)
+        pcr = self._get_pcr(obj) or self._get_old_pcr(obj)
         if pcr:
             return pcr.status
+        return None
+
+    @extend_schema_field(serializers.DateField(allow_null=True))
+    def get_pcr_submission_date(self, obj):
+        pcr = self._get_pcr(obj) or self._get_old_pcr(obj)
+        if pcr and pcr.submission_date:
+            return pcr.submission_date.isoformat()
+        return None
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_has_pcr(self, obj):
+        return self._get_pcr(obj) is not None or self.get_has_legacy_pcr(obj)
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_has_legacy_pcr(self, obj):
+        return self._get_old_pcr(obj) is not None
+
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
+    def get_legacy_pcr_id(self, obj):
+        old_pcr = self._get_old_pcr(obj)
+        if old_pcr:
+            return old_pcr.id
         return None
 
     @extend_schema_field(serializers.BooleanField(allow_null=True))
@@ -1329,3 +1367,79 @@ class PCRProjectSetAdHocOrPcrDueSerializer(serializers.Serializer):
     ad_hoc_pcr = serializers.BooleanField(default=False)
     pcr_due = serializers.BooleanField(default=False)
     pcr_due_date = serializers.DateField()
+
+
+class OldPCRActivitySerializer(serializers.ModelSerializer):
+    sector = serializers.SlugRelatedField("name", read_only=True)
+    sector_type = serializers.CharField(
+        source="sector.get_sector_type_display", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = OLD_PCRActivity
+        fields = [
+            "id",
+            "sector",
+            "sector_type",
+            "type_of_activity",
+            "planned_output",
+            "actual_activity_output",
+            "evaluation",
+            "explanation",
+        ]
+
+
+class OldPCRDelayExplanationSerializer(serializers.ModelSerializer):
+    agency = serializers.SlugRelatedField("name", read_only=True)
+    category = serializers.SlugRelatedField("name", read_only=True)
+
+    class Meta:
+        model = OLD_PCRDelayExplanation
+        fields = [
+            "id",
+            "agency",
+            "category",
+            "delay_cause",
+            "measures_to_overcome",
+        ]
+
+
+class OldPCRLearnedLessonsSerializer(serializers.ModelSerializer):
+    agency = serializers.SlugRelatedField("name", read_only=True)
+    category = serializers.SlugRelatedField("name", read_only=True)
+
+    class Meta:
+        model = OLD_PCRLearnedLessons
+        fields = [
+            "id",
+            "agency",
+            "category",
+            "description",
+        ]
+
+
+class OldPCRDetailSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for the legacy PCRs (developed outside the platform).
+    """
+
+    meta_project_id = serializers.IntegerField(read_only=True)
+    umbrella_code = serializers.CharField(
+        source="meta_project.umbrella_code", read_only=True
+    )
+    activities = OldPCRActivitySerializer(many=True, read_only=True)
+    delay_explanations = OldPCRDelayExplanationSerializer(many=True, read_only=True)
+    learned_lessons = OldPCRLearnedLessonsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = OLD_PCR
+        fields = [
+            "id",
+            "meta_project_id",
+            "umbrella_code",
+            "status",
+            "submission_date",
+            "activities",
+            "delay_explanations",
+            "learned_lessons",
+        ]
