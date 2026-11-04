@@ -176,7 +176,7 @@ export type PCRVersion = {
   id: number
   version: number
   status: string
-  latest_pcr_id: number
+  latest_pcr_id: number | null
 }
 
 export type PCRHistoryItem = {
@@ -315,4 +315,41 @@ export type ManagePCRsTableProps = {
   setProjectIds?: (ids: number[]) => void
   unmarkProjects?: (ids: number[]) => void
   filters: Record<string, any>
+}
+
+export type ArchivePCRActivity = {
+  id: number
+  sector: string | null
+  sector_type: string | null
+  type_of_activity: string | null
+  planned_output: string | null
+  actual_activity_output: string | null
+  evaluation: number | null
+  explanation: string | null
+}
+
+export type ArchivePCRDelayExplanation = {
+  id: number
+  agency: string | null
+  category: string | null
+  delay_cause: string | null
+  measures_to_overcome: string | null
+}
+
+export type ArchivePCRLearnedLesson = {
+  id: number
+  agency: string | null
+  category: string | null
+  description: string | null
+}
+
+export type ArchivePCRResponse = {
+  id: number
+  meta_project_id: number
+  umbrella_code: string | null
+  status: string
+  submission_date: string | null
+  activities: ArchivePCRActivity[]
+  delay_explanations: ArchivePCRDelayExplanation[]
+  learned_lessons: ArchivePCRLearnedLesson[]
 }

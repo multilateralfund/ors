@@ -1,0 +1,121 @@
+import { useState } from 'react'
+
+import {
+  SectionTitle,
+  SubSectionTitle,
+  NrEntity,
+  NoDataReported,
+  detailItem,
+} from '../../PCRView/PCRViewTabs/ViewHelperComponents'
+import { ArchivePCRResponse } from '../../interfaces'
+import {
+  pcrFieldsMapping,
+  textareaClassname,
+  borderedContainerClassname,
+} from '../../constants'
+
+import { Tabs, Tab, Divider } from '@mui/material'
+import { filter, map, uniq } from 'lodash'
+import cx from 'classnames'
+
+const PCRArchiveLessonsLearned = ({ pcr }: { pcr: ArchivePCRResponse }) => {
+  const [crtTab, setCrtTab] = useState(0)
+
+  const crtAgencies = uniq(map(pcr.learned_lessons, (ll) => ll.agency || '-'))
+  const crtAgency = crtAgencies[crtTab]
+
+  const llData = filter(
+    pcr.learned_lessons,
+    (ll) => (ll.agency || '-') === crtAgency,
+  )
+
+  return (
+    <>
+      <SectionTitle>Lessons learned</SectionTitle>
+      <Tabs
+        aria-label="lessons-learned-view-tabs"
+        className="sectionsTabs mt-6"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        value={crtTab}
+        onChange={(_, newValue) => {
+          setCrtTab(newValue)
+        }}
+      >
+        {map(crtAgencies, (agency) => (
+          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
+        ))}
+      </Tabs>
+      <div className="border-0 border-t border-solid border-primary pt-6">
+        <div className="flex flex-col gap-y-6">
+          {llData.length > 0 ? (
+            <div className="flex">
+              <div className="w-1/4 bg-primary px-6 py-4">
+                <span className="text-lg uppercase text-mlfs-hlYellow">
+                  Lessons learned
+                </span>
+                <Divider className="my-4 opacity-20" />
+                {map(llData, (ll, llIndex) => (
+                  <div key={ll.id} className="mb-2">
+                    <div className="flex gap-3">
+                      <div className="mt-1 flex h-5 min-h-5 w-5 min-w-5 items-center justify-center rounded-full bg-mlfs-hlYellow text-lg font-bold text-primary">
+                        {llIndex + 1}
+                      </div>
+                      <h4 className="m-0 text-lg font-normal text-white">
+                        {ll.category?.split('(')[0].trim() || '-'}
+                      </h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div
+                className={cx(
+                  'w-3/4 bg-white px-6 py-4',
+                  borderedContainerClassname,
+                )}
+              >
+                <SubSectionTitle className="mb-5">
+                  Lessons learned
+                </SubSectionTitle>
+                {map(llData, (ll, llIndex) => (
+                  <div key={ll.id}>
+                    <div className="flex gap-3">
+                      {NrEntity(llIndex)}
+                      <div>
+                        <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
+                          {ll.category || '-'}
+                        </h4>
+                        {detailItem(
+                          pcrFieldsMapping.description,
+                          ll.description ?? '',
+                          textareaClassname,
+                        )}
+                      </div>
+                    </div>
+                    {llIndex !== llData.length - 1 && (
+                      <Divider className="-mx-6 my-4" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className={cx('bg-white p-6', borderedContainerClassname)}>
+              <SubSectionTitle className="mb-5">
+                Lessons learned
+              </SubSectionTitle>
+              <NoDataReported text="No data reported." />
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
+export default PCRArchiveLessonsLearned
