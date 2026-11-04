@@ -13,6 +13,7 @@ from core.api.tests.factories import (
     OldPCRFactory,
     OldPCRLearnedLessonsFactory,
     PCRFactory,
+    PCRProjectFactory,
     ProjectFactory,
     UserFactory,
 )
@@ -123,6 +124,63 @@ class TestMetaProjectLegacyPCR:
         assert get_ids(PCR.Status.FINAL) == {old_pcr.meta_project_id}
         assert get_ids(PCR.Status.DRAFT) == {with_pcr.id}
 
+    def test_pcr_submitted_filter(self, admin_user, agency, project_approved_status):
+        no_pcr = _create_meta_project(agency, project_approved_status)
+        old_pcr = _create_old_pcr(agency, project_approved_status)
+
+        self.client.force_authenticate(user=admin_user)
+
+        def get_ids(pcr_submitted):
+            response = self.client.get(
+                reverse("pcr-metaprojects-list"), {"pcr_submitted": pcr_submitted}
+            )
+            assert response.status_code == 200
+            return {row["id"] for row in response.data}
+
+        assert get_ids("Yes") == {old_pcr.meta_project_id}
+        assert get_ids("No") == {no_pcr.id}
+        assert get_ids("Yes,No") == {old_pcr.meta_project_id, no_pcr.id}
+
+    def test_pcr_submission_date_filter(
+        self, admin_user, agency, project_approved_status
+    ):
+        with_pcr = _create_meta_project(agency, project_approved_status)
+        pcr = PCRFactory(meta_project=with_pcr, submission_date="2026-07-08")
+        PCRProjectFactory(pcr=pcr, project=with_pcr.projects.first())
+        old_pcr = _create_old_pcr(agency, project_approved_status)
+        no_date = OldPCRFactory(
+            meta_project=_create_meta_project(agency, project_approved_status)
+        )
+
+        self.client.force_authenticate(user=admin_user)
+
+        def get_ids(params):
+            response = self.client.get(reverse("pcr-metaprojects-list"), params)
+            assert response.status_code == 200
+            return {row["id"] for row in response.data}
+
+        assert get_ids(
+            {
+                "pcr_submission_date_after": "2015-01-01",
+                "pcr_submission_date_before": "2015-12-31",
+            }
+        ) == {old_pcr.meta_project_id}
+        assert get_ids({"pcr_submission_date_after": "2015-01-01"}) == {
+            with_pcr.id,
+            old_pcr.meta_project_id,
+        }
+        assert get_ids({"pcr_submission_date_before": "2016-01-01"}) == {
+            old_pcr.meta_project_id
+        }
+        assert no_date.meta_project_id not in get_ids(
+            {"pcr_submission_date_after": "2000-01-01"}
+        )
+
+    def test_pcr_status_list_filters(self, admin_user, agency, project_approved_status):
+        PCRFactory(meta_project=_create_meta_project(agency, project_approved_status))
+        _create_old_pcr(agency, project_approved_status)
+
+        self.client.force_authenticate(user=admin_user)
         response = self.client.get(reverse("pcr-metaprojects-list-filters"))
         assert response.status_code == 200
         assert {status["id"] for status in response.data["pcr_status"]} == {
