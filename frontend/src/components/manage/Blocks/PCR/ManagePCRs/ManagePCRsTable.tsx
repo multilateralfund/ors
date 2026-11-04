@@ -15,6 +15,7 @@ const ManagePCRsTable = ({
   projectIds,
   setProjectIds,
   unmarkProjects,
+  updatePcrDueDate,
   filters,
 }: ManagePCRsTableProps) => {
   const gridRef = useRef(null)
@@ -26,7 +27,7 @@ const ManagePCRsTable = ({
 
   const { defaultColDef, columnDefs } =
     type === 'due'
-      ? getColumnDefsPcrDue(unmarkProjects!)
+      ? getColumnDefsPcrDue(unmarkProjects!, updatePcrDueDate!)
       : getColumnDefs(projectIds!, setProjectIds!)
 
   return (
