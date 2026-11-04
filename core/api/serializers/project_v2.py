@@ -393,7 +393,11 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if instance.submission_status.name != "Approved":
             if "code" in data:
                 data["code"] = None
-        if "substance_type" in data and not data["substance_type"]:
+        if (
+            "substance_type" in data
+            and not data["substance_type"]
+            and not instance.legacy_code
+        ):
             data["substance_type"] = self.get_substance_type_from_cluster(instance)
         return data
 
@@ -1795,7 +1799,7 @@ class ProjectExportV2Serializer(ProjectListV2Serializer):
 
     def get_subsectors_list(self, obj):
         "subsector names separated by comma for project list export"
-        return ", ".join([s.name for s in obj.subsectors.all()])
+        return ", ".join(sorted(s.name for s in obj.subsectors.all()))
 
     def get_meta_project_fields(self, obj):
         return MetaProjectFieldSerializer(obj.meta_project).data
