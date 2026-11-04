@@ -452,16 +452,27 @@ const ProjectsSettingsGlobalFields = ({
     <mui.Box>
       {fields.map((f) => {
         return (
-          <div className="my-2 flex items-center">
+          <div key={f} className="my-2 flex items-center">
             <label className="inline-block w-96" htmlFor={f}>
               {data.fields[f].title}
             </label>
-            <FormattedNumberInput
-              id={f}
-              value={form[f]}
-              onChange={handleInput}
-              className={'w-72'}
-            />
+            {data.fields[f].type === 'Decimal' ? (
+              <FormattedNumberInput
+                id={f}
+                value={form[f]}
+                onChange={handleInput}
+                className={'w-72'}
+              />
+            ) : (
+              <TextField
+                id={f}
+                name={f}
+                value={form[f] ?? ''}
+                onChange={handleInput}
+                className="w-72"
+                size="small"
+              />
+            )}
             {data.data[f] !== form[f] ? (
               <mui.Tooltip placement="top" title="Revert value.">
                 <div

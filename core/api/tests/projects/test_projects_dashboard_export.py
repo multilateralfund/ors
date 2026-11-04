@@ -100,7 +100,10 @@ class TestProjectsDashboardExport(BaseTest):
         }
         # Decimal value is written as a number, and the empty GLOBAL_FIELD_*
         # placeholders are excluded.
-        assert rows["Total savings to society in US $"] == 123.45
+        assert (
+            rows["Total savings to society from avoided ODS emissions in US $"]
+            == 123.45
+        )
         assert "Global field 1" not in rows
 
     def test_projects_sheet_has_expected_headers(

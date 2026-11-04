@@ -739,6 +739,33 @@ class TestFundValues(BaseTest):
         with override_config(TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=Decimal("12.5")):
             assert self.fund(user)["savings_to_society"]["value"] == "$12"
 
+    def test_a_manual_figure_typed_as_text_is_shown_as_typed(
+        self, user, ongoing_status
+    ):
+        ProjectFactory(status=ongoing_status)
+
+        with override_config(
+            TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=" 2.5 TN ",
+            TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES=(
+                "25.3 - 56.7 CO2 EQ GT"
+            ),
+            EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS="0.4-0.9 $",
+        ):
+            fund = self.fund(user)
+
+        assert fund["savings_to_society"]["value"] == "2.5 TN"
+        assert (
+            fund["controlled_substances_avoided_emissions"]["value"]
+            == "25.3 - 56.7 CO2 EQ GT"
+        )
+        assert fund["hfc_expected_cost_per_co2eq_tonne"]["value"] == "0.4-0.9 $"
+
+    def test_a_manual_cost_keeps_its_cents(self, user, ongoing_status):
+        ProjectFactory(status=ongoing_status)
+
+        with override_config(COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS="0.7"):
+            assert self.fund(user)["ods_cost_per_odp_tonne"]["value"] == "$0.70"
+
     def test_pledges_are_unavailable_until_there_are_any(self, user, ongoing_status):
         ProjectFactory(status=ongoing_status)
 
