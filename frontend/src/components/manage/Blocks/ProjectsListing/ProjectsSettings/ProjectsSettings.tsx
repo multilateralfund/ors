@@ -27,7 +27,10 @@ import {
   ApiProjectSettings,
   ApiProjectSettingsForFrontend,
 } from '@ors/types/api_project_settings.ts'
-import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  FormattedNumberInput,
+  Input,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { MdOutlineHistory } from 'react-icons/md'
 
 type EmailSettingsType = {
@@ -464,14 +467,15 @@ const ProjectsSettingsGlobalFields = ({
                 className={'w-72'}
               />
             ) : (
-              <TextField
-                id={f}
-                name={f}
-                value={form[f] ?? ''}
-                onChange={handleInput}
-                className="w-72"
-                size="small"
-              />
+              <div>
+                <Input
+                  id={f}
+                  type="text"
+                  value={form[f] ?? ''}
+                  onChange={handleInput}
+                  className="w-72"
+                />
+              </div>
             )}
             {data.data[f] !== form[f] ? (
               <mui.Tooltip placement="top" title="Revert value.">
