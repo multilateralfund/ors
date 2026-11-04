@@ -140,7 +140,7 @@ const getColumnDefsPcrDue = (
     },
     {
       headerName: 'PCR due',
-      minWidth: 240,
+      minWidth: 220,
       suppressKeyboardEvent: () => true,
       valueGetter: (params: ValueGetterParams) =>
         formatDate(params.data.pcr_due_date),
