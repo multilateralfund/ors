@@ -318,7 +318,12 @@ PROJECTS_GLOBAL_FIELDS = OrderedDict(
     {
         "TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR": (
             "",
-            "Total savings to society in US $",
+            "Total savings to society from avoided ODS emissions in US $",
+            str,
+        ),
+        "TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC": (
+            "",
+            "Total expected savings to society from avoided HFC Emissions in US $",
             str,
         ),
         "TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES": (
@@ -331,24 +336,19 @@ PROJECTS_GLOBAL_FIELDS = OrderedDict(
             "Total avoided emissions of controlled substances in CO2-eq tonnes",
             str,
         ),
-        "TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC": (
+        "EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES": (
             "",
-            "Expected avoided emissions from HFCs",
+            "Total expected avoided emissions for HFCs",
             str,
         ),
         "COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS": (
             "",
-            "Cost to the Fund to remove 1 ODP tonne from ODS",
+            "Cost to the Fund to remove 1 ODP tonne from ODS in US $",
             str,
         ),
         "COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_CONTROLLED_SUBSTANCES": (
             "",
-            "Cost to the Fund to remove 1 CO2-eq tonne from controlled substances",
-            str,
-        ),
-        "EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES": (
-            "",
-            "Expected avoided emissions from HFCs in CO2-eq tonnes",
+            "Cost to the Fund to remove 1 CO2-eq tonne from ODS in US $",
             str,
         ),
         "EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS": (

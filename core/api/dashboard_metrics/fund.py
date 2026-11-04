@@ -49,14 +49,25 @@ def static(value: Any):
     return lambda _context: value
 
 
-def manual(key: str, use_format_number: bool = False, currency: str = ""):
-    """A figure an administrator types in in constance, unavailable until someone does."""
+def manual(
+    key: str, use_format_number: bool = False, currency: str = "", decimals: int = 0
+):
+    """A figure an administrator types in in constance, unavailable until someone does.
 
-    def read(_context: MetricContext) -> float | None:
-        value = getattr(config, key, None)
-        result = float(value) if value else None
-        if use_format_number and result:
-            result = format_number(result, 0, currency)
+    A plain number is formatted like the computed figures. Anything else
+    ("2.5 TN", "25.3 - 56.7 CO2 EQ GT", "0.4-0.9 $") is shown as typed.
+    """
+
+    def read(_context: MetricContext) -> float | str | None:
+        value = str(getattr(config, key, None) or "").strip()
+        if not value:
+            return None
+        try:
+            result = float(value)
+        except ValueError:
+            return value
+        if use_format_number:
+            return format_number(result, decimals, currency)
         return result
 
     return read
@@ -644,7 +655,7 @@ FUND_METRICS: tuple[Metric, ...] = (
     ),
     Metric(
         metric_id="hfc_expected_savings_to_society",
-        label="Expected avoided emissions from HFCs",
+        label="Total expected savings to society from avoided HFC emissions",
         section="From protecting the ozone layer to safeguarding climate and health",
         kind=Kind.SCALAR,
         unit=Unit.USD,
@@ -652,11 +663,11 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field=("constance " "TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC "),
-        compute=manual("TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC", True),
+        compute=manual("TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC", True, "$"),
     ),
     Metric(
         metric_id="savings_to_society",
-        label="Total savings to society",
+        label="Total savings to society from avoided ODS emissions",
         section="From protecting the ozone layer to safeguarding climate and health",
         kind=Kind.SCALAR,
         unit=Unit.USD,
@@ -688,7 +699,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field="constance COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS",
-        compute=manual("COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS", True, "$"),
+        compute=manual("COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS", True, "$", 2),
     ),
     Metric(
         metric_id="controlled_substances_cost_per_co2eq_tonne",
@@ -707,6 +718,7 @@ FUND_METRICS: tuple[Metric, ...] = (
             "COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_CONTROLLED_SUBSTANCES",
             True,
             "$",
+            2,
         ),
     ),
     Metric(
@@ -722,7 +734,7 @@ FUND_METRICS: tuple[Metric, ...] = (
             "constance EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS"
         ),
         compute=manual(
-            "EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS", True, "$"
+            "EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS", True, "$", 2
         ),
     ),
     Metric(
