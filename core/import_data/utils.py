@@ -12,6 +12,7 @@ from core.import_data.mapping_names_dict import (
     CHEMICAL_NAME_MAPPING,
     COUNTRY_NAME_MAPPING,
     MYASECTOR_CLUSTER_MAPPING,
+    PCR_AGENCY_NAME_MAPPING,
     PROJECT_TYPE_CODE_MAPPING,
     SECTOR_CODE_MAPPING,
     SUBSECTOR_SECTOR_MAPPING,
@@ -28,6 +29,7 @@ from core.models.meeting import Meeting
 from core.models.project import (
     Project,
 )
+from core.models.project_completion_report import OLD_PCR
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -782,6 +784,22 @@ def import_pcr_categories(file_path, category_class):
     return category_dict
 
 
+def get_old_pcr(meta_project, old_pcr_dict):
+    """
+    Get or create the old PCR of a meta project
+
+    @param meta_project = MetaProject
+    @param old_pcr_dict = dict (cache of old PCRs, struct: {meta_project_id: OLD_PCR})
+
+    @return OLD_PCR
+    """
+    if meta_project.id not in old_pcr_dict:
+        old_pcr_dict[meta_project.id], _ = OLD_PCR.objects.get_or_create(
+            meta_project=meta_project
+        )
+    return old_pcr_dict[meta_project.id]
+
+
 def get_agency_dict(json_file_path):
     """
     Parse agency json file and create a dictionary
@@ -795,8 +813,11 @@ def get_agency_dict(json_file_path):
         json_data = json.load(f)
 
     for agency_json in json_data:
+        agency_name = PCR_AGENCY_NAME_MAPPING.get(
+            agency_json["Name"], agency_json["Name"]
+        )
         agency = get_object_by_name(
-            Agency, agency_json["Name"], agency_json["ID"], "agency", use_offset=False
+            Agency, agency_name, agency_json["ID"], "agency", use_offset=False
         )
         agency_dict[agency_json["ID"]] = agency
 

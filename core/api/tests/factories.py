@@ -65,6 +65,7 @@ from core.models.project_completion_report import (
     OLD_PCRDelayExplanation,
     OLD_PCRLearnedLessons,
     OLD_PCRSector,
+    OLD_PCRSupportingEvidence,
     PCR,
     PCRGoal,
     PCRLearnedLessonCategory,
@@ -990,6 +991,16 @@ class OldPCRLearnedLessonsFactory(factory.django.DjangoModelFactory):
     agency = factory.SubFactory(AgencyFactory)
     category = factory.SubFactory(OldLearnedLessonCategoryFactory)
     description = factory.Faker("pystr", max_chars=50)
+
+
+class OldPCRSupportingEvidenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_PCRSupportingEvidence
+
+    old_pcr = factory.SubFactory(OldPCRFactory)
+    file = factory.django.FileField(filename="PCR_1.pdf")
+    filename = "PCR_1.pdf"
+    source_file = "PCR_1.pdf"
 
 
 class PCRProjectEnterpriseFactory(factory.django.DjangoModelFactory):
