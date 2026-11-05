@@ -352,6 +352,7 @@ const PCRSummaryOfKeyData = () => {
   const [currentTab, setCurrentTab] = useState(0)
   const [draftSummaryData, setDraftSummaryData] =
     useState<PCRSummaryOfKeyDataType | null>(null)
+  const [draftErrors, setDraftErrors] = useState<Record<string, any>>({})
   const {
     data: metaproject,
     loaded: metaprojectLoaded,
@@ -374,7 +375,7 @@ const PCRSummaryOfKeyData = () => {
                 {
                   errors: getSummaryOfKeyDataErrors(
                     draftSummaryData,
-                    projectsErrors[editingProjectId]?.[0]?.errors,
+                    draftErrors,
                   ),
                 },
               ],
@@ -382,11 +383,7 @@ const PCRSummaryOfKeyData = () => {
             editingProjectId,
           )
         : defaultSummaryOfKeyDataErrors,
-    [
-      editingProjectId,
-      draftSummaryData,
-      JSON.stringify(summaryOfKeyDataErrors),
-    ],
+    [editingProjectId, draftSummaryData, draftErrors],
   )
 
   const formattedErrors = useMemo(
@@ -426,6 +423,7 @@ const PCRSummaryOfKeyData = () => {
   const closeDialog = () => {
     setEditingProjectId(null)
     setDraftSummaryData(null)
+    setDraftErrors({})
     setCurrentTab(0)
   }
 
@@ -436,9 +434,10 @@ const PCRSummaryOfKeyData = () => {
       }
       setEditingProjectId(projectId)
       setDraftSummaryData(cloneSummaryData(getSummaryData(projectId)))
+      setDraftErrors(projectsErrors[projectId]?.[0]?.errors ?? {})
       setCurrentTab(0)
     },
-    [getSummaryData],
+    [getSummaryData, projectsErrors],
   )
 
   const saveSummaryData = () => {
@@ -455,6 +454,7 @@ const PCRSummaryOfKeyData = () => {
 
       const formattedDraftSummaryData = {
         ...draftSummaryData,
+        hasSavedData: true,
         enterprises: map(draftSummaryData.enterprises, (enterprise) => ({
           ...enterprise,
           isDefault: false,
@@ -484,6 +484,16 @@ const PCRSummaryOfKeyData = () => {
         }),
       }
     }, 'summary_of_key_data')
+
+    if (projectErrorIndex !== -1) {
+      setErrors((prevData: Record<string, any[]>) => ({
+        ...prevData,
+        pcr_projects: map(prevData.pcr_projects, (error, errorIndex) =>
+          errorIndex === projectErrorIndex ? draftErrors : error,
+        ),
+      }))
+    }
+
     closeDialog()
   }
 
@@ -585,23 +595,16 @@ const PCRSummaryOfKeyData = () => {
   }
 
   const updateErrors = (field: string, index: number) => {
-    setErrors((prevData: Record<string, any[]>) => ({
-      ...prevData,
-      pcr_projects: map(prevData.pcr_projects, (error, errorIndex) => {
-        if (errorIndex !== projectErrorIndex) {
-          return error
-        }
+    setDraftErrors((prevErrors) => {
+      const filteredErrors = filter(
+        prevErrors[field],
+        (_, entryErrorIndex) => Number(entryErrorIndex) !== index,
+      )
 
-        const filteredErrors = filter(
-          error[field],
-          (_, entryErrorIndex) => Number(entryErrorIndex) !== index,
-        )
-
-        return filteredErrors.some(checkHasErrors)
-          ? { ...error, [field]: filteredErrors }
-          : omit(error, field)
-      }),
-    }))
+      return filteredErrors.some(checkHasErrors)
+        ? { ...prevErrors, [field]: filteredErrors }
+        : omit(prevErrors, field)
+    })
   }
 
   const computedFields = useMemo(

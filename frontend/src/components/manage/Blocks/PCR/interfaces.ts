@@ -104,6 +104,7 @@ export interface PCRSummaryOfKeyDataType {
   alternative_technologies: PCRAlternativeTechnologyType[]
   enterprises: PCREnterpriseType[]
   equipments: PCREquipmentType[]
+  hasSavedData?: boolean
 }
 
 type PCRProjectResponse = {

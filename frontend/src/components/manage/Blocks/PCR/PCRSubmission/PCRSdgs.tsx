@@ -305,85 +305,89 @@ const PCRSdgs = () => {
                 <span className="pt-0.5 leading-none">
                   select from the drop-down list (multiple selection allowed)
                 </span>
+              </div>
+              <div className="flex items-center">
+                <Field
+                  widget="autocomplete"
+                  multiple
+                  options={sdgsOptions}
+                  value={sdgsOptions.filter((option) =>
+                    sdgsData.some((sdg) => sdg.goal_id === option.id),
+                  )}
+                  onChange={(_, __, reason, details) => {
+                    if (reason === 'clear') {
+                      onClearSdgs()
+                      return
+                    }
+
+                    const sdgId = details?.option?.id
+
+                    if (!sdgId) return
+
+                    if (reason === 'selectOption') {
+                      onAddSdg(Number(sdgId))
+                    }
+
+                    if (reason === 'removeOption') {
+                      onRemoveSdg(Number(sdgId))
+                    }
+                  }}
+                  getOptionLabel={(option) =>
+                    getOptionLabel(sdgsOptions, option)
+                  }
+                  renderOption={(props, option, { selected }) => (
+                    <li
+                      {...props}
+                      key={option.id}
+                      className={cx(props.className, 'px-0.5 py-0')}
+                    >
+                      <Checkbox
+                        checked={selected}
+                        size="small"
+                        sx={{
+                          '&.MuiCheckbox-root:not(.Mui-checked)': {
+                            color: 'var(--color-gray-400)',
+                          },
+                        }}
+                      />
+                      <span
+                        className={cx('pt-0.5 leading-none', {
+                          'font-semibold text-primary': selected,
+                        })}
+                      >
+                        {option.name}
+                      </span>
+                    </li>
+                  )}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        {...getTagProps({ index })}
+                        key={option.id}
+                        label={option.name.split(':')[0]}
+                        deleteIcon={<IoClose size={16} />}
+                        sx={{
+                          backgroundColor: 'var(--color-primary)',
+                          color: '#fff',
+                          borderRadius: '9999px !important',
+                          textTransform: 'none !important',
+                          '&:hover': { color: '#fff !important' },
+                          '& .MuiChip-deleteIcon': {
+                            color: 'var(--color-mlfs-hlYellow)',
+                            '&:hover': { color: 'var(--color-mlfs-hlYellow)' },
+                          },
+                        }}
+                      />
+                    ))
+                  }
+                  {...defaultProps}
+                  {...formatClassName('min-w-[300px] md:min-w-[800px]')}
+                />
                 <FieldErrorIndicator
                   errors={crtAgencyLevelErrors}
                   field={sdgsField}
                 />
               </div>
-              <Field
-                widget="autocomplete"
-                multiple
-                options={sdgsOptions}
-                value={sdgsOptions.filter((option) =>
-                  sdgsData.some((sdg) => sdg.goal_id === option.id),
-                )}
-                onChange={(_, __, reason, details) => {
-                  if (reason === 'clear') {
-                    onClearSdgs()
-                    return
-                  }
-
-                  const sdgId = details?.option?.id
-
-                  if (!sdgId) return
-
-                  if (reason === 'selectOption') {
-                    onAddSdg(Number(sdgId))
-                  }
-
-                  if (reason === 'removeOption') {
-                    onRemoveSdg(Number(sdgId))
-                  }
-                }}
-                getOptionLabel={(option) => getOptionLabel(sdgsOptions, option)}
-                renderOption={(props, option, { selected }) => (
-                  <li
-                    {...props}
-                    key={option.id}
-                    className={cx(props.className, 'px-0.5 py-0')}
-                  >
-                    <Checkbox
-                      checked={selected}
-                      size="small"
-                      sx={{
-                        '&.MuiCheckbox-root:not(.Mui-checked)': {
-                          color: 'var(--color-gray-400)',
-                        },
-                      }}
-                    />
-                    <span
-                      className={cx('pt-0.5 leading-none', {
-                        'font-semibold text-primary': selected,
-                      })}
-                    >
-                      {option.name}
-                    </span>
-                  </li>
-                )}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip
-                      {...getTagProps({ index })}
-                      key={option.id}
-                      label={option.name.split(':')[0]}
-                      deleteIcon={<IoClose size={16} />}
-                      sx={{
-                        backgroundColor: 'var(--color-primary)',
-                        color: '#fff',
-                        borderRadius: '9999px !important',
-                        textTransform: 'none !important',
-                        '&:hover': { color: '#fff !important' },
-                        '& .MuiChip-deleteIcon': {
-                          color: 'var(--color-mlfs-hlYellow)',
-                          '&:hover': { color: 'var(--color-mlfs-hlYellow)' },
-                        },
-                      }}
-                    />
-                  ))
-                }
-                {...defaultProps}
-                {...formatClassName('min-w-[300px] md:min-w-[800px]')}
-              />
               {sdgsData.length > 0 && (
                 <TableContainer
                   component={Paper}

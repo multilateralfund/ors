@@ -48,16 +48,21 @@ import {
   reduce,
   some,
   sumBy,
+  isString,
+  mapValues,
+  mergeWith,
   uniq,
 } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
   project_id: number
-  funds_disbursed?: string
-  planned_date_of_completion?: string
-  alternative_technologies?: PCRAlternativeTechnologyType[]
-  enterprises?: PCREnterpriseType[]
-  equipments?: PCREquipmentType[]
+  funds_disbursed: string | null
+  planned_date_of_completion: string | null
+  alternative_technologies: PCRAlternativeTechnologyType[]
+  enterprises: PCREnterpriseType[]
+  equipments: (Omit<PCREquipmentType, 'disposal_date'> & {
+    disposal_date: string | null
+  })[]
 }
 
 const hasText = (value: string) => value.trim() !== ''
@@ -94,50 +99,41 @@ const cleanEnterprises = (entries: PCREnterpriseType[]) =>
     .filter(isEnterpriseSent)
 
 const cleanEquipments = (entries: PCREquipmentType[]) =>
-  entries
-    .map((entry) => ({
-      name: entry.name.trim(),
-      description: entry.description.trim(),
-      disposal_type: entry.disposal_type,
-      disposal_date: entry.disposal_date,
-    }))
-    .filter(isEquipmentSent)
+  entries.filter(isEquipmentSent).map((entry) => ({
+    name: entry.name.trim(),
+    description: entry.description.trim(),
+    disposal_type: entry.disposal_type,
+    disposal_date: cleanDate(entry.disposal_date) ?? null,
+  }))
 
 export const buildPCRProjectPayload = (
   entry: PCRSummaryOfKeyDataType,
-): PCRSummaryProjectPayload => {
-  const payload: PCRSummaryProjectPayload = {
-    project_id: entry.project_id,
-  }
-  const fundsDisbursed = cleanNumber(entry.funds_disbursed)
-  const plannedDateOfCompletion = cleanDate(entry.planned_date_of_completion)
-  const alternativeTechnologies = cleanAlternativeTechnologies(
+): PCRSummaryProjectPayload => ({
+  project_id: entry.project_id,
+  funds_disbursed: cleanNumber(entry.funds_disbursed) ?? null,
+  planned_date_of_completion:
+    cleanDate(entry.planned_date_of_completion) ?? null,
+  alternative_technologies: cleanAlternativeTechnologies(
     entry.alternative_technologies,
+  ),
+  enterprises: cleanEnterprises(entry.enterprises),
+  equipments: cleanEquipments(entry.equipments),
+})
+
+export const hasPCRProjectData = (entry: PCRSummaryOfKeyDataType) => {
+  const payload = buildPCRProjectPayload(entry)
+
+  return (
+    payload.funds_disbursed !== null ||
+    payload.planned_date_of_completion !== null ||
+    payload.alternative_technologies.length > 0 ||
+    payload.enterprises.length > 0 ||
+    payload.equipments.length > 0
   )
-  const enterprises = cleanEnterprises(entry.enterprises)
-  const equipments = cleanEquipments(entry.equipments)
-
-  if (fundsDisbursed) {
-    payload.funds_disbursed = fundsDisbursed
-  }
-  if (plannedDateOfCompletion) {
-    payload.planned_date_of_completion = plannedDateOfCompletion
-  }
-  if (alternativeTechnologies.length > 0) {
-    payload.alternative_technologies = alternativeTechnologies
-  }
-  if (enterprises.length > 0) {
-    payload.enterprises = enterprises
-  }
-  if (equipments.length > 0) {
-    payload.equipments = equipments
-  }
-
-  return payload
 }
 
 const isProjectSent = (entry: PCRSummaryOfKeyDataType) =>
-  keys(buildPCRProjectPayload(entry)).length > 1
+  !!entry.hasSavedData || hasPCRProjectData(entry)
 
 const alignRowErrors = (
   rows: any[],
@@ -528,12 +524,9 @@ export const getFormData = (
         : null,
   }
 
-  const summaryOfKeyData = PCRData.summary_of_key_data.map(
+  const filteredSummaryOfKeyData = map(
+    filter(PCRData.summary_of_key_data, isProjectSent),
     buildPCRProjectPayload,
-  )
-  const filteredSummaryOfKeyData = filter(
-    summaryOfKeyData,
-    (entry) => keys(entry).length > 1,
   )
 
   const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
@@ -689,3 +682,41 @@ export const getEnterpriseAddresses = (
       ),
     ),
   ).join(', ')
+
+const isMessageList = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.length > 0 && value.every(isString)
+
+const formMessages = [requiredMessage, submitRequiredMessage]
+
+export const keepFormMessages = (errors: unknown): unknown => {
+  if (Array.isArray(errors)) {
+    return errors.every(isString)
+      ? errors.filter((message) => formMessages.includes(message))
+      : errors.map(keepFormMessages)
+  }
+
+  return isPlainObject(errors)
+    ? mapValues(errors as Record<string, unknown>, keepFormMessages)
+    : errors
+}
+
+export const mergeSaveErrors = (
+  errors: Record<string, any>,
+  saveErrors: Record<string, any>,
+) =>
+  mergeWith(
+    {},
+    keepFormMessages(errors),
+    saveErrors,
+    (value: unknown, saveValue: unknown) => {
+      if (isMessageList(saveValue)) {
+        return isMessageList(value) ? uniq([...value, ...saveValue]) : saveValue
+      }
+
+      if (isMessageList(value)) {
+        return saveValue
+      }
+
+      return undefined
+    },
+  )

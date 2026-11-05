@@ -6,7 +6,7 @@ import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import WorkflowButtons from '../PCRWorkflow/WorkflowButtons'
-import { getFormData, isSubmitDisabled } from '../utils'
+import { getFormData, isSubmitDisabled, keepFormMessages } from '../utils'
 import { PCRActionButtons } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
 
@@ -71,6 +71,10 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
           variant: 'success',
         })
       }
+      setErrors(
+        (prevErrors: Record<string, any[]>) =>
+          keepFormMessages(prevErrors) as Record<string, any[]>,
+      )
       clearUpdatedFields()
 
       return true

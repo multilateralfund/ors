@@ -385,7 +385,7 @@ const PCRForm = ({ mode }: { mode: string }) => {
               acc,
               field,
               pp[field],
-              field === 'qualitative_description' ? undefined : requiredMessage,
+              field === 'project_preparation' ? requiredMessage : undefined,
             ),
           prev[ppField]?.[index] ?? {},
         )
@@ -402,12 +402,14 @@ const PCRForm = ({ mode }: { mode: string }) => {
         const explanationField = 'sdg_not_applying_explanation'
 
         const existingErrors = prev[sdgsContributionField]?.[index] ?? {}
-        let updatedErrors = { ...existingErrors }
-
-        if (!sdg.sdg_applying && !sdg[explanationField]?.trim()) {
-          updatedErrors[explanationField] = [requiredMessage]
-        } else if (updatedErrors[explanationField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [explanationField])
+        const updatedErrors: Record<string, any> = {
+          ...(sdg.sdg_applying
+            ? omit(existingErrors, [explanationField])
+            : setRequiredError(
+                existingErrors,
+                explanationField,
+                sdg[explanationField],
+              )),
         }
 
         updatedErrors[sdgsField] = map(sdg[sdgsField], (goal, goalIndex) =>

@@ -39,6 +39,7 @@ import {
   formatAgencyData,
   formatOptions,
   alignSummaryOfKeyDataErrors,
+  mergeSaveErrors,
   alignSdgsErrors,
 } from '@ors/components/manage/Blocks/PCR/utils'
 import PCRDataContext from './PCRDataContext'
@@ -100,13 +101,18 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
   const setErrors = useCallback(
     (updater: any) => {
-      setInitialErrors(
-        typeof updater === 'function'
-          ? updater
-          : alignSdgsErrors(
-              alignSummaryOfKeyDataErrors(updater, PCRData.summary_of_key_data),
-              PCRData.sdgs_contribution,
-            ),
+      if (typeof updater === 'function') {
+        setInitialErrors(updater)
+        return
+      }
+
+      const saveErrors = alignSdgsErrors(
+        alignSummaryOfKeyDataErrors(updater, PCRData.summary_of_key_data),
+        PCRData.sdgs_contribution,
+      )
+
+      setInitialErrors((prevErrors: Record<string, any>) =>
+        mergeSaveErrors(prevErrors, saveErrors),
       )
     },
     [PCRData.summary_of_key_data, PCRData.sdgs_contribution],

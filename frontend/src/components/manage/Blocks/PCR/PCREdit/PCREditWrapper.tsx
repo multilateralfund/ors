@@ -6,6 +6,7 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import { initialOverviewData } from '../constants'
+import { hasPCRProjectData } from '../utils'
 import {
   PCROverviewData,
   PCRAlternativeTechnologyType,
@@ -143,17 +144,22 @@ const PCREditWrapper = () => {
     setPCRData((prevData) => ({
       ...prevData,
       overview: pick(pcrData, keys(initialOverviewData)) as PCROverviewData,
-      summary_of_key_data: pcrData.pcr_projects.map((pcrProject) => ({
-        project_id: pcrProject.project_id,
-        funds_disbursed: pcrProject.funds_disbursed ?? '',
-        planned_date_of_completion: pcrProject.planned_date_of_completion ?? '',
-        alternative_technologies: ensureRows(
-          pcrProject.alternative_technologies,
-          emptyAlternativeTechnology,
-        ),
-        enterprises: ensureRows(pcrProject.enterprises, emptyEnterprise),
-        equipments: ensureRows(pcrProject.equipments, emptyEquipment),
-      })),
+      summary_of_key_data: pcrData.pcr_projects.map((pcrProject) => {
+        const projectData = {
+          project_id: pcrProject.project_id,
+          funds_disbursed: pcrProject.funds_disbursed ?? '',
+          planned_date_of_completion:
+            pcrProject.planned_date_of_completion ?? '',
+          alternative_technologies: ensureRows(
+            pcrProject.alternative_technologies,
+            emptyAlternativeTechnology,
+          ),
+          enterprises: ensureRows(pcrProject.enterprises, emptyEnterprise),
+          equipments: ensureRows(pcrProject.equipments, emptyEquipment),
+        }
+
+        return { ...projectData, hasSavedData: hasPCRProjectData(projectData) }
+      }),
       results_assessment: resultsAssessment,
       delay_causes: causesOfDelay,
       learned_lessons: lessonsLearned,
