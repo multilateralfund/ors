@@ -68,7 +68,7 @@ const PCRDocumentation = () => {
           ) : (
             evidencesData.map((file, index) => {
               const fileName = file.filename
-              const downloadUrl = file.file
+              const downloadUrl = file.download_url ?? file.file
 
               return (
                 <div key={index}>

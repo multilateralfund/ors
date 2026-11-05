@@ -3,6 +3,7 @@ from collections import Counter
 
 from django.db import transaction
 from django.core.exceptions import MultipleObjectsReturned
+from django.urls import reverse
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -222,6 +223,7 @@ class PCRSupportingEvidenceSerializer(serializers.ModelSerializer):
     section = serializers.SlugRelatedField("name", read_only=True)
     file = serializers.FileField(required=False, allow_null=True)
     filename = serializers.CharField(required=False)
+    download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = PCRSupportingEvidence
@@ -235,7 +237,16 @@ class PCRSupportingEvidenceSerializer(serializers.ModelSerializer):
             "link",
             "filename",
             "file",
+            "download_url",
         ]
+
+    def get_download_url(self, obj) -> str | None:
+        if not obj.file:
+            return None
+        return reverse(
+            "project-completion-report-download-supporting-evidence",
+            args=(obj.pcr_id, obj.id),
+        )
 
 
 class PCRProjectSerializer(serializers.ModelSerializer):
@@ -1420,15 +1431,21 @@ class OldPCRLearnedLessonsSerializer(serializers.ModelSerializer):
 
 
 class OldPCRSupportingEvidenceSerializer(serializers.ModelSerializer):
-    file = serializers.FileField(read_only=True)
+    download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = OLD_PCRSupportingEvidence
         fields = [
             "id",
             "filename",
-            "file",
+            "download_url",
         ]
+
+    def get_download_url(self, obj) -> str:
+        return reverse(
+            "legacy-project-completion-report-download-supporting-evidence",
+            args=(obj.old_pcr_id, obj.id),
+        )
 
 
 class OldPCRDetailSerializer(serializers.ModelSerializer):
