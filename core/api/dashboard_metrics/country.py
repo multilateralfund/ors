@@ -22,6 +22,7 @@ from core.api.dashboard_metrics.classify import (
 )
 from core.api.dashboard_metrics.context import MetricContext
 from core.api.dashboard_metrics.primitives import (
+    apportion,
     format_number,
     funds_pair,
     grouped,
@@ -400,7 +401,10 @@ def sector_tonnage(
 
     if not any(row["tonnage"] for row in table):
         return
-    total = sum(row["tonnage"] for row in table)
+    # A slice under 1 would read "0" at whole tonnes, so the chart goes to one
+    # decimal - the total too, so the two stay comparable.
+    decimals = 1 if any(0 < row["tonnage"] < 1 for row in table) else 0
+    total, shown = apportion([row["tonnage"] for row in table], decimals)
     coloration = (
         taxonomy.SECTOR_HFC_COLORING if family == HFC else taxonomy.SECTOR_HCFC_COLORING
     )
@@ -419,18 +423,18 @@ def sector_tonnage(
         "donuts": [
             {
                 "label": None,
-                "total": format_number(total),
+                "total": format_number(total, decimals),
                 "total_label": "TOTAL",
                 "total_position": "above",
                 "series": [
                     {
                         "name": row["group"],
                         "value": row["tonnage"],
-                        "displayValue": format_number(row["tonnage"]),
+                        "displayValue": format_number(slice_value, decimals),
                         "color": coloring["color"],
                         "icon": coloring["icon"],
                     }
-                    for row, coloring in zip(table, coloration)
+                    for row, slice_value, coloring in zip(table, shown, coloration)
                 ],
             }
         ],
