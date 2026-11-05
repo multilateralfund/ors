@@ -69,7 +69,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
         variant: 'success',
       })
       clearUpdatedFields()
-      setLocation('/pcr')
+      setLocation(`/pcr/${metaProjectId}/${data.id}/edit`)
     } catch (error) {
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
