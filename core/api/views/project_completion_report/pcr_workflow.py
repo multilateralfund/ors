@@ -17,6 +17,10 @@ from core.api.serializers.project_completion_report import (
     HISTORY_DESCRIPTION_APPROVE_V3,
 )
 from core.api.utils import log_pcr_history
+from core.api.views.project_completion_report.pcr_validation import (
+    get_pcr_submission_error_message,
+    get_pcr_submission_errors,
+)
 from core.models.project_completion_report import PCR, PCRHistory
 from core.tasks import send_pcr_notification
 
@@ -38,6 +42,22 @@ class PCRWorkflowMixin:
     def _invalid_transition(message):
         return Response({"error": message}, status=status.HTTP_400_BAD_REQUEST)
 
+    @staticmethod
+    def _incomplete_pcr(pcr, action_name):
+        """
+        The error response if the PCR does not have all the required data.
+        """
+        errors = get_pcr_submission_errors(pcr)
+        if not errors:
+            return None
+        return Response(
+            {
+                "error": get_pcr_submission_error_message(errors, action_name),
+                "errors": errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     @extend_schema(
         description="""
         Submit the PCR for MLFS review, locking it for the lead agency.
@@ -46,6 +66,8 @@ class PCRWorkflowMixin:
         A version 2 PCR that had adjustments requested is resubmitted without
         creating a new version and the revised submission date is set to the current date.
         An email notification is sent to MLFS.
+        All the PCR required data should be filled, otherwise the response has the
+        errors by field.
         """,
         request=None,
         responses={
@@ -66,6 +88,9 @@ class PCRWorkflowMixin:
                     "PCR can only be submitted if it is in 'Draft' status and version 1 "
                     "or in 'Adjustments requested' status and version 2."
                 )
+            incomplete_response = self._incomplete_pcr(pcr, "submitted")
+            if incomplete_response:
+                return incomplete_response
             if is_initial_submission:
                 pcr.increase_version(request.user)
                 pcr.submission_date = timezone.now().date()
@@ -126,6 +151,8 @@ class PCRWorkflowMixin:
         Version 2 is archived and the PCR is increased to version 3, 'Final',
         which can no longer be edited.
         An email notification is sent to MLFS.
+        All the PCR required data should be filled, otherwise the response has the
+        errors by field.
         """,
         request=None,
         responses={
@@ -141,6 +168,9 @@ class PCRWorkflowMixin:
                 return self._invalid_transition(
                     "PCR can only be approved if it is in 'Submitted' status and version 2."
                 )
+            incomplete_response = self._incomplete_pcr(pcr, "approved")
+            if incomplete_response:
+                return incomplete_response
             pcr.increase_version(request.user)
             pcr.status = PCR.Status.FINAL
             pcr.save()

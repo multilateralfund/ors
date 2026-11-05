@@ -15,6 +15,7 @@ from core.api.tests.factories import (
     ProjectClusterFactory,
     ProjectFactory,
 )
+from core.api.tests.project_completion_reports.utils import fill_pcr_required_data
 from core.models.project_completion_report import PCR, PCRHistory, PCRProject
 
 # pylint: disable=unused-argument
@@ -52,7 +53,7 @@ def _pcr():
     )
     pcr = PCR.objects.create(meta_project=meta_project)
     PCRProject.objects.create(pcr=pcr, project=project)
-    return pcr
+    return fill_pcr_required_data(pcr)
 
 
 def _post(client, pcr, action, on_date=None):

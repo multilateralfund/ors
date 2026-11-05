@@ -8,6 +8,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from core.api.tests.factories import MetaProjectFactory, ProjectFactory, UserFactory
+from core.api.tests.project_completion_reports.utils import fill_pcr_required_data
 from core.models.project_completion_report import PCR, PCRProject
 
 # pylint: disable=unused-argument,redefined-outer-name,too-many-arguments
@@ -64,7 +65,7 @@ def _create_pcr(agency, production=False, status=PCR.Status.DRAFT):
     PCRProject.objects.create(
         pcr=pcr, project=project, funds_disbursed=Decimal("100.00")
     )
-    return pcr
+    return fill_pcr_required_data(pcr)
 
 
 @pytest.fixture
