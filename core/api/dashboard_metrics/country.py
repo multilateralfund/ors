@@ -9,6 +9,7 @@ figures do and get a country's worth of answer back.
 
 # pylint: disable=C0302,R1710,W0702
 
+from copy import deepcopy
 from functools import partial
 from typing import Any
 
@@ -321,29 +322,20 @@ def theme_funding(context: MetricContext) -> list[dict[str, Any]] | None:
     table = grouped(context.projects, _theme_of)
     order = {theme: rank for rank, theme in enumerate(taxonomy.THEME_ORDER)}
     table.sort(key=lambda row: order.get(row["group"], len(order)))
-    groups = taxonomy.THEME_STRUCTURE
+    # A copy: the structure is module-level and shared by every country.
+    groups = deepcopy(taxonomy.THEME_STRUCTURE)
 
     total_value = theme_total(context)
+    total = theme_total(context, False)
+    funds_by_theme = {entry["group"]: entry["funds_plus_psc"] for entry in table}
     for group in groups:
         for item in group["items"]:
-            found = False
-            for entry in table:
-                if entry["group"] == item["label"]:
-                    found = True
-                    try:
-                        item["percent"] = round(
-                            entry["funds_plus_psc"] / theme_total(context, False) * 100,
-                            2,
-                        )
-                        item["displayValue"] = format_number(
-                            entry["funds_plus_psc"], 0, "$"
-                        )
-                    except:
-                        item["percent"] = 0
-                        item["displayValue"] = format_number(0, 0, "$")
-            if not found:
-                item["percent"] = 0
-                item["displayValue"] = format_number(0, 0, "$")
+            amount = funds_by_theme.get(item["label"], 0)
+            # ``value`` is the exact amount, for sizing the bars: ``percent`` is
+            # rounded for display and reads 0 for a theme under 0.005% of the total.
+            item["value"] = amount
+            item["percent"] = round(amount / total * 100, 2) if total else 0
+            item["displayValue"] = format_number(amount, 0, "$")
     return {
         "type": "bar_list",
         "title": "Funding by project theme",

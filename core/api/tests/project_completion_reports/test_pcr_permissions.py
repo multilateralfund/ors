@@ -3,13 +3,23 @@ from decimal import Decimal
 
 import pytest
 from django.contrib.auth.models import Group
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.serializers.json import DjangoJSONEncoder
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from core.api.tests.factories import MetaProjectFactory, ProjectFactory, UserFactory
+from core.api.tests.factories import (
+    MetaProjectFactory,
+    PCRSupportingEvidenceSectionFactory,
+    ProjectFactory,
+    UserFactory,
+)
 from core.api.tests.project_completion_reports.utils import fill_pcr_required_data
-from core.models.project_completion_report import PCR, PCRProject
+from core.models.project_completion_report import (
+    PCR,
+    PCRProject,
+    PCRSupportingEvidence,
+)
 
 # pylint: disable=unused-argument,redefined-outer-name,too-many-arguments
 
@@ -345,6 +355,88 @@ class TestWorkflow:
 
         client.force_authenticate(user=pcr_inputter)
         assert client.get(_detail_url(own_pcr)).data["editable"] is True
+
+
+def _create_evidence_file(pcr, content=b"%PDF-evidence"):
+    return PCRSupportingEvidence.objects.create(
+        pcr=pcr,
+        agency=pcr.pcr_projects.first().project.agency,
+        section=PCRSupportingEvidenceSectionFactory.create(),
+        filename="evidence.pdf",
+        file=SimpleUploadedFile("evidence.pdf", content),
+    )
+
+
+def _download_url(pcr, evidence):
+    return reverse(
+        "project-completion-report-download-supporting-evidence",
+        args=[pcr.id, evidence.id],
+    )
+
+
+class TestDownloadSupportingEvidence:
+    def test_download(self, client, pcr_viewer, own_pcr):
+        evidence = _create_evidence_file(own_pcr)
+        client.force_authenticate(user=pcr_viewer)
+        response = client.get(_download_url(own_pcr, evidence))
+        assert response.status_code == 200
+        assert b"".join(response.streaming_content) == b"%PDF-evidence"
+        assert response["Content-Type"] == "application/pdf"
+        assert response["Content-Disposition"] == 'attachment; filename="evidence.pdf"'
+
+    def test_detail_download_url(self, client, pcr_viewer, own_pcr):
+        evidence = _create_evidence_file(own_pcr)
+        link_evidence = PCRSupportingEvidence.objects.create(
+            pcr=own_pcr,
+            agency=evidence.agency,
+            section=evidence.section,
+            link="https://example.com/evidence",
+        )
+        client.force_authenticate(user=pcr_viewer)
+        response = client.get(_detail_url(own_pcr))
+        download_urls = {
+            item["id"]: item["download_url"]
+            for item in response.data["supporting_evidences"]
+        }
+        assert download_urls[evidence.id] == _download_url(own_pcr, evidence)
+        # link-only evidences have nothing to download
+        assert download_urls[link_evidence.id] is None
+
+    def test_archived_version(self, client, pcr_viewer, own_pcr):
+        archived_pcr = own_pcr.copy_pcr()
+        archived_pcr.latest_pcr = own_pcr
+        archived_pcr.save()
+        evidence = _create_evidence_file(archived_pcr)
+        client.force_authenticate(user=pcr_viewer)
+        response = client.get(_download_url(archived_pcr, evidence))
+        assert response.status_code == 200
+
+    def test_other_agency(self, client, pcr_viewer, other_agency_pcr):
+        evidence = _create_evidence_file(other_agency_pcr)
+        client.force_authenticate(user=pcr_viewer)
+        response = client.get(_download_url(other_agency_pcr, evidence))
+        assert response.status_code == 404
+
+    def test_without_pcr_access(self, client, agency, own_pcr):
+        evidence = _create_evidence_file(own_pcr)
+        client.force_authenticate(user=UserFactory(agency=agency))
+        response = client.get(_download_url(own_pcr, evidence))
+        assert response.status_code == 403
+
+    def test_evidence_of_another_pcr(
+        self, client, pcr_viewer, own_pcr, other_agency_pcr
+    ):
+        evidence = _create_evidence_file(other_agency_pcr)
+        client.force_authenticate(user=pcr_viewer)
+        response = client.get(_download_url(own_pcr, evidence))
+        assert response.status_code == 404
+
+    def test_missing_file(self, client, pcr_viewer, own_pcr):
+        evidence = _create_evidence_file(own_pcr)
+        evidence.file.storage.delete(evidence.file.name)
+        client.force_authenticate(user=pcr_viewer)
+        response = client.get(_download_url(own_pcr, evidence))
+        assert response.status_code == 404
 
 
 class TestSetPCRDue:

@@ -168,6 +168,7 @@ export type PCRResponse = {
     section: string
     filename: string
     file: string
+    download_url: string | null
   }[]
   history: PCRHistoryItem[]
 }
@@ -347,7 +348,7 @@ export type ArchivePCRLearnedLesson = {
 export type ArchivePCRSupportingEvidence = {
   id: number
   filename: string | null
-  file: string
+  download_url: string
 }
 
 export type ArchivePCRResponse = {

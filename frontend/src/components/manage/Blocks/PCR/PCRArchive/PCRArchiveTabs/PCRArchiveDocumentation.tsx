@@ -27,14 +27,14 @@ const PCRArchiveDocumentation = ({ pcr }: { pcr: ArchivePCRResponse }) => {
             <NoDataReported text="No files available." />
           ) : (
             evidencesData.map((file, index) => {
-              const fileName = file.filename || file.file.split('/').pop()
+              const fileName = file.filename || 'PCR report'
 
               return (
                 <div key={file.id}>
                   <a
                     className="flex gap-2.5 text-secondary no-underline md:w-[45%]"
                     download={fileName}
-                    href={formatApiUrl(file.file)}
+                    href={formatApiUrl(file.download_url)}
                   >
                     <IoDownloadOutline className="min-h-5 min-w-5" />
                     <span className="text-lg font-medium">{fileName}</span>

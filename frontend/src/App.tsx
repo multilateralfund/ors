@@ -474,14 +474,14 @@ export default function App() {
         </Route>
         <Route path="/pcr/:project_id/create">
           <ProjectsDataProvider>
-            <PCRDataProvider>
+            <PCRDataProvider key="create">
               <PCRCreatePage />
             </PCRDataProvider>
           </ProjectsDataProvider>
         </Route>
         <Route path="/pcr/:project_id/:pcr_id">
           <ProjectsDataProvider>
-            <PCRDataProvider>
+            <PCRDataProvider key="view">
               <PCRViewPage />
             </PCRDataProvider>
           </ProjectsDataProvider>
@@ -491,7 +491,7 @@ export default function App() {
         </Route>
         <Route path="/pcr/:project_id/:pcr_id/edit">
           <ProjectsDataProvider>
-            <PCRDataProvider>
+            <PCRDataProvider key="edit">
               <PCREditPage />
             </PCRDataProvider>
           </ProjectsDataProvider>
