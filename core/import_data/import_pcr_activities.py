@@ -8,6 +8,7 @@ from core.import_data.utils import (
     check_pcr_json_data,
     delete_old_data,
     get_object_by_code,
+    get_old_pcr,
 )
 
 from core.models.project import MetaProject
@@ -61,6 +62,7 @@ def parse_file(file_path, sectors_dict):
         json_data = json.load(f)
 
     activities = []
+    old_pcr_dict = {}
     for activity_json in json_data:
         if not check_pcr_json_data(activity_json, IMPORTANT_ARGS):
             meta_proj = get_object_by_code(
@@ -99,6 +101,7 @@ def parse_file(file_path, sectors_dict):
 
         # create activitiy
         activity_data = {
+            "old_pcr": get_old_pcr(meta_proj, old_pcr_dict),
             "meta_project": meta_proj,
             "sector": sector,
             "type_of_activity": activity_json["Typeofactivity"],

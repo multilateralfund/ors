@@ -124,7 +124,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data) == 2
-        assert response.data[0]["id"] == projects[0].id
+        assert response.data[0]["id"] == projects[0].meta_project_id
 
     def test_retrieve_includes_inventory_calculated_project_values(
         self,

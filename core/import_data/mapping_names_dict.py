@@ -1,6 +1,10 @@
 AGENCY_NAME_MAPPING = {
     "Treasurer": "Treasurer (Cash Pool)",
 }
+# agencies renamed since the legacy PCR databases were exported
+PCR_AGENCY_NAME_MAPPING = {
+    "IBRD": "World Bank",
+}
 COUNTRY_NAME_MAPPING = {
     "Brunei Darussalan": "Brunei Darussalam",
     "Cap Verde": "Cabo Verde",

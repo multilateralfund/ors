@@ -344,6 +344,12 @@ export type ArchivePCRLearnedLesson = {
   description: string | null
 }
 
+export type ArchivePCRSupportingEvidence = {
+  id: number
+  filename: string | null
+  file: string
+}
+
 export type ArchivePCRResponse = {
   id: number
   meta_project_id: number
@@ -353,4 +359,5 @@ export type ArchivePCRResponse = {
   activities: ArchivePCRActivity[]
   delay_explanations: ArchivePCRDelayExplanation[]
   learned_lessons: ArchivePCRLearnedLesson[]
+  supporting_evidences: ArchivePCRSupportingEvidence[]
 }

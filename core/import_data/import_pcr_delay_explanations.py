@@ -8,6 +8,7 @@ from core.import_data.utils import (
     delete_old_data,
     get_agency_dict,
     get_object_by_code,
+    get_old_pcr,
     import_pcr_categories,
 )
 
@@ -33,6 +34,7 @@ def parse_file(file_path, category_dict, agency_dict):
         json_data = json.load(f)
 
     explanations = []
+    old_pcr_dict = {}
     for explanation_json in json_data:
         # get meta project by code
         meta_proj = get_object_by_code(
@@ -46,12 +48,19 @@ def parse_file(file_path, category_dict, agency_dict):
 
         # get agency
         agency = agency_dict.get(explanation_json["AgencyId"])
+        if not agency:
+            logger.warning(
+                f"{file_path} ⚠️ delay explanation {explanation_json['Id']} not imported "
+                f"(agency {explanation_json['AgencyId']} not found)"
+            )
+            continue
 
         # get explanation category
         category = category_dict.get(explanation_json["TitleId"])
 
         # create explanation
         explanation_data = {
+            "old_pcr": get_old_pcr(meta_proj, old_pcr_dict),
             "meta_project": meta_proj,
             "agency": agency,
             "category": category,

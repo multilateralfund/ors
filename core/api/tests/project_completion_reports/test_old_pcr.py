@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 import pytest
@@ -6,18 +7,40 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from core.api.tests.base import BaseTest
+from core.import_data import (
+    import_pcr_activities as activities_module,
+    import_pcr_delay_explanations as delay_explanations_module,
+    import_pcr_learned_lessons as learned_lessons_module,
+)
+from core.import_data.import_pcr_activities import import_pcr_activities
+from core.import_data.import_pcr_delay_explanations import (
+    import_pcr_delay_explanations,
+)
+from core.import_data.import_pcr_learned_lessons import import_pcr_learned_lessons
+from core.import_data.import_pcr_supporting_evidences import (
+    import_pcr_supporting_evidences,
+)
 from core.api.tests.factories import (
+    AgencyFactory,
     MetaProjectFactory,
     OldPCRActivityFactory,
     OldPCRDelayExplanationFactory,
     OldPCRFactory,
     OldPCRLearnedLessonsFactory,
+    OldPCRSupportingEvidenceFactory,
     PCRFactory,
     PCRProjectFactory,
     ProjectFactory,
     UserFactory,
 )
-from core.models.project_completion_report import OLD_PCR, PCR
+from core.models.project_completion_report import (
+    OLD_PCR,
+    OLD_PCRActivity,
+    OLD_PCRDelayExplanation,
+    OLD_PCRLearnedLessons,
+    OLD_PCRSupportingEvidence,
+    PCR,
+)
 
 # pylint: disable=unused-argument,redefined-outer-name
 
@@ -44,6 +67,7 @@ def _create_old_pcr(agency, submission_status):
     OldPCRActivityFactory.create_batch(2, old_pcr=old_pcr)
     OldPCRDelayExplanationFactory(old_pcr=old_pcr, agency=agency)
     OldPCRLearnedLessonsFactory(old_pcr=old_pcr, agency=agency)
+    OldPCRSupportingEvidenceFactory(old_pcr=old_pcr)
     return old_pcr
 
 
@@ -214,6 +238,9 @@ class TestOldPCRViewSet(BaseTest):
         assert data["activities"][0]["sector_type"] == "Investment"
         assert len(data["delay_explanations"]) == 1
         assert len(data["learned_lessons"]) == 1
+        assert len(data["supporting_evidences"]) == 1
+        assert data["supporting_evidences"][0]["filename"] == "PCR_1.pdf"
+        assert data["supporting_evidences"][0]["file"]
 
     def test_viewer_own_agency(self, agency, own_old_pcr, other_agency_old_pcr):
         self.client.force_authenticate(user=self._pcr_user("PCR - Viewer", agency))
@@ -236,3 +263,163 @@ class TestOldPCRViewSet(BaseTest):
         for method in ["put", "patch", "delete"]:
             response = getattr(self.client, method)(self.url, {}, format="json")
             assert response.status_code in (403, 405)
+
+
+class TestImportOldPCRSupportingEvidences:
+
+    @pytest.fixture
+    def reports_dir(self, settings, tmp_path):
+        settings.IMPORT_DATA_DIR = tmp_path
+        reports_dir = tmp_path / "pcr" / "pcr reports"
+        reports_dir.mkdir(parents=True)
+        return reports_dir
+
+    def test_import(self, reports_dir):
+        with_old_pcr = OldPCRFactory(
+            meta_project=MetaProjectFactory(pcr_project_id="881")
+        )
+        without_old_pcr = MetaProjectFactory(pcr_project_id="882")
+        (reports_dir / "PCR_881.pdf").write_bytes(b"%PDF-881")
+        (reports_dir / "PCR_881.html").write_bytes(b"<html></html>")
+        (reports_dir / "PCR_882.pdf").write_bytes(b"%PDF-882")
+        (reports_dir / "PCR_999.pdf").write_bytes(b"%PDF-999")
+
+        import_pcr_supporting_evidences()
+
+        evidence = OLD_PCRSupportingEvidence.objects.get(old_pcr=with_old_pcr)
+        assert evidence.filename == "PCR_881.pdf"
+        with evidence.file.open("rb") as f:
+            assert f.read() == b"%PDF-881"
+
+        created_old_pcr = OLD_PCR.objects.get(meta_project=without_old_pcr)
+        assert created_old_pcr.status == PCR.Status.FINAL
+        assert created_old_pcr.supporting_evidences.get().filename == "PCR_882.pdf"
+
+        # html files and unknown pcr project ids are skipped
+        assert OLD_PCRSupportingEvidence.objects.count() == 2
+
+    def test_reimport_replaces_files(self, reports_dir):
+        old_pcr = OldPCRFactory(meta_project=MetaProjectFactory(pcr_project_id="881"))
+        (reports_dir / "PCR_881.pdf").write_bytes(b"%PDF-881")
+
+        import_pcr_supporting_evidences()
+        first_file = old_pcr.supporting_evidences.get().file
+        first_file_name = first_file.name
+        storage = first_file.storage
+
+        import_pcr_supporting_evidences()
+
+        evidence = old_pcr.supporting_evidences.get()
+        assert storage.exists(evidence.file.name)
+        # the previously stored file is removed (or its name reused)
+        assert evidence.file.name == first_file_name or not storage.exists(
+            first_file_name
+        )
+
+
+class TestImportOldPCRData:
+    """
+    The activities, delay explanations and learned lessons are linked to the
+    old PCR of their meta project (created if missing).
+    """
+
+    @pytest.fixture
+    def db_dir(self, settings, tmp_path, monkeypatch):
+        settings.IMPORT_DATA_DIR = tmp_path
+        for module in [
+            activities_module,
+            delay_explanations_module,
+            learned_lessons_module,
+        ]:
+            monkeypatch.setattr(module, "PCR_DIR_LIST", ["pcr2023"])
+        db_dir = tmp_path / "pcr" / "pcr2023"
+        db_dir.mkdir(parents=True)
+        files = {
+            "Agencies.json": [
+                {"ID": 984, "Name": "IBRD", "IsAgency": 1},
+                {"ID": 997, "Name": "UNDP", "IsAgency": 1},
+                {"ID": 999, "Name": "Unknown agency", "IsAgency": 1},
+            ],
+            "PCRSector.json": [
+                {"Id": 1, "Typeofactivity": "Investment sector", "Type": 1},
+            ],
+            "PCRActivity.json": [
+                {
+                    "Id": 1,
+                    "ProjectId": 881,
+                    "SectorId": 1,
+                    "Typeofactivity": "activity",
+                    "Plannedoutput": "planned",
+                    "Actualactivityoutput": "actual",
+                    "Evaluation": 1,
+                    "Explanation": "",
+                },
+            ],
+            "PCRTitle53.json": [{"Id": 1, "Title": "Delay category", "SortId": 1}],
+            "PCR53.json": [
+                {
+                    "Id": 1,
+                    "ProjectId": 881,
+                    "AgencyId": 984,
+                    "TitleId": 1,
+                    "CauseOfDelays": "cause",
+                    "MeasuresToOvercome": "",
+                },
+                {
+                    "Id": 2,
+                    "ProjectId": 881,
+                    "AgencyId": 999,
+                    "TitleId": 1,
+                    "CauseOfDelays": "cause",
+                    "MeasuresToOvercome": "",
+                },
+            ],
+            "PCRTitle6.json": [{"Id": 1, "Title": "Lesson category", "SortId": 1}],
+            "PCR6.json": [
+                {
+                    "Id": 1,
+                    "ProjectId": 881,
+                    "AgencyId": 997,
+                    "TitleId": 1,
+                    "Description": "lesson",
+                },
+            ],
+        }
+        for file_name, data in files.items():
+            (db_dir / file_name).write_text(json.dumps(data), encoding="utf8")
+        return db_dir
+
+    def test_import_links_old_pcr(self, db_dir):
+        world_bank = AgencyFactory(name="World Bank", code="WB")
+        undp = AgencyFactory(name="UNDP")
+        meta_project = MetaProjectFactory(pcr_project_id="881")
+
+        import_pcr_activities()
+        import_pcr_delay_explanations()
+        import_pcr_learned_lessons()
+
+        old_pcr = OLD_PCR.objects.get(meta_project=meta_project)
+        assert OLD_PCR.objects.count() == 1
+
+        activity = OLD_PCRActivity.objects.get()
+        assert activity.old_pcr == old_pcr
+
+        # IBRD is mapped to World Bank, unknown agencies are skipped
+        explanation = OLD_PCRDelayExplanation.objects.get()
+        assert explanation.old_pcr == old_pcr
+        assert explanation.agency == world_bank
+
+        lesson = OLD_PCRLearnedLessons.objects.get()
+        assert lesson.old_pcr == old_pcr
+        assert lesson.agency == undp
+
+    def test_import_uses_existing_old_pcr(self, db_dir):
+        AgencyFactory(name="World Bank", code="WB")
+        old_pcr = OldPCRFactory(meta_project=MetaProjectFactory(pcr_project_id="881"))
+
+        import_pcr_activities()
+        import_pcr_delay_explanations()
+
+        assert OLD_PCR.objects.count() == 1
+        assert old_pcr.activities.count() == 1
+        assert old_pcr.delay_explanations.count() == 1

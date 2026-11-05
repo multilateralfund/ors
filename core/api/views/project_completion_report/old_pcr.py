@@ -38,5 +38,6 @@ class OldPCRViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 "delay_explanations__category",
                 "learned_lessons__agency",
                 "learned_lessons__category",
+                "supporting_evidences",
             )
         )
