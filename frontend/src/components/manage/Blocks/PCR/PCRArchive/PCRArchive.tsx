@@ -4,6 +4,7 @@ import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/
 import PCRArchiveResultsAssessment from './PCRArchiveTabs/PCRArchiveResultsAssessment'
 import PCRArchiveLessonsLearned from './PCRArchiveTabs/PCRArchiveLessonsLearned'
 import PCRArchiveCausesOfDelay from './PCRArchiveTabs/PCRArchiveCausesOfDelay'
+import PCRArchiveDocumentation from './PCRArchiveTabs/PCRArchiveDocumentation'
 import { ArchivePCRResponse } from '../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
@@ -26,6 +27,11 @@ const PCRArchive = ({ pcr }: { pcr: ArchivePCRResponse }) => {
       id: 'lessons_learned',
       label: 'Lessons learned',
       component: <PCRArchiveLessonsLearned pcr={pcr} />,
+    },
+    {
+      id: 'supporting_evidences',
+      label: 'Other supporting evidence',
+      component: <PCRArchiveDocumentation pcr={pcr} />,
     },
   ]
 

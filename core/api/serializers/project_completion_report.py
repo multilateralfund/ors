@@ -43,6 +43,7 @@ from core.models.project_completion_report import (
     OLD_PCRActivity,
     OLD_PCRDelayExplanation,
     OLD_PCRLearnedLessons,
+    OLD_PCRSupportingEvidence,
 )
 from core.models.substance import Substance
 
@@ -1418,6 +1419,18 @@ class OldPCRLearnedLessonsSerializer(serializers.ModelSerializer):
         ]
 
 
+class OldPCRSupportingEvidenceSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(read_only=True)
+
+    class Meta:
+        model = OLD_PCRSupportingEvidence
+        fields = [
+            "id",
+            "filename",
+            "file",
+        ]
+
+
 class OldPCRDetailSerializer(serializers.ModelSerializer):
     """
     Read-only serializer for the legacy PCRs (developed outside the platform).
@@ -1430,6 +1443,7 @@ class OldPCRDetailSerializer(serializers.ModelSerializer):
     activities = OldPCRActivitySerializer(many=True, read_only=True)
     delay_explanations = OldPCRDelayExplanationSerializer(many=True, read_only=True)
     learned_lessons = OldPCRLearnedLessonsSerializer(many=True, read_only=True)
+    supporting_evidences = OldPCRSupportingEvidenceSerializer(many=True, read_only=True)
 
     class Meta:
         model = OLD_PCR
@@ -1442,4 +1456,5 @@ class OldPCRDetailSerializer(serializers.ModelSerializer):
             "activities",
             "delay_explanations",
             "learned_lessons",
+            "supporting_evidences",
         ]

@@ -1082,3 +1082,27 @@ class OLD_PCRActivity(models.Model):
 
     class Meta:
         verbose_name_plural = "OLD PCR activities"
+
+
+class OLD_PCRSupportingEvidence(models.Model):
+    """
+    Legacy PCR report files (pdf), imported from the old PCR platform.
+    """
+
+    old_pcr = models.ForeignKey(
+        OLD_PCR, on_delete=models.CASCADE, related_name="supporting_evidences"
+    )
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to="old_pcr_files/",
+    )
+    filename = models.CharField(max_length=100, null=True, blank=True)
+    source_file = models.CharField(max_length=255, blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "OLD PCR supporting evidences"
+
+    def __str__(self):
+        return self.filename or ""
