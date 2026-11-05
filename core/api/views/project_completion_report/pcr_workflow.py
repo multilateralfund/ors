@@ -158,7 +158,7 @@ class PCRWorkflowMixin:
         """,
         responses={status.HTTP_200_OK: PCRVersionSerializer(many=True)},
     )
-    @action(methods=["GET"], detail=True)
+    @action(methods=["GET"], detail=True, filter_backends=[], pagination_class=None)
     def versions(self, request, *args, **kwargs):
         pcr = self.get_object()
         current_pcr = pcr.latest_pcr or pcr

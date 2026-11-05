@@ -1,6 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import generics
+from rest_framework import generics, serializers
 from rest_framework.response import Response
 
 from core.api.filters.country_programme import DashboardsCPPricesFilter, CPPricesFilter
@@ -61,22 +61,65 @@ class DashboardsCPPricesView(generics.ListAPIView):
         DjangoFilterBackend,
     ]
 
+    VALUES_FIELDS = [
+        "country_id",
+        "country_name",
+        "report_version",
+        "report_created_at",
+        "report_year",
+        "report_status",
+        "substance_id",
+        "substance_name",
+        "substance_group_id",
+        "substance_group_name",
+        "blend_id",
+        "blend_name",
+        "current_year_price",
+        "is_retail",
+        "is_fob",
+    ]
+
+    @staticmethod
+    def _serialize_rows(rows, annex_f):
+        """
+        Same output as DashboardsCPPricesSerializer, built from plain dicts.
+        The unfiltered response has tens of thousands of rows, and model
+        instances + SerializerMethodFields make the serializer too slow.
+        """
+        to_datetime = serializers.DateTimeField().to_representation
+        return [
+            {
+                "country_id": row["country_id"],
+                "country_name": row["country_name"],
+                "version": int(row["report_version"]),
+                "created_at": to_datetime(row["report_created_at"]),
+                "year": row["report_year"],
+                "report_status": row["report_status"],
+                "group": (
+                    annex_f.name_alt if row["blend_id"] else row["substance_group_name"]
+                ),
+                "group_id": (
+                    annex_f.id if row["blend_id"] else row["substance_group_id"]
+                ),
+                "chemical_id": row["blend_id"] or row["substance_id"],
+                "chemical_name": row["blend_name"] or row["substance_name"],
+                "is_blend": bool(row["blend_id"]),
+                "current_year_price": row["current_year_price"],
+                "is_retail": row["is_retail"],
+                "is_fob": row["is_fob"],
+            }
+            for row in rows
+        ]
+
     @extend_schema(
         description="Get all CP Prices including the archive data",
     )
     def get(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer_context = self.get_serializer_context()
-        serializer_context["annex_f"] = Group.objects.get(name="F")
+        queryset = self.filter_queryset(self.get_queryset()).values(*self.VALUES_FIELDS)
+        annex_f = Group.objects.get(name="F")
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(
-                page, many=True, context=serializer_context
-            )
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(self._serialize_rows(page, annex_f))
 
-        serializer = self.get_serializer(
-            queryset, many=True, context=serializer_context
-        )
-        return Response(serializer.data)
+        return Response(self._serialize_rows(queryset, annex_f))

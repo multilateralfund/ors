@@ -44,6 +44,7 @@ import {
   formatDate,
   formatNumberProjectValue,
   getComputedFields,
+  getEnterpriseAddresses,
 } from '../utils'
 import {
   summaryOfKeyDataField,
@@ -460,14 +461,27 @@ const PCRSummaryOfKeyData = () => {
         })),
       }
 
+      const summaryOfKeyData =
+        projectDataIndex === -1
+          ? [...sectionData, formattedDraftSummaryData]
+          : sectionData.map((entry, index) =>
+              index === projectDataIndex ? formattedDraftSummaryData : entry,
+            )
+
+      const currentAddresses = previousData.overview?.addresses ?? ''
+      const shouldUpdateAddresses =
+        currentAddresses === '' ||
+        currentAddresses === getEnterpriseAddresses(sectionData)
+
       return {
         ...previousData,
-        summary_of_key_data:
-          projectDataIndex === -1
-            ? [...sectionData, formattedDraftSummaryData]
-            : sectionData.map((entry, index) =>
-                index === projectDataIndex ? formattedDraftSummaryData : entry,
-              ),
+        summary_of_key_data: summaryOfKeyData,
+        ...(shouldUpdateAddresses && {
+          overview: {
+            ...previousData.overview,
+            addresses: getEnterpriseAddresses(summaryOfKeyData),
+          },
+        }),
       }
     }, 'summary_of_key_data')
     closeDialog()

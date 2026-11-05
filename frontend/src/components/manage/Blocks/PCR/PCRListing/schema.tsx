@@ -90,89 +90,96 @@ const getColumnDefs = (
       tooltipField: 'title',
       minWidth: 300,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
-      cellRenderer: (props: ICellRendererParams) => (
-        <div className="flex items-center gap-1 p-2">
-          {props.data.isMetaproject ? (
-            <div className="flex w-14 shrink-0 items-center">
-              {props.data.type === 'Multi-year agreement' ? (
-                <div
-                  className="h-4 w-4 cursor-pointer"
-                  onClick={() => expandMetaproject(props, pcrProjectsData)}
-                >
-                  {props.data.isExpanded ? (
-                    <MdExpandLess size={20} />
-                  ) : (
-                    <MdExpandMore size={20} />
-                  )}
-                </div>
-              ) : (
-                <div className="w-4" />
-              )}
-              {(view === 'list' ? canEditPCR : props.data.pcr_editable) && (
-                <Checkbox
-                  checked={projectId == props.data.metaprojectId}
-                  onChange={(event) => {
-                    const isChecked = event.target.checked
-                    setProjectId(isChecked ? props.data.metaprojectId : null)
-                    setPcrId(isChecked ? (props.data.pcr_id ?? null) : null)
-                    setPcrEditable(isChecked && !!props.data.pcr_editable)
-                  }}
-                  sx={{ color: 'black' }}
-                />
-              )}
-            </div>
-          ) : (
-            <div className="flex w-14 shrink-0" />
-          )}
-          {props.data.pcr_id ? (
-            <Link
-              className="flex flex-1 justify-center overflow-hidden truncate whitespace-nowrap text-sm text-inherit !underline"
-              href={`/pcr/${props.data.metaprojectId}/${props.data.pcr_id}`}
-            >
-              {props.value}
-            </Link>
-          ) : (
-            <span className="flex-1 overflow-hidden truncate whitespace-nowrap">
-              {props.value}
-            </span>
-          )}
-          {view === 'table' && (
-            <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
-              {props.data.pcr_id && (
-                <Tooltip title="Has PCR" placement="top" arrow>
-                  <span className="text-secondary">
-                    <MdCheckCircle size={18} />
-                  </span>
-                </Tooltip>
-              )}
-            </div>
-          )}
-          {view === 'list' && (
-            <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
-              {props.data.ad_hoc_pcr && (
-                <Tooltip title="Ad-hoc PCR" placement="top" arrow>
-                  <Chip
-                    label="Ad-hoc"
-                    className="border-sky-300 bg-sky-50 text-sky-700"
-                    variant="outlined"
-                    size="small"
+      cellRenderer: (props: ICellRendererParams) => {
+        const pcrId = props.data.pcr_id ?? props.data.legacy_pcr_id
+        const pcrHref = props.data.pcr_id
+          ? `/pcr/${props.data.metaprojectId}/${props.data.pcr_id}`
+          : `/pcr/${props.data.metaprojectId}/archive/${props.data.legacy_pcr_id}`
+
+        return (
+          <div className="flex items-center gap-1 p-2">
+            {props.data.isMetaproject ? (
+              <div className="flex w-14 shrink-0 items-center">
+                {props.data.type === 'Multi-year agreement' ? (
+                  <div
+                    className="h-4 w-4 cursor-pointer"
+                    onClick={() => expandMetaproject(props, pcrProjectsData)}
+                  >
+                    {props.data.isExpanded ? (
+                      <MdExpandLess size={20} />
+                    ) : (
+                      <MdExpandMore size={20} />
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-4" />
+                )}
+                {(view === 'list' ? canEditPCR : props.data.pcr_editable) && (
+                  <Checkbox
+                    checked={projectId == props.data.metaprojectId}
+                    onChange={(event) => {
+                      const isChecked = event.target.checked
+                      setProjectId(isChecked ? props.data.metaprojectId : null)
+                      setPcrId(isChecked ? (props.data.pcr_id ?? null) : null)
+                      setPcrEditable(isChecked && !!props.data.pcr_editable)
+                    }}
+                    sx={{ color: 'black' }}
                   />
-                </Tooltip>
-              )}
-              {props.data.pcr_due && (
-                <Tooltip title="PCR due" placement="top" arrow>
-                  <Chip
-                    label="Due"
-                    className="border-rose-300 bg-rose-50 text-rose-800"
-                    variant="outlined"
-                    size="small"
-                  />
-                </Tooltip>
-              )}
-            </div>
-          )}
-        </div>
-      ),
+                )}
+              </div>
+            ) : (
+              <div className="flex w-14 shrink-0" />
+            )}
+            {pcrId ? (
+              <Link
+                className="flex flex-1 justify-center overflow-hidden truncate whitespace-nowrap text-sm text-inherit !underline"
+                href={pcrHref}
+              >
+                {props.value}
+              </Link>
+            ) : (
+              <span className="flex-1 overflow-hidden truncate whitespace-nowrap">
+                {props.value}
+              </span>
+            )}
+            {view === 'table' && (
+              <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
+                {pcrId && (
+                  <Tooltip title="Has PCR" placement="top" arrow>
+                    <span className="text-secondary">
+                      <MdCheckCircle size={18} />
+                    </span>
+                  </Tooltip>
+                )}
+              </div>
+            )}
+            {view === 'list' && (
+              <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
+                {props.data.ad_hoc_pcr && (
+                  <Tooltip title="Ad-hoc PCR" placement="top" arrow>
+                    <Chip
+                      label="Ad-hoc"
+                      className="border-sky-300 bg-sky-50 text-sky-700"
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Tooltip>
+                )}
+                {props.data.pcr_due && (
+                  <Tooltip title="PCR due" placement="top" arrow>
+                    <Chip
+                      label="Due"
+                      className="border-rose-300 bg-rose-50 text-rose-800"
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Tooltip>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      },
     },
     {
       headerName: pcrFieldsMapping.status,

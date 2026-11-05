@@ -129,10 +129,11 @@ docker-compose exec app ./manage.py import_projects proposals
 - progress -> progress reports from tbProgress 
 - comments -> project comments
 - meta_projects -> project meta projects (make sure that the clusters are set)
-- all_pcr -> all data for project complition reports (activities, delay_explanation, learned_lessons)
+- all_pcr -> all data for project complition reports (activities, delay_explanation, learned_lessons, submissions)
 - pcr_activities -> project complition report activities
 - pcr_delay_explanation -> project complition report delay explanation
 - pcr_learned_lessons -> project complition report learned lessons
+- pcr_submissions -> project complition report submission dates (earliest agency submission from PCRAgencySubmission.json)
 - all -> all of the above
             
 ### Import files

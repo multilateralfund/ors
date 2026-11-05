@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines,unrecognized-inline-option
+
 import factory.fuzzy
 from django.contrib.auth import get_user_model
 
@@ -56,6 +58,14 @@ from core.models.enterprise import (
     EnterpriseStatus,
 )
 from core.models.project_completion_report import (
+    OLD_DelayCategory,
+    OLD_LearnedLessonCategory,
+    OLD_PCR,
+    OLD_PCRActivity,
+    OLD_PCRDelayExplanation,
+    OLD_PCRLearnedLessons,
+    OLD_PCRSector,
+    OLD_PCRSupportingEvidence,
     PCR,
     PCRGoal,
     PCRLearnedLessonCategory,
@@ -80,6 +90,7 @@ from core.models.substance import Substance, SubstanceAltName
 from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
 from core.models.blend import Blend, BlendAltName
+
 
 User = get_user_model()
 
@@ -919,6 +930,77 @@ class PCRFactory(factory.django.DjangoModelFactory):
 class PCRProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PCRProject
+
+
+class OldPCRFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_PCR
+
+    meta_project = factory.SubFactory(MetaProjectFactory)
+
+
+class OldPCRSectorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_PCRSector
+
+    name = factory.Faker("pystr", max_chars=50)
+    sector_type = OLD_PCRSector.PCRSectorType.INVESTMENT
+
+
+class OldPCRActivityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_PCRActivity
+
+    old_pcr = factory.SubFactory(OldPCRFactory)
+    meta_project = factory.SelfAttribute("old_pcr.meta_project")
+    sector = factory.SubFactory(OldPCRSectorFactory)
+    type_of_activity = factory.Faker("pystr", max_chars=50)
+
+
+class OldDelayCategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_DelayCategory
+
+    name = factory.Faker("pystr", max_chars=50)
+
+
+class OldPCRDelayExplanationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_PCRDelayExplanation
+
+    old_pcr = factory.SubFactory(OldPCRFactory)
+    meta_project = factory.SelfAttribute("old_pcr.meta_project")
+    agency = factory.SubFactory(AgencyFactory)
+    category = factory.SubFactory(OldDelayCategoryFactory)
+    delay_cause = factory.Faker("pystr", max_chars=50)
+
+
+class OldLearnedLessonCategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_LearnedLessonCategory
+
+    name = factory.Faker("pystr", max_chars=50)
+
+
+class OldPCRLearnedLessonsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_PCRLearnedLessons
+
+    old_pcr = factory.SubFactory(OldPCRFactory)
+    meta_project = factory.SelfAttribute("old_pcr.meta_project")
+    agency = factory.SubFactory(AgencyFactory)
+    category = factory.SubFactory(OldLearnedLessonCategoryFactory)
+    description = factory.Faker("pystr", max_chars=50)
+
+
+class OldPCRSupportingEvidenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_PCRSupportingEvidence
+
+    old_pcr = factory.SubFactory(OldPCRFactory)
+    file = factory.django.FileField(filename="PCR_1.pdf")
+    filename = "PCR_1.pdf"
+    source_file = "PCR_1.pdf"
 
 
 class PCRProjectEnterpriseFactory(factory.django.DjangoModelFactory):

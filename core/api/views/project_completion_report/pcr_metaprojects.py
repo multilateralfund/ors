@@ -32,7 +32,7 @@ from core.api.views.utils import get_available_values, get_country_regions
 from core.models.annual_project_report import AnnualProjectReport
 from core.models.country import Country
 from core.models.project import MetaProject, Project
-from core.models.project_completion_report import PCR
+from core.models.project_completion_report import OLD_PCR, PCR
 
 
 def get_regions(queryset: QuerySet[Project]):
@@ -72,6 +72,18 @@ def get_completed_only(queryset: QuerySet[Project]):
     return options
 
 
+def get_meta_project_flag_options(queryset: QuerySet[Project], field_name: str):
+    values = set(
+        queryset.values_list(f"meta_project__{field_name}", flat=True).distinct()
+    )
+    options = []
+    if True in values:
+        options.append({"id": "Yes", "name": "Yes"})
+    if False in values:
+        options.append({"id": "No", "name": "No"})
+    return options
+
+
 def get_categories(queryset: QuerySet[Project]):
     category_labels = dict(Project.Category.choices)
     values = (
@@ -89,10 +101,15 @@ def get_categories(queryset: QuerySet[Project]):
 
 def get_pcr_statuses(queryset: QuerySet[Project]):
     # PCR.objects only returns the current PCR versions
+    meta_projects = queryset.values("meta_project")
     statuses = set(
-        PCR.objects.filter(
-            meta_project__in=queryset.values("meta_project")
-        ).values_list("status", flat=True)
+        PCR.objects.filter(meta_project__in=meta_projects).values_list(
+            "status", flat=True
+        )
+    ) | set(
+        OLD_PCR.objects.filter(meta_project__in=meta_projects).values_list(
+            "status", flat=True
+        )
     )
     return [
         {"id": value, "name": label}
@@ -200,7 +217,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
 
         queryset = (
             self._get_meta_projects_queryset(filtered_projects_qs)
-            .select_related("lead_agency")
+            .select_related("lead_agency", "old_pcr")
             .prefetch_related(prefetch)
         )
         return queryset
@@ -262,6 +279,8 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             "status": get_available_values(queryset, "status"),
             "completed_only": get_completed_only(queryset),
             "pcr_status": get_pcr_statuses(queryset),
+            "pcr_due": get_meta_project_flag_options(queryset, "pcr_due"),
+            "ad_hoc_pcr": get_meta_project_flag_options(queryset, "ad_hoc_pcr"),
         }
         return Response(result)
 

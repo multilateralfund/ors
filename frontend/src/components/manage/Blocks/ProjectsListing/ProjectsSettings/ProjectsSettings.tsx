@@ -27,7 +27,10 @@ import {
   ApiProjectSettings,
   ApiProjectSettingsForFrontend,
 } from '@ors/types/api_project_settings.ts'
-import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  FormattedNumberInput,
+  Input,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { MdOutlineHistory } from 'react-icons/md'
 
 type EmailSettingsType = {
@@ -452,16 +455,28 @@ const ProjectsSettingsGlobalFields = ({
     <mui.Box>
       {fields.map((f) => {
         return (
-          <div className="my-2 flex items-center">
+          <div key={f} className="my-2 flex items-center">
             <label className="inline-block w-96" htmlFor={f}>
               {data.fields[f].title}
             </label>
-            <FormattedNumberInput
-              id={f}
-              value={form[f]}
-              onChange={handleInput}
-              className={'w-72'}
-            />
+            {data.fields[f].type === 'Decimal' ? (
+              <FormattedNumberInput
+                id={f}
+                value={form[f]}
+                onChange={handleInput}
+                className={'w-72'}
+              />
+            ) : (
+              <div>
+                <Input
+                  id={f}
+                  type="text"
+                  value={form[f] ?? ''}
+                  onChange={handleInput}
+                  className="w-72"
+                />
+              </div>
+            )}
             {data.data[f] !== form[f] ? (
               <mui.Tooltip placement="top" title="Revert value.">
                 <div

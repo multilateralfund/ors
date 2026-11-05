@@ -1,6 +1,5 @@
 import { useContext, useMemo, useRef, useState } from 'react'
 
-import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
@@ -16,6 +15,14 @@ import PCRTable from './PCRTable'
 import { initialFilters, booleanFieldsOpts } from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
 import { useGetPcrFilters } from '../hooks/useGetPcrFilters'
+
+import { ToggleButtonGroup, ToggleButton } from '@mui/material'
+import { map } from 'lodash'
+
+const viewOptions: { value: ViewSelectorValuesType; label: string }[] = [
+  { value: 'list', label: 'Without PCR' },
+  { value: 'table', label: 'With PCR' },
+]
 
 const PCRListingWrapper = () => {
   const form = useRef<any>()
@@ -50,8 +57,8 @@ const PCRListingWrapper = () => {
     category: filterOptions?.category ?? [],
     status: filterOptions?.status ?? [],
     pcr_status: filterOptions?.pcr_status ?? [],
-    pcr_due: booleanFieldsOpts,
-    ad_hoc_pcr: booleanFieldsOpts,
+    pcr_due: filterOptions?.pcr_due ?? [],
+    ad_hoc_pcr: filterOptions?.ad_hoc_pcr ?? [],
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {
@@ -135,18 +142,30 @@ const PCRListingWrapper = () => {
       </HeaderTitle>
       <div className="flex flex-col gap-6" key={key}>
         <div className="flex flex-col gap-2.5">
-          <div className="flex flex-col gap-4 md:flex-row">
+          <div className="flex flex-col justify-between gap-4 md:flex-row">
             <PCRFilters {...filtersProps} view={view} />
-            <TableViewSelector
-              value={view as ViewSelectorValuesType}
-              reverseViewOrder={true}
-              tooltipText={['Not completed PCRs', 'Completed PCRs']}
-              changeHandler={(_, value) => {
+            <ToggleButtonGroup
+              aria-label="PCR listing view"
+              className="shrink-0 self-start"
+              value={view}
+              exclusive
+              onChange={(_, value: ViewSelectorValuesType | null) => {
                 if (value) {
                   handleChangeViewSelector(value)
                 }
               }}
-            />
+            >
+              {map(viewOptions, ({ value, label }) => (
+                <ToggleButton
+                  key={value}
+                  value={value}
+                  className="h-[2.25rem] whitespace-nowrap rounded-none border-primary bg-white px-4 text-base normal-case tracking-wide text-primary first:rounded-l-lg last:rounded-r-lg"
+                  classes={{ selected: '!bg-primary !text-mlfs-hlYellow' }}
+                >
+                  {label}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
           </div>
           <PCRFiltersSelectedOpts {...filtersProps} />
         </div>

@@ -951,6 +951,35 @@ class PCRSupportingEvidence(models.Model):
         return new_item
 
 
+class OLD_PCR(models.Model):
+    """
+    Legacy PCR, developed outside the platform. Groups the old PCR data (activities,
+    delay explanations, learned lessons) of a meta project.
+    """
+
+    meta_project = models.OneToOneField(
+        MetaProject, on_delete=models.CASCADE, related_name="old_pcr"
+    )
+    status = models.CharField(
+        max_length=32,
+        choices=PCR.Status.choices,
+        default=PCR.Status.FINAL,
+        help_text="Workflow status of the PCR",
+    )
+    submission_date = models.DateField(
+        null=True, blank=True, help_text="Initial submission date"
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "OLD PCR"
+        verbose_name_plural = "OLD PCRs"
+
+    def __str__(self):
+        return f"OLD PCR {self.meta_project}"
+
+
 class OLD_DelayCategory(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     sort_order = models.FloatField(null=True, blank=True)
@@ -963,6 +992,13 @@ class OLD_DelayCategory(models.Model):
 
 
 class OLD_PCRDelayExplanation(models.Model):
+    old_pcr = models.ForeignKey(
+        OLD_PCR,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="delay_explanations",
+    )
     meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     category = models.ForeignKey(OLD_DelayCategory, on_delete=models.CASCADE)
@@ -988,6 +1024,13 @@ class OLD_LearnedLessonCategory(models.Model):
 
 
 class OLD_PCRLearnedLessons(models.Model):
+    old_pcr = models.ForeignKey(
+        OLD_PCR,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="learned_lessons",
+    )
     meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     category = models.ForeignKey(OLD_LearnedLessonCategory, on_delete=models.CASCADE)
@@ -1021,6 +1064,13 @@ class OLD_PCRActivity(models.Model):
     will be migrated to PCROverallAssessmentHighlight
     """
 
+    old_pcr = models.ForeignKey(
+        OLD_PCR,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="activities",
+    )
     meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE)
     sector = models.ForeignKey(OLD_PCRSector, on_delete=models.CASCADE)
     type_of_activity = models.TextField(blank=True, null=True)
@@ -1032,3 +1082,27 @@ class OLD_PCRActivity(models.Model):
 
     class Meta:
         verbose_name_plural = "OLD PCR activities"
+
+
+class OLD_PCRSupportingEvidence(models.Model):
+    """
+    Legacy PCR report files (pdf), imported from the old PCR platform.
+    """
+
+    old_pcr = models.ForeignKey(
+        OLD_PCR, on_delete=models.CASCADE, related_name="supporting_evidences"
+    )
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to="old_pcr_files/",
+    )
+    filename = models.CharField(max_length=100, null=True, blank=True)
+    source_file = models.CharField(max_length=255, blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "OLD PCR supporting evidences"
+
+    def __str__(self):
+        return self.filename or ""

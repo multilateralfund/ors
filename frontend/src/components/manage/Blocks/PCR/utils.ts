@@ -31,9 +31,11 @@ import { ApiAgency } from '@ors/types/api_agencies'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
+  compact,
   filter,
   find,
   findIndex,
+  flatMap,
   forEach,
   isEmpty,
   isObject,
@@ -46,6 +48,7 @@ import {
   reduce,
   some,
   sumBy,
+  uniq,
 } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
@@ -675,3 +678,14 @@ export const getValueClassName = (value: string) => ({
   '!bg-[#fbe5e4] !text-[#8c2626] !border-[#f0cdcc]': value === 'No',
   '!bg-[#edf1f4] !text-[#424d54] !border-[#d9dde0]': value === 'N/A',
 })
+
+export const getEnterpriseAddresses = (
+  summaryOfKeyData: PCRSummaryOfKeyDataType[] | undefined,
+) =>
+  uniq(
+    compact(
+      flatMap(summaryOfKeyData, (entry) =>
+        map(entry.enterprises, (enterprise) => enterprise.address?.trim()),
+      ),
+    ),
+  ).join(', ')

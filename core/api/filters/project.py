@@ -10,7 +10,7 @@ from core.models.project import (
     MetaProject,
     Project,
 )
-from core.models.project_completion_report import PCR, PCRProject
+from core.models.project_completion_report import OLD_PCR, PCR, PCRProject
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -259,13 +259,22 @@ class ProjectFilter(filters.FilterSet):
     def filter_pcr_submission_date(self, queryset, name, value):
         # Only the current PCR version is checked, archived versions are ignored
         pcr_project_filters = {"pcr__latest_pcr__isnull": True}
+        old_pcr_filters = {}
         if value.start:
             pcr_project_filters["pcr__submission_date__gte"] = value.start
+            old_pcr_filters["submission_date__gte"] = value.start
         if value.stop:
             pcr_project_filters["pcr__submission_date__lte"] = value.stop
+            old_pcr_filters["submission_date__lte"] = value.stop
+        # Legacy PCRs are linked to the meta project, not to its projects
         return queryset.filter(
             Exists(
                 PCRProject.objects.filter(project=OuterRef("pk"), **pcr_project_filters)
+            )
+            | Exists(
+                OLD_PCR.objects.filter(
+                    meta_project=OuterRef("meta_project"), **old_pcr_filters
+                )
             )
         )
 
@@ -273,14 +282,18 @@ class ProjectFilter(filters.FilterSet):
         if not value:
             return queryset
         query_filters = Q()
+        # Legacy PCRs are linked to the meta project, not to its projects
+        has_old_pcr = Exists(
+            OLD_PCR.objects.filter(meta_project=OuterRef("meta_project"))
+        )
         for option in value:
             if option == "Yes":
                 # Exists avoids duplicated rows for PCRs with archived versions
                 query_filters |= Q(
                     Exists(PCRProject.objects.filter(project=OuterRef("pk")))
-                )
+                ) | Q(has_old_pcr)
             elif option in ["No", "N/A"]:
-                query_filters |= Q(pcr_projects__isnull=True)
+                query_filters |= Q(pcr_projects__isnull=True) & ~Q(has_old_pcr)
         if not query_filters:
             return queryset
         return queryset.filter(query_filters)
@@ -292,6 +305,12 @@ class ProjectFilter(filters.FilterSet):
         return queryset.filter(
             Exists(
                 PCR.objects.filter(
+                    meta_project=OuterRef("meta_project"),
+                    status__in=value,
+                )
+            )
+            | Exists(
+                OLD_PCR.objects.filter(
                     meta_project=OuterRef("meta_project"),
                     status__in=value,
                 )

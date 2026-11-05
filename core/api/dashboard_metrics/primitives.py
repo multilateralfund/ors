@@ -5,7 +5,7 @@ See ``docs/dashboard_metrics.md``.
 """
 
 # pylint: disable=R0911
-from decimal import Decimal, ROUND_DOWN
+from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP
 import logging
 from collections.abc import Sequence
 from typing import Any, Callable
@@ -108,6 +108,26 @@ def format_number(
     quantizer = Decimal("1." + "0" * decimals)
     value = value.quantize(quantizer, rounding=ROUND_DOWN)
     return f"{currency}{sign}{value:,.{decimals}f}"
+
+
+def apportion(values: Sequence[float], decimals: int = 0) -> tuple[float, list[float]]:
+    """Round a total and its parts so the rounded parts add up to it.
+
+    The total is rounded half-up. Each part is rounded down, then the units
+    lost on the way go, one each, to the parts that lost the most (largest
+    remainder), so a chart's slices always sum to the total printed beside them.
+    """
+    step = Decimal(1).scaleb(-decimals)
+    exact = [Decimal(str(value)) for value in values]
+    total = sum(exact, Decimal(0)).quantize(step, rounding=ROUND_HALF_UP)
+    parts = [value.quantize(step, rounding=ROUND_DOWN) for value in exact]
+    missing = int((total - sum(parts, Decimal(0))) / step)
+    by_remainder = sorted(
+        range(len(exact)), key=lambda i: exact[i] - parts[i], reverse=True
+    )
+    for i in by_remainder[:missing]:
+        parts[i] += step
+    return float(total), [float(part) for part in parts]
 
 
 def funds(row: Any) -> float:
