@@ -1627,6 +1627,30 @@ class TestCountryValues(BaseTest):
         ]
         assert table["groups"][0]["items"][0]["displayValue"] == "$900"
 
+    def test_a_theme_too_small_for_a_percent_keeps_its_amount(
+        self, user, ongoing_status
+    ):
+        """Bars are sized from ``value``; ``percent`` rounds a tiny theme to 0."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        for code, fund in (("HPMP1", 1_600_000_000), ("DISP", 26_750)):
+            approved_project(
+                country=brazil,
+                status=ongoing_status,
+                cluster=ProjectClusterFactory(code=code, name=code),
+                total_fund=fund,
+                support_cost_psc=0,
+            )
+
+        items = {
+            item["label"]: item
+            for group in self.entry(user)["theme_funding"]["value"]["groups"]
+            for item in group["items"]
+        }
+        assert items["Disposal"]["percent"] == 0
+        assert items["Disposal"]["value"] == 26_750
+        assert items["Disposal"]["displayValue"] == "$26,750"
+        assert items["Energy efficiency"]["value"] == 0
+
     def test_funding_with_no_theme_is_reported_beside_the_total(
         self, user, ongoing_status
     ):
