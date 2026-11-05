@@ -1,6 +1,7 @@
 from typing import cast
 import json
 
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.db.models import Exists, OuterRef, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
@@ -124,11 +125,19 @@ class PCRProjectViewSet(
         "request_adjustments",
         "approve",
         "versions",
+        "download_supporting_evidence",
     ]
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "list_filters", "export", "retrieve", "versions"]:
+        if self.action in [
+            "list",
+            "list_filters",
+            "export",
+            "retrieve",
+            "versions",
+            "download_supporting_evidence",
+        ]:
             return [HasPCRViewAccess]
         if self.action in [
             "create",
@@ -205,7 +214,8 @@ class PCRProjectViewSet(
             # Archived versions can be viewed, but not edited or moved in the workflow
             manager_queryset = (
                 PCR.objects.really_all()
-                if self.action in ["retrieve", "versions"]
+                if self.action
+                in ["retrieve", "versions", "download_supporting_evidence"]
                 else PCR.objects.all()
             )
             queryset = manager_queryset.select_related("meta_project").prefetch_related(
@@ -403,6 +413,28 @@ class PCRProjectViewSet(
             ),
         ],
     )
+    @extend_schema(request=None, responses={200: OpenApiTypes.BINARY})
+    @action(
+        methods=["GET"],
+        detail=True,
+        url_path=r"supporting-evidences/(?P<evidence_id>\d+)/download",
+    )
+    def download_supporting_evidence(self, request, *args, evidence_id=None, **kwargs):
+        """
+        Download a PCR supporting evidence file. The files live in the protected
+        storage, so they can't be served directly by nginx.
+        """
+        evidence = get_object_or_404(
+            self.get_object().supporting_evidences, pk=evidence_id
+        )
+        if not evidence.file or not evidence.file.storage.exists(evidence.file.name):
+            raise Http404("File not found.")
+        return FileResponse(
+            evidence.file.open("rb"),
+            as_attachment=True,
+            filename=evidence.filename or evidence.file.name.rsplit("/", 1)[-1],
+        )
+
     @action(methods=["GET"], detail=False, url_path="create")
     def create_defaults(self, request, *_args, **_kwargs):
         meta_project_id = request.query_params.get("meta_project_id")

@@ -85,6 +85,13 @@ def _detail_url(old_pcr):
     return reverse("legacy-project-completion-report-detail", args=[old_pcr.id])
 
 
+def _download_url(old_pcr, evidence):
+    return reverse(
+        "legacy-project-completion-report-download-supporting-evidence",
+        args=[old_pcr.id, evidence.id],
+    )
+
+
 class TestMetaProjectLegacyPCR:
     client = APIClient()
 
@@ -240,7 +247,10 @@ class TestOldPCRViewSet(BaseTest):
         assert len(data["learned_lessons"]) == 1
         assert len(data["supporting_evidences"]) == 1
         assert data["supporting_evidences"][0]["filename"] == "PCR_1.pdf"
-        assert data["supporting_evidences"][0]["file"]
+        evidence = own_old_pcr.supporting_evidences.get()
+        assert data["supporting_evidences"][0]["download_url"] == _download_url(
+            own_old_pcr, evidence
+        )
 
     def test_viewer_own_agency(self, agency, own_old_pcr, other_agency_old_pcr):
         self.client.force_authenticate(user=self._pcr_user("PCR - Viewer", agency))
@@ -263,6 +273,49 @@ class TestOldPCRViewSet(BaseTest):
         for method in ["put", "patch", "delete"]:
             response = getattr(self.client, method)(self.url, {}, format="json")
             assert response.status_code in (403, 405)
+
+
+class TestOldPCRSupportingEvidenceDownload(BaseTest):
+
+    @pytest.fixture(autouse=True)
+    def setup(self, own_old_pcr):
+        self.url = _download_url(own_old_pcr, own_old_pcr.supporting_evidences.get())
+
+    def test_download(self, admin_user, own_old_pcr):
+        with own_old_pcr.supporting_evidences.get().file.open("rb") as f:
+            content = f.read()
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert b"".join(response.streaming_content) == content
+        assert response["Content-Disposition"] == 'attachment; filename="PCR_1.pdf"'
+        assert response["Content-Type"] == "application/pdf"
+
+    def test_viewer_other_agency(self, agency, other_agency_old_pcr):
+        user = UserFactory(agency=agency)
+        user.groups.add(Group.objects.get(name="PCR - Viewer"))
+        self.client.force_authenticate(user=user)
+        evidence = other_agency_old_pcr.supporting_evidences.get()
+        response = self.client.get(_download_url(other_agency_old_pcr, evidence))
+        assert response.status_code == 404
+
+    def test_without_pcr_access(self, agency):
+        self.client.force_authenticate(user=UserFactory(agency=agency))
+        assert self.client.get(self.url).status_code == 403
+
+    def test_evidence_of_another_old_pcr(
+        self, admin_user, own_old_pcr, other_agency_old_pcr
+    ):
+        self.client.force_authenticate(user=admin_user)
+        evidence = other_agency_old_pcr.supporting_evidences.get()
+        response = self.client.get(_download_url(own_old_pcr, evidence))
+        assert response.status_code == 404
+
+    def test_missing_file(self, admin_user, own_old_pcr):
+        evidence = own_old_pcr.supporting_evidences.get()
+        evidence.file.delete(save=False)
+        self.client.force_authenticate(user=admin_user)
+        assert self.client.get(self.url).status_code == 404
 
 
 class TestImportOldPCRSupportingEvidences:
