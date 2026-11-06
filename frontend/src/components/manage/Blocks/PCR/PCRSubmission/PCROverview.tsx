@@ -167,6 +167,12 @@ const PCROverview = () => {
           <div className="flex items-center gap-4">
             <SubSectionTitle>Additional comments</SubSectionTitle>
             <UserInfo info="Select every entity commenting" placement="right" />
+            {additionalCommentsData.length === 0 && (
+              <FieldErrorIndicator
+                errors={overviewErrors}
+                field={additionalCommentsField}
+              />
+            )}
           </div>
           <EditSectionIndicator />
         </div>

@@ -2,7 +2,10 @@ import { useContext, useState } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import {
+  ErrorsList,
+  FieldErrorIndicator,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import {
   defaultProps,
   formatClassName,
@@ -74,11 +77,13 @@ const PCRSdgs = () => {
   const [crtTab, setCrtTab] = useState(0)
 
   const sectionData = PCRData[sectionIdentifier] || []
-  const sdgsData = sectionData[crtTab][sdgsField] || []
-  const crtAgencyId = sectionData[crtTab].agency_id
+  const crtSdg = sectionData[crtTab]
+  const sdgsData = crtSdg[sdgsField] || []
+
+  const crtAgencyId = crtSdg.agency_id
   const crtAgencies = getSectionAgencies(agencies, sectionData)
 
-  const sdgsApplying = sectionData[crtTab].sdg_applying
+  const sdgsApplying = crtSdg.sdg_applying
 
   const { sdgs_contribution: sdgsContributionErrors } = errors
   const sdgsErrors = sdgsContributionErrors[sdgsContributionField]
@@ -99,7 +104,23 @@ const PCRSdgs = () => {
     ...formatErrors({ [sdgsContributionField]: agencyErrors }),
   ]
 
+  const updateAgencyErrors = (
+    updateEntry: (entry: Record<string, any>) => Record<string, any>,
+  ) => {
+    setErrors((prevData: Record<string, any[]>) => ({
+      ...prevData,
+      [sdgsContributionField]: map(
+        prevData[sdgsContributionField],
+        (entry, index) => (index === crtTab ? updateEntry(entry ?? {}) : entry),
+      ),
+    }))
+  }
+
   const handleChangeSdgApplying = (value: boolean) => {
+    if (value === sdgsApplying) {
+      return
+    }
+
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
@@ -132,6 +153,8 @@ const PCRSdgs = () => {
   }
 
   const onRemoveSdg = (sdgId: number) => {
+    const goalIndex = sdgsData.findIndex((sdg) => sdg.goal_id === sdgId)
+
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
@@ -150,38 +173,13 @@ const PCRSdgs = () => {
       }
     }, sdgsField)
 
-    setErrors((prevData: Record<string, any[]>) => {
-      const pcrSdgs = PCRData.sdgs_contribution || []
-      const filteredSdgs = filter(
-        pcrSdgs,
-        (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
-      )
-
-      const crtAgencyIndex = filteredSdgs.findIndex(
-        (entry) => entry.agency_id === crtAgencyId,
-      )
-
-      const updatedErrors = map(
-        prevData[sdgsContributionField],
-        (entry, index) =>
-          index === crtAgencyIndex
-            ? {
-                ...entry,
-                goals: filter(entry.goals, (goal) => goal.goal_id !== sdgId),
-              }
-            : entry,
-      )
-
-      const crtAgency = pcrSdgs.find((entry) => entry.agency_id === crtAgencyId)
-
-      return {
-        ...prevData,
-        [sdgsContributionField]:
-          crtAgency?.goals?.length === 1
-            ? updatedErrors.filter((_, index) => index !== crtAgencyIndex)
-            : updatedErrors,
-      }
-    })
+    updateAgencyErrors((entry) => ({
+      ...entry,
+      [sdgsField]: filter(
+        entry[sdgsField] as Record<string, any>[],
+        (_, index) => index !== goalIndex,
+      ),
+    }))
   }
 
   const onClearSdgs = () => {
@@ -196,27 +194,7 @@ const PCRSdgs = () => {
       }
     }, sdgsField)
 
-    setErrors((prevData: Record<string, any[]>) => {
-      const filteredSdgs = filter(
-        PCRData.sdgs_contribution || [],
-        (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
-      )
-      const crtAgencyIndex = filteredSdgs.findIndex(
-        (entry) => entry.agency_id === crtAgencyId,
-      )
-
-      if (crtAgencyIndex === -1) {
-        return prevData
-      }
-
-      return {
-        ...prevData,
-        [sdgsContributionField]: filter(
-          prevData[sdgsContributionField],
-          (_, index) => index !== crtAgencyIndex,
-        ),
-      }
-    })
+    updateAgencyErrors(() => ({}))
   }
 
   const buttonStyle = (value: boolean) => ({
@@ -312,6 +290,10 @@ const PCRSdgs = () => {
               />
               No
             </Button>
+            <FieldErrorIndicator
+              errors={crtAgencyLevelErrors}
+              field="sdg_applying"
+            />
           </div>
           {sdgsApplying ? (
             <>
@@ -324,80 +306,88 @@ const PCRSdgs = () => {
                   select from the drop-down list (multiple selection allowed)
                 </span>
               </div>
-              <Field
-                widget="autocomplete"
-                multiple
-                options={sdgsOptions}
-                value={sdgsOptions.filter((option) =>
-                  sdgsData.some((sdg) => sdg.goal_id === option.id),
-                )}
-                onChange={(_, __, reason, details) => {
-                  if (reason === 'clear') {
-                    onClearSdgs()
-                    return
+              <div className="flex items-center">
+                <Field
+                  widget="autocomplete"
+                  multiple
+                  options={sdgsOptions}
+                  value={sdgsOptions.filter((option) =>
+                    sdgsData.some((sdg) => sdg.goal_id === option.id),
+                  )}
+                  onChange={(_, __, reason, details) => {
+                    if (reason === 'clear') {
+                      onClearSdgs()
+                      return
+                    }
+
+                    const sdgId = details?.option?.id
+
+                    if (!sdgId) return
+
+                    if (reason === 'selectOption') {
+                      onAddSdg(Number(sdgId))
+                    }
+
+                    if (reason === 'removeOption') {
+                      onRemoveSdg(Number(sdgId))
+                    }
+                  }}
+                  getOptionLabel={(option) =>
+                    getOptionLabel(sdgsOptions, option)
                   }
-
-                  const sdgId = details?.option?.id
-
-                  if (!sdgId) return
-
-                  if (reason === 'selectOption') {
-                    onAddSdg(Number(sdgId))
-                  }
-
-                  if (reason === 'removeOption') {
-                    onRemoveSdg(Number(sdgId))
-                  }
-                }}
-                getOptionLabel={(option) => getOptionLabel(sdgsOptions, option)}
-                renderOption={(props, option, { selected }) => (
-                  <li
-                    {...props}
-                    key={option.id}
-                    className={cx(props.className, 'px-0.5 py-0')}
-                  >
-                    <Checkbox
-                      checked={selected}
-                      size="small"
-                      sx={{
-                        '&.MuiCheckbox-root:not(.Mui-checked)': {
-                          color: 'var(--color-gray-400)',
-                        },
-                      }}
-                    />
-                    <span
-                      className={cx('pt-0.5 leading-none', {
-                        'font-semibold text-primary': selected,
-                      })}
-                    >
-                      {option.name}
-                    </span>
-                  </li>
-                )}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip
-                      {...getTagProps({ index })}
+                  renderOption={(props, option, { selected }) => (
+                    <li
+                      {...props}
                       key={option.id}
-                      label={option.name.split(':')[0]}
-                      deleteIcon={<IoClose size={16} />}
-                      sx={{
-                        backgroundColor: 'var(--color-primary)',
-                        color: '#fff',
-                        borderRadius: '9999px !important',
-                        textTransform: 'none !important',
-                        '&:hover': { color: '#fff !important' },
-                        '& .MuiChip-deleteIcon': {
-                          color: 'var(--color-mlfs-hlYellow)',
-                          '&:hover': { color: 'var(--color-mlfs-hlYellow)' },
-                        },
-                      }}
-                    />
-                  ))
-                }
-                {...defaultProps}
-                {...formatClassName('min-w-[300px] md:min-w-[800px]')}
-              />
+                      className={cx(props.className, 'px-0.5 py-0')}
+                    >
+                      <Checkbox
+                        checked={selected}
+                        size="small"
+                        sx={{
+                          '&.MuiCheckbox-root:not(.Mui-checked)': {
+                            color: 'var(--color-gray-400)',
+                          },
+                        }}
+                      />
+                      <span
+                        className={cx('pt-0.5 leading-none', {
+                          'font-semibold text-primary': selected,
+                        })}
+                      >
+                        {option.name}
+                      </span>
+                    </li>
+                  )}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        {...getTagProps({ index })}
+                        key={option.id}
+                        label={option.name.split(':')[0]}
+                        deleteIcon={<IoClose size={16} />}
+                        sx={{
+                          backgroundColor: 'var(--color-primary)',
+                          color: '#fff',
+                          borderRadius: '9999px !important',
+                          textTransform: 'none !important',
+                          '&:hover': { color: '#fff !important' },
+                          '& .MuiChip-deleteIcon': {
+                            color: 'var(--color-mlfs-hlYellow)',
+                            '&:hover': { color: 'var(--color-mlfs-hlYellow)' },
+                          },
+                        }}
+                      />
+                    ))
+                  }
+                  {...defaultProps}
+                  {...formatClassName('min-w-[300px] md:min-w-[800px]')}
+                />
+                <FieldErrorIndicator
+                  errors={crtAgencyLevelErrors}
+                  field={sdgsField}
+                />
+              </div>
               {sdgsData.length > 0 && (
                 <TableContainer
                   component={Paper}
@@ -427,7 +417,13 @@ const PCRSdgs = () => {
                               <EntryIndex index={sdgIndex} />
                             </TableCell>
                             <TableCell className="NameColumn w-1/3">
-                              {crtSdgName}
+                              <div className="flex items-center">
+                                {crtSdgName}
+                                <FieldErrorIndicator
+                                  errors={agencyErrors[sdgIndex]}
+                                  field="goal_id"
+                                />
+                              </div>
                             </TableCell>
                             <TableCell className="w-2/3">
                               <PCRTextAreaWidget

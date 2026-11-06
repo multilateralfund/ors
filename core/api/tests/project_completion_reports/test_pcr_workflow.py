@@ -10,6 +10,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from core.api.tests.factories import MetaProjectFactory, ProjectFactory
+from core.api.tests.project_completion_reports.utils import fill_pcr_required_data
 from core.models.project import Project
 from core.models.project_completion_report import (
     PCR,
@@ -37,7 +38,7 @@ def _pcr():
         pcr=pcr, project=project, funds_disbursed=Decimal("100.00")
     )
     PCRAdditionalComment.objects.create(pcr=pcr, entity="Lead agency", comment="V1")
-    return pcr
+    return fill_pcr_required_data(pcr)
 
 
 @pytest.fixture(name="mock_send_pcr_notification")

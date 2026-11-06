@@ -5,7 +5,10 @@ import {
   pcrFieldsMapping,
   pcrFieldsErrorsMapping,
   summaryOfKeyDataField,
+  summaryOfKeyDataRowFields,
+  sdgsContributionField,
   requiredMessage,
+  submitRequiredMessage,
 } from './constants'
 import {
   PCRData,
@@ -17,6 +20,7 @@ import {
   PCRCausesOfDelayData,
   PCRProjectRecommendationsData,
   PCRGenderMainstreamingData,
+  PCRSdgsData,
   PCRSupportingEvidencesData,
   FormattedSupportingEvidencesData,
   OptionsType,
@@ -33,7 +37,9 @@ import {
   findIndex,
   flatMap,
   forEach,
+  isEmpty,
   isObject,
+  isPlainObject,
   keys,
   lowerCase,
   map,
@@ -42,16 +48,21 @@ import {
   reduce,
   some,
   sumBy,
+  isString,
+  mapValues,
+  mergeWith,
   uniq,
 } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
   project_id: number
-  funds_disbursed?: string
-  planned_date_of_completion?: string
-  alternative_technologies?: PCRAlternativeTechnologyType[]
-  enterprises?: PCREnterpriseType[]
-  equipments?: PCREquipmentType[]
+  funds_disbursed: string | null
+  planned_date_of_completion: string | null
+  alternative_technologies: PCRAlternativeTechnologyType[]
+  enterprises: PCREnterpriseType[]
+  equipments: (Omit<PCREquipmentType, 'disposal_date'> & {
+    disposal_date: string | null
+  })[]
 }
 
 const hasText = (value: string) => value.trim() !== ''
@@ -88,50 +99,41 @@ const cleanEnterprises = (entries: PCREnterpriseType[]) =>
     .filter(isEnterpriseSent)
 
 const cleanEquipments = (entries: PCREquipmentType[]) =>
-  entries
-    .map((entry) => ({
-      name: entry.name.trim(),
-      description: entry.description.trim(),
-      disposal_type: entry.disposal_type,
-      disposal_date: entry.disposal_date,
-    }))
-    .filter(isEquipmentSent)
+  entries.filter(isEquipmentSent).map((entry) => ({
+    name: entry.name.trim(),
+    description: entry.description.trim(),
+    disposal_type: entry.disposal_type,
+    disposal_date: cleanDate(entry.disposal_date) ?? null,
+  }))
 
 export const buildPCRProjectPayload = (
   entry: PCRSummaryOfKeyDataType,
-): PCRSummaryProjectPayload => {
-  const payload: PCRSummaryProjectPayload = {
-    project_id: entry.project_id,
-  }
-  const fundsDisbursed = cleanNumber(entry.funds_disbursed)
-  const plannedDateOfCompletion = cleanDate(entry.planned_date_of_completion)
-  const alternativeTechnologies = cleanAlternativeTechnologies(
+): PCRSummaryProjectPayload => ({
+  project_id: entry.project_id,
+  funds_disbursed: cleanNumber(entry.funds_disbursed) ?? null,
+  planned_date_of_completion:
+    cleanDate(entry.planned_date_of_completion) ?? null,
+  alternative_technologies: cleanAlternativeTechnologies(
     entry.alternative_technologies,
+  ),
+  enterprises: cleanEnterprises(entry.enterprises),
+  equipments: cleanEquipments(entry.equipments),
+})
+
+export const hasPCRProjectData = (entry: PCRSummaryOfKeyDataType) => {
+  const payload = buildPCRProjectPayload(entry)
+
+  return (
+    payload.funds_disbursed !== null ||
+    payload.planned_date_of_completion !== null ||
+    payload.alternative_technologies.length > 0 ||
+    payload.enterprises.length > 0 ||
+    payload.equipments.length > 0
   )
-  const enterprises = cleanEnterprises(entry.enterprises)
-  const equipments = cleanEquipments(entry.equipments)
-
-  if (fundsDisbursed) {
-    payload.funds_disbursed = fundsDisbursed
-  }
-  if (plannedDateOfCompletion) {
-    payload.planned_date_of_completion = plannedDateOfCompletion
-  }
-  if (alternativeTechnologies.length > 0) {
-    payload.alternative_technologies = alternativeTechnologies
-  }
-  if (enterprises.length > 0) {
-    payload.enterprises = enterprises
-  }
-  if (equipments.length > 0) {
-    payload.equipments = equipments
-  }
-
-  return payload
 }
 
 const isProjectSent = (entry: PCRSummaryOfKeyDataType) =>
-  keys(buildPCRProjectPayload(entry)).length > 1
+  !!entry.hasSavedData || hasPCRProjectData(entry)
 
 const alignRowErrors = (
   rows: any[],
@@ -352,17 +354,22 @@ export const getErrorIndex = (
   )
 }
 
-const hasErrorMessage = (errors: Record<string, any>): boolean => {
+const hasErrorMessage = (
+  errors: Record<string, any>,
+  messages: string[] = [requiredMessage],
+): boolean => {
   if (typeof errors === 'string') {
-    return errors === requiredMessage
+    return messages.includes(errors)
   }
 
   if (Array.isArray(errors)) {
-    return errors.some((error) => hasErrorMessage(error))
+    return errors.some((error) => hasErrorMessage(error, messages))
   }
 
   if (errors && typeof errors === 'object') {
-    return Object.values(errors).some((error) => hasErrorMessage(error))
+    return Object.values(errors).some((error) =>
+      hasErrorMessage(error, messages),
+    )
   }
 
   return false
@@ -376,6 +383,29 @@ export const getSectionAgencies = (agencies: ApiAgency[], sectionData: any) =>
       )
     : []
 
+const isSdgInPayload = (sdg: PCRSdgsData) =>
+  sdg.goals.length > 0 || !sdg.sdg_applying
+
+export const alignSdgsErrors = (
+  errors: Record<string, any>,
+  sdgs: PCRSdgsData[],
+) => {
+  const sdgsErrors = errors?.[sdgsContributionField]
+
+  if (!Array.isArray(sdgsErrors)) {
+    return errors
+  }
+
+  let sentIndex = 0
+
+  return {
+    ...errors,
+    [sdgsContributionField]: map(sdgs, (sdg) =>
+      isSdgInPayload(sdg) ? (sdgsErrors[sentIndex++] ?? {}) : {},
+    ),
+  }
+}
+
 export const normalizeErrors = (errors: Record<string, any>) =>
   Object.fromEntries(
     Object.entries(errors).filter(([, value]) => {
@@ -386,6 +416,52 @@ export const normalizeErrors = (errors: Record<string, any>) =>
       return some(value, checkHasErrors)
     }),
   )
+
+export const setRequiredError = (
+  errors: Record<string, any>,
+  field: string,
+  value: unknown,
+  message = submitRequiredMessage,
+) => {
+  if (!String(value ?? '').trim()) {
+    return { ...errors, [field]: [message] }
+  }
+
+  return errors[field]?.includes(message) ? omit(errors, [field]) : errors
+}
+
+export const getSummaryOfKeyDataErrors = (
+  project: PCRSummaryOfKeyDataType,
+  prevErrors: Record<string, any> = {},
+) => {
+  let updatedErrors = setRequiredError(
+    setRequiredError(prevErrors, 'funds_disbursed', project.funds_disbursed),
+    'planned_date_of_completion',
+    project.planned_date_of_completion,
+  )
+
+  forEach(summaryOfKeyDataRowFields, (rowFields, section) => {
+    const rows: Record<string, any>[] =
+      project[section as keyof typeof summaryOfKeyDataRowFields] ?? []
+
+    updatedErrors = {
+      ...updatedErrors,
+      [section]: isEmpty(rows)
+        ? [submitRequiredMessage]
+        : map(rows, (row, rowIndex) => {
+            const prevRowErrors = prevErrors[section]?.[rowIndex]
+
+            return reduce(
+              rowFields,
+              (acc, field) => setRequiredError(acc, field, row[field]),
+              isPlainObject(prevRowErrors) ? prevRowErrors : {},
+            )
+          }),
+    }
+  })
+
+  return normalizeErrors(updatedErrors)
+}
 
 export const groupSummaryOfKeyDataErrors = (
   errors: Record<string, any>,
@@ -448,34 +524,15 @@ export const getFormData = (
         : null,
   }
 
-  const summaryOfKeyData = PCRData.summary_of_key_data.map(
+  const filteredSummaryOfKeyData = map(
+    filter(PCRData.summary_of_key_data, isProjectSent),
     buildPCRProjectPayload,
-  )
-  const filteredSummaryOfKeyData = filter(
-    summaryOfKeyData,
-    (entry) => keys(entry).length > 1,
   )
 
   const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
     results_assessment,
     'overall_assessment_highlights',
   )
-
-  // const causesOfDelayProjectComponents = flatMap(
-  //   delay_causes,
-  //   ({ agency_id, project_components }) =>
-  //     map(
-  //       project_components,
-  //       ({ project_component_option_id, delay_causes }) => ({
-  //         agency_id,
-  //         project_component_option_id,
-  //         delay_causes,
-  //         learned_lessons: [],
-  //       }),
-  //     ),
-  // )
-
-  // const projectComponentsData = [...causesOfDelayProjectComponents]
 
   const causesOfDelayData = formatAgencyData<PCRCausesOfDelayData>(
     delay_causes,
@@ -493,10 +550,7 @@ export const getFormData = (
     'gender_mainstreamings',
   )
   const sdgsContributionData = map(
-    filter(
-      sdgs_contribution,
-      (sdg) => sdg.goals.length > 0 || !sdg.sdg_applying,
-    ),
+    filter(sdgs_contribution, isSdgInPayload),
     (sdg) =>
       sdg.sdg_applying
         ? { ...sdg, sdg_not_applying_explanation: '' }
@@ -519,7 +573,6 @@ export const getFormData = (
     ...overviewData,
     pcr_projects: filteredSummaryOfKeyData,
     overall_assessment_highlights: resultsAssessmentData,
-    // project_components: projectComponentsData,
     delay_causes: causesOfDelayData,
     learned_lessons,
     future_project_recommendations: projectRecommendationsData,
@@ -537,29 +590,25 @@ export const getFormData = (
   return formData
 }
 
-export const isSubmitDisabled = (errors: Record<string, any>) => {
-  const hasOverviewDefaultErrors = hasErrorMessage(errors.overview)
-  const hasResultsAssessmentDefaultErrors = hasErrorMessage(
-    errors.results_assessment,
-  )
-  const hasCausesOfDelayDefaultErrors = hasErrorMessage(errors.delay_causes)
-  const hasLessonsLearnedDefaultErrors = hasErrorMessage(errors.learned_lessons)
-  const hasGenderMainstreamingDefaultErrors = hasErrorMessage(
-    errors.gender_mainstreaming,
-  )
-  const hasSDGsDefaultErrors = hasErrorMessage(errors.sdgs_contribution)
-  const hasEvidencesDefaultErrors = hasErrorMessage(errors.supporting_evidences)
+const errorSections = [
+  'overview',
+  'summary_of_key_data',
+  'results_assessment',
+  'delay_causes',
+  'learned_lessons',
+  'gender_mainstreaming',
+  'sdgs_contribution',
+  'supporting_evidences',
+]
 
-  return (
-    hasOverviewDefaultErrors ||
-    hasResultsAssessmentDefaultErrors ||
-    hasCausesOfDelayDefaultErrors ||
-    hasLessonsLearnedDefaultErrors ||
-    hasGenderMainstreamingDefaultErrors ||
-    hasSDGsDefaultErrors ||
-    hasEvidencesDefaultErrors
+export const isSubmitDisabled = (errors: Record<string, any>) =>
+  some(errorSections, (section) => hasErrorMessage(errors[section]))
+
+export const isSubmitPCRDisabled = (errors: Record<string, any>) =>
+  some(errorSections, (section) =>
+    hasErrorMessage(errors[section], [requiredMessage, submitRequiredMessage]),
   )
-}
+
 export const formatDate = (date: string | null | undefined) =>
   date ? dayjs(date).format('DD/MM/YYYY') : ''
 
@@ -633,3 +682,41 @@ export const getEnterpriseAddresses = (
       ),
     ),
   ).join(', ')
+
+const isMessageList = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.length > 0 && value.every(isString)
+
+const formMessages = [requiredMessage, submitRequiredMessage]
+
+export const keepFormMessages = (errors: unknown): unknown => {
+  if (Array.isArray(errors)) {
+    return errors.every(isString)
+      ? errors.filter((message) => formMessages.includes(message))
+      : errors.map(keepFormMessages)
+  }
+
+  return isPlainObject(errors)
+    ? mapValues(errors as Record<string, unknown>, keepFormMessages)
+    : errors
+}
+
+export const mergeSaveErrors = (
+  errors: Record<string, any>,
+  saveErrors: Record<string, any>,
+) =>
+  mergeWith(
+    {},
+    keepFormMessages(errors),
+    saveErrors,
+    (value: unknown, saveValue: unknown) => {
+      if (isMessageList(saveValue)) {
+        return isMessageList(value) ? uniq([...value, ...saveValue]) : saveValue
+      }
+
+      if (isMessageList(value)) {
+        return saveValue
+      }
+
+      return undefined
+    },
+  )

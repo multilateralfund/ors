@@ -500,17 +500,14 @@ class PCRSustainableDevelopmentGoalSerializer(serializers.ModelSerializer):
             attrs["sdg_not_applying_explanation"] = None
             return attrs
 
-        errors = {}
-        if not (attrs.get("sdg_not_applying_explanation") or "").strip():
-            errors["sdg_not_applying_explanation"] = (
-                "An explanation is required if the project did not contribute to any SDGs."
-            )
+        # The explanation is only required on submit/approve
         if goals:
-            errors["goals"] = (
-                "SDGs can't be selected if the project did not contribute to any SDGs."
+            raise serializers.ValidationError(
+                {
+                    "goals": "SDGs can't be selected if the project did not "
+                    "contribute to any SDGs."
+                }
             )
-        if errors:
-            raise serializers.ValidationError(errors)
         return attrs
 
 
@@ -867,9 +864,9 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         pcr_projects_data = validated_data.pop("pcr_projects", [])
         nested_data_pcr = pop_nested_data(validated_data, PCR_NESTED_MODELS)
-        supporting_evidences_data = validated_data.pop("supporting_evidences", [])
+        supporting_evidences_data = validated_data.pop("supporting_evidences", None)
         sustainable_development_goals_data = validated_data.pop(
-            "sustainable_development_goals", []
+            "sustainable_development_goals", None
         )
         instance = super().update(instance, validated_data)
         pcr_projects_by_project_id = {
@@ -899,41 +896,48 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
                 nested_data_pcr_project,
                 PCR_PROJECT_NESTED_MODELS,
             )
-        PCRSustainableDevelopmentGoalDescription.objects.filter(
-            sgr__pcr=instance
-        ).delete()
-        PCRSustainableDevelopmentGoal.objects.filter(pcr=instance).delete()
-        for sustainable_development_goal_data in sustainable_development_goals_data:
-            nested_data_sustainable_development_goal = pop_nested_data(
-                sustainable_development_goal_data,
-                PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
-            )
-            sustainable_development_goal = PCRSustainableDevelopmentGoal.objects.create(
-                pcr=instance, **sustainable_development_goal_data
-            )
-            replace_nested_data(
-                sustainable_development_goal,
-                "sgr",
-                nested_data_sustainable_development_goal,
-                PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
-            )
-        ids = []
-        for evidence_data in supporting_evidences_data:
-            file_obj = evidence_data.pop("file", None)
+        # The SDGs and the supporting evidences are replaced only if sent
+        if sustainable_development_goals_data is not None:
+            PCRSustainableDevelopmentGoalDescription.objects.filter(
+                sgr__pcr=instance
+            ).delete()
+            PCRSustainableDevelopmentGoal.objects.filter(pcr=instance).delete()
+            for sustainable_development_goal_data in sustainable_development_goals_data:
+                nested_data_sustainable_development_goal = pop_nested_data(
+                    sustainable_development_goal_data,
+                    PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
+                )
+                sustainable_development_goal = (
+                    PCRSustainableDevelopmentGoal.objects.create(
+                        pcr=instance, **sustainable_development_goal_data
+                    )
+                )
+                replace_nested_data(
+                    sustainable_development_goal,
+                    "sgr",
+                    nested_data_sustainable_development_goal,
+                    PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
+                )
+        if supporting_evidences_data is not None:
+            ids = []
+            for evidence_data in supporting_evidences_data:
+                file_obj = evidence_data.pop("file", None)
 
-            supporting_evidence, _ = PCRSupportingEvidence.objects.get_or_create(
-                pcr=instance,
-                agency_id=evidence_data.get("agency_id"),
-                section_id=evidence_data.get("section_id"),
-                filename=evidence_data.get("filename")
-                or (file_obj.name if file_obj else None),
-                defaults={
-                    "link": evidence_data.get("link"),
-                    "file": file_obj,
-                },
-            )
-            ids.append(supporting_evidence.id)
-        PCRSupportingEvidence.objects.filter(pcr=instance).exclude(id__in=ids).delete()
+                supporting_evidence, _ = PCRSupportingEvidence.objects.get_or_create(
+                    pcr=instance,
+                    agency_id=evidence_data.get("agency_id"),
+                    section_id=evidence_data.get("section_id"),
+                    filename=evidence_data.get("filename")
+                    or (file_obj.name if file_obj else None),
+                    defaults={
+                        "link": evidence_data.get("link"),
+                        "file": file_obj,
+                    },
+                )
+                ids.append(supporting_evidence.id)
+            PCRSupportingEvidence.objects.filter(pcr=instance).exclude(
+                id__in=ids
+            ).delete()
         log_pcr_history(
             instance, self.context["request"].user, HISTORY_DESCRIPTION_SAVE
         )

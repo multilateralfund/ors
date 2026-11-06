@@ -72,6 +72,10 @@ const ChangeVersionModal = ({
         <>{data?.error ?? `Could not ${modalTitle} PCR. Please try again.`}</>,
         { variant: 'error' },
       )
+
+      if (!editPCR && data?.errors && pcr.data?.editable) {
+        setLocation(`/pcr/${project_id}/${pcr_id}/edit`)
+      }
     }
   }
 
