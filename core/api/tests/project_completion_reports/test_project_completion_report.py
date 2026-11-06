@@ -1345,7 +1345,7 @@ def test_pcr_project_list_filters_are_scoped_to_pcr_queryset(
     assert {option["name"] for option in response.data["pcr_due"]} == {"Yes", "No"}
 
 
-@pytest.mark.parametrize("prefilled", [True, "Maybe", ""])
+@pytest.mark.parametrize("prefilled", [True, "Maybe"])
 def test_pcr_update_rejects_invalid_gender_mainstreaming_prefilled(
     client, admin_user, prefilled
 ):
@@ -1378,6 +1378,42 @@ def test_pcr_update_rejects_invalid_gender_mainstreaming_prefilled(
     assert response.status_code == 400
     assert "prefilled" in str(response.data)
     assert not pcr.gender_mainstreamings.exists()
+
+
+@pytest.mark.parametrize("empty_value", [None, ""])
+def test_pcr_update_allows_incomplete_gender_mainstreaming(
+    client, admin_user, empty_value
+):
+    # prefilled and qualitative_description are only required on submit/approve
+    pcr = PCR.objects.create(meta_project=MetaProjectFactory.create())
+    agency = AgencyFactory.create()
+    client.force_authenticate(user=admin_user)
+
+    response = client.patch(
+        reverse("project-completion-report-detail", args=[pcr.id]),
+        {
+            "metadata": json.dumps(
+                {
+                    "gender_mainstreamings": [
+                        {
+                            "agency_id": agency.id,
+                            "project_preparation": "Project preparation",
+                            "prefilled": empty_value,
+                            "qualitative_description": empty_value,
+                        },
+                    ],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
+        },
+        format="multipart",
+    )
+
+    assert response.status_code == 200
+    gender_mainstreaming = pcr.gender_mainstreamings.get()
+    assert gender_mainstreaming.prefilled == empty_value
+    assert gender_mainstreaming.qualitative_description == empty_value
 
 
 def _patch_sdgs(client, pcr, sustainable_development_goals):
@@ -1443,41 +1479,52 @@ def test_pcr_update_sdg_applying(client, admin_user):
     assert returned[other_agency.id]["sdg_applying"] is True
 
 
-@pytest.mark.parametrize(
-    "sdg_data,error_field",
-    [
-        ({"sdg_applying": False}, "sdg_not_applying_explanation"),
-        (
-            {"sdg_applying": False, "sdg_not_applying_explanation": "  "},
-            "sdg_not_applying_explanation",
-        ),
-        (
-            {
-                "sdg_applying": False,
-                "sdg_not_applying_explanation": "Explanation",
-                "goals": "WITH_GOAL",
-            },
-            "goals",
-        ),
-    ],
-)
-def test_pcr_update_rejects_invalid_sdg_applying(
-    client, admin_user, sdg_data, error_field
+@pytest.mark.parametrize("explanation", [None, "  "])
+def test_pcr_update_allows_sdg_not_applying_without_explanation(
+    client, admin_user, explanation
 ):
+    # The explanation is only required on submit/approve
     pcr = PCR.objects.create(meta_project=MetaProjectFactory.create())
     agency = AgencyFactory.create()
-    if sdg_data.get("goals") == "WITH_GOAL":
-        goal = PCRGoalFactory.create()
-        sdg_data = {
-            **sdg_data,
-            "goals": [{"goal_id": goal.id, "description": "Contribution"}],
-        }
     client.force_authenticate(user=admin_user)
 
-    response = _patch_sdgs(client, pcr, [{"agency_id": agency.id, **sdg_data}])
+    response = _patch_sdgs(
+        client,
+        pcr,
+        [
+            {
+                "agency_id": agency.id,
+                "sdg_applying": False,
+                "sdg_not_applying_explanation": explanation,
+            }
+        ],
+    )
+
+    assert response.status_code == 200
+    assert pcr.sustainable_development_goals.get().sdg_applying is False
+
+
+def test_pcr_update_rejects_goals_if_sdg_not_applying(client, admin_user):
+    pcr = PCR.objects.create(meta_project=MetaProjectFactory.create())
+    agency = AgencyFactory.create()
+    goal = PCRGoalFactory.create()
+    client.force_authenticate(user=admin_user)
+
+    response = _patch_sdgs(
+        client,
+        pcr,
+        [
+            {
+                "agency_id": agency.id,
+                "sdg_applying": False,
+                "sdg_not_applying_explanation": "Explanation",
+                "goals": [{"goal_id": goal.id, "description": "Contribution"}],
+            }
+        ],
+    )
 
     assert response.status_code == 400
-    assert error_field in str(response.data)
+    assert "goals" in str(response.data)
     assert not pcr.sustainable_development_goals.exists()
 
 

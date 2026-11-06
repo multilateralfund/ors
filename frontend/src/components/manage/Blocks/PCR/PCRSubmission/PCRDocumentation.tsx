@@ -6,8 +6,8 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRFilesViewer from './PCRFilesViewer'
 import PCRFilesInput from './PCRFilesInput'
 import { TabLabel } from './PCRWidgets'
+import { supportingEvidencesField, agencyErrorsField } from '../constants'
 import { getSectionAgencies, formatErrors } from '../utils'
-import { supportingEvidencesField } from '../constants'
 
 import { Tab, Tabs } from '@mui/material'
 import { map } from 'lodash'
@@ -25,10 +25,24 @@ const PCRDocumentation = () => {
   const { supporting_evidences: supportingEvidencesErrors } = errors
   const evidencesErrors = supportingEvidencesErrors[supportingEvidencesField]
 
-  const agencyErrors = map(evidencesErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors({
-    [supportingEvidencesField]: agencyErrors,
+  const agencyLevelErrors = supportingEvidencesErrors[agencyErrorsField] ?? {}
+  const crtAgencyLevelErrors = Object.assign(
+    {},
+    ...map(agencyLevelErrors[crtAgencyId], 'errors'),
+  )
+
+  const getTabErrors = (agencyId: number) => ({
+    [agencyId]: [
+      ...(evidencesErrors[agencyId] ?? []),
+      ...(agencyLevelErrors[agencyId] ?? []),
+    ],
   })
+
+  const agencyErrors = map(evidencesErrors[crtAgencyId], 'errors')
+  const formattedAgencyErrors = [
+    ...formatErrors(crtAgencyLevelErrors),
+    ...formatErrors({ [supportingEvidencesField]: agencyErrors }),
+  ]
 
   return (
     <>
@@ -55,7 +69,7 @@ const PCRDocumentation = () => {
             label={
               <TabLabel
                 field={supportingEvidencesField}
-                errors={evidencesErrors}
+                errors={getTabErrors(agency.id)}
                 {...{ agency }}
               />
             }

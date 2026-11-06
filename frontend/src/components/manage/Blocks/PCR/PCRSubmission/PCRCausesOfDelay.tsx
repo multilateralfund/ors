@@ -1,6 +1,9 @@
 import { useContext, useState } from 'react'
 
-import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import {
+  ErrorsList,
+  FieldErrorIndicator,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
@@ -20,6 +23,7 @@ import {
   delayField,
   cdField,
   dcField,
+  agencyErrorsField,
   borderedContainerClassname,
 } from '../constants'
 
@@ -55,12 +59,25 @@ const PCRCausesOfDelay = () => {
   const { delay_causes: delayCausesErrors } = errors
   const dcErrors = delayCausesErrors[cdField]
 
-  const agencyErrors = map(dcErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors(
-    { [cdField]: agencyErrors },
-    dcField,
+  const agencyLevelErrors = delayCausesErrors[agencyErrorsField] ?? {}
+  const crtAgencyLevelErrors = Object.assign(
+    {},
+    ...map(agencyLevelErrors[crtAgencyId], 'errors'),
   )
-  const causesOfDelayErrors = map(agencyErrors, (error) => map(error, dcField))
+
+  const getTabErrors = (agencyId: number) => ({
+    [agencyId]: [
+      ...(dcErrors[agencyId] ?? []),
+      ...(agencyLevelErrors[agencyId] ?? []),
+    ],
+  })
+
+  const agencyErrors = map(dcErrors[crtAgencyId], 'errors')
+  const formattedAgencyErrors = [
+    ...formatErrors(crtAgencyLevelErrors),
+    ...formatErrors({ [cdField]: agencyErrors }, dcField),
+  ]
+  const causesOfDelayErrors = [map(agencyErrors, dcField)]
 
   const DataHeader = (
     <div className="mb-5 grid flex-1 grid-cols-2 gap-4">
@@ -89,6 +106,26 @@ const PCRCausesOfDelay = () => {
         ),
       }
     }, cdField)
+
+    const errorIndex = getErrorIndex(
+      sectionData,
+      cdField,
+      crtAgencyId,
+      dcData.length,
+    )
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const delayCausesErrors = prevData[delayField] ?? []
+
+      return {
+        ...prevData,
+        [delayField]: [
+          ...delayCausesErrors.slice(0, errorIndex),
+          {},
+          ...delayCausesErrors.slice(errorIndex),
+        ],
+      }
+    })
   }
 
   const onRemoveDelayCluster = (dcIndex: number) => {
@@ -121,8 +158,8 @@ const PCRCausesOfDelay = () => {
 
       return {
         ...prevData,
-        [cdField]: filter(
-          prevData[cdField],
+        [delayField]: filter(
+          prevData[delayField],
           (_, index) => index !== errorIndex,
         ),
       }
@@ -203,7 +240,7 @@ const PCRCausesOfDelay = () => {
 
       return {
         ...prevData,
-        [cdField]: map(prevData[cdField], (component, index) => {
+        [delayField]: map(prevData[delayField], (component, index) => {
           if (index !== errorIndex) {
             return component
           }
@@ -245,7 +282,11 @@ const PCRCausesOfDelay = () => {
               aria-controls={agency.name}
               id={agency.name}
               label={
-                <TabLabel field={cdField} errors={dcErrors} {...{ agency }} />
+                <TabLabel
+                  field={cdField}
+                  errors={getTabErrors(agency.id)}
+                  {...{ agency }}
+                />
               }
             />
           ))}
@@ -281,6 +322,12 @@ const PCRCausesOfDelay = () => {
                     <span className="text-lg uppercase text-mlfs-hlYellow">
                       Root causes of delay
                     </span>
+                    {cdData.length === 0 && (
+                      <FieldErrorIndicator
+                        errors={agencyErrors[pcIndex]}
+                        field={dcField}
+                      />
+                    )}
                     <UserInfo
                       info="Select from the list of the root cause(s) of delay that correspond to the selected delay cluster."
                       className={{
@@ -358,11 +405,17 @@ const PCRCausesOfDelay = () => {
                         return (
                           <div key={cdIndex}>
                             <div className="grid grid-cols-2 gap-4">
-                              <div className="flex gap-3">
+                              <div className="flex items-center gap-3">
                                 {NrEntity(cdIndex)}
                                 <h4 className="m-0 text-lg font-semibold text-primary">
                                   {crtCdName}
                                 </h4>
+                                <FieldErrorIndicator
+                                  errors={
+                                    agencyErrors[pcIndex]?.[dcField]?.[cdIndex]
+                                  }
+                                  field="root_cause_id"
+                                />
                               </div>
                               <div />
                               <PCRTextAreaWidget
@@ -373,19 +426,21 @@ const PCRCausesOfDelay = () => {
                                 indexes={[crtTab, pcIndex, cdIndex]}
                                 subFields={['', cdField, dcField]}
                                 rows={2}
-                                className="md:!min-w-full"
+                                className="md:!min-w-[calc(100%-28px)]"
                               />
-                              <PCRTextAreaWidget
-                                {...{ PCRData, setPCRData }}
-                                sectionIdentifier={delayField}
-                                field="action_taken"
-                                errors={causesOfDelayErrors}
-                                indexes={[crtTab, pcIndex, cdIndex]}
-                                subFields={['', cdField, dcField]}
-                                rows={2}
-                                excludeLabel={true}
-                                className="mt-[37px] md:!min-w-full"
-                              />
+                              <div className="mt-[37px]">
+                                <PCRTextAreaWidget
+                                  {...{ PCRData, setPCRData }}
+                                  sectionIdentifier={delayField}
+                                  field="action_taken"
+                                  errors={causesOfDelayErrors}
+                                  indexes={[crtTab, pcIndex, cdIndex]}
+                                  subFields={['', cdField, dcField]}
+                                  rows={2}
+                                  excludeLabel={true}
+                                  className="md:!min-w-[calc(100%-28px)]"
+                                />
+                              </div>
                             </div>
                             {cdIndex !== cdData.length - 1 && (
                               <Divider className="-mx-6 my-4" />

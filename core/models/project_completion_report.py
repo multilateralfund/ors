@@ -799,9 +799,11 @@ class PCRGenderMainstreaming(models.Model):
     prefilled = models.CharField(
         max_length=16,
         choices=Prefilled.choices,
+        null=True,
+        blank=True,
         help_text="Gender policy implemented",
     )
-    qualitative_description = models.TextField()
+    qualitative_description = models.TextField(null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 

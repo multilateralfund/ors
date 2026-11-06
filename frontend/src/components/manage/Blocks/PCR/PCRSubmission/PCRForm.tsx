@@ -6,10 +6,10 @@ import {
   NavigationButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import PCRSummaryOfKeyData, { createSummaryData } from './PCRSummaryOfKeyData'
 import PCRGenderMainstreaming from './PCRGenderMainstreaming'
 import PCRHistory from '../PCRView/PCRViewTabs/PCRHistory'
 import PCRResultsAssessment from './PCRResultsAssessment'
-import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 import PCRLessonsLearned from './PCRLessonsLearned'
 import PCRCausesOfDelay from './PCRCausesOfDelay'
 import PCRDocumentation from './PCRDocumentation'
@@ -19,21 +19,55 @@ import {
   SectionTitle,
   UserInfo,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
-import { formatErrors, hasSectionErrors, normalizeErrors } from '../utils'
 import {
-  cdField,
+  formatErrors,
+  hasSectionErrors,
+  normalizeErrors,
+  getOtherOptionId,
+  getSummaryOfKeyDataErrors,
+  setRequiredError,
+} from '../utils'
+import {
+  summaryOfKeyDataField,
   ppField,
+  delayField,
+  dcField,
+  llField,
+  prField,
+  sdgsField,
+  sdgsContributionField,
   supportingEvidencesField,
+  overviewRequiredFields,
+  initialActivitiesData,
   requiredMessage,
+  submitRequiredMessage,
 } from '../constants'
 
-import { flatMap, map, omit } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
+import {
+  filter,
+  flatMap,
+  forEach,
+  isEmpty,
+  isPlainObject,
+  keys,
+  map,
+  omit,
+  pick,
+  reduce,
+} from 'lodash'
 
 const PCRForm = ({ mode }: { mode: string }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { PCRData, errors, setErrors } = useContext(PCRDataContext)
+  const {
+    pcrMetaproject,
+    PCRData,
+    setPCRData,
+    errors,
+    setErrors,
+    ratingOptions,
+  } = useContext(PCRDataContext)
 
   const tabMapping = {
     overview: { title: 'Overview', errors: errors.overview },
@@ -133,31 +167,122 @@ const PCRForm = ({ mode }: { mode: string }) => {
         ]
       : []),
   ]
-  const additionalCommentsField = 'additional_comments'
 
   const overviewData = PCRData.overview || []
+  const overviewRequiredData = pick(overviewData, overviewRequiredFields)
+  const isOtherRating = overviewData.rating === getOtherOptionId(ratingOptions)
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any[]>) => {
+      let updatedErrors = { ...prev }
+
+      forEach(overviewRequiredFields, (field) => {
+        const isRequired = field !== 'rating_explanation_other' || isOtherRating
+        const isEmpty = !String(overviewRequiredData[field] ?? '').trim()
+
+        if (isRequired && isEmpty) {
+          updatedErrors[field] = [submitRequiredMessage]
+        } else if (updatedErrors[field]?.includes(submitRequiredMessage)) {
+          updatedErrors = omit(updatedErrors, [field])
+        }
+      })
+
+      return updatedErrors
+    })
+  }, [JSON.stringify(overviewRequiredData), isOtherRating])
+
+  const additionalCommentsField = 'additional_comments'
   const additionalCommentsData = overviewData[additionalCommentsField] || []
 
   useEffect(() => {
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
-      [additionalCommentsField]: map(
-        additionalCommentsData,
-        (comment, index) => {
-          const existingErrors = prev[additionalCommentsField]?.[index] ?? {}
-          let updatedErrors = { ...existingErrors }
+      [additionalCommentsField]: isEmpty(additionalCommentsData)
+        ? [submitRequiredMessage]
+        : map(additionalCommentsData, (comment, index) => {
+            const prevErrors = prev[additionalCommentsField]?.[index]
+            const existingErrors = isPlainObject(prevErrors) ? prevErrors : {}
+            let updatedErrors = { ...existingErrors }
 
-          if (!comment.entity) {
-            updatedErrors = { ...updatedErrors, entity: [requiredMessage] }
-          } else if (existingErrors.entity?.includes(requiredMessage)) {
-            updatedErrors = omit(updatedErrors, ['entity'])
-          }
+            if (!comment.entity) {
+              updatedErrors = { ...updatedErrors, entity: [requiredMessage] }
+            } else if (existingErrors.entity?.includes(requiredMessage)) {
+              updatedErrors = omit(updatedErrors, ['entity'])
+            }
 
-          return normalizeErrors(updatedErrors)
-        },
-      ),
+            if (!comment.comment?.trim()) {
+              updatedErrors = {
+                ...updatedErrors,
+                comment: [submitRequiredMessage],
+              }
+            } else if (
+              existingErrors.comment?.includes(submitRequiredMessage)
+            ) {
+              updatedErrors = omit(updatedErrors, ['comment'])
+            }
+
+            return normalizeErrors(updatedErrors)
+          }),
     }))
   }, [JSON.stringify(additionalCommentsData)])
+
+  const projectIds = map(pcrMetaproject.data?.projects, 'id')
+  const summaryOfKeyData = PCRData.summary_of_key_data || []
+
+  useEffect(() => {
+    const summaryProjectIds = map(summaryOfKeyData, 'project_id')
+    const missingProjectIds = filter(
+      projectIds,
+      (id) => !summaryProjectIds.includes(id),
+    )
+
+    if (missingProjectIds.length > 0) {
+      setPCRData((prevData) => ({
+        ...prevData,
+        summary_of_key_data: [
+          ...(prevData.summary_of_key_data || []),
+          ...map(missingProjectIds, createSummaryData),
+        ],
+      }))
+    }
+  }, [
+    JSON.stringify(projectIds),
+    JSON.stringify(map(summaryOfKeyData, 'project_id')),
+  ])
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [summaryOfKeyDataField]: map(summaryOfKeyData, (project, index) =>
+        getSummaryOfKeyDataErrors(
+          project,
+          prev[summaryOfKeyDataField]?.[index],
+        ),
+      ),
+    }))
+  }, [JSON.stringify(summaryOfKeyData)])
+
+  const resultsAssessmentData = PCRData.results_assessment || []
+
+  useEffect(() => {
+    const activitiesData = flatMap(
+      resultsAssessmentData,
+      ({ overall_assessment_highlights }) => overall_assessment_highlights,
+    )
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      overall_assessment_highlights: map(activitiesData, (activity, index) =>
+        normalizeErrors(
+          reduce(
+            keys(initialActivitiesData) as (keyof typeof activity)[],
+            (acc, field) => setRequiredError(acc, field, activity[field]),
+            prev.overall_assessment_highlights?.[index] ?? {},
+          ),
+        ),
+      ),
+    }))
+  }, [JSON.stringify(resultsAssessmentData)])
 
   const causesOfDelayData = PCRData.delay_causes || []
 
@@ -169,10 +294,10 @@ const PCRForm = ({ mode }: { mode: string }) => {
 
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
-      [cdField]: map(cdData, (cd, index) => {
+      [delayField]: map(cdData, (cd, index) => {
         const cdIdField = 'delay_cluster_id'
 
-        const existingErrors = prev[cdField]?.[index] ?? {}
+        const existingErrors = prev[delayField]?.[index] ?? {}
         let updatedErrors = { ...existingErrors }
 
         if (!cd[cdIdField]) {
@@ -181,10 +306,62 @@ const PCRForm = ({ mode }: { mode: string }) => {
           updatedErrors = omit(updatedErrors, [cdIdField])
         }
 
+        updatedErrors[dcField] = isEmpty(cd[dcField])
+          ? [submitRequiredMessage]
+          : map(cd[dcField], (rootCause, rootCauseIndex) => {
+              const prevRootCauseErrors =
+                existingErrors[dcField]?.[rootCauseIndex]
+
+              return reduce(
+                ['description_roots_causes_of_delay', 'action_taken'] as const,
+                (acc, field) => setRequiredError(acc, field, rootCause[field]),
+                isPlainObject(prevRootCauseErrors) ? prevRootCauseErrors : {},
+              )
+            })
+
         return normalizeErrors(updatedErrors)
       }),
     }))
   }, [JSON.stringify(causesOfDelayData)])
+
+  const lessonsLearnedData = PCRData.learned_lessons || []
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      learned_lessons: map(lessonsLearnedData, (agencyData, index) => {
+        const existingErrors = prev.learned_lessons?.[index] ?? {}
+
+        return normalizeErrors({
+          ...existingErrors,
+          [llField]: map(agencyData[llField], (lesson, lessonIndex) =>
+            setRequiredError(
+              existingErrors[llField]?.[lessonIndex] ?? {},
+              'description',
+              lesson.description,
+            ),
+          ),
+        })
+      }),
+    }))
+  }, [JSON.stringify(lessonsLearnedData)])
+
+  const recommendationsData = PCRData.future_project_recommendations || []
+
+  useEffect(() => {
+    const prData = flatMap(recommendationsData, (data) => data[prField])
+
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      future_project_recommendations: map(prData, (recommendation, index) =>
+        reduce(
+          ['title', 'description'] as const,
+          (acc, field) => setRequiredError(acc, field, recommendation[field]),
+          prev.future_project_recommendations?.[index] ?? {},
+        ),
+      ),
+    }))
+  }, [JSON.stringify(recommendationsData)])
 
   const genderMainstreamingData = PCRData.gender_mainstreaming || []
 
@@ -197,21 +374,56 @@ const PCRForm = ({ mode }: { mode: string }) => {
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
       [ppField]: map(ppData, (pp, index) => {
-        const ppIdField = 'project_preparation'
+        return reduce(
+          [
+            'project_preparation',
+            'prefilled',
+            'qualitative_description',
+          ] as const,
+          (acc, field) =>
+            setRequiredError(
+              acc,
+              field,
+              pp[field],
+              field === 'project_preparation' ? requiredMessage : undefined,
+            ),
+          prev[ppField]?.[index] ?? {},
+        )
+      }),
+    }))
+  }, [JSON.stringify(genderMainstreamingData)])
 
-        const existingErrors = prev[ppField]?.[index] ?? {}
-        let updatedErrors = { ...existingErrors }
+  const sdgsContributionData = PCRData.sdgs_contribution || []
 
-        if (!pp[ppIdField]) {
-          updatedErrors[ppIdField] = [requiredMessage]
-        } else if (updatedErrors[ppIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [ppIdField])
+  useEffect(() => {
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [sdgsContributionField]: map(sdgsContributionData, (sdg, index) => {
+        const explanationField = 'sdg_not_applying_explanation'
+
+        const existingErrors = prev[sdgsContributionField]?.[index] ?? {}
+        const updatedErrors: Record<string, any> = {
+          ...(sdg.sdg_applying
+            ? omit(existingErrors, [explanationField])
+            : setRequiredError(
+                existingErrors,
+                explanationField,
+                sdg[explanationField],
+              )),
         }
+
+        updatedErrors[sdgsField] = map(sdg[sdgsField], (goal, goalIndex) =>
+          setRequiredError(
+            existingErrors[sdgsField]?.[goalIndex] ?? {},
+            'description',
+            goal.description,
+          ),
+        )
 
         return normalizeErrors(updatedErrors)
       }),
     }))
-  }, [JSON.stringify(genderMainstreamingData)])
+  }, [JSON.stringify(sdgsContributionData)])
 
   const supportingEvidencesData = PCRData[supportingEvidencesField] || []
 

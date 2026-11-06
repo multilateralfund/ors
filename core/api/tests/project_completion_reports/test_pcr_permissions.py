@@ -14,6 +14,7 @@ from core.api.tests.factories import (
     ProjectFactory,
     UserFactory,
 )
+from core.api.tests.project_completion_reports.utils import fill_pcr_required_data
 from core.models.project_completion_report import (
     PCR,
     PCRProject,
@@ -74,7 +75,7 @@ def _create_pcr(agency, production=False, status=PCR.Status.DRAFT):
     PCRProject.objects.create(
         pcr=pcr, project=project, funds_disbursed=Decimal("100.00")
     )
-    return pcr
+    return fill_pcr_required_data(pcr)
 
 
 @pytest.fixture

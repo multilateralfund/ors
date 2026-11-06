@@ -1,6 +1,9 @@
 import { useContext, useState } from 'react'
 
-import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import {
+  ErrorsList,
+  FieldErrorIndicator,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { EditSectionIndicator, AddEntityButton } from './EditHelperComponents'
@@ -12,6 +15,7 @@ import {
 import {
   pcrFieldsMapping,
   initialActivitiesData,
+  agencyErrorsField,
   borderedContainerClassname,
 } from '../constants'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
@@ -48,8 +52,24 @@ const PCRResultsAssessment = () => {
   const { results_assessment: resultsAssessmentErrors } = errors
   const activitiesErrors = resultsAssessmentErrors[activityField]
 
+  const agencyLevelErrors = resultsAssessmentErrors[agencyErrorsField] ?? {}
+  const crtAgencyLevelErrors = Object.assign(
+    {},
+    ...map(agencyLevelErrors[crtAgencyId], 'errors'),
+  )
+
+  const getTabErrors = (agencyId: number) => ({
+    [agencyId]: [
+      ...(activitiesErrors[agencyId] ?? []),
+      ...(agencyLevelErrors[agencyId] ?? []),
+    ],
+  })
+
   const agencyErrors = map(activitiesErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors({ [activityField]: agencyErrors })
+  const formattedAgencyErrors = [
+    ...formatErrors(crtAgencyLevelErrors),
+    ...formatErrors({ [activityField]: agencyErrors }),
+  ]
 
   const onAddActivity = () => {
     setPCRData((prevData) => {
@@ -70,6 +90,26 @@ const PCRResultsAssessment = () => {
         ),
       }
     }, activityField)
+
+    const errorIndex = getErrorIndex(
+      sectionData,
+      activityField,
+      crtAgencyId,
+      activitiesData.length,
+    )
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const prevActivitiesErrors = prevData[activityField] ?? []
+
+      return {
+        ...prevData,
+        [activityField]: [
+          ...prevActivitiesErrors.slice(0, errorIndex),
+          {},
+          ...prevActivitiesErrors.slice(errorIndex),
+        ],
+      }
+    })
   }
 
   const onRemoveActivity = (activityIndex: number) => {
@@ -135,7 +175,7 @@ const PCRResultsAssessment = () => {
               label={
                 <TabLabel
                   field={activityField}
-                  errors={activitiesErrors}
+                  errors={getTabErrors(agency.id)}
                   {...{ agency }}
                 />
               }
@@ -150,9 +190,15 @@ const PCRResultsAssessment = () => {
         )}
         <div className={cx('flex flex-col', borderedContainerClassname)}>
           <div className="bg-[#f4f5f6] px-6 py-4">
-            <SubSectionTitle>
-              Implementation effectiveness (achievement of activity output)
-            </SubSectionTitle>
+            <div className="flex items-center">
+              <SubSectionTitle>
+                Implementation effectiveness (achievement of activity output)
+              </SubSectionTitle>
+              <FieldErrorIndicator
+                errors={crtAgencyLevelErrors}
+                field={activityField}
+              />
+            </div>
           </div>
           <div className="flex flex-col border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
             {activitiesData.length > 0 && (

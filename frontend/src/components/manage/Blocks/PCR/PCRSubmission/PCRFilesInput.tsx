@@ -2,15 +2,17 @@ import { useContext, ChangeEvent } from 'react'
 
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { evidencesField, supportingEvidencesField } from '../constants'
+import { getErrorIndex } from '../utils'
 
 import { TextField } from '@mui/material'
 import { map } from 'lodash'
 
 const PCRFilesInput = ({ crtTab }: { crtTab: number }) => {
-  const sectionIdentifier = 'supporting_evidences'
-  const evidencesField = 'evidences'
+  const { PCRData, setPCRData, setErrors } = useContext(PCRDataContext)
 
-  const { setPCRData } = useContext(PCRDataContext)
+  const sectionData = PCRData[supportingEvidencesField] || []
+  const crtAgencyData = sectionData[crtTab]
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const inputFiles = event.target.files
@@ -25,11 +27,11 @@ const PCRFilesInput = ({ crtTab }: { crtTab: number }) => {
       }))
 
       setPCRData((prevData) => {
-        const sectionData = prevData[sectionIdentifier] || []
+        const sectionData = prevData[supportingEvidencesField] || []
 
         return {
           ...prevData,
-          [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+          [supportingEvidencesField]: sectionData.map((data, dataIndex) =>
             dataIndex === crtTab
               ? {
                   ...data,
@@ -39,6 +41,26 @@ const PCRFilesInput = ({ crtTab }: { crtTab: number }) => {
           ),
         }
       }, evidencesField)
+
+      setErrors((prevData: Record<string, any[]>) => {
+        const evidencesErrors = prevData[supportingEvidencesField] ?? []
+
+        const errorIndex = getErrorIndex(
+          sectionData,
+          evidencesField,
+          crtAgencyData.agency_id,
+          crtAgencyData[evidencesField].length,
+        )
+
+        return {
+          ...prevData,
+          [supportingEvidencesField]: [
+            ...evidencesErrors.slice(0, errorIndex),
+            ...map(updatedFiles, () => ({})),
+            ...evidencesErrors.slice(errorIndex),
+          ],
+        }
+      })
     }
   }
 

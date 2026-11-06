@@ -9,6 +9,7 @@ import { EntryIndex } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import {
   ppField,
+  agencyErrorsField,
   pcrFieldsMapping,
   projectPhaseOptions,
   extendedBooleanFieldsOpts,
@@ -37,8 +38,24 @@ const PCRGenderMainstreaming = () => {
   const { gender_mainstreaming: genderMainstreamingErrors } = errors
   const ppErrors = genderMainstreamingErrors[ppField]
 
+  const agencyLevelErrors = genderMainstreamingErrors[agencyErrorsField] ?? {}
+  const crtAgencyLevelErrors = Object.assign(
+    {},
+    ...map(agencyLevelErrors[crtAgencyId], 'errors'),
+  )
+
+  const getTabErrors = (agencyId: number) => ({
+    [agencyId]: [
+      ...(ppErrors[agencyId] ?? []),
+      ...(agencyLevelErrors[agencyId] ?? []),
+    ],
+  })
+
   const agencyErrors = map(ppErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors({ [ppField]: agencyErrors })
+  const formattedAgencyErrors = [
+    ...formatErrors(crtAgencyLevelErrors),
+    ...formatErrors({ [ppField]: agencyErrors }),
+  ]
   const onAddProjectPhase = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
@@ -60,6 +77,26 @@ const PCRGenderMainstreaming = () => {
         ),
       }
     }, ppField)
+
+    const errorIndex = getErrorIndex(
+      sectionData,
+      ppField,
+      crtAgencyId,
+      ppData.length,
+    )
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const prevPpErrors = prevData[ppField] ?? []
+
+      return {
+        ...prevData,
+        [ppField]: [
+          ...prevPpErrors.slice(0, errorIndex),
+          {},
+          ...prevPpErrors.slice(errorIndex),
+        ],
+      }
+    })
   }
 
   const onRemoveProjectPhase = (ppIndex: number) => {
@@ -123,7 +160,11 @@ const PCRGenderMainstreaming = () => {
               aria-controls={agency.name}
               id={agency.name}
               label={
-                <TabLabel field={ppField} errors={ppErrors} {...{ agency }} />
+                <TabLabel
+                  field={ppField}
+                  errors={getTabErrors(agency.id)}
+                  {...{ agency }}
+                />
               }
             />
           ))}

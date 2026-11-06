@@ -1,6 +1,9 @@
 import { useContext, useState } from 'react'
 
-import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import {
+  ErrorsList,
+  FieldErrorIndicator,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRProjectRecommendations from './PCRProjectRecommendations'
@@ -12,8 +15,13 @@ import {
   NrEntity,
   NoDataReported,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
-import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
-import { llField, borderedContainerClassname } from '../constants'
+import {
+  llField,
+  prField,
+  agencyErrorsField,
+  borderedContainerClassname,
+} from '../constants'
+import { getSectionAgencies, formatErrors } from '../utils'
 
 import { filter, find, map } from 'lodash'
 import cx from 'classnames'
@@ -38,13 +46,34 @@ const PCRLessonsLearned = () => {
   const sectionData = PCRData[sectionIdentifier] || []
   const llData = sectionData[crtTab][llField] || []
   const crtAgencyId = sectionData[crtTab].agency_id
+  const prAgencyId = PCRData.future_project_recommendations?.[crtTab]?.agency_id
   const crtAgencies = getSectionAgencies(agencies, sectionData)
 
   const { [sectionIdentifier]: lessonsLearnedErrors } = errors
   const llErrors = lessonsLearnedErrors[llField]
+  const prErrors = lessonsLearnedErrors[prField]
+
+  const agencyLevelErrors = lessonsLearnedErrors[agencyErrorsField] ?? {}
+  const crtAgencyLevelErrors = Object.assign(
+    {},
+    ...map(agencyLevelErrors[crtAgencyId], 'errors'),
+  )
+
+  const getTabErrors = (agencyId: number) => ({
+    [agencyId]: [
+      ...(llErrors[agencyId] ?? []),
+      ...(prErrors[agencyId] ?? []),
+      ...(agencyLevelErrors[agencyId] ?? []),
+    ],
+  })
 
   const agencyErrors = map(llErrors[crtAgencyId], 'errors')
-  const formattedAgencyErrors = formatErrors({ [llField]: agencyErrors })
+  const prAgencyErrors = map(prErrors[prAgencyId], 'errors')
+  const formattedAgencyErrors = [
+    ...formatErrors(crtAgencyLevelErrors),
+    ...formatErrors({ [llField]: agencyErrors }),
+    ...formatErrors({ [prField]: prAgencyErrors }),
+  ]
 
   const DataHeader = (
     <SubSectionTitle className="mb-5 flex-1">Lessons learned</SubSectionTitle>
@@ -70,6 +99,7 @@ const PCRLessonsLearned = () => {
   }
 
   const onRemoveLessonLearned = (llId: number) => {
+    const llIndex = llData.findIndex((ll) => ll.lesson_id === llId)
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
@@ -86,17 +116,20 @@ const PCRLessonsLearned = () => {
       }
     }, llField)
 
-    setErrors((prevData: Record<string, any[]>) => {
-      const errorIndex = getErrorIndex(sectionData, llField, crtAgencyId, llId)
-
-      return {
-        ...prevData,
-        [llField]: filter(
-          prevData[llField],
-          (_, index) => index !== errorIndex,
-        ),
-      }
-    })
+    setErrors((prevData: Record<string, any[]>) => ({
+      ...prevData,
+      [sectionIdentifier]: map(prevData[sectionIdentifier], (entry, index) =>
+        index === crtTab
+          ? {
+              ...entry,
+              [llField]: filter(
+                entry?.[llField] as Record<string, any>[],
+                (_, crtLlIndex) => crtLlIndex !== llIndex,
+              ),
+            }
+          : entry,
+      ),
+    }))
   }
 
   return (
@@ -123,7 +156,11 @@ const PCRLessonsLearned = () => {
               aria-controls={agency.name}
               id={agency.name}
               label={
-                <TabLabel field={llField} errors={llErrors} {...{ agency }} />
+                <TabLabel
+                  field={llField}
+                  errors={getTabErrors(agency.id)}
+                  {...{ agency }}
+                />
               }
             />
           ))}
@@ -209,9 +246,15 @@ const PCRLessonsLearned = () => {
                         <div className="flex gap-3">
                           {NrEntity(llIndex)}
                           <div className="flex-1">
-                            <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
-                              {crtLlName}
-                            </h4>
+                            <div className="mb-3 flex items-center">
+                              <h4 className="m-0 text-lg font-semibold text-primary">
+                                {crtLlName}
+                              </h4>
+                              <FieldErrorIndicator
+                                errors={agencyErrors[llIndex]}
+                                field="lesson_id"
+                              />
+                            </div>
                             <PCRTextAreaWidget
                               {...{
                                 PCRData,
@@ -219,7 +262,7 @@ const PCRLessonsLearned = () => {
                                 sectionIdentifier,
                               }}
                               field="description"
-                              errors={llErrors}
+                              errors={agencyErrors}
                               indexes={[crtTab, llIndex]}
                               subFields={['', llField]}
                               rows={2}
@@ -241,7 +284,7 @@ const PCRLessonsLearned = () => {
               )}
             </div>
           </div>
-          <PCRProjectRecommendations {...{ crtTab }} />
+          <PCRProjectRecommendations {...{ crtTab }} errors={prAgencyErrors} />
         </div>
       </div>
     </>
