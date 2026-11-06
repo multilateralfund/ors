@@ -1,15 +1,20 @@
-# pylint: disable=ungrouped-imports
+# pylint: disable=ungrouped-imports,abstract-method
 
 from datetime import datetime, timedelta, timezone
 
+from dj_rest_auth.app_settings import api_settings as rest_auth_settings
+from dj_rest_auth.jwt_auth import CookieTokenRefreshSerializer, get_refresh_view
 from dj_rest_auth.views import LoginView
 from django.conf import settings
 
 from django_auth_adfs.rest_framework import AdfsAccessTokenAuthentication
 from rest_framework import permissions, status
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.settings import api_settings as jwt_settings
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework.views import APIView
+
+from core.models import User
 
 
 class CustomLoginView(LoginView):
@@ -52,6 +57,49 @@ class CustomLoginView(LoginView):
                     samesite="Lax",
                 )
 
+        return response
+
+
+class ExternalServiceTokenRefreshSerializer(CookieTokenRefreshSerializer):
+    """
+    External service users keep their long-lived access token after a refresh:
+    the new access token expires together with the refresh token from login.
+    """
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # super().validate() sets attrs["refresh"] (from the body or the cookie)
+        refresh = RefreshToken(attrs["refresh"])
+        is_external_service = User.objects.filter(
+            id=refresh.payload.get(jwt_settings.USER_ID_CLAIM),
+            is_external_service=True,
+        ).exists()
+        if is_external_service:
+            access = AccessToken(data["access"])
+            access.payload["exp"] = refresh.payload["exp"]
+            data["access"] = str(access)
+        return data
+
+
+class CustomTokenRefreshView(get_refresh_view()):
+    serializer_class = ExternalServiceTokenRefreshSerializer
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK and "access" in response.data:
+            # the parent uses ACCESS_TOKEN_LIFETIME, use the token's actual expiry
+            expiration = datetime.fromtimestamp(
+                AccessToken(response.data["access"]).payload["exp"], tz=timezone.utc
+            )
+            response.data["access_token_expiration"] = expiration
+            response.set_cookie(
+                rest_auth_settings.JWT_AUTH_COOKIE,
+                response.data["access"],
+                expires=expiration,
+                secure=rest_auth_settings.JWT_AUTH_SECURE,
+                httponly=rest_auth_settings.JWT_AUTH_HTTPONLY,
+                samesite=rest_auth_settings.JWT_AUTH_SAMESITE,
+            )
         return response
 
 
