@@ -77,7 +77,7 @@ const cleanDate = (value: string) => value.trim() || undefined
 const isAlternativeTechnologySent = (entry: PCRAlternativeTechnologyType) =>
   entry.substance_from !== null || entry.substance_to !== null
 
-const isEnterpriseSent = (entry: PCREnterpriseType) =>
+export const isEnterpriseSent = (entry: PCREnterpriseType) =>
   hasText(entry.name) || hasText(entry.address)
 
 const isEquipmentSent = (entry: PCREquipmentType) =>
