@@ -7,7 +7,10 @@ import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PCRArchive from './PCRArchive'
 import { SubmissionStatus } from '../PCRSubmission/EditHelperComponents'
-import { ArchiveVersionsList } from './PCRArchiveTabs/ArchiveHelperComponents'
+import {
+  ArchiveVersionsList,
+  LegacyPCRIcon,
+} from './PCRArchiveTabs/ArchiveHelperComponents'
 import { useGetArchivePCR } from '../hooks/useGetArchivePCR'
 
 import { useParams } from 'wouter'
@@ -55,7 +58,10 @@ const PCRArchiveWrapper = () => {
                 <CancelLinkButton title="Cancel" href="/pcr" />
               </div>
             </div>
-            {SubmissionStatus(pcr.data.status)}
+            <div className="flex items-center gap-3">
+              {SubmissionStatus(pcr.data.status)}
+              <LegacyPCRIcon size="large" className="mt-4" />
+            </div>
           </HeaderTitle>
           <PCRArchive pcr={pcr.data} />
         </>

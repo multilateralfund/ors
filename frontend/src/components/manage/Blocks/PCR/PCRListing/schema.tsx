@@ -2,6 +2,7 @@ import Link from '@ors/components/ui/Link/Link'
 import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
+import { LegacyPCRIcon } from '../PCRArchive/PCRArchiveTabs/ArchiveHelperComponents'
 import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
@@ -144,12 +145,15 @@ const getColumnDefs = (
             )}
             {view === 'table' && (
               <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
-                {pcrId && (
+                {props.data.pcr_id && (
                   <Tooltip title="Has PCR" placement="top" arrow>
                     <span className="text-secondary">
                       <MdCheckCircle size={18} />
                     </span>
                   </Tooltip>
+                )}
+                {!props.data.pcr_id && props.data.legacy_pcr_id && (
+                  <LegacyPCRIcon />
                 )}
               </div>
             )}
