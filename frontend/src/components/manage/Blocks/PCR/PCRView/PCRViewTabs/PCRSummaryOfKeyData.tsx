@@ -16,7 +16,6 @@ import {
   numberDetailItem,
 } from './ViewHelperComponents'
 import {
-  FieldGroup,
   cloneSummaryData,
   getSummaryTableColumnDefs,
 } from '../../PCRSubmission/PCRSummaryOfKeyData'
@@ -217,7 +216,7 @@ const PCRSummaryOfKeyData = () => {
             </Tabs>
             <div className="flex flex-col gap-y-6 bg-white p-6">
               {currentTab === 0 && (
-                <FieldGroup>
+                <div className="flex flex-col">
                   <SubSectionTitle className="!mb-4">Funding</SubSectionTitle>
                   <div className="grid grid-cols-3 gap-x-7 gap-y-4">
                     {numberDetailItem(
@@ -268,11 +267,11 @@ const PCRSummaryOfKeyData = () => {
                       'number',
                     )}
                   </div>
-                </FieldGroup>
+                </div>
               )}
 
               {currentTab === 1 && (
-                <FieldGroup>
+                <div className="flex flex-col">
                   {summaryData.alternative_technologies.length > 0 ? (
                     <div className="flex flex-col gap-y-4">
                       <div className="grid grid-cols-2 gap-x-7">
@@ -311,11 +310,11 @@ const PCRSummaryOfKeyData = () => {
                   ) : (
                     <NoDataReported text="No data reported." />
                   )}
-                </FieldGroup>
+                </div>
               )}
 
               {currentTab === 2 && (
-                <FieldGroup>
+                <div className="flex flex-col">
                   {summaryData.enterprises.length > 0 ? (
                     <TableContainer
                       component={Paper}
@@ -353,11 +352,15 @@ const PCRSummaryOfKeyData = () => {
                   ) : (
                     <NoDataReported text="No data reported." />
                   )}
-                </FieldGroup>
+                </div>
               )}
 
               {currentTab === 3 && (
-                <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
+                <div className="flex flex-col">
+                  <SubSectionTitle className="!mb-4">
+                    Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment
+                    rendered unusable (baseline)
+                  </SubSectionTitle>
                   {summaryData.equipments.length > 0 ? (
                     <TableContainer
                       component={Paper}
@@ -411,7 +414,7 @@ const PCRSummaryOfKeyData = () => {
                   ) : (
                     <NoDataReported text="No data reported." />
                   )}
-                </FieldGroup>
+                </div>
               )}
             </div>
           </DialogContent>
