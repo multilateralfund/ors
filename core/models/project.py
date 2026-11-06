@@ -373,6 +373,12 @@ class MetaProject(models.Model):
 
 
 class ProjectQuerySet(models.QuerySet["Project"]):
+    def for_pcr(self):
+        # projects that are shown in and reported on by a PCR
+        return self.filter(submission_status__name="Approved").exclude(
+            category="Individual", status__name="Transferred"
+        )
+
     def pcr_required(self):
         return self.exclude(ProjectPCRRequiredExclusionRule.objects.active_project_q())
 

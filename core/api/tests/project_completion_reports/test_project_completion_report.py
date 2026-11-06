@@ -239,10 +239,20 @@ def test_pcr_project_list_permissions(client, url, user, admin_user, pcr_listing
 
 
 def test_pcr_project_create(
-    client, url, admin_user, decision, agency, new_agency, test_file1, test_file2
+    client,
+    url,
+    admin_user,
+    decision,
+    agency,
+    new_agency,
+    test_file1,
+    test_file2,
+    project_approved_status,
 ):
     meta_project = MetaProjectFactory.create()
-    project = ProjectFactory.create(meta_project=meta_project)
+    project = ProjectFactory.create(
+        meta_project=meta_project, submission_status=project_approved_status
+    )
     substance_from = SubstanceFactory.create()
     substance_to = SubstanceFactory.create()
     client.force_authenticate(user=admin_user)
@@ -605,9 +615,13 @@ def test_pcr_project_create(
     ]
 
 
-def test_pcr_project_create_with_multiple_projects(client, url, admin_user):
+def test_pcr_project_create_with_multiple_projects(
+    client, url, admin_user, project_approved_status
+):
     meta_project = MetaProjectFactory.create()
-    projects = ProjectFactory.create_batch(2, meta_project=meta_project)
+    projects = ProjectFactory.create_batch(
+        2, meta_project=meta_project, submission_status=project_approved_status
+    )
     client.force_authenticate(user=admin_user)
 
     response = client.post(
@@ -646,6 +660,43 @@ def test_pcr_project_create_with_multiple_projects(client, url, admin_user):
     assert (
         PCRProject.objects.get(project=projects[1]).planned_date_of_completion is None
     )
+
+
+def test_pcr_project_create_includes_only_approved_projects(
+    client, url, admin_user, project_approved_status, project_draft_status
+):
+    meta_project = MetaProjectFactory.create()
+    approved_project = ProjectFactory.create(
+        meta_project=meta_project, submission_status=project_approved_status
+    )
+    draft_project = ProjectFactory.create(
+        meta_project=meta_project, submission_status=project_draft_status
+    )
+    client.force_authenticate(user=admin_user)
+
+    def _post(pcr_projects):
+        return client.post(
+            url,
+            {
+                "metadata": json.dumps(
+                    {"meta_project_id": meta_project.id, "pcr_projects": pcr_projects},
+                    cls=DjangoJSONEncoder,
+                ),
+                "files": [],
+            },
+            format="multipart",
+        )
+
+    response = _post([_pcr_project_payload(draft_project)])
+    assert response.status_code == 400
+    assert PCR.objects.count() == 0
+
+    response = _post([])
+    assert response.status_code == 201
+    assert [item["project_id"] for item in response.data["pcr_projects"]] == [
+        approved_project.id
+    ]
+    assert not PCRProject.objects.filter(project=draft_project).exists()
 
 
 def test_pcr_project_create_rejects_nonexistent_meta_project(client, url, admin_user):
@@ -755,10 +806,12 @@ def test_pcr_project_create_rejects_duplicate_nested_projects(client, url, admin
 
 
 def test_pcr_project_create_rejects_project_already_assigned_to_pcr(
-    client, url, admin_user
+    client, url, admin_user, project_approved_status
 ):
     meta_project = MetaProjectFactory.create()
-    project = ProjectFactory.create(meta_project=meta_project)
+    project = ProjectFactory.create(
+        meta_project=meta_project, submission_status=project_approved_status
+    )
     existing_pcr = PCR.objects.create(meta_project=meta_project)
     PCRProject.objects.create(pcr=existing_pcr, project=project)
     client.force_authenticate(user=admin_user)
@@ -786,10 +839,12 @@ def test_pcr_project_create_rejects_project_already_assigned_to_pcr(
 
 
 def test_pcr_project_create_rolls_back_when_nested_creation_fails(
-    client, url, admin_user
+    client, url, admin_user, project_approved_status
 ):
     meta_project = MetaProjectFactory.create()
-    ProjectFactory.create_batch(2, meta_project=meta_project)
+    ProjectFactory.create_batch(
+        2, meta_project=meta_project, submission_status=project_approved_status
+    )
     client.force_authenticate(user=admin_user)
     actual_create = PCRProject.objects.create
     call_count = 0
@@ -845,10 +900,11 @@ def test_pcr_project_create_permissions(client, url, user, admin_user):
     assert response.status_code == 201
 
 
-def test_pcr_create_dafaults(client, admin_user, decision):
+def test_pcr_create_dafaults(client, admin_user, decision, project_approved_status):
     meta_project = MetaProjectFactory.create()
     project = ProjectFactory.create(
         meta_project=meta_project,
+        submission_status=project_approved_status,
         post_excom_decision=decision,
         total_number_of_customs_officers_trained=3,
         total_number_of_technicians_trained_actual=4,

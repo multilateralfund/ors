@@ -370,21 +370,25 @@ class PCRProjectViewSet(
                 "total_number_of_trainnes": meta_project.total_number_of_trainnes,
             }
 
-        first_project = meta_project.projects.order_by("date_created").first()
-        first_project_version_3_date_approved = getattr(
-            first_project.get_version(3), "date_approved", None
+        first_project = meta_project.projects.for_pcr().order_by("date_created").first()
+        first_project_version_3_date_approved = (
+            getattr(first_project.get_version(3), "date_approved", None)
+            if first_project
+            else None
         )
         return {
             "meta_project_id": meta_project.id,
             "country": meta_project.country.id,
             "decisions": [
                 project.post_excom_decision.id
-                for project in meta_project.projects.filter(
+                for project in meta_project.projects.for_pcr().filter(
                     post_excom_decision__isnull=False
                 )
             ],
             "project_date_approved": first_project_version_3_date_approved,
-            "project_date_completion": first_project.date_completion,
+            "project_date_completion": (
+                first_project.date_completion if first_project else None
+            ),
             "phase_out_ods_approved": meta_project.phase_out_odp,
             "phase_out_ods_actual": None,  # no field on meta_project
             "phase_out_co2_eq_t_approved": meta_project.phase_out_co2_eq_t,
