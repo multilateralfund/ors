@@ -293,12 +293,26 @@ class TestCreate:
         )
 
     def test_agency_creates_only_for_own_meta_projects(
-        self, client, pcr_inputter, pcr_viewer, agency, other_agency
+        self,
+        client,
+        pcr_inputter,
+        pcr_viewer,
+        agency,
+        other_agency,
+        project_approved_status,
     ):
         own_meta_project = MetaProjectFactory.create()
-        ProjectFactory.create(meta_project=own_meta_project, agency=agency)
+        ProjectFactory.create(
+            meta_project=own_meta_project,
+            agency=agency,
+            submission_status=project_approved_status,
+        )
         other_meta_project = MetaProjectFactory.create()
-        ProjectFactory.create(meta_project=other_meta_project, agency=other_agency)
+        ProjectFactory.create(
+            meta_project=other_meta_project,
+            agency=other_agency,
+            submission_status=project_approved_status,
+        )
 
         client.force_authenticate(user=pcr_viewer)
         assert self._create(client, own_meta_project).status_code == 403

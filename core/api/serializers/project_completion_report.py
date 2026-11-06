@@ -682,7 +682,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ["submission_date"]
 
     def validate_meta_project_id(self, meta_project):
-        project_ids = meta_project.projects.values_list("id", flat=True)
+        project_ids = meta_project.projects.for_pcr().values_list("id", flat=True)
         assigned_ids = list(
             PCRProject.objects.filter(project_id__in=project_ids)
             .order_by("project_id")
@@ -698,8 +698,8 @@ class PCRCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         pcr_projects = attrs.get("pcr_projects", [])
-        allowed_project_ids = attrs["meta_project"].projects.values_list(
-            "id", flat=True
+        allowed_project_ids = (
+            attrs["meta_project"].projects.for_pcr().values_list("id", flat=True)
         )
         validate_pcr_project_references(pcr_projects, allowed_project_ids)
 
@@ -738,7 +738,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         )
         pcr.decisions.set(decisions_data)
 
-        for project in pcr.meta_project.projects.order_by("id"):
+        for project in pcr.meta_project.projects.for_pcr().order_by("id"):
             pcr_project_data = pcr_projects_by_project_id.get(project.id, {}).copy()
             pcr_project_data.pop("project", None)
             nested_data_pcr_project = pop_nested_data(
