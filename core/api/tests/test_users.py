@@ -125,3 +125,52 @@ class TestCustomTokenLifetime:
             days=settings.EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS
         ).total_seconds()
         assert abs(lifetime_seconds - expected_lifetime) < self.token_lifetime_tolerance
+
+    def _login_and_refresh(self, client, username, is_external_service):
+        user = UserFactory.create(
+            username=username, is_external_service=is_external_service
+        )
+        user.set_password("testpass123")
+        user.save()
+
+        response = client.post(
+            reverse("rest_login"),
+            {"username": username, "password": "testpass123"},
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+        refresh_response = client.post(
+            reverse("token_refresh"), {"refresh": response.data["refresh_token"]}
+        )
+        assert refresh_response.status_code == status.HTTP_200_OK
+        return response, refresh_response
+
+    def test_regular_user_refreshed_token_lifetime(self, client):
+        _, response = self._login_and_refresh(client, "regular_user", False)
+
+        token = AccessToken(response.data["access"])
+        lifetime_seconds = token.payload["exp"] - token.payload["iat"]
+        expected_lifetime = timedelta(hours=4).total_seconds()
+        assert abs(lifetime_seconds - expected_lifetime) < self.token_lifetime_tolerance
+
+    def test_external_service_user_refreshed_token_lifetime(self, client):
+        login_response, response = self._login_and_refresh(
+            client, "external_service", True
+        )
+
+        # the refreshed access token expires together with the login refresh token
+        token = AccessToken(response.data["access"])
+        login_token = AccessToken(login_response.data["access_token"])
+        assert token.payload["exp"] == login_token.payload["exp"]
+        lifetime_seconds = token.payload["exp"] - token.payload["iat"]
+        expected_lifetime = timedelta(
+            days=settings.EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS
+        ).total_seconds()
+        assert abs(lifetime_seconds - expected_lifetime) < self.token_lifetime_tolerance
+
+        # the cookie must not be cut back to the default access token lifetime
+        cookie = response.cookies[settings.REST_AUTH["JWT_AUTH_COOKIE"]]
+        assert cookie.value == response.data["access"]
+        assert int(response.data["access_token_expiration"].timestamp()) == (
+            token.payload["exp"]
+        )
