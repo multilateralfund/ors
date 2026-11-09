@@ -617,7 +617,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field="constance config TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES",
-        compute=manual("TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES", True),
+        compute=manual(
+            "TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES", True, decimals=1
+        ),
     ),
     Metric(
         metric_id="controlled_substances_avoided_emissions",

@@ -41,6 +41,7 @@ import {
   alignSummaryOfKeyDataErrors,
   mergeSaveErrors,
   alignSdgsErrors,
+  isEnterpriseSent,
 } from '@ors/components/manage/Blocks/PCR/utils'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
@@ -445,13 +446,11 @@ const PCRDataProvider = (props: PropsWithChildren) => {
             (acc.mlf_funding_disbursed[agencyId] || 0) + fundsDisbursed
         }
 
-        const filteredEnterprises = filter(
-          entry.enterprises,
-          (enterprise) => !enterprise.isDefault,
-        )
-
         acc.total_mlf_funding_disbursed += fundsDisbursed
-        acc.total_number_of_enterprises += filteredEnterprises.length
+        acc.total_number_of_enterprises += filter(
+          entry.enterprises,
+          isEnterpriseSent,
+        ).length
 
         return acc
       },

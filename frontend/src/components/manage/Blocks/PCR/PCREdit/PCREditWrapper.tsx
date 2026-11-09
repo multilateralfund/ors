@@ -6,38 +6,12 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import { initialOverviewData } from '../constants'
+import { PCROverviewData } from '../interfaces'
 import { hasPCRProjectData } from '../utils'
-import {
-  PCROverviewData,
-  PCRAlternativeTechnologyType,
-  PCREnterpriseType,
-  PCREquipmentType,
-} from '../interfaces'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
 import { groupBy, keyBy, keys, map, pick } from 'lodash'
 import { Redirect, useParams } from 'wouter'
-
-const emptyAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
-  substance_from: null,
-  substance_to: null,
-})
-
-const emptyEnterprise = (): PCREnterpriseType => ({
-  name: '',
-  address: '',
-  isDefault: true,
-})
-
-const emptyEquipment = (): PCREquipmentType => ({
-  name: '',
-  description: '',
-  disposal_date: '',
-  disposal_type: null,
-})
-
-const ensureRows = <T,>(rows: T[] | undefined, fallback: () => T) =>
-  rows && rows.length > 0 ? rows : [fallback()]
 
 const PCREditWrapper = () => {
   const { pcr_id, project_id } = useParams<Record<string, string>>()
@@ -150,12 +124,9 @@ const PCREditWrapper = () => {
           funds_disbursed: pcrProject.funds_disbursed ?? '',
           planned_date_of_completion:
             pcrProject.planned_date_of_completion ?? '',
-          alternative_technologies: ensureRows(
-            pcrProject.alternative_technologies,
-            emptyAlternativeTechnology,
-          ),
-          enterprises: ensureRows(pcrProject.enterprises, emptyEnterprise),
-          equipments: ensureRows(pcrProject.equipments, emptyEquipment),
+          alternative_technologies: pcrProject.alternative_technologies ?? [],
+          enterprises: pcrProject.enterprises ?? [],
+          equipments: pcrProject.equipments ?? [],
         }
 
         return { ...projectData, hasSavedData: hasPCRProjectData(projectData) }
