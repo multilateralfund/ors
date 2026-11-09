@@ -1,9 +1,13 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import { VersionsDropdown } from '../../PCRView/PCRViewTabs/ViewHelperComponents'
-import { ArchivePCRResponse } from '../../interfaces'
+import {
+  ArchiveIndividualPCRResponse,
+  ArchivePCRResponse,
+} from '../../interfaces'
 
 import { Tooltip } from '@mui/material'
+import { useParams } from 'wouter'
 import cx from 'classnames'
 
 export const LegacyPCRIcon = ({
@@ -32,11 +36,15 @@ export const ArchiveVersionsList = ({
   pcr,
   showVersionsMenu,
   setShowVersionsMenu,
+  archivePath = 'archive',
 }: {
-  pcr: ArchivePCRResponse
+  pcr: ArchivePCRResponse | ArchiveIndividualPCRResponse
   showVersionsMenu: boolean
   setShowVersionsMenu: Dispatch<SetStateAction<boolean>>
+  archivePath?: 'archive' | 'archive-individual'
 }) => {
+  const { project_id } = useParams<Record<string, string>>()
+
   const versions = [
     { id: pcr.id, version: 1, status: pcr.status, latest_pcr_id: null },
   ]
@@ -45,7 +53,7 @@ export const ArchiveVersionsList = ({
     <div className="flex items-center gap-2">
       <VersionsDropdown
         {...{ versions, showVersionsMenu, setShowVersionsMenu }}
-        getVersionHref={(id) => `/pcr/${pcr.meta_project_id}/archive/${id}`}
+        getVersionHref={(id) => `/pcr/${project_id}/${archivePath}/${id}`}
       />
       <span className="self-baseline whitespace-nowrap rounded bg-mlfs-hlYellow p-1 font-medium uppercase leading-none">
         Latest

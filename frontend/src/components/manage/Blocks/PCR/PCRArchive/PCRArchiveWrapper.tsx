@@ -13,7 +13,7 @@ import {
 } from './PCRArchiveTabs/ArchiveHelperComponents'
 import { useGetArchivePCR } from '../hooks/useGetArchivePCR'
 
-import { useParams } from 'wouter'
+import { Redirect, useParams } from 'wouter'
 
 const PCRArchiveWrapper = () => {
   const { archive_id } = useParams<Record<string, string>>()
@@ -22,6 +22,10 @@ const PCRArchiveWrapper = () => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
 
   const loading = pcr.loading || !pcr.loaded
+
+  if (pcr.error) {
+    return <Redirect to="/pcr" />
+  }
 
   return (
     <>
