@@ -92,10 +92,15 @@ const getColumnDefs = (
       minWidth: 300,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => {
-        const pcrId = props.data.pcr_id ?? props.data.legacy_pcr_id
+        const pcrId =
+          props.data.pcr_id ??
+          props.data.legacy_pcr_id ??
+          props.data.legacy_individual_pcr_id
         const pcrHref = props.data.pcr_id
           ? `/pcr/${props.data.metaprojectId}/${props.data.pcr_id}`
-          : `/pcr/${props.data.metaprojectId}/archive/${props.data.legacy_pcr_id}`
+          : props.data.legacy_pcr_id
+            ? `/pcr/${props.data.metaprojectId}/archive/${props.data.legacy_pcr_id}`
+            : `/pcr/${props.data.metaprojectId}/archive-individual/${props.data.legacy_individual_pcr_id}`
 
         return (
           <div className="flex items-center gap-1 p-2">
@@ -133,13 +138,13 @@ const getColumnDefs = (
             )}
             {pcrId ? (
               <Link
-                className="flex flex-1 justify-center overflow-hidden truncate whitespace-nowrap text-sm text-inherit !underline"
+                className="min-w-0 flex-1 truncate text-center text-sm text-inherit !underline"
                 href={pcrHref}
               >
                 {props.value}
               </Link>
             ) : (
-              <span className="flex-1 overflow-hidden truncate whitespace-nowrap">
+              <span className="min-w-0 flex-1 truncate text-center">
                 {props.value}
               </span>
             )}
@@ -152,9 +157,7 @@ const getColumnDefs = (
                     </span>
                   </Tooltip>
                 )}
-                {!props.data.pcr_id && props.data.legacy_pcr_id && (
-                  <LegacyPCRIcon />
-                )}
+                {!props.data.pcr_id && pcrId && <LegacyPCRIcon />}
               </div>
             )}
             {view === 'list' && (

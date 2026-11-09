@@ -275,8 +275,12 @@ class MetaProject(models.Model):
 
     @property
     def has_legacy_pcr(self):
-        # PCR developed outside the platform (OLD_PCR)
-        return hasattr(self, "old_pcr")
+        # PCR developed outside the platform (OLD_PCR, or OLD_IndividualPCR of
+        # one of its projects)
+        return (
+            hasattr(self, "old_pcr")
+            or self.projects.filter(old_individual_pcr__isnull=False).exists()
+        )
 
     @property
     def has_pcr(self):

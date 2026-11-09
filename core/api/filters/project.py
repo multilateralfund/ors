@@ -10,7 +10,12 @@ from core.models.project import (
     MetaProject,
     Project,
 )
-from core.models.project_completion_report import OLD_PCR, PCR, PCRProject
+from core.models.project_completion_report import (
+    OLD_IndividualPCR,
+    OLD_PCR,
+    PCR,
+    PCRProject,
+)
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -266,7 +271,8 @@ class ProjectFilter(filters.FilterSet):
         if value.stop:
             pcr_project_filters["pcr__submission_date__lte"] = value.stop
             old_pcr_filters["submission_date__lte"] = value.stop
-        # Legacy PCRs are linked to the meta project, not to its projects
+        # Legacy PCRs are linked to the meta project, not to its projects; the
+        # legacy individual PCRs count for the meta project of their project
         return queryset.filter(
             Exists(
                 PCRProject.objects.filter(project=OuterRef("pk"), **pcr_project_filters)
@@ -276,15 +282,25 @@ class ProjectFilter(filters.FilterSet):
                     meta_project=OuterRef("meta_project"), **old_pcr_filters
                 )
             )
+            | Exists(
+                OLD_IndividualPCR.objects.filter(
+                    project__meta_project=OuterRef("meta_project"), **old_pcr_filters
+                )
+            )
         )
 
     def filter_pcr_submitted(self, queryset, name, value):
         if not value:
             return queryset
         query_filters = Q()
-        # Legacy PCRs are linked to the meta project, not to its projects
+        # Legacy PCRs are linked to the meta project, not to its projects; the
+        # legacy individual PCRs count for the meta project of their project
         has_old_pcr = Exists(
             OLD_PCR.objects.filter(meta_project=OuterRef("meta_project"))
+        ) | Exists(
+            OLD_IndividualPCR.objects.filter(
+                project__meta_project=OuterRef("meta_project")
+            )
         )
         for option in value:
             if option == "Yes":
@@ -312,6 +328,12 @@ class ProjectFilter(filters.FilterSet):
             | Exists(
                 OLD_PCR.objects.filter(
                     meta_project=OuterRef("meta_project"),
+                    status__in=value,
+                )
+            )
+            | Exists(
+                OLD_IndividualPCR.objects.filter(
+                    project__meta_project=OuterRef("meta_project"),
                     status__in=value,
                 )
             )

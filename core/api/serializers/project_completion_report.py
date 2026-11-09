@@ -40,6 +40,9 @@ from core.models.project_completion_report import (
     PCRSupportingEvidenceSection,
     PCRSustainableDevelopmentGoal,
     PCRSustainableDevelopmentGoalDescription,
+    OLD_IndividualPCR,
+    OLD_IndividualPCRLearnedLesson,
+    OLD_IndividualPCRSupportingEvidence,
     OLD_PCR,
     OLD_PCRActivity,
     OLD_PCRDelayExplanation,
@@ -1229,6 +1232,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
     has_pcr = serializers.SerializerMethodField()
     has_legacy_pcr = serializers.SerializerMethodField()
     legacy_pcr_id = serializers.SerializerMethodField()
+    legacy_individual_pcr_id = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     date_of_completion = serializers.SerializerMethodField()
     total_funding = serializers.SerializerMethodField()
@@ -1258,6 +1262,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "has_pcr",
             "has_legacy_pcr",
             "legacy_pcr_id",
+            "legacy_individual_pcr_id",
             "pcr_due",
             "pcr_due_date",
             "status",
@@ -1326,6 +1331,34 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
         # None when the meta project has no legacy PCR
         return getattr(obj, "old_pcr", None)
 
+    def _get_old_individual_pcr(self, obj):
+        # Legacy PCR of the meta project's (individual) project, None if missing.
+        # Uses the projects_with_old_individual_pcr prefetched by the view, if
+        # available
+        if hasattr(obj, "current_old_individual_pcr"):
+            return obj.current_old_individual_pcr
+        projects = getattr(obj, "projects_with_old_individual_pcr", None)
+        if projects is not None:
+            obj.current_old_individual_pcr = min(
+                (project.old_individual_pcr for project in projects),
+                key=lambda old_individual_pcr: old_individual_pcr.id,
+                default=None,
+            )
+        else:
+            obj.current_old_individual_pcr = (
+                OLD_IndividualPCR.objects.filter(project__meta_project=obj)
+                .order_by("id")
+                .first()
+            )
+        return obj.current_old_individual_pcr
+
+    def _get_any_pcr(self, obj):
+        return (
+            self._get_pcr(obj)
+            or self._get_old_pcr(obj)
+            or self._get_old_individual_pcr(obj)
+        )
+
     def get_pcr_id(self, obj):
         pcr = self._get_pcr(obj)
         if pcr:
@@ -1334,14 +1367,14 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_pcr_status(self, obj):
-        pcr = self._get_pcr(obj) or self._get_old_pcr(obj)
+        pcr = self._get_any_pcr(obj)
         if pcr:
             return pcr.status
         return None
 
     @extend_schema_field(serializers.DateField(allow_null=True))
     def get_pcr_submission_date(self, obj):
-        pcr = self._get_pcr(obj) or self._get_old_pcr(obj)
+        pcr = self._get_any_pcr(obj)
         if pcr and pcr.submission_date:
             return pcr.submission_date.isoformat()
         return None
@@ -1352,13 +1385,23 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.BooleanField())
     def get_has_legacy_pcr(self, obj):
-        return self._get_old_pcr(obj) is not None
+        return (
+            self._get_old_pcr(obj) is not None
+            or self._get_old_individual_pcr(obj) is not None
+        )
 
     @extend_schema_field(serializers.IntegerField(allow_null=True))
     def get_legacy_pcr_id(self, obj):
         old_pcr = self._get_old_pcr(obj)
         if old_pcr:
             return old_pcr.id
+        return None
+
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
+    def get_legacy_individual_pcr_id(self, obj):
+        old_individual_pcr = self._get_old_individual_pcr(obj)
+        if old_individual_pcr:
+            return old_individual_pcr.id
         return None
 
     @extend_schema_field(serializers.BooleanField(allow_null=True))
@@ -1476,6 +1519,69 @@ class OldPCRDetailSerializer(serializers.ModelSerializer):
             "submission_date",
             "activities",
             "delay_explanations",
+            "learned_lessons",
+            "supporting_evidences",
+        ]
+
+
+class OldIndividualPCRLearnedLessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OLD_IndividualPCRLearnedLesson
+        fields = [
+            "id",
+            "description",
+            "report_filename",
+        ]
+
+
+class OldIndividualPCRSupportingEvidenceSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OLD_IndividualPCRSupportingEvidence
+        fields = [
+            "id",
+            "document_type",
+            "filename",
+            "download_url",
+        ]
+
+    def get_download_url(self, obj) -> str:
+        return reverse(
+            "legacy-individual-project-completion-report-download-supporting-evidence",
+            args=(obj.old_individual_pcr_id, obj.id),
+        )
+
+
+class OldIndividualPCRDetailSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for the legacy individual PCRs (developed outside the
+    platform).
+    """
+
+    project_id = serializers.IntegerField(read_only=True)
+    meta_project_id = serializers.IntegerField(
+        source="project.meta_project_id", read_only=True
+    )
+    code = serializers.CharField(source="project.code", read_only=True)
+    legacy_code = serializers.CharField(source="project.legacy_code", read_only=True)
+    title = serializers.CharField(source="project.title", read_only=True)
+    learned_lessons = OldIndividualPCRLearnedLessonSerializer(many=True, read_only=True)
+    supporting_evidences = OldIndividualPCRSupportingEvidenceSerializer(
+        many=True, read_only=True
+    )
+
+    class Meta:
+        model = OLD_IndividualPCR
+        fields = [
+            "id",
+            "project_id",
+            "meta_project_id",
+            "code",
+            "legacy_code",
+            "title",
+            "status",
+            "submission_date",
             "learned_lessons",
             "supporting_evidences",
         ]
