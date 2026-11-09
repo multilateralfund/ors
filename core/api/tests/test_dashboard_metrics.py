@@ -766,6 +766,12 @@ class TestFundValues(BaseTest):
         with override_config(COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS="0.7"):
             assert self.fund(user)["ods_cost_per_odp_tonne"]["value"] == "$0.70"
 
+    def test_avoided_ods_emissions_keep_one_decimal(self, user, ongoing_status):
+        ProjectFactory(status=ongoing_status)
+
+        with override_config(TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES="53.6"):
+            assert self.fund(user)["ods_avoided_emissions"]["value"] == "53.6"
+
     def test_pledges_are_unavailable_until_there_are_any(self, user, ongoing_status):
         ProjectFactory(status=ongoing_status)
 
