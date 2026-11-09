@@ -1108,3 +1108,89 @@ class OLD_PCRSupportingEvidence(models.Model):
 
     def __str__(self):
         return self.filename or ""
+
+
+class OLD_IndividualPCR(models.Model):
+    """
+    Legacy PCR of an individual project, developed outside the platform.
+    Unlike OLD_PCR, it is linked to a project, not to a meta project.
+    """
+
+    project = models.OneToOneField(
+        "Project", on_delete=models.CASCADE, related_name="old_individual_pcr"
+    )
+    status = models.CharField(
+        max_length=32,
+        choices=PCR.Status.choices,
+        default=PCR.Status.FINAL,
+        help_text="Workflow status of the PCR",
+    )
+    submission_date = models.DateField(
+        null=True, blank=True, help_text="Initial submission date"
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "OLD Individual PCR"
+        verbose_name_plural = "OLD Individual PCRs"
+
+    def __str__(self):
+        return f"OLD Individual PCR {self.project.legacy_code or self.project.code}"
+
+
+class OLD_IndividualPCRLearnedLesson(models.Model):
+    """
+    Agency lessons learned of a legacy individual PCR.
+    """
+
+    old_individual_pcr = models.ForeignKey(
+        OLD_IndividualPCR, on_delete=models.CASCADE, related_name="learned_lessons"
+    )
+    description = models.TextField(blank=True, null=True)
+    report_filename = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The PCR report (pdf) the lessons were taken from",
+    )
+    source_file = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "OLD Individual PCR Learned lessons"
+
+
+class OLD_IndividualPCRSupportingEvidence(models.Model):
+    """
+    Legacy individual PCR files (report pdfs and additional documents), imported
+    from the old PCR platform.
+    """
+
+    class DocumentType(models.TextChoices):
+        REPORT = "report", "PCR report"
+        ADDITIONAL_DOCUMENT = "additional_document", "Additional document"
+
+    old_individual_pcr = models.ForeignKey(
+        OLD_IndividualPCR,
+        on_delete=models.CASCADE,
+        related_name="supporting_evidences",
+    )
+    document_type = models.CharField(
+        max_length=32,
+        choices=DocumentType.choices,
+        default=DocumentType.REPORT,
+    )
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to="old_individual_pcr_files/",
+    )
+    filename = models.CharField(max_length=255, null=True, blank=True)
+    source_file = models.CharField(max_length=255, blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "OLD Individual PCR supporting evidences"
+
+    def __str__(self):
+        return self.filename or ""
