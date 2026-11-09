@@ -27,6 +27,9 @@ from core.models.project_completion_report import (
     PCRSupportingEvidenceSection,
     PCRSupportingEvidence,
     OLD_DelayCategory,
+    OLD_IndividualPCR,
+    OLD_IndividualPCRLearnedLesson,
+    OLD_IndividualPCRSupportingEvidence,
     OLD_LearnedLessonCategory,
     OLD_PCR,
     OLD_PCRActivity,
@@ -519,4 +522,63 @@ class OLD_PCRSupportingEvidenceAdmin(admin.ModelAdmin):
         "filename",
         "source_file",
         "date_created",
+    ]
+
+
+@admin.register(OLD_IndividualPCR)
+class OLD_IndividualPCRAdmin(admin.ModelAdmin):
+    admin_group = "PCR (OBSOLETE)"
+    search_fields = [
+        "project__code",
+        "project__legacy_code",
+    ]
+    list_display = [
+        "project",
+        "status",
+        "submission_date",
+    ]
+    list_filter = [
+        "status",
+    ]
+    raw_id_fields = [
+        "project",
+    ]
+
+
+@admin.register(OLD_IndividualPCRLearnedLesson)
+class OLD_IndividualPCRLearnedLessonAdmin(admin.ModelAdmin):
+    admin_group = "PCR (OBSOLETE)"
+    raw_id_fields = [
+        "old_individual_pcr",
+    ]
+    search_fields = [
+        "old_individual_pcr__project__legacy_code",
+        "description",
+    ]
+    list_display = [
+        "old_individual_pcr",
+        "report_filename",
+        "source_file",
+    ]
+
+
+@admin.register(OLD_IndividualPCRSupportingEvidence)
+class OLD_IndividualPCRSupportingEvidenceAdmin(admin.ModelAdmin):
+    admin_group = "PCR (OBSOLETE)"
+    raw_id_fields = [
+        "old_individual_pcr",
+    ]
+    search_fields = [
+        "old_individual_pcr__project__legacy_code",
+        "filename",
+    ]
+    list_display = [
+        "old_individual_pcr",
+        "document_type",
+        "filename",
+        "source_file",
+        "date_created",
+    ]
+    list_filter = [
+        "document_type",
     ]

@@ -3,6 +3,10 @@ from core.import_data.import_meta_projects import import_meta_projects
 from core.import_data.import_multi_year_projects import import_multi_year_projects
 from core.import_data.import_pcr_activities import import_pcr_activities
 from core.import_data.import_pcr_delay_explanations import import_pcr_delay_explanations
+from core.import_data.import_pcr_individual import (
+    import_pcr_individual,
+    import_pcr_individual_supporting_evidences,
+)
 from core.import_data.import_pcr_learned_lessons import import_pcr_learned_lessons
 from core.import_data.import_pcr_submissions import import_pcr_submissions
 from core.import_data.import_pcr_supporting_evidences import (
@@ -31,12 +35,16 @@ class Command(BaseCommand):
             - type = meta_projects => project meta projects
             - type = all_pcr => all data for project complition reports
                 (activities, delay_explanation, learned_lessons, submissions,
-                supporting_evidences)
+                supporting_evidences, individual, individual_supporting_evidences)
             - type = pcr_activities => project complition report activities
             - type = pcr_delay_explanation => project complition report delay explanation
             - type = pcr_learned_lessons => project complition report learned lessons
             - type = pcr_submissions => project complition report submission dates
             - type = pcr_supporting_evidences => project complition report pdf files
+            - type = pcr_individual => individual project complition reports
+                (learned lessons)
+            - type = pcr_individual_supporting_evidences => individual project
+                complition report files (pdf reports and additional documents)
             - type = set_serial_numbers => set project serial numbers
             - type =  all => all of the above
     """
@@ -62,6 +70,8 @@ class Command(BaseCommand):
                 "pcr_learned_lessons",
                 "pcr_submissions",
                 "pcr_supporting_evidences",
+                "pcr_individual",
+                "pcr_individual_supporting_evidences",
                 "set_serial_numbers",
                 "all",
             ],
@@ -94,5 +104,9 @@ class Command(BaseCommand):
             import_pcr_submissions()
         if imp_type in ["pcr_supporting_evidences", "all_pcr", "all"]:
             import_pcr_supporting_evidences()
+        if imp_type in ["pcr_individual", "all_pcr", "all"]:
+            import_pcr_individual()
+        if imp_type in ["pcr_individual_supporting_evidences", "all_pcr", "all"]:
+            import_pcr_individual_supporting_evidences()
         if imp_type in ["set_serial_numbers", "all_projects", "all"]:
             set_project_serial_numbers()

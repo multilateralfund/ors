@@ -59,6 +59,9 @@ from core.models.enterprise import (
 )
 from core.models.project_completion_report import (
     OLD_DelayCategory,
+    OLD_IndividualPCR,
+    OLD_IndividualPCRLearnedLesson,
+    OLD_IndividualPCRSupportingEvidence,
     OLD_LearnedLessonCategory,
     OLD_PCR,
     OLD_PCRActivity,
@@ -1001,6 +1004,32 @@ class OldPCRSupportingEvidenceFactory(factory.django.DjangoModelFactory):
     file = factory.django.FileField(filename="PCR_1.pdf")
     filename = "PCR_1.pdf"
     source_file = "PCR_1.pdf"
+
+
+class OldIndividualPCRFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_IndividualPCR
+
+    project = factory.SubFactory(ProjectFactory)
+
+
+class OldIndividualPCRLearnedLessonFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_IndividualPCRLearnedLesson
+
+    old_individual_pcr = factory.SubFactory(OldIndividualPCRFactory)
+    description = factory.Faker("pystr", max_chars=50)
+    report_filename = "AFG1.pdf"
+
+
+class OldIndividualPCRSupportingEvidenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OLD_IndividualPCRSupportingEvidence
+
+    old_individual_pcr = factory.SubFactory(OldIndividualPCRFactory)
+    file = factory.django.FileField(filename="AFG1.pdf")
+    filename = "AFG1.pdf"
+    source_file = "AFG1.pdf"
 
 
 class PCRProjectEnterpriseFactory(factory.django.DjangoModelFactory):
