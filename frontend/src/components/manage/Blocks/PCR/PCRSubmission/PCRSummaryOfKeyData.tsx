@@ -1,6 +1,7 @@
 import { ChangeEvent, useCallback, useContext, useMemo, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Link from '@ors/components/ui/Link/Link'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 
@@ -67,6 +68,7 @@ import {
   Tab,
   Tabs,
   TextareaAutosize,
+  Typography,
 } from '@mui/material'
 import {
   ColDef,
@@ -499,7 +501,10 @@ const PCRSummaryOfKeyData = () => {
               >
                 <FiEdit size={16} />
               </IconButton>
-              <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+              <span
+                className="cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap underline"
+                onClick={() => openDialog(params.data?.id)}
+              >
                 {params.value}
               </span>
               {!!hasErrors && <SectionErrorIndicator errors={[]} />}
@@ -592,6 +597,14 @@ const PCRSummaryOfKeyData = () => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <CustomAlert
+        type="info"
+        content={
+          <Typography className="text-lg leading-5">
+            Click on the first column to edit each project.
+          </Typography>
+        }
+      />
       <ViewTable<ProjectType>
         columnDefs={summaryTableColumnDefs}
         defaultColDef={{

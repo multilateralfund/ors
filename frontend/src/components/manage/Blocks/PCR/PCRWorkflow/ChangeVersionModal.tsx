@@ -27,12 +27,21 @@ const ChangeVersionModal = ({
 
   const actions: Record<
     string,
-    { title: string; endpoint: string; successMessage: string }
+    {
+      title: string
+      endpoint: string
+      successMessage: string
+      confirmMessage?: string
+      label?: string
+    }
   > = {
     submit: {
       title: 'submit',
       endpoint: 'submit',
       successMessage: 'PCR submitted successfully.',
+      confirmMessage:
+        'Are you sure you want to submit this PCR to the MLF Secretariat?',
+      label: 'Submit to Secretariat',
     },
     'request changes': {
       title: 'request changes for',
@@ -48,6 +57,7 @@ const ChangeVersionModal = ({
 
   const action = modalType ? actions[modalType] : null
   const modalTitle = action?.title ?? ''
+  const actionLabel = action?.label ?? `${capitalize(modalTitle)} PCR`
 
   const changePCRStatus = async () => {
     if (!action) {
@@ -106,10 +116,11 @@ const ChangeVersionModal = ({
     >
       <Box className="flex w-full max-w-[90%] flex-col px-0 absolute-center md:max-w-2xl">
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
-          {capitalize(modalTitle)} PCR
+          {actionLabel}
         </Typography>
         <div className="mb-4 bg-common-containerBg p-6 text-lg">
-          Are you sure you want to {modalTitle} this PCR?
+          {action?.confirmMessage ??
+            `Are you sure you want to ${modalTitle} this PCR?`}
         </div>
         <div className="mr-6 flex flex-wrap justify-end gap-3">
           <CustomLink
@@ -121,7 +132,7 @@ const ChangeVersionModal = ({
             variant="contained"
             button
           >
-            {modalTitle} PCR
+            {actionLabel}
           </CustomLink>
           <CancelButton onClick={onClose} />
           {isProcessing && (

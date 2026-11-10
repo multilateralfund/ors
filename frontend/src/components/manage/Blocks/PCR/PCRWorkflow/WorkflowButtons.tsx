@@ -17,7 +17,7 @@ const WorkflowButtons = ({
   isSaveDisabled?: boolean
 }) => {
   const { canSubmitPCR, canApprovePCR, canRequestAdjustmentsPCR } =
-  useContext(PermissionsContext)
+    useContext(PermissionsContext)
   const { pcr, errors } = useContext(PCRDataContext)
   const { status } = pcr.data ?? {}
 
@@ -30,7 +30,7 @@ const WorkflowButtons = ({
       {canSubmitPCR &&
         (status === 'Draft' || status === 'Adjustments requested') && (
           <IncreaseVersionButton
-            title="Submit PCR"
+            title="Submit to Secretariat"
             onSubmit={() => {
               setModalType('submit')
             }}
