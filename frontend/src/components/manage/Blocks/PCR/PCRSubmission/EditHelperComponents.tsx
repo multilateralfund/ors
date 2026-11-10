@@ -1,16 +1,8 @@
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 
 import { IoTrash } from 'react-icons/io5'
-import { FiEdit3 } from 'react-icons/fi'
 import { Button } from '@mui/material'
 import cx from 'classnames'
-
-export const EditSectionIndicator = () => (
-  <div className="inline-flex h-8 items-center gap-2 self-center rounded-full bg-primary px-3 py-1 text-lg text-mlfs-hlYellow">
-    <FiEdit3 size={18} />
-    <span className="mt-0.5">Edit</span>
-  </div>
-)
 
 export const AddEntityButton = ({
   title,

@@ -1,8 +1,8 @@
 import { useContext } from 'react'
 
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { EditSectionIndicator, AddEntityButton } from './EditHelperComponents'
 import { PCRTextAreaWidget, PCRTextWidget } from './PCRWidgets'
+import { AddEntityButton } from './EditHelperComponents'
 import {
   SubSectionTitle,
   UserInfo,
@@ -108,7 +108,6 @@ const PCRProjectRecommendations = ({
         <MdOutlineLightbulb size={22} className="mb-1" />
         <SubSectionTitle>Recommendations for future projects</SubSectionTitle>
         <UserInfo info="As part of the lessons learned from the challenges/good practices identified during project implementation, please suggest recommendations for future project design and implementation." />
-        <EditSectionIndicator />
       </div>
       {map(prData, (_, prIndex) => (
         <div key={prIndex}>

@@ -4,7 +4,6 @@ import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListi
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
-import { EditSectionIndicator } from './EditHelperComponents'
 import {
   SubSectionTitle,
   UserInfo,
@@ -99,9 +98,8 @@ const PCROverview = () => {
     <>
       <PCROverviewPrefilledData />
       <div className={cx('mb-9 flex flex-col', borderedContainerClassname)}>
-        <div className="flex justify-between gap-4 bg-[#f4f5f6] px-6 py-4">
+        <div className="bg-[#f4f5f6] px-6 py-4">
           <SubSectionTitle>Indicators</SubSectionTitle>
-          <EditSectionIndicator />
         </div>
         <div className="flex flex-col border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
           <div className="md:w-[65%]">
@@ -174,7 +172,6 @@ const PCROverview = () => {
               />
             )}
           </div>
-          <EditSectionIndicator />
         </div>
         <div className="flex flex-col gap-y-4 border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
           <div className="flex gap-2">
