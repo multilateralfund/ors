@@ -100,17 +100,17 @@ def test_submit_archives_v1_and_creates_v2(
 
     assert response.status_code == 200
     assert response.data["version"] == 2
-    assert response.data["status"] == PCR.Status.SUBMITTED
+    assert response.data["status"] == PCR.Status.REVISION
     assert response.data["submission_date"] is not None
 
     pcr.refresh_from_db()
     assert pcr.version == 2
-    assert pcr.status == PCR.Status.SUBMITTED
+    assert pcr.status == PCR.Status.REVISION
     assert pcr.version_created_by == admin_user
 
     archived = _archived_versions(pcr).get()
     assert archived.version == 1
-    assert archived.status == PCR.Status.DRAFT
+    assert archived.status == PCR.Status.INITIAL_SUBMISSION
     assert archived.addresses == "Initial address"
     assert archived.pcr_projects.count() == 1
     assert archived.additional_comments.get().comment == "V1"
@@ -130,7 +130,7 @@ def test_submit_sends_notification(
 
 
 def test_request_adjustments_keeps_v2(client, admin_user, pcr):
-    _set_state(pcr, 2, PCR.Status.SUBMITTED)
+    _set_state(pcr, 2, PCR.Status.REVISION)
     client.force_authenticate(user=admin_user)
 
     response = client.post(_action_url(pcr, "request_adjustments"))
@@ -138,7 +138,7 @@ def test_request_adjustments_keeps_v2(client, admin_user, pcr):
     assert response.status_code == 200
     pcr.refresh_from_db()
     assert pcr.version == 2
-    assert pcr.status == PCR.Status.ADJUSTMENTS_REQUESTED
+    assert pcr.status == PCR.Status.REVISION_ADJUSTMENTS_REQUESTED
     assert not _archived_versions(pcr).exists()
 
 
@@ -156,13 +156,13 @@ def test_resubmit_after_adjustments_does_not_create_new_version(
 
     pcr.refresh_from_db()
     assert pcr.version == 2
-    assert pcr.status == PCR.Status.SUBMITTED
+    assert pcr.status == PCR.Status.REVISION
     assert [p.version for p in _archived_versions(pcr)] == [1]
     assert mock_send_pcr_notification.call_count == 3
 
 
 def test_v2_is_editable_while_adjustments_requested(client, admin_user, pcr):
-    _set_state(pcr, 2, PCR.Status.ADJUSTMENTS_REQUESTED)
+    _set_state(pcr, 2, PCR.Status.REVISION_ADJUSTMENTS_REQUESTED)
     client.force_authenticate(user=admin_user)
 
     response = _patch_pcr(client, pcr, {"addresses": "Adjusted address"})
@@ -184,17 +184,17 @@ def test_approve_archives_v2_and_creates_final_v3(
 
     assert response.status_code == 200
     assert response.data["version"] == 3
-    assert response.data["status"] == PCR.Status.FINAL
+    assert response.data["status"] == PCR.Status.APPROVED
     assert response.data["is_editable"] is False
 
     pcr.refresh_from_db()
     assert pcr.version == 3
-    assert pcr.status == PCR.Status.FINAL
+    assert pcr.status == PCR.Status.APPROVED
 
     archived = list(_archived_versions(pcr))
     assert [(p.version, p.status) for p in archived] == [
-        (1, PCR.Status.DRAFT),
-        (2, PCR.Status.SUBMITTED),
+        (1, PCR.Status.INITIAL_SUBMISSION),
+        (2, PCR.Status.REVISION),
     ]
     assert archived[0].addresses == "Initial address"
     assert archived[1].addresses == "MLFS revised address"
@@ -202,7 +202,7 @@ def test_approve_archives_v2_and_creates_final_v3(
 
 
 def test_final_pcr_is_not_editable(client, admin_user, pcr):
-    _set_state(pcr, 3, PCR.Status.FINAL)
+    _set_state(pcr, 3, PCR.Status.APPROVED)
     client.force_authenticate(user=admin_user)
 
     response = _patch_pcr(client, pcr, {"addresses": "Changed"})
@@ -234,14 +234,14 @@ def test_archived_version_can_be_retrieved_but_not_edited(client, admin_user, pc
 @pytest.mark.parametrize(
     "action,version,status",
     [
-        ("submit", 2, PCR.Status.SUBMITTED),
-        ("submit", 3, PCR.Status.FINAL),
+        ("submit", 2, PCR.Status.REVISION),
+        ("submit", 3, PCR.Status.APPROVED),
         ("request_adjustments", 1, PCR.Status.DRAFT),
-        ("request_adjustments", 2, PCR.Status.ADJUSTMENTS_REQUESTED),
-        ("request_adjustments", 3, PCR.Status.FINAL),
+        ("request_adjustments", 2, PCR.Status.REVISION_ADJUSTMENTS_REQUESTED),
+        ("request_adjustments", 3, PCR.Status.APPROVED),
         ("approve", 1, PCR.Status.DRAFT),
-        ("approve", 2, PCR.Status.ADJUSTMENTS_REQUESTED),
-        ("approve", 3, PCR.Status.FINAL),
+        ("approve", 2, PCR.Status.REVISION_ADJUSTMENTS_REQUESTED),
+        ("approve", 3, PCR.Status.APPROVED),
     ],
 )
 def test_invalid_transitions(client, admin_user, pcr, action, version, status):
@@ -270,9 +270,9 @@ def test_versions_lists_all_versions(client, admin_user, pcr):
         )
         assert response.status_code == 200
         assert [(v["version"], v["status"]) for v in response.data] == [
-            (1, PCR.Status.DRAFT),
-            (2, PCR.Status.SUBMITTED),
-            (3, PCR.Status.FINAL),
+            (1, PCR.Status.INITIAL_SUBMISSION),
+            (2, PCR.Status.REVISION),
+            (3, PCR.Status.APPROVED),
         ]
         assert response.data[2]["id"] == pcr.id
 
@@ -287,7 +287,7 @@ def test_list_excludes_archived_versions(client, admin_user, pcr):
     results = _results(response)
     assert [row["pcr_id"] for row in results] == [pcr.id]
     assert results[0]["pcr_version"] == 2
-    assert results[0]["pcr_status"] == PCR.Status.SUBMITTED
+    assert results[0]["pcr_status"] == PCR.Status.REVISION
 
 
 def test_project_pcr_filters_ignore_archived_versions(client, admin_user, pcr):
