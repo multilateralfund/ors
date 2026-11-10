@@ -4,7 +4,6 @@ import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewProjectOverview from '../PCRView/PCRViewTabs/PCROverviewProjectOverview'
 import PCROverviewFundingData from '../PCRView/PCRViewTabs/PCROverviewFundingData'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { EditSectionIndicator } from './EditHelperComponents'
 import {
   SubSectionTitle,
   getCollapseIcon,
@@ -43,16 +42,13 @@ const PCROverviewPrefilledData = () => {
             {getCollapseIcon(isFundingExpanded)}
             <SubSectionTitle>Funding (US$)</SubSectionTitle>
           </div>
-          <div className="flex flex-wrap gap-6">
-            <PCRSelectWidget
-              {...{ PCRData, setPCRData, sectionIdentifier }}
-              field="financial_figures_status"
-              options={financialFiguresTypeOptions}
-              errors={overviewErrors}
-              className="flex flex-row items-center gap-3"
-            />
-            <EditSectionIndicator />
-          </div>
+          <PCRSelectWidget
+            {...{ PCRData, setPCRData, sectionIdentifier }}
+            field="financial_figures_status"
+            options={financialFiguresTypeOptions}
+            errors={overviewErrors}
+            className="flex flex-row items-center gap-3"
+          />
         </div>
         <div className="border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
           <PCROverviewFundingData {...{ isFundingExpanded }} />
