@@ -1,5 +1,6 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import Link from '@ors/components/ui/Link/Link'
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
@@ -49,6 +50,7 @@ import {
   Tabs,
   Tab,
   Divider,
+  Typography,
 } from '@mui/material'
 
 const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
@@ -121,7 +123,10 @@ const PCRSummaryOfKeyData = () => {
             >
               <FiEye size={16} />
             </IconButton>
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+            <span
+              className="cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap underline"
+              onClick={() => openDialog(params.data?.id)}
+            >
               {params.value}
             </span>
           </div>
@@ -140,6 +145,14 @@ const PCRSummaryOfKeyData = () => {
   return (
     <div className="flex flex-col gap-y-6">
       <SectionTitle>Summary of key data</SectionTitle>
+      <CustomAlert
+        type="info"
+        content={
+          <Typography className="text-lg leading-5">
+            Click on the first column to view each project.
+          </Typography>
+        }
+      />
       <ViewTable<ProjectType>
         columnDefs={summaryTableColumnDefs}
         defaultColDef={{
