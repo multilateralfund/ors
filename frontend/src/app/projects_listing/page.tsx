@@ -10,9 +10,9 @@ import NotFoundPage from '@ors/app/not-found'
 export default function Projects() {
   usePageTitle('Projects')
 
-  const { canViewProjects } = useContext(PermissionsContext)
+  const { canViewProjects, canViewIaBaPortal } = useContext(PermissionsContext)
 
-  if (!canViewProjects) {
+  if (!(canViewProjects || canViewIaBaPortal)) {
     return <NotFoundPage />
   }
 

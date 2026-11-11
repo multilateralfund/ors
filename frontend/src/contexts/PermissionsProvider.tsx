@@ -38,6 +38,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewProjects = user_permissions.includes(
     'has_project_v2_view_access',
   )
+  const canViewIaBaPortal = user_permissions.includes(
+    'has_ia_ba_portal_view_access',
+  )
   const canViewMetainfoProjects = user_permissions.includes(
     'has_project_metainfo_view_access',
   )
@@ -170,6 +173,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canEditReplenishment,
         canViewV1Projects,
         canViewProjects,
+        canViewIaBaPortal,
         canViewMetainfoProjects,
         canViewSectorsSubsectors,
         canUpdateProjects,

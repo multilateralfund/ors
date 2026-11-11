@@ -124,12 +124,23 @@ const useInternalNavSectionsReplenishment = () => {
 }
 
 const useInternalNavSectionsIaBaPortal = () => {
-  const { canViewBp, canViewProjects, canSetProjectSettings } =
-    useContext(PermissionsContext)
+  const {
+    canViewBp,
+    canViewProjects,
+    canViewIaBaPortal,
+    canSetProjectSettings,
+  } = useContext(PermissionsContext)
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
 
-  if (!(canViewBp || canViewProjects || canSetProjectSettings)) {
+  if (
+    !(
+      canViewBp ||
+      canViewProjects ||
+      canViewIaBaPortal ||
+      canSetProjectSettings
+    )
+  ) {
     return []
   }
 
@@ -141,7 +152,7 @@ const useInternalNavSectionsIaBaPortal = () => {
           ...(canViewBp
             ? [{ label: 'Business plans', url: '/business-plans' }]
             : []),
-          ...(canViewProjects
+          ...(canViewProjects || canViewIaBaPortal
             ? [
                 {
                   label: 'Projects Listing',
