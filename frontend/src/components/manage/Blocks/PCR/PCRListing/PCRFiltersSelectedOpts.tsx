@@ -31,6 +31,14 @@ const PCRFiltersSelectedOpts = ({
 
   const filterSelectedOpts = [
     {
+      entities: formatEntity(fieldToOptionsMapping.status),
+      entityIdentifier: 'status_id',
+    },
+    {
+      entities: formatEntity(fieldToOptionsMapping.pcr_status),
+      entityIdentifier: 'pcr_status',
+    },
+    {
       entities: formatEntity(fieldToOptionsMapping.country),
       entityIdentifier: 'country_id',
     },
@@ -53,14 +61,6 @@ const PCRFiltersSelectedOpts = ({
     {
       entities: formatEntity(fieldToOptionsMapping.category),
       entityIdentifier: 'category',
-    },
-    {
-      entities: formatEntity(fieldToOptionsMapping.status),
-      entityIdentifier: 'status_id',
-    },
-    {
-      entities: formatEntity(fieldToOptionsMapping.pcr_status),
-      entityIdentifier: 'pcr_status',
     },
     {
       entities: formatEntity(fieldToOptionsMapping.pcr_due),

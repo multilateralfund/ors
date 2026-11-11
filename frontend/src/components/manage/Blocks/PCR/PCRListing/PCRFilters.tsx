@@ -79,14 +79,14 @@ const PCRFilters = ({
           {...{ form, filters, handleFilterChange, handleParamsChange }}
         />
       </form>
+      <FieldFilter field="status" />
+      {view === 'table' && <FieldFilter field="pcr_status" />}
       <FieldFilter field="country" />
       <FieldFilter field="lead_agency" />
       <FieldFilter field="cluster" />
       <FieldFilter field="project_type" />
       <FieldFilter field="sector" />
       <FieldFilter field="category" />
-      <FieldFilter field="status" />
-      {view === 'table' && <FieldFilter field="pcr_status" />}
       {view === 'list' && <FieldFilter field="pcr_due" />}
       <FieldFilter field="ad_hoc_pcr" />
       {view === 'table' && (
