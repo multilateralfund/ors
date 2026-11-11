@@ -3,9 +3,9 @@ import { useContext, useState } from 'react'
 import { ErrorsList } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { EditSectionIndicator, AddEntityButton } from './EditHelperComponents'
 import { TabLabel, PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
 import { EntryIndex } from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import { AddEntityButton } from './EditHelperComponents'
 import { getSectionAgencies, formatErrors, getErrorIndex } from '../utils'
 import {
   ppField,
@@ -138,39 +138,36 @@ const PCRGenderMainstreaming = () => {
 
   return (
     <>
-      <div className="flex gap-2">
-        <mui.Tabs
-          aria-label="gender-mainstreaming-tabs"
-          className="sectionsTabs"
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          TabIndicatorProps={{
-            className: 'h-0',
-            style: { transitionDuration: '150ms' },
-          }}
-          value={crtTab}
-          onChange={(_, newValue) => {
-            setCrtTab(newValue)
-          }}
-        >
-          {map(crtAgencies, (agency) => (
-            <mui.Tab
-              key={agency.name}
-              aria-controls={agency.name}
-              id={agency.name}
-              label={
-                <TabLabel
-                  field={ppField}
-                  errors={getTabErrors(agency.id)}
-                  {...{ agency }}
-                />
-              }
-            />
-          ))}
-        </mui.Tabs>
-        <EditSectionIndicator />
-      </div>
+      <mui.Tabs
+        aria-label="gender-mainstreaming-tabs"
+        className="sectionsTabs"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        value={crtTab}
+        onChange={(_, newValue) => {
+          setCrtTab(newValue)
+        }}
+      >
+        {map(crtAgencies, (agency) => (
+          <mui.Tab
+            key={agency.name}
+            aria-controls={agency.name}
+            id={agency.name}
+            label={
+              <TabLabel
+                field={ppField}
+                errors={getTabErrors(agency.id)}
+                {...{ agency }}
+              />
+            }
+          />
+        ))}
+      </mui.Tabs>
       <div className="border-0 border-t border-solid border-primary pt-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />

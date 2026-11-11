@@ -12,7 +12,6 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { EditSectionIndicator } from './EditHelperComponents'
 import { TabLabel, PCRTextAreaWidget } from './PCRWidgets'
 import {
   EntryIndex,
@@ -216,39 +215,36 @@ const PCRSdgs = () => {
 
   return (
     <>
-      <div className="flex gap-2">
-        <Tabs
-          aria-label="sdgs-tabs"
-          className="sectionsTabs"
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          TabIndicatorProps={{
-            className: 'h-0',
-            style: { transitionDuration: '150ms' },
-          }}
-          value={crtTab}
-          onChange={(_, newValue) => {
-            setCrtTab(newValue)
-          }}
-        >
-          {map(crtAgencies, (agency) => (
-            <Tab
-              key={agency.name}
-              aria-controls={agency.name}
-              id={agency.name}
-              label={
-                <TabLabel
-                  field={sdgsContributionField}
-                  errors={getTabErrors(agency.id)}
-                  {...{ agency }}
-                />
-              }
-            />
-          ))}
-        </Tabs>
-        <EditSectionIndicator />
-      </div>
+      <Tabs
+        aria-label="sdgs-tabs"
+        className="sectionsTabs"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        value={crtTab}
+        onChange={(_, newValue) => {
+          setCrtTab(newValue)
+        }}
+      >
+        {map(crtAgencies, (agency) => (
+          <Tab
+            key={agency.name}
+            aria-controls={agency.name}
+            id={agency.name}
+            label={
+              <TabLabel
+                field={sdgsContributionField}
+                errors={getTabErrors(agency.id)}
+                {...{ agency }}
+              />
+            }
+          />
+        ))}
+      </Tabs>
       <div className="border-0 border-t border-solid border-primary pt-6">
         {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
           <ErrorsList errors={formattedAgencyErrors} />

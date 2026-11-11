@@ -1,5 +1,6 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import Link from '@ors/components/ui/Link/Link'
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
@@ -16,7 +17,6 @@ import {
   numberDetailItem,
 } from './ViewHelperComponents'
 import {
-  FieldGroup,
   cloneSummaryData,
   getSummaryTableColumnDefs,
 } from '../../PCRSubmission/PCRSummaryOfKeyData'
@@ -50,6 +50,7 @@ import {
   Tabs,
   Tab,
   Divider,
+  Typography,
 } from '@mui/material'
 
 const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
@@ -122,7 +123,10 @@ const PCRSummaryOfKeyData = () => {
             >
               <FiEye size={16} />
             </IconButton>
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+            <span
+              className="cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap underline"
+              onClick={() => openDialog(params.data?.id)}
+            >
               {params.value}
             </span>
           </div>
@@ -141,6 +145,14 @@ const PCRSummaryOfKeyData = () => {
   return (
     <div className="flex flex-col gap-y-6">
       <SectionTitle>Summary of key data</SectionTitle>
+      <CustomAlert
+        type="info"
+        content={
+          <Typography className="text-lg leading-5">
+            Click on the first column to view each project.
+          </Typography>
+        }
+      />
       <ViewTable<ProjectType>
         columnDefs={summaryTableColumnDefs}
         defaultColDef={{
@@ -217,7 +229,7 @@ const PCRSummaryOfKeyData = () => {
             </Tabs>
             <div className="flex flex-col gap-y-6 bg-white p-6">
               {currentTab === 0 && (
-                <FieldGroup>
+                <div className="flex flex-col">
                   <SubSectionTitle className="!mb-4">Funding</SubSectionTitle>
                   <div className="grid grid-cols-3 gap-x-7 gap-y-4">
                     {numberDetailItem(
@@ -268,11 +280,11 @@ const PCRSummaryOfKeyData = () => {
                       'number',
                     )}
                   </div>
-                </FieldGroup>
+                </div>
               )}
 
               {currentTab === 1 && (
-                <FieldGroup>
+                <div className="flex flex-col">
                   {summaryData.alternative_technologies.length > 0 ? (
                     <div className="flex flex-col gap-y-4">
                       <div className="grid grid-cols-2 gap-x-7">
@@ -311,11 +323,11 @@ const PCRSummaryOfKeyData = () => {
                   ) : (
                     <NoDataReported text="No data reported." />
                   )}
-                </FieldGroup>
+                </div>
               )}
 
               {currentTab === 2 && (
-                <FieldGroup>
+                <div className="flex flex-col">
                   {summaryData.enterprises.length > 0 ? (
                     <TableContainer
                       component={Paper}
@@ -353,11 +365,15 @@ const PCRSummaryOfKeyData = () => {
                   ) : (
                     <NoDataReported text="No data reported." />
                   )}
-                </FieldGroup>
+                </div>
               )}
 
               {currentTab === 3 && (
-                <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
+                <div className="flex flex-col">
+                  <SubSectionTitle className="!mb-4">
+                    Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment
+                    rendered unusable (baseline)
+                  </SubSectionTitle>
                   {summaryData.equipments.length > 0 ? (
                     <TableContainer
                       component={Paper}
@@ -411,7 +427,7 @@ const PCRSummaryOfKeyData = () => {
                   ) : (
                     <NoDataReported text="No data reported." />
                   )}
-                </FieldGroup>
+                </div>
               )}
             </div>
           </DialogContent>

@@ -87,7 +87,6 @@ export interface PCRAlternativeTechnologyType {
 export interface PCREnterpriseType {
   name: string
   address: string
-  isDefault?: boolean
 }
 
 export interface PCREquipmentType {
@@ -362,4 +361,28 @@ export type ArchivePCRResponse = {
   delay_explanations: ArchivePCRDelayExplanation[]
   learned_lessons: ArchivePCRLearnedLesson[]
   supporting_evidences: ArchivePCRSupportingEvidence[]
+}
+
+export type ArchiveIndividualPCRLearnedLesson = {
+  id: number
+  description: string | null
+  report_filename: string | null
+}
+
+export type ArchiveIndividualPCRSupportingEvidence =
+  ArchivePCRSupportingEvidence & {
+    document_type: 'report' | 'additional_document'
+  }
+
+export type ArchiveIndividualPCRResponse = {
+  id: number
+  project_id: number
+  meta_project_id: number | null
+  code: string | null
+  legacy_code: string | null
+  title: string | null
+  status: string
+  submission_date: string | null
+  learned_lessons: ArchiveIndividualPCRLearnedLesson[]
+  supporting_evidences: ArchiveIndividualPCRSupportingEvidence[]
 }

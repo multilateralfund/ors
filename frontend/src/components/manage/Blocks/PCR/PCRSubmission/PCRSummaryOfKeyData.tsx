@@ -1,13 +1,7 @@
-import {
-  ChangeEvent,
-  ReactNode,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import { ChangeEvent, useCallback, useContext, useMemo, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Link from '@ors/components/ui/Link/Link'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 
@@ -74,6 +68,7 @@ import {
   Tab,
   Tabs,
   TextareaAutosize,
+  Typography,
 } from '@mui/material'
 import {
   ColDef,
@@ -107,9 +102,9 @@ export const createSummaryData = (
   project_id: projectId,
   funds_disbursed: '',
   planned_date_of_completion: '',
-  alternative_technologies: [createAlternativeTechnology()],
-  enterprises: [createEnterprise()],
-  equipments: [createEquipment()],
+  alternative_technologies: [],
+  enterprises: [],
+  equipments: [],
 })
 
 export const cloneSummaryData = (
@@ -146,19 +141,6 @@ export const formatProjectValue = (value: unknown): string => {
 
   return ''
 }
-
-export const FieldGroup = ({
-  children,
-  title,
-}: {
-  children: ReactNode
-  title?: string
-}) => (
-  <div className="flex flex-col">
-    {title && <SubSectionTitle className="mb-4">{title}</SubSectionTitle>}
-    {children}
-  </div>
-)
 
 const ComputedField = ({
   label,
@@ -265,7 +247,9 @@ const DisposalTypeSelect = ({
         }
         FieldProps={{ className: 'BPListUpload mb-0 w-full' }}
       />
-      <FieldErrorIndicator errors={errors} field="disposal_type" />
+      <div className="w-7 shrink-0">
+        <FieldErrorIndicator errors={errors} field="disposal_type" />
+      </div>
     </div>
   </div>
 )
@@ -273,13 +257,13 @@ const DisposalTypeSelect = ({
 export const getSummaryTableColumnDefs = () => [
   {
     headerName: 'Type',
-    minWidth: 160,
+    minWidth: 150,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(params.data?.project_type),
   },
   {
     headerName: 'Sector',
-    minWidth: 160,
+    minWidth: 150,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(params.data?.sector),
   },
@@ -291,19 +275,19 @@ export const getSummaryTableColumnDefs = () => [
   },
   {
     headerName: 'Tranche(s)',
-    minWidth: 110,
+    minWidth: 70,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(params.data?.tranche),
   },
   {
     headerName: 'Date approved',
-    minWidth: 135,
+    minWidth: 105,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(formatDate(params.data?.date_approved)),
   },
   {
     headerName: 'Actual date of completion',
-    minWidth: 165,
+    minWidth: 145,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(formatDate(params.data?.actual_date_of_completion)),
   },
@@ -315,25 +299,25 @@ export const getSummaryTableColumnDefs = () => [
   },
   {
     headerName: 'ODP phase-out (Approved)',
-    minWidth: 170,
+    minWidth: 150,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.odp_phase_out_approved, 1, 1),
   },
   {
     headerName: 'ODP phase out (Actual)',
-    minWidth: 160,
+    minWidth: 150,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.odp_phase_out_actual, 1, 1),
   },
   {
     headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)',
-    minWidth: 230,
+    minWidth: 205,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.hfc_phase_down_co2_approved, 0, 0),
   },
   {
     headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)',
-    minWidth: 220,
+    minWidth: 205,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.hfc_phase_down_co2_actual, 0, 0),
   },
@@ -455,10 +439,6 @@ const PCRSummaryOfKeyData = () => {
       const formattedDraftSummaryData = {
         ...draftSummaryData,
         hasSavedData: true,
-        enterprises: map(draftSummaryData.enterprises, (enterprise) => ({
-          ...enterprise,
-          isDefault: false,
-        })),
       }
 
       const summaryOfKeyData =
@@ -521,7 +501,10 @@ const PCRSummaryOfKeyData = () => {
               >
                 <FiEdit size={16} />
               </IconButton>
-              <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+              <span
+                className="cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap underline"
+                onClick={() => openDialog(params.data?.id)}
+              >
                 {params.value}
               </span>
               {!!hasErrors && <SectionErrorIndicator errors={[]} />}
@@ -614,6 +597,14 @@ const PCRSummaryOfKeyData = () => {
 
   return (
     <div className="flex flex-col gap-y-6">
+      <CustomAlert
+        type="info"
+        content={
+          <Typography className="text-lg leading-5">
+            Click on the first column to edit each project.
+          </Typography>
+        }
+      />
       <ViewTable<ProjectType>
         columnDefs={summaryTableColumnDefs}
         defaultColDef={{
@@ -708,9 +699,9 @@ const PCRSummaryOfKeyData = () => {
                     formattedErrors.general.length > 0 && (
                       <ErrorsList errors={formattedErrors.general} />
                     )}
-                  <FieldGroup>
+                  <div className="flex flex-col">
                     <SubSectionTitle className="!mb-3">Funding</SubSectionTitle>
-                    <div className="grid grid-cols-3 gap-x-7 gap-y-4">
+                    <div className="grid grid-cols-1 gap-x-7 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
                       <ComputedField
                         label="Funds approved"
                         value={editingProject.funds_approved as number}
@@ -726,12 +717,18 @@ const PCRSummaryOfKeyData = () => {
                             className="!m-0 w-40"
                             value={summaryData.funds_disbursed}
                             withoutDefaultValue={true}
-                            onChange={(event) =>
+                            onChange={(event) => {
+                              const value = event.target.value
+
+                              if (isNaN(Number(value))) {
+                                return
+                              }
+
                               updateSummaryData((projectData) => ({
                                 ...projectData,
-                                funds_disbursed: event.target.value,
+                                funds_disbursed: value,
                               }))
-                            }
+                            }}
                           />
                           <FieldErrorIndicator
                             errors={groupedErrors.general}
@@ -744,7 +741,7 @@ const PCRSummaryOfKeyData = () => {
                     <SubSectionTitle className="!mb-3">
                       Schedule
                     </SubSectionTitle>
-                    <div className="grid grid-cols-3 gap-x-7 gap-y-4">
+                    <div className="grid grid-cols-1 gap-x-7 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
                       <ComputedDateField
                         label="Date approved"
                         value={editingProject.date_approved as string}
@@ -785,8 +782,6 @@ const PCRSummaryOfKeyData = () => {
                           editingProject.actual_date_of_completion as string
                         }
                       />
-                    </div>
-                    <div className="mt-4 grid grid-cols-3 gap-x-7 gap-y-4">
                       <ComputedField
                         label="Planned duration (months)"
                         value={computedFields.planned_duration}
@@ -800,7 +795,7 @@ const PCRSummaryOfKeyData = () => {
                         value={computedFields.delay}
                       />
                     </div>
-                  </FieldGroup>
+                  </div>
                 </div>
               )}
 
@@ -812,60 +807,75 @@ const PCRSummaryOfKeyData = () => {
                         errors={formattedErrors.alternative_technologies}
                       />
                     )}
-                  <FieldGroup>
+                  <div className="flex flex-col">
                     <div className="flex flex-col gap-y-4">
-                      <div className="flex gap-x-7">
-                        <div className="min-w-56 sm:min-w-64">
-                          <Label>Substance converted from</Label>
-                        </div>
-                        <div className="min-w-56 sm:min-w-64">
-                          <Label>Substance converted to</Label>
-                        </div>
-                      </div>
                       {summaryData.alternative_technologies.map(
                         (entry, index) => (
                           <div
                             key={index}
-                            className="flex flex-wrap items-end gap-x-7 gap-y-4"
+                            className="grid max-w-5xl grid-cols-1 items-end gap-4 md:grid-cols-[18rem_18rem_auto]"
                           >
-                            <div className="flex items-center">
-                              <SubstanceSelect
-                                id={`substance-from-${editingProject.id}-${index}`}
-                                options={substanceOptions}
-                                value={entry.substance_from}
-                                onChange={(value) =>
-                                  updateAlternativeTechnology(
-                                    index,
-                                    'substance_from',
-                                    value,
-                                  )
-                                }
-                              />
-                              <FieldErrorIndicator
-                                errors={alternativeTechnologiesErrors?.[index]}
-                                field="substance_from"
-                              />
+                            <div className="flex flex-col">
+                              <div className={cx({ 'md:hidden': index !== 0 })}>
+                                <Label
+                                  htmlFor={`substance-from-${editingProject.id}-${index}`}
+                                >
+                                  Substance converted from
+                                </Label>
+                              </div>
+                              <div className="flex items-center">
+                                <SubstanceSelect
+                                  id={`substance-from-${editingProject.id}-${index}`}
+                                  options={substanceOptions}
+                                  value={entry.substance_from}
+                                  onChange={(value) =>
+                                    updateAlternativeTechnology(
+                                      index,
+                                      'substance_from',
+                                      value,
+                                    )
+                                  }
+                                />
+                                <FieldErrorIndicator
+                                  errors={
+                                    alternativeTechnologiesErrors?.[index]
+                                  }
+                                  field="substance_from"
+                                />
+                              </div>
                             </div>
-                            <div className="flex items-center">
-                              <SubstanceSelect
-                                id={`substance-to-${editingProject.id}-${index}`}
-                                options={substanceOptions}
-                                value={entry.substance_to}
-                                onChange={(value) =>
-                                  updateAlternativeTechnology(
-                                    index,
-                                    'substance_to',
-                                    value,
-                                  )
-                                }
-                              />
-                              <FieldErrorIndicator
-                                errors={alternativeTechnologiesErrors?.[index]}
-                                field="substance_to"
-                              />
+                            <div className="flex flex-col">
+                              <div className={cx({ 'md:hidden': index !== 0 })}>
+                                <Label
+                                  htmlFor={`substance-to-${editingProject.id}-${index}`}
+                                >
+                                  Substance converted to
+                                </Label>
+                              </div>
+                              <div className="flex items-center">
+                                <SubstanceSelect
+                                  id={`substance-to-${editingProject.id}-${index}`}
+                                  options={substanceOptions}
+                                  value={entry.substance_to}
+                                  onChange={(value) =>
+                                    updateAlternativeTechnology(
+                                      index,
+                                      'substance_to',
+                                      value,
+                                    )
+                                  }
+                                />
+                                <FieldErrorIndicator
+                                  errors={
+                                    alternativeTechnologiesErrors?.[index]
+                                  }
+                                  field="substance_to"
+                                />
+                              </div>
                             </div>
                             <IconButton
                               aria-label="Remove alternative technology"
+                              className="justify-self-start"
                               onClick={() => {
                                 updateSummaryData((projectData) => ({
                                   ...projectData,
@@ -897,7 +907,7 @@ const PCRSummaryOfKeyData = () => {
                       }
                       className="mr-auto mt-4 h-8"
                     />
-                  </FieldGroup>
+                  </div>
                 </div>
               )}
 
@@ -907,71 +917,85 @@ const PCRSummaryOfKeyData = () => {
                     formattedErrors.enterprises.length > 0 && (
                       <ErrorsList errors={formattedErrors.enterprises} />
                     )}
-                  <FieldGroup>
+                  <div className="flex flex-col">
                     <div className="flex flex-col gap-y-4">
-                      <div className="grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]">
-                        <div>
-                          <Label>Name of enterprise</Label>
-                        </div>
-                        <div>
-                          <Label>Address of enterprise</Label>
-                        </div>
-                      </div>
                       {summaryData.enterprises.map((entry, index) => (
                         <div
                           key={index}
                           className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
                         >
-                          <div className="flex items-center">
-                            <div className="w-full">
-                              <SimpleInput
-                                id={`enterprise-name-${editingProject.id}-${index}`}
-                                label=""
-                                type="text"
-                                value={entry.name}
-                                onChange={(
-                                  event: ChangeEvent<HTMLInputElement>,
-                                ) =>
-                                  updateEnterprise(
-                                    index,
-                                    'name',
-                                    event.target.value,
-                                  )
-                                }
-                              />
+                          <div className="flex flex-col">
+                            <div className={cx({ 'md:hidden': index !== 0 })}>
+                              <Label
+                                htmlFor={`enterprise-name-${editingProject.id}-${index}`}
+                              >
+                                Name of enterprise
+                              </Label>
                             </div>
-                            <FieldErrorIndicator
-                              errors={enterprisesErrors?.[index]}
-                              field="name"
-                            />
+                            <div className="flex items-center">
+                              <div className="w-full">
+                                <SimpleInput
+                                  id={`enterprise-name-${editingProject.id}-${index}`}
+                                  label=""
+                                  type="text"
+                                  value={entry.name}
+                                  onChange={(
+                                    event: ChangeEvent<HTMLInputElement>,
+                                  ) =>
+                                    updateEnterprise(
+                                      index,
+                                      'name',
+                                      event.target.value,
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div className="w-7 shrink-0">
+                                <FieldErrorIndicator
+                                  errors={enterprisesErrors?.[index]}
+                                  field="name"
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex items-center">
-                            <div className="w-full">
-                              <TextareaAutosize
-                                id={`enterprise-address-${editingProject.id}-${index}`}
-                                className={`${textAreaClassname} min-h-24 w-full pb-2`}
-                                minRows={3}
-                                style={STYLE}
-                                value={entry.address}
-                                onChange={(
-                                  event: ChangeEvent<HTMLTextAreaElement>,
-                                ) =>
-                                  updateEnterprise(
-                                    index,
-                                    'address',
-                                    event.target.value,
-                                  )
-                                }
-                              />
+                          <div className="flex flex-col">
+                            <div className={cx({ 'md:hidden': index !== 0 })}>
+                              <Label
+                                htmlFor={`enterprise-address-${editingProject.id}-${index}`}
+                              >
+                                Address of enterprise
+                              </Label>
                             </div>
-                            <FieldErrorIndicator
-                              errors={enterprisesErrors?.[index]}
-                              field="address"
-                            />
+                            <div className="flex items-center">
+                              <div className="w-full">
+                                <TextareaAutosize
+                                  id={`enterprise-address-${editingProject.id}-${index}`}
+                                  className={`${textAreaClassname} min-h-24 w-full pb-2`}
+                                  minRows={3}
+                                  style={STYLE}
+                                  value={entry.address}
+                                  onChange={(
+                                    event: ChangeEvent<HTMLTextAreaElement>,
+                                  ) =>
+                                    updateEnterprise(
+                                      index,
+                                      'address',
+                                      event.target.value,
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div className="w-7 shrink-0">
+                                <FieldErrorIndicator
+                                  errors={enterprisesErrors?.[index]}
+                                  field="address"
+                                />
+                              </div>
+                            </div>
                           </div>
                           <IconButton
                             aria-label="Remove enterprise"
-                            className="mt-7 justify-self-start"
+                            className="mb-7 self-end justify-self-start"
                             onClick={() => {
                               updateSummaryData((projectData) => ({
                                 ...projectData,
@@ -1001,7 +1025,7 @@ const PCRSummaryOfKeyData = () => {
                       }
                       className="mr-auto mt-4 h-8"
                     />
-                  </FieldGroup>
+                  </div>
                 </div>
               )}
 
@@ -1011,21 +1035,19 @@ const PCRSummaryOfKeyData = () => {
                     formattedErrors.equipments.length > 0 && (
                       <ErrorsList errors={formattedErrors.equipments} />
                     )}
-                  <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
+                  <div className="flex flex-col">
+                    <SubSectionTitle className="!mb-3">
+                      Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment
+                      rendered unusable (baseline)
+                    </SubSectionTitle>
                     <div className="flex flex-col gap-y-4">
-                      <div className="hidden max-w-[84rem] grid-cols-[16rem_22rem_16rem_14rem_auto] gap-4 xl:grid">
-                        <Label>Name of equipment</Label>
-                        <Label>Description</Label>
-                        <Label>Disposal type</Label>
-                        <Label>Date of disposal</Label>
-                      </div>
                       {summaryData.equipments.map((entry, index) => (
                         <div
                           key={index}
                           className="grid max-w-[84rem] grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[16rem_22rem_16rem_14rem_auto]"
                         >
                           <div className="w-full">
-                            <div className="xl:hidden">
+                            <div className={cx({ 'xl:hidden': index !== 0 })}>
                               <Label
                                 htmlFor={`equipment-name-${editingProject.id}-${index}`}
                               >
@@ -1050,14 +1072,16 @@ const PCRSummaryOfKeyData = () => {
                                   }
                                 />
                               </div>
-                              <FieldErrorIndicator
-                                errors={equipmentsErrors?.[index]}
-                                field="name"
-                              />
+                              <div className="w-7 shrink-0">
+                                <FieldErrorIndicator
+                                  errors={equipmentsErrors?.[index]}
+                                  field="name"
+                                />
+                              </div>
                             </div>
                           </div>
                           <div className="w-full md:col-span-2 xl:col-span-1">
-                            <div className="xl:hidden">
+                            <div className={cx({ 'xl:hidden': index !== 0 })}>
                               <Label
                                 htmlFor={`equipment-description-${editingProject.id}-${index}`}
                               >
@@ -1081,16 +1105,18 @@ const PCRSummaryOfKeyData = () => {
                                   )
                                 }
                               />
-                              <FieldErrorIndicator
-                                errors={equipmentsErrors?.[index]}
-                                field="description"
-                              />
+                              <div className="w-7 shrink-0">
+                                <FieldErrorIndicator
+                                  errors={equipmentsErrors?.[index]}
+                                  field="description"
+                                />
+                              </div>
                             </div>
                           </div>
                           <DisposalTypeSelect
                             id={`equipment-disposal_type-${editingProject.id}-${index}`}
                             label="Disposal type"
-                            labelClassName="xl:hidden"
+                            labelClassName={cx({ 'xl:hidden': index !== 0 })}
                             options={disposalTypeOptions}
                             value={entry.disposal_type}
                             onChange={(value) =>
@@ -1099,7 +1125,7 @@ const PCRSummaryOfKeyData = () => {
                             errors={equipmentsErrors?.[index]}
                           />
                           <div className="w-full">
-                            <div className="xl:hidden">
+                            <div className={cx({ 'xl:hidden': index !== 0 })}>
                               <Label
                                 htmlFor={`equipment-disposal_date-${editingProject.id}-${index}`}
                               >
@@ -1122,15 +1148,17 @@ const PCRSummaryOfKeyData = () => {
                                   )
                                 }
                               />
-                              <FieldErrorIndicator
-                                errors={equipmentsErrors?.[index]}
-                                field="disposal_date"
-                              />
+                              <div className="w-7 shrink-0">
+                                <FieldErrorIndicator
+                                  errors={equipmentsErrors?.[index]}
+                                  field="disposal_date"
+                                />
+                              </div>
                             </div>
                           </div>
                           <IconButton
                             aria-label="Remove equipment"
-                            className="justify-self-start xl:self-center"
+                            className="justify-self-start xl:self-end"
                             onClick={() => {
                               updateSummaryData((projectData) => ({
                                 ...projectData,
@@ -1160,7 +1188,7 @@ const PCRSummaryOfKeyData = () => {
                       }
                       className="mr-auto mt-4 h-8"
                     />
-                  </FieldGroup>
+                  </div>
                 </div>
               )}
             </div>
