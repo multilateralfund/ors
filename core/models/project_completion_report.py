@@ -85,10 +85,16 @@ class PCR(models.Model):
         OTHER = "Other", "Other"
 
     class Status(models.TextChoices):
+        # Draft is only used for version 1 before it is submitted.
+        # When submitted, version 1 is archived as 'Initial submission'.
         DRAFT = "Draft", "Draft"
-        SUBMITTED = "Submitted", "Submitted"
-        ADJUSTMENTS_REQUESTED = "Adjustments requested", "Adjustments requested"
-        FINAL = "Final", "Final"
+        INITIAL_SUBMISSION = "Initial submission", "Initial submission"
+        REVISION = "Revision", "Revision"
+        REVISION_ADJUSTMENTS_REQUESTED = (
+            "Revision (adjustments requested)",
+            "Revision (adjustments requested)",
+        )
+        APPROVED = "Approved version", "Approved version"
 
     meta_project = models.ForeignKey(
         "MetaProject", on_delete=models.PROTECT, related_name="pcrs"
@@ -223,12 +229,12 @@ class PCR(models.Model):
     @property
     def is_editable(self):
         """Archived versions and the final version are locked"""
-        return self.latest_pcr_id is None and self.status != self.Status.FINAL
+        return self.latest_pcr_id is None and self.status != self.Status.APPROVED
 
     @property
     def is_locked(self):
         """The lead agency can't work on the PCR while it is with MLFS or final"""
-        return self.status in [self.Status.SUBMITTED, self.Status.FINAL]
+        return self.status in [self.Status.REVISION, self.Status.APPROVED]
 
     @cached_property
     def total_number_of_enterprises(self):
@@ -290,9 +296,11 @@ class PCR(models.Model):
             new_pcr.save()
             return new_pcr
 
-    def increase_version(self, user):
+    def increase_version(self, user, archived_status=None):
         archived_pcr = self.copy_pcr()
         archived_pcr.latest_pcr = self
+        if archived_status:
+            archived_pcr.status = archived_status
         archived_pcr.save()
 
         self.version += 1
@@ -965,7 +973,7 @@ class OLD_PCR(models.Model):
     status = models.CharField(
         max_length=32,
         choices=PCR.Status.choices,
-        default=PCR.Status.FINAL,
+        default=PCR.Status.APPROVED,
         help_text="Workflow status of the PCR",
     )
     submission_date = models.DateField(
@@ -1122,7 +1130,7 @@ class OLD_IndividualPCR(models.Model):
     status = models.CharField(
         max_length=32,
         choices=PCR.Status.choices,
-        default=PCR.Status.FINAL,
+        default=PCR.Status.APPROVED,
         help_text="Workflow status of the PCR",
     )
     submission_date = models.DateField(

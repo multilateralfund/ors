@@ -135,7 +135,7 @@ class TestMetaProjectLegacyPCR:
         assert data["pcr_id"] is None
         assert data["pcr_editable"] is None
         assert data["pcr_status"] == OLD_PCR._meta.get_field("status").default
-        assert data["pcr_status"] == PCR.Status.FINAL
+        assert data["pcr_status"] == PCR.Status.APPROVED
         assert data["pcr_submission_date"] == "2015-03-04"
 
     def test_pcr_status_filter(self, admin_user, agency, project_approved_status):
@@ -152,7 +152,7 @@ class TestMetaProjectLegacyPCR:
             assert response.status_code == 200
             return {row["id"] for row in response.data}
 
-        assert get_ids(PCR.Status.FINAL) == {old_pcr.meta_project_id}
+        assert get_ids(PCR.Status.APPROVED) == {old_pcr.meta_project_id}
         assert get_ids(PCR.Status.DRAFT) == {with_pcr.id}
 
     def test_pcr_submitted_filter(self, admin_user, agency, project_approved_status):
@@ -216,7 +216,7 @@ class TestMetaProjectLegacyPCR:
         assert response.status_code == 200
         assert {status["id"] for status in response.data["pcr_status"]} == {
             PCR.Status.DRAFT,
-            PCR.Status.FINAL,
+            PCR.Status.APPROVED,
         }
 
 
@@ -239,7 +239,7 @@ class TestOldPCRViewSet(BaseTest):
         data = response.data
         assert data["id"] == own_old_pcr.id
         assert data["meta_project_id"] == own_old_pcr.meta_project_id
-        assert data["status"] == PCR.Status.FINAL
+        assert data["status"] == PCR.Status.APPROVED
         assert data["submission_date"] == "2015-03-04"
         assert len(data["activities"]) == 2
         assert data["activities"][0]["sector_type"] == "Investment"
@@ -345,7 +345,7 @@ class TestImportOldPCRSupportingEvidences:
             assert f.read() == b"%PDF-881"
 
         created_old_pcr = OLD_PCR.objects.get(meta_project=without_old_pcr)
-        assert created_old_pcr.status == PCR.Status.FINAL
+        assert created_old_pcr.status == PCR.Status.APPROVED
         assert created_old_pcr.supporting_evidences.get().filename == "PCR_882.pdf"
 
         # html files and unknown pcr project ids are skipped
