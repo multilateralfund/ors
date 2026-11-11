@@ -102,7 +102,7 @@ import ManagePCRsPage from '@ors/app/pcr/manage/page'
 function RedirectToSection() {
   const permissions = useContext(PermissionsContext)
 
-  if (permissions.canViewProjects) {
+  if (permissions.canViewProjects || permissions.canViewIaBaPortal) {
     return <Redirect to="/projects-listing/listing" replace />
   }
   if (permissions.canViewBp) {

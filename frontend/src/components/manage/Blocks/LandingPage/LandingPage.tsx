@@ -13,6 +13,7 @@ const LandingPage = () => {
     canEditReplenishment,
     canViewBp,
     canViewProjects,
+    canViewIaBaPortal,
   } = useContext(PermissionsContext)
 
   const cards = [
@@ -41,7 +42,7 @@ const LandingPage = () => {
       href: '/projects-listing/listing',
       description:
         'Discover how Multilateral Fund projects are making a measurable impact in 144 countries. Access key data and performance metrics.',
-      permissions: canViewProjects,
+      permissions: canViewProjects || canViewIaBaPortal,
     },
   ]
 
