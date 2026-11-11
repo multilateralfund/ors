@@ -594,6 +594,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "rating_explanation_other",
             "submission_date",
             "revised_submission_date",
+            "approval_date",
             "supporting_evidences",
             "sustainable_development_goals",
             "total_number_of_enterprises",
@@ -963,6 +964,7 @@ class PCRVersionSerializer(serializers.ModelSerializer):
             "version_created_by",
             "submission_date",
             "revised_submission_date",
+            "approval_date",
             "date_created",
             "date_updated",
         ]
@@ -980,6 +982,11 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
     )
     revised_submission_date = serializers.DateField(
         source="pcr.revised_submission_date", read_only=True
+    )
+    approval_date = serializers.DateField(source="pcr.approval_date", read_only=True)
+    approved_in_latest_meeting = serializers.SerializerMethodField(
+        help_text="Whether the PCR was approved since the previous meeting, "
+        "up to the end of the most recent one"
     )
     project_metacode = serializers.CharField(source="project.metacode", read_only=True)
     country = serializers.SerializerMethodField()
@@ -1075,6 +1082,14 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
             "edit_queryset_ids", set()
         )
 
+    def get_approved_in_latest_meeting(self, obj) -> bool:
+        period = self.context.get("latest_meeting_approval_period")
+        approval_date = obj.pcr.approval_date
+        if not period or not approval_date:
+            return False
+        start, end = period
+        return (start is None or approval_date > start) and approval_date <= end
+
     class Meta:
         model = PCRProject
         fields = [
@@ -1086,6 +1101,8 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
             "pcr_editable",
             "initial_submission_date",
             "revised_submission_date",
+            "approval_date",
+            "approved_in_latest_meeting",
             "project_id",
             "project_metacode",
             "country",

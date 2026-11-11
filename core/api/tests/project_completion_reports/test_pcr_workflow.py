@@ -1,20 +1,29 @@
+import importlib
 import json
 from decimal import Decimal
-from unittest.mock import patch
+from datetime import date, timedelta
+from unittest.mock import call, patch
 
 import pytest
 from constance import config
+from django.apps import apps as django_apps
 from django.core import mail
 from django.core.serializers.json import DjangoJSONEncoder
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from core.api.tests.factories import MetaProjectFactory, ProjectFactory
+from core.api.tests.factories import (
+    MeetingFactory,
+    MetaProjectFactory,
+    ProjectFactory,
+)
 from core.api.tests.project_completion_reports.utils import fill_pcr_required_data
+from core.models.meeting import Meeting
 from core.models.project import Project
 from core.models.project_completion_report import (
     PCR,
     PCRAdditionalComment,
+    PCRHistory,
     PCRProject,
 )
 from core.tasks import send_pcr_notification
@@ -126,7 +135,7 @@ def test_submit_sends_notification(
     response = client.post(_action_url(pcr, "submit"))
 
     assert response.status_code == 200
-    mock_send_pcr_notification.assert_called_once_with(pcr.id)
+    mock_send_pcr_notification.assert_called_once_with(pcr.id, is_resubmission=False)
 
 
 def test_request_adjustments_keeps_v2(client, admin_user, pcr):
@@ -158,7 +167,11 @@ def test_resubmit_after_adjustments_does_not_create_new_version(
     assert pcr.version == 2
     assert pcr.status == PCR.Status.REVISION
     assert [p.version for p in _archived_versions(pcr)] == [1]
-    assert mock_send_pcr_notification.call_count == 3
+    assert mock_send_pcr_notification.call_args_list == [
+        call(pcr.id, is_resubmission=False),
+        call(pcr.id, is_resubmission=True),
+        call(pcr.id, is_resubmission=True),
+    ]
 
 
 def test_v2_is_editable_while_adjustments_requested(client, admin_user, pcr):
@@ -190,6 +203,8 @@ def test_approve_archives_v2_and_creates_final_v3(
     pcr.refresh_from_db()
     assert pcr.version == 3
     assert pcr.status == PCR.Status.APPROVED
+    assert pcr.approval_date is not None
+    assert response.data["approval_date"] == pcr.approval_date.isoformat()
 
     archived = list(_archived_versions(pcr))
     assert [(p.version, p.status) for p in archived] == [
@@ -198,7 +213,9 @@ def test_approve_archives_v2_and_creates_final_v3(
     ]
     assert archived[0].addresses == "Initial address"
     assert archived[1].addresses == "MLFS revised address"
-    mock_send_pcr_notification.assert_called_with(pcr.id, is_final=True)
+    assert archived[1].approval_date is None
+    # only the submission is notified, there is no email on approval
+    mock_send_pcr_notification.assert_called_once_with(pcr.id, is_resubmission=False)
 
 
 def test_final_pcr_is_not_editable(client, admin_user, pcr):
@@ -316,10 +333,94 @@ def test_workflow_actions_permissions(client, user, pcr):
 
 def test_send_pcr_notification(pcr, pcr_notifications_enabled):
     send_pcr_notification(pcr.id)
-    send_pcr_notification(pcr.id, is_final=True)
+    send_pcr_notification(pcr.id, is_resubmission=True)
 
     assert len(mail.outbox) == 2
     assert "New PCR submission" in mail.outbox[0].subject
-    assert "Final PCR version available" in mail.outbox[1].subject
+    assert "PCR resubmitted after adjustments" in mail.outbox[1].subject
     assert mail.outbox[0].bcc == ["mlfs@ors.org"]
     assert f"/pcr/{pcr.meta_project_id}/{pcr.id}/" in mail.outbox[1].body
+
+
+def test_send_pcr_notification_without_recipients(pcr):
+    config.PCR_NOTIFICATIONS_EMAILS = ""
+
+    send_pcr_notification(pcr.id)
+
+    assert len(mail.outbox) == 0
+
+
+def _meeting(start, end=None, status=Meeting.MeetingStatus.COMPLETED):
+    return MeetingFactory.create(date=start, end_date=end, status=status)
+
+
+def _approved_in_latest_meeting(client, pcr, approval_date):
+    _set_state(pcr, 3, PCR.Status.APPROVED)
+    PCR.objects.filter(pk=pcr.pk).update(approval_date=approval_date)
+    response = client.get(reverse("project-completion-report-list"))
+    assert response.status_code == 200
+    row = _results(response)[0]
+    assert row["approval_date"] == (
+        approval_date.isoformat() if approval_date else None
+    )
+    return row["approved_in_latest_meeting"]
+
+
+def test_list_approved_in_latest_meeting(client, admin_user, pcr):
+    client.force_authenticate(user=admin_user)
+    today = date.today()
+    previous_end = today - timedelta(days=60)
+    latest_start = today - timedelta(days=10)
+    latest_end = today - timedelta(days=5)
+    _meeting(today - timedelta(days=65), previous_end)
+    _meeting(latest_start, latest_end)
+    # cancelled and future meetings are ignored
+    _meeting(today - timedelta(days=2), status=Meeting.MeetingStatus.CANCELLED)
+    _meeting(today + timedelta(days=30), status=Meeting.MeetingStatus.PLANNED)
+
+    assert _approved_in_latest_meeting(client, pcr, None) is False
+    assert _approved_in_latest_meeting(client, pcr, previous_end) is False
+    assert (
+        _approved_in_latest_meeting(client, pcr, previous_end + timedelta(days=1))
+        is True
+    )
+    assert _approved_in_latest_meeting(client, pcr, latest_end) is True
+    assert (
+        _approved_in_latest_meeting(client, pcr, latest_end + timedelta(days=1))
+        is False
+    )
+
+
+def test_list_approved_in_latest_meeting_edge_cases(client, admin_user, pcr):
+    client.force_authenticate(user=admin_user)
+    today = date.today()
+
+    # no meetings yet
+    assert _approved_in_latest_meeting(client, pcr, today) is False
+
+    # a single meeting without end date: everything approved until its day counts
+    _meeting(today - timedelta(days=3))
+    assert _approved_in_latest_meeting(client, pcr, today - timedelta(days=300)) is True
+    assert _approved_in_latest_meeting(client, pcr, today) is False
+
+
+def test_approval_date_migration_backfill(client, admin_user, pcr):
+    # pylint: disable-next=import-outside-toplevel
+    from core.api.serializers.project_completion_report import (
+        HISTORY_DESCRIPTION_APPROVE_V3,
+    )
+
+    migration = importlib.import_module("core.migrations.0346_pcr_approval_date")
+    client.force_authenticate(user=admin_user)
+    client.post(_action_url(pcr, "submit"))
+    client.post(_action_url(pcr, "approve"))
+    approved_at = PCRHistory.objects.get(
+        pcr=pcr, description=HISTORY_DESCRIPTION_APPROVE_V3
+    ).created_at
+    PCR.objects.filter(pk=pcr.pk).update(approval_date=None)
+
+    migration.set_approval_dates(django_apps, None)
+
+    pcr.refresh_from_db()
+    assert pcr.approval_date == approved_at.date()
+    assert migration.APPROVE_HISTORY_DESCRIPTION == HISTORY_DESCRIPTION_APPROVE_V3
