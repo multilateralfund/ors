@@ -6,7 +6,7 @@ import { LegacyPCRIcon } from '../PCRArchive/PCRArchiveTabs/ArchiveHelperCompone
 import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
-import { MdExpandLess, MdExpandMore, MdCheckCircle } from 'react-icons/md'
+import { MdExpandLess, MdExpandMore } from 'react-icons/md'
 import { Checkbox, Chip, Tooltip } from '@mui/material'
 import { isNil, map, sumBy } from 'lodash'
 import {
@@ -150,11 +150,13 @@ const getColumnDefs = (
             )}
             {view === 'table' && (
               <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
-                {props.data.pcr_id && (
-                  <Tooltip title="Has PCR" placement="top" arrow>
-                    <span className="text-secondary">
-                      <MdCheckCircle size={18} />
-                    </span>
+                {props.data.pcr_approved_in_latest_meeting && (
+                  <Tooltip
+                    title="PCR approved in the most recent meeting"
+                    placement="top"
+                    arrow
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full bg-secondary" />
                   </Tooltip>
                 )}
                 {!props.data.pcr_id && pcrId && <LegacyPCRIcon />}
@@ -330,6 +332,13 @@ const getColumnDefs = (
               formatDate(params.data.pcr_submission_date),
             tooltipValueGetter: (params: ITooltipParams) =>
               formatDate(params.data.pcr_submission_date),
+          },
+          {
+            headerName: pcrFieldsMapping.pcr_approval_date,
+            valueGetter: (params: ValueGetterParams) =>
+              formatDate(params.data.pcr_approval_date),
+            tooltipValueGetter: (params: ITooltipParams) =>
+              formatDate(params.data.pcr_approval_date),
           },
         ]
       : []),

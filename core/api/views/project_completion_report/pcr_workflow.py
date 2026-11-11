@@ -66,7 +66,8 @@ class PCRWorkflowMixin:
         The submission date is set to the current date.
         A version 2 PCR that had adjustments requested is resubmitted without
         creating a new version and the revised submission date is set to the current date.
-        An email notification is sent to MLFS.
+        An email notification is sent to the addresses set for agency PCR submission
+        notifications (Secretariat).
         All the PCR required data should be filled, otherwise the response has the
         errors by field.
         """,
@@ -112,7 +113,7 @@ class PCRWorkflowMixin:
             )
 
         if config.PCR_NOTIFICATIONS_ENABLED:
-            send_pcr_notification.delay(pcr.id)
+            send_pcr_notification.delay(pcr.id, is_resubmission=is_resubmission)
 
         return Response(self.get_serializer(pcr).data, status=status.HTTP_200_OK)
 
@@ -154,7 +155,8 @@ class PCRWorkflowMixin:
         The PCR should be in 'Revision' status and version 2.
         Version 2 is archived and the PCR is increased to version 3, 'Approved version',
         which can no longer be edited.
-        An email notification is sent to MLFS.
+        The approval date is set to the current date.
+        No email notification is sent, approved PCRs are highlighted in the PCR listing.
         All the PCR required data should be filled, otherwise the response has the
         errors by field.
         """,
@@ -177,11 +179,9 @@ class PCRWorkflowMixin:
                 return incomplete_response
             pcr.increase_version(request.user)
             pcr.status = PCR.Status.APPROVED
+            pcr.approval_date = timezone.now().date()
             pcr.save()
             log_pcr_history(pcr, request.user, HISTORY_DESCRIPTION_APPROVE_V3)
-
-        if config.PCR_NOTIFICATIONS_ENABLED:
-            send_pcr_notification.delay(pcr.id, is_final=True)
 
         return Response(self.get_serializer(pcr).data, status=status.HTTP_200_OK)
 

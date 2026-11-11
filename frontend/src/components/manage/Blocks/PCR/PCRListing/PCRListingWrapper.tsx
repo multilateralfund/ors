@@ -20,8 +20,8 @@ import { ToggleButtonGroup, ToggleButton } from '@mui/material'
 import { map } from 'lodash'
 
 const viewOptions: { value: ViewSelectorValuesType; label: string }[] = [
-  { value: 'list', label: 'Without PCR' },
-  { value: 'table', label: 'With PCR' },
+  { value: 'list', label: 'Not completed PCRs' },
+  { value: 'table', label: 'Completed PCRs' },
 ]
 
 const PCRListingWrapper = () => {

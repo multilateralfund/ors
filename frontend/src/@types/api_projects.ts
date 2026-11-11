@@ -227,4 +227,6 @@ export type PCRMetaProjectType = {
   legacy_pcr_id: number | null
   legacy_individual_pcr_id: number | null
   pcr_editable: boolean | null
+  pcr_approved_in_latest_meeting: boolean
+  pcr_approval_date: string | null
 }

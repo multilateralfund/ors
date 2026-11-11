@@ -301,12 +301,12 @@ EMAILS_CONSTANCE_FIELDS = OrderedDict(
         ),
         "PCR_NOTIFICATIONS_ENABLED": (
             False,
-            "Enable PCR submission and final version notifications",
+            "Enable agency PCR submission notifications",
             bool,
         ),
         "PCR_NOTIFICATIONS_EMAILS": (
             "",
-            "Email addresses that receive PCR submission and final version notifications (comma-separated)",
+            "Email addresses that receive agency PCR submission notifications (comma-separated)",
             str,
         ),
     }

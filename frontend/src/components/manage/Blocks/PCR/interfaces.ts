@@ -123,6 +123,7 @@ export type PCRResponse = {
   latest_pcr_id: number | null
   editable: boolean
   submission_date: string | null
+  approval_date: string | null
   total_number_of_enterprises: string
   financial_figures_status: string
   financial_figures_status_explanation: string

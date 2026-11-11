@@ -49,6 +49,7 @@ from core.api.views.project_completion_report.pcr_workflow import PCRWorkflowMix
 from core.api.views.project_completion_report.utils import (
     filter_pcr_permissions,
     filter_pcr_projects_permissions,
+    get_latest_meeting_approval_period,
     get_pcr_accessible_meta_projects,
 )
 from core.api.views.utils import get_country_regions
@@ -110,6 +111,7 @@ class PCRProjectViewSet(
         "date_created",
         "pcr__submission_date",
         "pcr__revised_submission_date",
+        "pcr__approval_date",
     ]
     search_fields = [
         "project__code",
@@ -190,6 +192,11 @@ class PCRProjectViewSet(
                 self.filter_pcr_permissions_queryset(
                     PCR.objects.all(), results_for_edit=True
                 ).values_list("id", flat=True)
+            )
+        if self.action == "list":
+            # used to highlight the PCRs approved for the most recent meeting
+            context["latest_meeting_approval_period"] = (
+                get_latest_meeting_approval_period()
             )
         return context
 

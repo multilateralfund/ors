@@ -5,6 +5,7 @@ import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import {
   SubSectionTitle,
   detailItem,
+  dateDetailItem,
   SelectedEntity,
 } from './ViewHelperComponents'
 import { getValueClassName } from '../../utils'
@@ -145,8 +146,15 @@ const PCROverview = () => {
           )}
         </div>
       </div>
-      <div className={cx('bg-white p-6', borderedContainerClassname)}>
+      <div
+        className={cx(
+          'flex flex-wrap gap-x-20 gap-y-6 bg-white p-6',
+          borderedContainerClassname,
+        )}
+      >
         {detailItem(pcrFieldsMapping.completed_by, pcr.completed_by)}
+        {pcr.status === 'Approved version' &&
+          dateDetailItem('Approval date', pcr.approval_date ?? '')}
       </div>
     </>
   )

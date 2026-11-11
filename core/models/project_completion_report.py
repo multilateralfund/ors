@@ -221,6 +221,9 @@ class PCR(models.Model):
         blank=True,
         help_text="Latest resubmission date, after adjustments were requested",
     )
+    approval_date = models.DateField(
+        null=True, blank=True, help_text="Approval date (version 3)"
+    )
     objects = PCRManager()
 
     def __str__(self):
