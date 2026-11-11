@@ -1,6 +1,6 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from django.db.models import Count, Prefetch, Q, QuerySet
+from django.db.models import Exists, OuterRef, Prefetch, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 import openpyxl
 
@@ -176,19 +176,13 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         return search_filter.filter_queryset(self.request, filtered_projects_qs, self)
 
     def _get_meta_projects_queryset(self, filtered_projects_qs):
-        return (
-            MetaProject.objects.annotate(
-                pcr_waived_count=Count(
-                    "projects",
-                    filter=Q(projects__pcr_waived=True),
-                )
-            )
-            .filter(
-                is_draft=False,
-                projects__in=filtered_projects_qs,
-                pcr_waived_count__lt=1,
-            )
-            .distinct()
+        # Filtering on the meta project ids, not joining the projects, avoids
+        # a slow nested loop on the listing (with the pcr_submitted filter)
+        return MetaProject.objects.filter(
+            is_draft=False,
+            id__in=filtered_projects_qs.values("meta_project_id"),
+        ).exclude(
+            Exists(Project.objects.filter(meta_project=OuterRef("pk"), pcr_waived=True))
         )
 
     def get_queryset(self, params=None):
@@ -234,6 +228,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             self._get_meta_projects_queryset(filtered_projects_qs)
             .select_related("lead_agency", "old_pcr")
             .prefetch_related(prefetch, old_individual_pcr_prefetch)
+            .order_by("umbrella_code", "id")
         )
         return queryset
 
