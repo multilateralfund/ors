@@ -58,6 +58,6 @@ def filter_pcr_permissions(user, queryset, results_for_edit=False):
         if not user.has_perm("core.has_pcr_edit_access"):
             return queryset.none()
         if not user.has_perm("core.has_pcr_edit_submitted_access"):
-            queryset = queryset.exclude(status=PCR.Status.SUBMITTED)
+            queryset = queryset.exclude(status=PCR.Status.REVISION)
 
     return queryset

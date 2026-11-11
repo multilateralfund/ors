@@ -28,7 +28,8 @@ const WorkflowButtons = ({
   return (
     <>
       {canSubmitPCR &&
-        (status === 'Draft' || status === 'Adjustments requested') && (
+        (status === 'Draft' ||
+          status === 'Revision (adjustments requested)') && (
           <IncreaseVersionButton
             title="Submit to Secretariat"
             onSubmit={() => {
@@ -38,7 +39,7 @@ const WorkflowButtons = ({
             className={cx({ 'border border-solid': isSubmitDisabled })}
           />
         )}
-      {canApprovePCR && status === 'Submitted' && (
+      {canApprovePCR && status === 'Revision' && (
         <IncreaseVersionButton
           title="Approve"
           onSubmit={() => {
@@ -48,7 +49,7 @@ const WorkflowButtons = ({
           className={cx({ 'border border-solid': isSubmitDisabled })}
         />
       )}
-      {canRequestAdjustmentsPCR && status === 'Submitted' && (
+      {canRequestAdjustmentsPCR && status === 'Revision' && (
         <Button
           className={cx('border border-solid px-4 py-2', {
             'border-red-900 bg-white text-red-900': !isSaveDisabled,

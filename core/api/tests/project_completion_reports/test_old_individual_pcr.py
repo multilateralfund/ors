@@ -107,7 +107,7 @@ class TestMetaProjectLegacyIndividualPCR:
         assert data["legacy_pcr_id"] is None
         assert data["legacy_individual_pcr_id"] == own_old_pcr.id
         assert data["pcr_id"] is None
-        assert data["pcr_status"] == PCR.Status.FINAL
+        assert data["pcr_status"] == PCR.Status.APPROVED
         assert data["pcr_submission_date"] is None
 
     def test_legacy_ids_in_listing(
@@ -152,7 +152,7 @@ class TestMetaProjectLegacyIndividualPCR:
         PCRFactory(meta_project=with_pcr)
 
         self.client.force_authenticate(user=admin_user)
-        assert self._get_ids({"pcr_status": PCR.Status.FINAL}) == {
+        assert self._get_ids({"pcr_status": PCR.Status.APPROVED}) == {
             own_old_pcr.project.meta_project_id
         }
         assert self._get_ids({"pcr_status": PCR.Status.DRAFT}) == {with_pcr.id}
@@ -161,7 +161,7 @@ class TestMetaProjectLegacyIndividualPCR:
         assert response.status_code == 200
         assert {status["id"] for status in response.data["pcr_status"]} == {
             PCR.Status.DRAFT,
-            PCR.Status.FINAL,
+            PCR.Status.APPROVED,
         }
 
     def test_pcr_submission_date_filter(self, admin_user, own_old_pcr):
@@ -192,7 +192,7 @@ class TestOldIndividualPCRViewSet(BaseTest):
         assert data["id"] == own_old_pcr.id
         assert data["project_id"] == own_old_pcr.project_id
         assert data["meta_project_id"] == own_old_pcr.project.meta_project_id
-        assert data["status"] == PCR.Status.FINAL
+        assert data["status"] == PCR.Status.APPROVED
         assert data["submission_date"] is None
         assert len(data["learned_lessons"]) == 1
         assert data["learned_lessons"][0]["report_filename"] == "AFG1.pdf"
@@ -337,7 +337,7 @@ class TestImportOldIndividualPCR:
 
         assert OLD_IndividualPCR.objects.count() == 3
         afg = OLD_IndividualPCR.objects.get(project=projects["AFG/PHA/47/TAS/05"])
-        assert afg.status == PCR.Status.FINAL
+        assert afg.status == PCR.Status.APPROVED
         assert {
             (lesson.description, lesson.report_filename)
             for lesson in afg.learned_lessons.all()

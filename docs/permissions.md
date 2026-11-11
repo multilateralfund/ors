@@ -213,7 +213,7 @@ only if user has `has_project_v2_edit_post_excom` permission.
 | project-completion-reports/create/                                    | GET    | has_pcr_edit_access                      | Meta project (and PCR) must be accessible to the user |
 | project-completion-reports/                                           | POST   | has_pcr_edit_access                      | Meta project must be accessible to the user |
 | project-completion-reports/{id}/                                      | GET    | has_pcr_view_access                      | Same filtering as the listing, applied on the meta project's projects. `editable` set per user |
-| project-completion-reports/{id}/                                      | PUT    | has_pcr_edit_access                      | 'Submitted' PCRs are editable only with `has_pcr_edit_submitted_access`. 'Final' PCRs are not editable |
+| project-completion-reports/{id}/                                      | PUT    | has_pcr_edit_access                      | 'Revision' PCRs (with MLFS) are editable only with `has_pcr_edit_submitted_access`. 'Approved version' PCRs are not editable |
 | project-completion-reports/{id}/                                      | PATCH  | has_pcr_edit_access                      | Same as PUT |
 | project-completion-reports/{id}/versions/                             | GET    | has_pcr_view_access                      | Same filtering as the listing |
 | project-completion-reports/{id}/submit/                               | POST   | has_pcr_submit_access                    | Same filtering as the listing |
@@ -235,7 +235,12 @@ only if user has `has_project_v2_edit_post_excom` permission.
 | PCR - Viewer      | has_pcr_view_access, can_view_production_projects, can_view_only_own_agency |
 | PCR - Inputter    | PCR - Viewer + has_pcr_edit_access |
 | PCR - Submitter   | PCR - Inputter + has_pcr_submit_access |
-| PCR - Secretariat | has_pcr_view_access, has_pcr_request_adjustments_access, has_pcr_approve_access, has_project_v2_view_access, has_project_v2_pcr_mark_pcr_due_access, can_view_all_agencies, is_mlfs_user |
-| PCR - Full access | has_pcr_view_access, has_pcr_edit_access, has_pcr_edit_submitted_access, has_pcr_submit_access, has_pcr_request_adjustments_access, has_pcr_approve_access, has_project_v2_view_access, has_project_v2_pcr_mark_pcr_due_access, can_view_all_agencies, is_mlfs_user |
+| PCR - Secretariat | has_pcr_view_access, has_pcr_request_adjustments_access, has_pcr_approve_access, has_project_v2_view_access, has_ia_ba_portal_view_access, has_project_v2_pcr_mark_pcr_due_access, can_view_all_agencies, is_mlfs_user |
+| PCR - Full access | has_pcr_view_access, has_pcr_edit_access, has_pcr_edit_submitted_access, has_pcr_submit_access, has_pcr_request_adjustments_access, has_pcr_approve_access, has_project_v2_view_access, has_ia_ba_portal_view_access, has_project_v2_pcr_mark_pcr_due_access, can_view_all_agencies, is_mlfs_user |
 
 The MLFS groups don't include `can_view_production_projects`; production PCRs are visible to MLFS users only through their projects groups (e.g. "Projects - MLFS Production Approver").
+
+## IA/BA portal
+
+The IA/BA portal page is a frontend-only page, gated by `has_ia_ba_portal_view_access` (it has no backend endpoint of its own).
+It is given to all the groups that have `has_project_v2_view_access`, and it can be given to other groups (e.g. the PCR ones) without granting projects access.
