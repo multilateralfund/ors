@@ -7,6 +7,8 @@ export type ApiProjectSettings = {
   project_recommendation_notifications_emails: string
   apr_agency_submission_notifications_enabled: boolean
   apr_agency_submission_notifications_emails: string
+  pcr_notifications_enabled: boolean
+  pcr_notifications_emails: string
   total_savings_to_society_in_us_dollar: string
   total_avoided_emissions_of_ods_in_odp_tonnes: string
   total_avoided_emissions_of_controlled_substances_in_co2_eq_tonnes: string
@@ -45,6 +47,8 @@ export type ApiProjectSettingsForFrontend = {
         'project_recommendation_notifications_emails',
         'apr_agency_submission_notifications_enabled',
         'apr_agency_submission_notifications_emails',
+        'pcr_notifications_enabled',
+        'pcr_notifications_emails',
       ]
     >
     Projects: ValidateKeys<
@@ -72,6 +76,8 @@ export type ApiProjectSettingsForFrontend = {
     project_recommendation_notifications_emails: StringField
     apr_agency_submission_notifications_enabled: BooleanField
     apr_agency_submission_notifications_emails: StringField
+    pcr_notifications_enabled: BooleanField
+    pcr_notifications_emails: StringField
     total_savings_to_society_in_us_dollar: StringField
     total_avoided_emissions_of_ods_in_odp_tonnes: StringField
     total_avoided_emissions_of_controlled_substances_in_co2_eq_tonnes: StringField

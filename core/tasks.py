@@ -440,10 +440,10 @@ def send_project_recommended_notification(project_ids):
 
 # Project Completion Reports
 @app.task()
-def send_pcr_notification(pcr_id, is_final=False):
+def send_pcr_notification(pcr_id, is_resubmission=False):
     """
-    Notify MLFS that a PCR was submitted for review or,
-    if `is_final` is set, that the final PCR version is available.
+    Notify the Secretariat (MLFS) that an agency submitted a PCR for review or,
+    if `is_resubmission` is set, resubmitted it after adjustments were requested.
     """
     pcr = PCR.objects.select_related("meta_project").get(id=pcr_id)
 
@@ -455,7 +455,7 @@ def send_pcr_notification(pcr_id, is_final=False):
 
     context = {
         "pcr": pcr,
-        "is_final": is_final,
+        "is_resubmission": is_resubmission,
     }
     subject_template_name = ("email_templates/pcr_notification_subject.txt",)
     email_template_name = ("email_templates/pcr_notification.txt",)
