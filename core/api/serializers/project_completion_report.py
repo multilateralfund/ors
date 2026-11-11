@@ -970,6 +970,18 @@ class PCRVersionSerializer(serializers.ModelSerializer):
         ]
 
 
+def is_approved_in_latest_meeting(pcr, context):
+    """
+    Whether the PCR was approved in the `latest_meeting_approval_period` from the
+    serializer context (see `get_latest_meeting_approval_period`).
+    """
+    period = context.get("latest_meeting_approval_period")
+    if not pcr or not period or not pcr.approval_date:
+        return False
+    start, end = period
+    return (start is None or pcr.approval_date > start) and pcr.approval_date <= end
+
+
 class PCRProjectListSerializer(serializers.ModelSerializer):
     project_id = serializers.IntegerField(source="project.id", read_only=True)
     pcr_id = serializers.IntegerField(source="pcr.id", read_only=True)
@@ -1083,12 +1095,7 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
         )
 
     def get_approved_in_latest_meeting(self, obj) -> bool:
-        period = self.context.get("latest_meeting_approval_period")
-        approval_date = obj.pcr.approval_date
-        if not period or not approval_date:
-            return False
-        start, end = period
-        return (start is None or approval_date > start) and approval_date <= end
+        return is_approved_in_latest_meeting(obj.pcr, self.context)
 
     class Meta:
         model = PCRProject
@@ -1245,6 +1252,11 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
     pcr_id = serializers.SerializerMethodField()
     pcr_status = serializers.SerializerMethodField()
     pcr_submission_date = serializers.SerializerMethodField()
+    pcr_approval_date = serializers.SerializerMethodField()
+    pcr_approved_in_latest_meeting = serializers.SerializerMethodField(
+        help_text="Whether the PCR was approved since the previous meeting, "
+        "up to the end of the most recent one"
+    )
     pcr_editable = serializers.SerializerMethodField()
     has_pcr = serializers.SerializerMethodField()
     has_legacy_pcr = serializers.SerializerMethodField()
@@ -1275,6 +1287,8 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "pcr_id",
             "pcr_status",
             "pcr_submission_date",
+            "pcr_approval_date",
+            "pcr_approved_in_latest_meeting",
             "pcr_editable",
             "has_pcr",
             "has_legacy_pcr",
@@ -1395,6 +1409,18 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
         if pcr and pcr.submission_date:
             return pcr.submission_date.isoformat()
         return None
+
+    @extend_schema_field(serializers.DateField(allow_null=True))
+    def get_pcr_approval_date(self, obj):
+        # legacy PCRs have no approval date
+        pcr = self._get_pcr(obj)
+        if pcr and pcr.approval_date:
+            return pcr.approval_date.isoformat()
+        return None
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_pcr_approved_in_latest_meeting(self, obj):
+        return is_approved_in_latest_meeting(self._get_pcr(obj), self.context)
 
     @extend_schema_field(serializers.BooleanField())
     def get_has_pcr(self, obj):

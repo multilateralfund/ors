@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import io
 
 from django.urls import reverse
@@ -8,6 +8,7 @@ from core.api.tests.factories import (
     AnnualAgencyProjectReportFactory,
     AnnualProgressReportFactory,
     AnnualProjectReportFactory,
+    MeetingFactory,
     ProjectFactory,
     MetaProjectFactory,
     PCRFactory,
@@ -15,6 +16,8 @@ from core.api.tests.factories import (
     ProjectStatusFactory,
 )
 from core.models import MetaProject
+from core.models.meeting import Meeting
+from core.models.project_completion_report import PCR
 import openpyxl
 import pytest
 
@@ -286,6 +289,59 @@ class TestPCRMetaprojectsViewSet(BaseTest):
             status=project_ongoing_status,
         )
         assert get_status(mya_meta_project) == "Not completed"
+
+    def test_pcr_approved_in_latest_meeting(self, admin_user, project_approved_status):
+        today = date.today()
+        MeetingFactory(
+            date=today - timedelta(days=65),
+            end_date=today - timedelta(days=60),
+            status=Meeting.MeetingStatus.COMPLETED,
+        )
+        MeetingFactory(
+            date=today - timedelta(days=10),
+            end_date=today - timedelta(days=5),
+            status=Meeting.MeetingStatus.COMPLETED,
+        )
+        meta_projects = {}
+        for code, approval_date in [
+            ("PCR-LATEST", today - timedelta(days=30)),
+            ("PCR-PREVIOUS", today - timedelta(days=60)),
+            ("PCR-NOT-APPROVED", None),
+        ]:
+            meta_project = MetaProjectFactory(umbrella_code=code)
+            ProjectFactory.create(
+                meta_project=meta_project,
+                metacode=code,
+                submission_status=project_approved_status,
+            )
+            PCRFactory(
+                meta_project=meta_project,
+                version=3 if approval_date else 1,
+                status=PCR.Status.APPROVED if approval_date else PCR.Status.DRAFT,
+                approval_date=approval_date,
+            )
+            meta_projects[code] = (meta_project, approval_date)
+
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.get(self.url, {"limit": 100})
+        assert response.status_code == 200
+        rows = {row["umbrella_code"]: row for row in response.data["results"]}
+
+        for code, expected in [
+            ("PCR-LATEST", True),
+            ("PCR-PREVIOUS", False),
+            ("PCR-NOT-APPROVED", False),
+        ]:
+            meta_project, approval_date = meta_projects[code]
+            assert rows[code]["pcr_approval_date"] == (
+                approval_date.isoformat() if approval_date else None
+            )
+            assert rows[code]["pcr_approved_in_latest_meeting"] is expected
+
+            response = self.client.get(
+                reverse("pcr-metaprojects-detail", args=[meta_project.id])
+            )
+            assert response.data["pcr_approved_in_latest_meeting"] is expected
 
     def test_filters(
         self,

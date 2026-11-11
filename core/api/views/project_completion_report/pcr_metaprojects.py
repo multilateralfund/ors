@@ -27,6 +27,7 @@ from core.api.utils import workbook_response
 from core.api.views.project_completion_report.utils import (
     filter_pcr_permissions,
     filter_pcr_projects_permissions,
+    get_latest_meeting_approval_period,
 )
 from core.api.views.utils import get_available_values, get_country_regions
 from core.models.annual_project_report import AnnualProjectReport
@@ -160,6 +161,10 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
                 filter_pcr_permissions(
                     self.request.user, PCR.objects.all(), results_for_edit=True
                 ).values_list("id", flat=True)
+            )
+            # used to highlight the PCRs approved for the most recent meeting
+            context["latest_meeting_approval_period"] = (
+                get_latest_meeting_approval_period()
             )
         return context
 
