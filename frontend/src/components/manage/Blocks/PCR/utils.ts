@@ -720,3 +720,8 @@ export const mergeSaveErrors = (
       return undefined
     },
   )
+
+export const getPcrHiddenFilters = (view: 'list' | 'table' | null) =>
+  view === 'table'
+    ? ['pcr_due']
+    : ['pcr_status', 'pcr_submission_date_after', 'pcr_submission_date_before']

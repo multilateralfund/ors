@@ -5,8 +5,10 @@ import type { UserSlice } from '@ors/types/store'
 
 import Cookies from 'js-cookie'
 
+import { PCR_LISTING_STORAGE_KEY } from '@ors/components/manage/Blocks/PCR/constants'
 import api from '@ors/helpers/Api/_api'
 import { getInitialSliceData, setSlice } from '@ors/helpers/Store/Store'
+import { clearLocalStorage } from '@ors/storage'
 
 function removeCookies() {
   Cookies.remove('csrftoken')
@@ -78,6 +80,7 @@ export const createUserSlice = ({
   },
   // Logout
   logout: async () => {
+    clearLocalStorage(PCR_LISTING_STORAGE_KEY)
     setSlice('user', { loaded: false, loading: true })
     try {
       await api('api/auth/logout/', {

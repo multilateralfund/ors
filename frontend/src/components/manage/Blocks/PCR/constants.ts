@@ -1,5 +1,7 @@
 export const initialFilters = { offset: 0, limit: 50 }
 
+export const PCR_LISTING_STORAGE_KEY = 'pcrListing'
+
 export const initialParams = {
   search: '',
   country_id: [],
@@ -15,6 +17,7 @@ export const initialParams = {
   pcr_submission_date_after: '',
   pcr_submission_date_before: '',
 }
+
 export const pcrFieldsMapping: { [key: string]: string } = {
   region: 'Region',
   country: 'Country',
