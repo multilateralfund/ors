@@ -1,3 +1,4 @@
+import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import {
   displaySearchTerm,
   displaySelectedOption,
@@ -8,6 +9,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { initialFilters, initialParams, pcrFieldsMapping } from '../constants'
 import { PCRFiltersProps } from '../interfaces'
+import { getPcrHiddenFilters } from '../utils'
 
 import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
@@ -20,62 +22,73 @@ const PCRFiltersSelectedOpts = ({
   fieldToOptionsMapping,
   handleFilterChange,
   handleParamsChange,
-}: PCRFiltersProps) => {
-  const filtersToClear = omit(filters, 'pcr_submitted')
+  view,
+}: PCRFiltersProps & {
+  view: ViewSelectorValuesType | null
+}) => {
+  const hiddenFilters = getPcrHiddenFilters(view)
+  const visibleFilters: Record<string, any> = omit(filters, hiddenFilters)
+  const filtersToClear = omit(visibleFilters, 'pcr_submitted')
 
   const areFiltersApplied =
     getAreFiltersApplied(filtersToClear) ||
-    filters?.search ||
-    filters?.pcr_submission_date_after ||
-    filters?.pcr_submission_date_before
+    visibleFilters?.search ||
+    visibleFilters?.pcr_submission_date_after ||
+    visibleFilters?.pcr_submission_date_before
+
+  const getEntities = (field: string, entityIdentifier: string) =>
+    formatEntity([
+      ...(filters[entityIdentifier] ?? []),
+      ...(fieldToOptionsMapping[field] ?? []),
+    ])
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(fieldToOptionsMapping.status),
+      entities: getEntities('status', 'status_id'),
       entityIdentifier: 'status_id',
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.pcr_status),
+      entities: getEntities('pcr_status', 'pcr_status'),
       entityIdentifier: 'pcr_status',
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.country),
+      entities: getEntities('country', 'country_id'),
       entityIdentifier: 'country_id',
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.lead_agency),
+      entities: getEntities('lead_agency', 'lead_agency_id'),
       entityIdentifier: 'lead_agency_id',
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.cluster),
+      entities: getEntities('cluster', 'cluster_id'),
       entityIdentifier: 'cluster_id',
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.project_type),
+      entities: getEntities('project_type', 'project_type_id'),
       entityIdentifier: 'project_type_id',
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.sector),
+      entities: getEntities('sector', 'sector_id'),
       entityIdentifier: 'sector_id',
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.category),
+      entities: getEntities('category', 'category'),
       entityIdentifier: 'category',
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.pcr_due),
+      entities: getEntities('pcr_due', 'pcr_due'),
       entityIdentifier: 'pcr_due',
       extraLabel: pcrFieldsMapping.pcr_due,
     },
     {
-      entities: formatEntity(fieldToOptionsMapping.ad_hoc_pcr),
+      entities: getEntities('ad_hoc_pcr', 'ad_hoc_pcr'),
       entityIdentifier: 'ad_hoc_pcr',
       extraLabel: pcrFieldsMapping.ad_hoc_pcr,
     },
   ]
 
   const displayDateFilter = (label: string, filterKey: string) =>
-    !!filters[filterKey] && (
+    !!visibleFilters[filterKey] && (
       <Typography
         key={filterKey}
         className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
@@ -104,16 +117,20 @@ const PCRFiltersSelectedOpts = ({
           handleFilterChange,
           handleParamsChange,
         )}
-        {map(filterSelectedOpts, (selectedOpt) =>
-          displaySelectedOption(
-            filters,
-            selectedOpt.entities,
-            selectedOpt.entityIdentifier,
-            handleFilterChange,
-            handleParamsChange,
-            'id',
-            selectedOpt.extraLabel,
+        {map(
+          filterSelectedOpts.filter(
+            ({ entityIdentifier }) => !hiddenFilters.includes(entityIdentifier),
           ),
+          (selectedOpt) =>
+            displaySelectedOption(
+              filters,
+              selectedOpt.entities,
+              selectedOpt.entityIdentifier,
+              handleFilterChange,
+              handleParamsChange,
+              'id',
+              selectedOpt.extraLabel,
+            ),
         )}
         {displayDateFilter('PCR submission from', 'pcr_submission_date_after')}
         {displayDateFilter('PCR submission to', 'pcr_submission_date_before')}
