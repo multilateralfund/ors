@@ -113,6 +113,7 @@ export const viewPcrFieldsMapping: { [key: string]: string } = {
 }
 
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
+  project_submission_status: 'Submission status',
   financial_figures_status_explanation: 'Financial figures - explanations',
   addresses: 'Address(es) of enterprise(s) and project site(s)',
   project_goal_achieved_explanation: 'All project goals achieved explanation',
@@ -195,6 +196,7 @@ export const defaultSummaryOfKeyDataErrors = {
 
 export const requiredMessage = 'This field is required.'
 export const submitRequiredMessage = 'This field is required for submission.'
+export const notApprovedProjectMessage = 'Project is not approved yet.'
 
 export const summaryOfKeyDataField = 'pcr_projects'
 export const delayField = 'delay_causes'

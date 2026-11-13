@@ -35,6 +35,9 @@ const notStoredFilters = ['offset', 'limit', 'pcr_submitted']
 const getPcrSubmittedOpt = (view: ViewSelectorValuesType | null) =>
   view === 'table' ? booleanFieldsOpts[0] : booleanFieldsOpts[1]
 
+const getOrdering = (view: ViewSelectorValuesType | null) =>
+  view === 'list' ? '-pcr_due' : 'umbrella_code'
+
 const getParams = (
   filters: Record<string, any>,
   view: ViewSelectorValuesType | null,
@@ -53,6 +56,7 @@ const getParams = (
     ),
     ...initialFilters,
     pcr_submitted: getPcrSubmittedOpt(view).id,
+    ordering: getOrdering(view),
   }
 }
 

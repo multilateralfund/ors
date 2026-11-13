@@ -39,11 +39,13 @@ import {
   formatNumberProjectValue,
   getComputedFields,
   getEnterpriseAddresses,
+  isProjectNotApproved,
 } from '../utils'
 import {
   summaryOfKeyDataField,
   defaultSummaryOfKeyDataErrors,
   disposalTypeOptions,
+  notApprovedProjectMessage,
 } from '../constants'
 import {
   PCRAlternativeTechnologyType,
@@ -360,6 +362,9 @@ const PCRSummaryOfKeyData = () => {
                   errors: getSummaryOfKeyDataErrors(
                     draftSummaryData,
                     draftErrors,
+                    isProjectNotApproved(
+                      projects.find(({ id }) => id === editingProjectId),
+                    ),
                   ),
                 },
               ],
@@ -367,7 +372,7 @@ const PCRSummaryOfKeyData = () => {
             editingProjectId,
           )
         : defaultSummaryOfKeyDataErrors,
-    [editingProjectId, draftSummaryData, draftErrors],
+    [editingProjectId, draftSummaryData, draftErrors, projects],
   )
 
   const formattedErrors = useMemo(
@@ -380,6 +385,17 @@ const PCRSummaryOfKeyData = () => {
       ),
     [groupedErrors],
   )
+
+  const notApprovedErrors = isProjectNotApproved(
+    projects.find(({ id }) => id === editingProjectId),
+  )
+    ? formatErrors({ project_submission_status: [notApprovedProjectMessage] })
+    : []
+
+  const getTabErrors = (tab: string) => [
+    ...notApprovedErrors,
+    ...(formattedErrors[tab] ?? []),
+  ]
 
   const { alternativeTechnologiesErrors, enterprisesErrors, equipmentsErrors } =
     useMemo(
@@ -395,6 +411,7 @@ const PCRSummaryOfKeyData = () => {
   const editingProject = projects.find(
     (project) => project.id === editingProjectId,
   )
+
   const getSummaryData = useCallback(
     (projectId: number) =>
       PCRData.summary_of_key_data.find(
@@ -505,7 +522,7 @@ const PCRSummaryOfKeyData = () => {
                 className="cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap underline"
                 onClick={() => openDialog(params.data?.id)}
               >
-                {params.value}
+                {params.value ?? 'N/A'}
               </span>
               {!!hasErrors && <SectionErrorIndicator errors={[]} />}
             </div>
@@ -523,7 +540,8 @@ const PCRSummaryOfKeyData = () => {
     return (
       <div className="relative flex items-center justify-between gap-x-2">
         <div className="leading-tight">{label}</div>
-        {!!tabErrors && hasSectionErrors(tabErrors) && (
+        {(notApprovedErrors.length > 0 ||
+          (!!tabErrors && hasSectionErrors(tabErrors))) && (
           <SectionErrorIndicator errors={[]} />
         )}
       </div>
@@ -642,7 +660,7 @@ const PCRSummaryOfKeyData = () => {
             className="px-6 py-5 text-white"
           >
             <div className="flex items-center justify-between gap-4 text-2xl">
-              {editingProject.code}
+              {editingProject.code ?? 'N/A'}
               <Link
                 className="flex h-6 w-6 cursor-pointer justify-center"
                 href={null}
@@ -695,10 +713,9 @@ const PCRSummaryOfKeyData = () => {
             <div className="flex flex-col gap-y-6 bg-white p-6">
               {currentTab === 0 && (
                 <div>
-                  {!!formattedErrors.general &&
-                    formattedErrors.general.length > 0 && (
-                      <ErrorsList errors={formattedErrors.general} />
-                    )}
+                  {getTabErrors('general').length > 0 && (
+                    <ErrorsList errors={getTabErrors('general')} />
+                  )}
                   <div className="flex flex-col">
                     <SubSectionTitle className="!mb-3">Funding</SubSectionTitle>
                     <div className="grid grid-cols-1 gap-x-7 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
@@ -801,12 +818,11 @@ const PCRSummaryOfKeyData = () => {
 
               {currentTab === 1 && (
                 <div>
-                  {!!formattedErrors.alternative_technologies &&
-                    formattedErrors.alternative_technologies.length > 0 && (
-                      <ErrorsList
-                        errors={formattedErrors.alternative_technologies}
-                      />
-                    )}
+                  {getTabErrors('alternative_technologies').length > 0 && (
+                    <ErrorsList
+                      errors={getTabErrors('alternative_technologies')}
+                    />
+                  )}
                   <div className="flex flex-col">
                     <div className="flex flex-col gap-y-4">
                       {summaryData.alternative_technologies.map(
@@ -913,10 +929,9 @@ const PCRSummaryOfKeyData = () => {
 
               {currentTab === 2 && (
                 <div>
-                  {!!formattedErrors.enterprises &&
-                    formattedErrors.enterprises.length > 0 && (
-                      <ErrorsList errors={formattedErrors.enterprises} />
-                    )}
+                  {getTabErrors('enterprises').length > 0 && (
+                    <ErrorsList errors={getTabErrors('enterprises')} />
+                  )}
                   <div className="flex flex-col">
                     <div className="flex flex-col gap-y-4">
                       {summaryData.enterprises.map((entry, index) => (
@@ -1031,10 +1046,9 @@ const PCRSummaryOfKeyData = () => {
 
               {currentTab === 3 && (
                 <div>
-                  {!!formattedErrors.equipments &&
-                    formattedErrors.equipments.length > 0 && (
-                      <ErrorsList errors={formattedErrors.equipments} />
-                    )}
+                  {getTabErrors('equipments').length > 0 && (
+                    <ErrorsList errors={getTabErrors('equipments')} />
+                  )}
                   <div className="flex flex-col">
                     <SubSectionTitle className="!mb-3">
                       Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment
