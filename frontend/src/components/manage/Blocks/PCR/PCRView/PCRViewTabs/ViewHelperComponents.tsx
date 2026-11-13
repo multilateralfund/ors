@@ -164,7 +164,7 @@ export const UserInfo = ({
     <>
       <div
         className={cx(
-          'mr-2.25 mt-1 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-solid border-[#D1D5DB] bg-white text-2xl text-[#9a2b2b]',
+          'mr-2.25 mt-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-solid border-[#D1D5DB] bg-white text-2xl text-[#9a2b2b]',
           containerClassname,
         )}
         onMouseEnter={(event) => setAnchorEl(event.currentTarget)}
@@ -178,12 +178,17 @@ export const UserInfo = ({
         onMouseEnter={() => setAnchorEl(anchorEl)}
         onMouseLeave={() => setAnchorEl(null)}
         placement={placement ?? 'bottom'}
-        sx={{ zIndex: 1300, maxWidth: 800 }}
+        sx={{ zIndex: 1300, maxWidth: 'min(800px, calc(100vw - 32px))' }}
         modifiers={[
           {
             name: 'offset',
             options: { offset: [0, 8] },
           },
+          {
+            name: 'flip',
+            options: { fallbackPlacements: ['bottom', 'top'] },
+          },
+          { name: 'preventOverflow', options: { padding: 16 } },
         ]}
       >
         <Paper

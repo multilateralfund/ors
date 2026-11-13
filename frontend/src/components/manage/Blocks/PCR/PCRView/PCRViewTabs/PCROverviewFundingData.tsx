@@ -44,8 +44,8 @@ const PCROverviewFundingData = ({
     return (
       (isFundingExpanded || isTotal) && (
         <div key={index} className={getFundingClassname(index, isTotal)}>
-          <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="self-center text-3xl font-medium uppercase text-primary">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4 [&_h4]:break-words">
+            <div className="self-center break-words text-3xl font-medium uppercase text-primary">
               {agency}
             </div>
             {map(fundingFields, (field, fieldIndex) => {
