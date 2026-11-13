@@ -32,10 +32,14 @@ import { find, map } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
-const overviewFieldsClassName = formatClassName('min-w-56 md:min-w-72')
+const overviewFieldsClassName = formatClassName(
+  'max-sm:!w-[min(12rem,100%)] max-sm:min-w-0 sm:min-w-72',
+)
 
 const additionalProperties: Record<string, Record<string, unknown>> = {
-  financial_figures_status: formatClassName('!w-44 PCRInput'),
+  financial_figures_status: formatClassName(
+    '!w-44 PCRInput max-sm:!w-[min(11rem,100%)] max-sm:min-w-0',
+  ),
   project_goal_achieved: overviewFieldsClassName,
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
