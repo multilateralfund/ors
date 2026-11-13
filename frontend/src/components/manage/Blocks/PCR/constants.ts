@@ -81,7 +81,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   planned_output: 'Planned output(s)',
   actual_activity_output: 'Actual output(s)',
   additional_remarks: 'Additional remarks, if applicable',
-  causes_of_delay: 'Cause of delay',
+  delay_clusters: 'Delay cluster',
   root_causes_of_delay: 'Root cause of delay',
   root_cause_id: 'Root cause',
   delay_cluster_id: 'Delay cluster',
@@ -198,7 +198,7 @@ export const submitRequiredMessage = 'This field is required for submission.'
 
 export const summaryOfKeyDataField = 'pcr_projects'
 export const delayField = 'delay_causes'
-export const cdField = 'causes_of_delay'
+export const cdField = 'delay_clusters'
 export const dcField = 'root_causes_of_delay'
 export const llField = 'lessons'
 export const prField = 'recommendations'

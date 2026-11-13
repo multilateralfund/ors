@@ -39,12 +39,12 @@ const PCREditWrapper = () => {
       overall_assessment_highlights: groupedActivities[agency_id] ?? [],
     }))
 
-    const groupedCausesOfDelay = groupDataByAgency(pcrData.delay_causes)
+    const groupedDelayCauses = groupDataByAgency(pcrData.delay_causes)
 
-    const causesOfDelay = map(agencyIds, (agency_id) => ({
+    const delayCauses = map(agencyIds, (agency_id) => ({
       agency_id,
-      causes_of_delay: map(
-        groupedCausesOfDelay[agency_id],
+      delay_clusters: map(
+        groupedDelayCauses[agency_id],
         ({ delay_cluster_id, root_causes_of_delay }) => ({
           delay_cluster_id,
           root_causes_of_delay: map(
@@ -132,7 +132,7 @@ const PCREditWrapper = () => {
         return { ...projectData, hasSavedData: hasPCRProjectData(projectData) }
       }),
       results_assessment: resultsAssessment,
-      delay_causes: causesOfDelay,
+      delay_causes: delayCauses,
       learned_lessons: lessonsLearned,
       future_project_recommendations: projectRecommendations,
       gender_mainstreaming: genderMainstreamings,

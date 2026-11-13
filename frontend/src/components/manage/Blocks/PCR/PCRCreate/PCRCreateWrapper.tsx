@@ -27,7 +27,7 @@ const PCRCreateWrapper = () => {
       })),
       delay_causes: map(agencyIds, (agency_id) => ({
         agency_id,
-        causes_of_delay: [],
+        delay_clusters: [],
       })),
       learned_lessons: map(agencyIds, (agency_id) => ({
         agency_id,

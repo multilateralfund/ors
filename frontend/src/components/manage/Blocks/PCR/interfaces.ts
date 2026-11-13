@@ -207,7 +207,7 @@ export type CauseOfDelay = {
 
 export interface PCRCausesOfDelayData {
   agency_id: number
-  causes_of_delay: CauseOfDelay[]
+  delay_clusters: CauseOfDelay[]
 }
 
 type LessonLearned = { lesson_id: number | null; description: string }

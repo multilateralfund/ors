@@ -47,12 +47,12 @@ const PCROverviewPrefilledData = () => {
             field="financial_figures_status"
             options={financialFiguresTypeOptions}
             errors={overviewErrors}
-            className="flex flex-row items-center gap-3"
+            className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
           />
         </div>
         <div className="border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
           <PCROverviewFundingData {...{ isFundingExpanded }} />
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-6 flex flex-col gap-3 [&_textarea]:!min-w-0">
             <PCRTextAreaWidget
               {...{ PCRData, setPCRData, sectionIdentifier }}
               field="financial_figures_status_explanation"
