@@ -187,7 +187,7 @@ def test_edits_are_logged_and_cannot_set_submission_dates(client, admin_user, pc
 
 
 def test_rejected_edit_of_final_pcr_is_not_logged(client, pcr):
-    PCR.objects.filter(pk=pcr.pk).update(version=3, status=PCR.Status.FINAL)
+    PCR.objects.filter(pk=pcr.pk).update(version=3, status=PCR.Status.APPROVED)
 
     response = _patch_pcr(client, pcr, {"addresses": "Changed"})
 

@@ -1,6 +1,6 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from django.db.models import Count, Prefetch, Q, QuerySet
+from django.db.models import Exists, OuterRef, Prefetch, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 import openpyxl
 
@@ -27,12 +27,13 @@ from core.api.utils import workbook_response
 from core.api.views.project_completion_report.utils import (
     filter_pcr_permissions,
     filter_pcr_projects_permissions,
+    get_latest_meeting_approval_period,
 )
 from core.api.views.utils import get_available_values, get_country_regions
 from core.models.annual_project_report import AnnualProjectReport
 from core.models.country import Country
 from core.models.project import MetaProject, Project
-from core.models.project_completion_report import OLD_PCR, PCR
+from core.models.project_completion_report import OLD_IndividualPCR, OLD_PCR, PCR
 
 
 def get_regions(queryset: QuerySet[Project]):
@@ -102,13 +103,21 @@ def get_categories(queryset: QuerySet[Project]):
 def get_pcr_statuses(queryset: QuerySet[Project]):
     # PCR.objects only returns the current PCR versions
     meta_projects = queryset.values("meta_project")
-    statuses = set(
-        PCR.objects.filter(meta_project__in=meta_projects).values_list(
-            "status", flat=True
+    statuses = (
+        set(
+            PCR.objects.filter(meta_project__in=meta_projects).values_list(
+                "status", flat=True
+            )
         )
-    ) | set(
-        OLD_PCR.objects.filter(meta_project__in=meta_projects).values_list(
-            "status", flat=True
+        | set(
+            OLD_PCR.objects.filter(meta_project__in=meta_projects).values_list(
+                "status", flat=True
+            )
+        )
+        | set(
+            OLD_IndividualPCR.objects.filter(
+                project__meta_project__in=meta_projects
+            ).values_list("status", flat=True)
         )
     )
     return [
@@ -153,6 +162,10 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
                     self.request.user, PCR.objects.all(), results_for_edit=True
                 ).values_list("id", flat=True)
             )
+            # used to highlight the PCRs approved for the most recent meeting
+            context["latest_meeting_approval_period"] = (
+                get_latest_meeting_approval_period()
+            )
         return context
 
     def _get_filtered_projects_queryset(self, params):
@@ -168,19 +181,13 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         return search_filter.filter_queryset(self.request, filtered_projects_qs, self)
 
     def _get_meta_projects_queryset(self, filtered_projects_qs):
-        return (
-            MetaProject.objects.annotate(
-                pcr_waived_count=Count(
-                    "projects",
-                    filter=Q(projects__pcr_waived=True),
-                )
-            )
-            .filter(
-                is_draft=False,
-                projects__in=filtered_projects_qs,
-                pcr_waived_count__lt=1,
-            )
-            .distinct()
+        # Filtering on the meta project ids, not joining the projects, avoids
+        # a slow nested loop on the listing (with the pcr_submitted filter)
+        return MetaProject.objects.filter(
+            is_draft=False,
+            id__in=filtered_projects_qs.values("meta_project_id"),
+        ).exclude(
+            Exists(Project.objects.filter(meta_project=OuterRef("pk"), pcr_waived=True))
         )
 
     def get_queryset(self, params=None):
@@ -213,10 +220,20 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             to_attr="filtered_projects",
         )
 
+        # all the projects, as the legacy PCR is not affected by the filters
+        old_individual_pcr_prefetch = Prefetch(
+            "projects",
+            queryset=Project.objects.filter(
+                old_individual_pcr__isnull=False
+            ).select_related("old_individual_pcr"),
+            to_attr="projects_with_old_individual_pcr",
+        )
+
         queryset = (
             self._get_meta_projects_queryset(filtered_projects_qs)
             .select_related("lead_agency", "old_pcr")
-            .prefetch_related(prefetch)
+            .prefetch_related(prefetch, old_individual_pcr_prefetch)
+            .order_by("umbrella_code", "id")
         )
         return queryset
 

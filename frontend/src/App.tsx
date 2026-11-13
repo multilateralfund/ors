@@ -95,13 +95,14 @@ import PCRListingPage from '@ors/app/pcr/page'
 import PCRCreatePage from '@ors/app/pcr/create/page'
 import PCRViewPage from '@ors/app/pcr/view/page'
 import PCRArchivePage from '@ors/app/pcr/archive/page'
+import PCRArchiveIndividualPage from '@ors/app/pcr/archive-individual/page'
 import PCREditPage from '@ors/app/pcr/edit/page'
 import ManagePCRsPage from '@ors/app/pcr/manage/page'
 
 function RedirectToSection() {
   const permissions = useContext(PermissionsContext)
 
-  if (permissions.canViewProjects) {
+  if (permissions.canViewProjects || permissions.canViewIaBaPortal) {
     return <Redirect to="/projects-listing/listing" replace />
   }
   if (permissions.canViewBp) {
@@ -488,6 +489,9 @@ export default function App() {
         </Route>
         <Route path="/pcr/:project_id/archive/:archive_id">
           <PCRArchivePage />
+        </Route>
+        <Route path="/pcr/:project_id/archive-individual/:archive_id">
+          <PCRArchiveIndividualPage />
         </Route>
         <Route path="/pcr/:project_id/:pcr_id/edit">
           <ProjectsDataProvider>

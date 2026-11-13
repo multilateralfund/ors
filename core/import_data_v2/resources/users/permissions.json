@@ -114,6 +114,12 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_ia_ba_portal_view_access",
+        "permission_name": "Has IA/BA portal view access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
         "permission_codename": "has_project_v2_edit_access",
         "permission_name": "Has project v2 edit access",
         "app_label": "core",

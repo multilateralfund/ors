@@ -1,4 +1,4 @@
-import { useContext, useMemo, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -12,40 +12,87 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
 import PCRTable from './PCRTable'
-import { initialFilters, booleanFieldsOpts } from '../constants'
+import { getPcrHiddenFilters } from '../utils'
+import {
+  initialFilters,
+  PCR_LISTING_STORAGE_KEY,
+  booleanFieldsOpts,
+} from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
 import { useGetPcrFilters } from '../hooks/useGetPcrFilters'
+import { loadLocalStorage, updateLocalStorage } from '@ors/storage'
 
 import { ToggleButtonGroup, ToggleButton } from '@mui/material'
-import { map } from 'lodash'
+import { map, mapValues, omit } from 'lodash'
 
 const viewOptions: { value: ViewSelectorValuesType; label: string }[] = [
-  { value: 'list', label: 'Without PCR' },
-  { value: 'table', label: 'With PCR' },
+  { value: 'list', label: 'Not completed PCRs' },
+  { value: 'table', label: 'Completed PCRs' },
 ]
+
+const notStoredFilters = ['offset', 'limit', 'pcr_submitted']
+
+const getPcrSubmittedOpt = (view: ViewSelectorValuesType | null) =>
+  view === 'table' ? booleanFieldsOpts[0] : booleanFieldsOpts[1]
+
+const getParams = (
+  filters: Record<string, any>,
+  view: ViewSelectorValuesType | null,
+) => {
+  const hiddenFilters = getPcrHiddenFilters(view)
+
+  return {
+    ...mapValues(
+      omit(filters, notStoredFilters) as Record<string, any>,
+      (value: any, field: string) =>
+        hiddenFilters.includes(field)
+          ? ''
+          : Array.isArray(value)
+            ? value.map((item: any) => item.id).join(',')
+            : value,
+    ),
+    ...initialFilters,
+    pcr_submitted: getPcrSubmittedOpt(view).id,
+  }
+}
+
+const getInitialState = () => {
+  const stored = loadLocalStorage(PCR_LISTING_STORAGE_KEY) ?? {}
+  const filters = {
+    ...omit(stored.filters ?? {}, notStoredFilters),
+    ...initialFilters,
+    pcr_submitted: [getPcrSubmittedOpt('list')],
+  }
+
+  return { filters, params: getParams(filters, 'list') }
+}
 
 const PCRListingWrapper = () => {
   const form = useRef<any>()
 
   const { canEditPCR } = useContext(PermissionsContext)
 
-  const updatedInitialFilters = {
-    ...initialFilters,
-    pcr_submitted: [booleanFieldsOpts[1]],
-  }
-  const updatedInitialParams = { ...initialFilters, pcr_submitted: ['No'] }
+  const [initialState] = useState(getInitialState)
 
   const [view, setView] = useState<ViewSelectorValuesType | null>('list')
   const [projectId, setProjectId] = useState<number | null>(null)
   const [pcrId, setPcrId] = useState<number | null>(null)
   const [pcrEditable, setPcrEditable] = useState(false)
-  const [filters, setFilters] = useState(updatedInitialFilters)
+  const [filters, setFilters] = useState<Record<string, any>>(
+    initialState.filters,
+  )
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const pcrProjects = useGetPCRProjects(updatedInitialParams)
+  useEffect(() => {
+    updateLocalStorage(PCR_LISTING_STORAGE_KEY, {
+      filters: omit(filters, notStoredFilters),
+    })
+  }, [filters])
+
+  const pcrProjects = useGetPCRProjects(initialState.params)
   const { loading, setParams } = pcrProjects
 
-  const pcrFilters = useGetPcrFilters(updatedInitialParams)
+  const pcrFilters = useGetPcrFilters(initialState.params)
   const { data: filterOptions, setParams: setParamsFilters } = pcrFilters
 
   const fieldToOptionsMapping: Record<string, any[]> = {
@@ -84,29 +131,8 @@ const PCRListingWrapper = () => {
     setPcrId(null)
     setPcrEditable(false)
 
-    if (value === 'list') {
-      handleFilterChange({
-        pcr_status: [],
-        pcr_submission_date_after: '',
-        pcr_submission_date_before: '',
-      })
-
-      handleParamsChange({
-        pcr_status: '',
-        pcr_submission_date_after: '',
-        pcr_submission_date_before: '',
-        offset: 0,
-      })
-    } else {
-      handleFilterChange({ pcr_due: [] })
-      handleParamsChange({ pcr_due: '', offset: 0 })
-    }
-
-    const pcrSubmitted =
-      value === 'table' ? booleanFieldsOpts[0] : booleanFieldsOpts[1]
-
-    handleFilterChange({ pcr_submitted: [pcrSubmitted] })
-    handleParamsChange({ pcr_submitted: pcrSubmitted.id, offset: 0 })
+    handleFilterChange({ pcr_submitted: [getPcrSubmittedOpt(value)] })
+    handleParamsChange(getParams(filters, value))
   }
 
   return (
@@ -167,7 +193,7 @@ const PCRListingWrapper = () => {
               ))}
             </ToggleButtonGroup>
           </div>
-          <PCRFiltersSelectedOpts {...filtersProps} />
+          <PCRFiltersSelectedOpts {...filtersProps} view={view} />
         </div>
         <PCRTable
           {...{

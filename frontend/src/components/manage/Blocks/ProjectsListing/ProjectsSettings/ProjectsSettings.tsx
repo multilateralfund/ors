@@ -62,6 +62,8 @@ const ProjectsSettingsEmails = (props: ProjectSettingsParams) => {
     project_recommendation_notifications_emails,
     apr_agency_submission_notifications_enabled,
     apr_agency_submission_notifications_emails,
+    pcr_notifications_enabled,
+    pcr_notifications_emails,
   } = data
 
   const [submissionEmail, setSubmissionEmail] = useState<EmailSettingsType>({
@@ -86,6 +88,11 @@ const ProjectsSettingsEmails = (props: ProjectSettingsParams) => {
       emailAddresses: apr_agency_submission_notifications_emails || '',
       errors: null,
     })
+  const [pcrEmail, setPcrEmail] = useState<EmailSettingsType>({
+    withNotifications: pcr_notifications_enabled || false,
+    emailAddresses: pcr_notifications_emails || '',
+    errors: null,
+  })
 
   const emailOptions = useMemo(
     () => [
@@ -126,8 +133,26 @@ const ProjectsSettingsEmails = (props: ProjectSettingsParams) => {
           notification_emails: 'apr_agency_submission_notifications_emails',
         },
       },
+      {
+        type: 'PCR',
+        emailSettings: pcrEmail,
+        setEmailSettings: setPcrEmail,
+        label: 'Emails for PCR agency submission:',
+        checkboxLabel:
+          'Send email notifications for PCR agency submission to users:',
+        fieldsForUpdate: {
+          send_email: 'pcr_notifications_enabled',
+          notification_emails: 'pcr_notifications_emails',
+        },
+      },
     ],
-    [submissionEmail, recommendationEmail, areSameEmails, aprAgencySubmitEmail],
+    [
+      submissionEmail,
+      recommendationEmail,
+      areSameEmails,
+      aprAgencySubmitEmail,
+      pcrEmail,
+    ],
   )
 
   const handleSameEmailsAsAbove = async () => {
@@ -286,7 +311,8 @@ const ProjectsSettingsEmails = (props: ProjectSettingsParams) => {
             project_recommendation_notifications_emails) ||
         (type === 'APR' &&
           aprAgencySubmitEmail.emailAddresses !==
-            apr_agency_submission_notifications_emails)
+            apr_agency_submission_notifications_emails) ||
+        (type === 'PCR' && pcrEmail.emailAddresses !== pcr_notifications_emails)
       return (
         <mui.Box key={type}>
           <form>

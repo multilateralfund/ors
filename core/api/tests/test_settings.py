@@ -95,6 +95,8 @@ class TestProjectSettings(BaseTest):
             "project_submission_notifications_emails": "test@ors.org,test2@ors.org",
             "project_recommendation_notifications_enabled": True,
             "project_recommendation_notifications_emails": "test2@ors.org,test3@ors.org",
+            "pcr_notifications_enabled": True,
+            "pcr_notifications_emails": "secretariat@ors.org",
         }
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 200
@@ -108,3 +110,6 @@ class TestProjectSettings(BaseTest):
             config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS
             == "test2@ors.org,test3@ors.org"
         )
+        assert config.PCR_NOTIFICATIONS_ENABLED is True
+        assert config.PCR_NOTIFICATIONS_EMAILS == "secretariat@ors.org"
+        assert response.data["pcr_notifications_emails"] == "secretariat@ors.org"

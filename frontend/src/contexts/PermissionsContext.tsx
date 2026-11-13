@@ -12,6 +12,7 @@ export interface PermissionsContextProps {
   canEditReplenishment: boolean
   canViewV1Projects: boolean
   canViewProjects: boolean
+  canViewIaBaPortal: boolean
   canViewMetainfoProjects: boolean
   canViewSectorsSubsectors: boolean
   canUpdateProjects: boolean

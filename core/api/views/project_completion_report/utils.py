@@ -1,5 +1,8 @@
 from django.db.models import Exists, OuterRef, Q
+from django.db.models.functions import Coalesce
+from django.utils import timezone
 
+from core.models.meeting import Meeting
 from core.models.project import MetaProject, Project
 from core.models.project_completion_report import PCR
 
@@ -58,6 +61,27 @@ def filter_pcr_permissions(user, queryset, results_for_edit=False):
         if not user.has_perm("core.has_pcr_edit_access"):
             return queryset.none()
         if not user.has_perm("core.has_pcr_edit_submitted_access"):
-            queryset = queryset.exclude(status=PCR.Status.SUBMITTED)
+            queryset = queryset.exclude(status=PCR.Status.REVISION)
 
     return queryset
+
+
+def get_latest_meeting_approval_period():
+    """
+    The period in which approved PCRs count as finalized in the most recent meeting:
+    after the end of the previous meeting, up to the end of the most recent one
+    (the latest meeting that already started).
+    Returns (start, end), where `start` is exclusive and None if there is no previous
+    meeting, or None if there is no meeting yet.
+    """
+    meetings = list(
+        Meeting.objects.exclude(status=Meeting.MeetingStatus.CANCELLED)
+        .filter(date__isnull=False, date__lte=timezone.now().date())
+        .annotate(last_day=Coalesce("end_date", "date"))
+        .order_by("-date")
+        .values_list("last_day", flat=True)[:2]
+    )
+    if not meetings:
+        return None
+    start = meetings[1] if len(meetings) > 1 else None
+    return start, meetings[0]

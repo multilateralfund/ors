@@ -214,11 +214,11 @@ class TestEdit:
         assert _patch_pcr(client, own_pcr).status_code == 200
         assert _patch_pcr(client, other_agency_pcr).status_code == 404
 
-        _set_status(own_pcr, PCR.Status.ADJUSTMENTS_REQUESTED)
+        _set_status(own_pcr, PCR.Status.REVISION_ADJUSTMENTS_REQUESTED)
         assert _patch_pcr(client, own_pcr).status_code == 200
 
     def test_agency_cannot_edit_submitted_pcr(self, client, pcr_inputter, own_pcr):
-        _set_status(own_pcr, PCR.Status.SUBMITTED)
+        _set_status(own_pcr, PCR.Status.REVISION)
         client.force_authenticate(user=pcr_inputter)
         assert client.get(_detail_url(own_pcr)).data["editable"] is False
         assert _patch_pcr(client, own_pcr).status_code == 404
@@ -226,13 +226,13 @@ class TestEdit:
     def test_full_access_can_edit_submitted_pcr(
         self, client, pcr_full_access, other_agency_pcr
     ):
-        _set_status(other_agency_pcr, PCR.Status.SUBMITTED)
+        _set_status(other_agency_pcr, PCR.Status.REVISION)
         client.force_authenticate(user=pcr_full_access)
         assert client.get(_detail_url(other_agency_pcr)).data["editable"] is True
         assert _patch_pcr(client, other_agency_pcr).status_code == 200
 
     def test_secretariat_cannot_edit(self, client, pcr_secretariat, own_pcr):
-        _set_status(own_pcr, PCR.Status.SUBMITTED)
+        _set_status(own_pcr, PCR.Status.REVISION)
         client.force_authenticate(user=pcr_secretariat)
         assert client.get(_detail_url(own_pcr)).data["editable"] is False
         assert _patch_pcr(client, own_pcr).status_code == 403
@@ -251,7 +251,7 @@ class TestEdit:
         agency,
         project_approved_status,
     ):
-        submitted_pcr = _create_pcr(agency, status=PCR.Status.SUBMITTED)
+        submitted_pcr = _create_pcr(agency, status=PCR.Status.REVISION)
         meta_project_without_pcr = MetaProjectFactory.create()
         ProjectFactory.create(meta_project=meta_project_without_pcr, agency=agency)
         for meta_project in [
@@ -352,7 +352,7 @@ class TestWorkflow:
         self, client, pcr_submitter, pcr_secretariat, pcr_full_access, action
     ):
         for user in [pcr_secretariat, pcr_full_access]:
-            pcr = _create_pcr(pcr_submitter.agency, status=PCR.Status.SUBMITTED)
+            pcr = _create_pcr(pcr_submitter.agency, status=PCR.Status.REVISION)
 
             client.force_authenticate(user=pcr_submitter)
             assert client.post(_action_url(pcr, action)).status_code == 403
@@ -363,7 +363,7 @@ class TestWorkflow:
     def test_adjustments_unlock_pcr_for_agency(
         self, client, pcr_inputter, pcr_secretariat, own_pcr
     ):
-        _set_status(own_pcr, PCR.Status.SUBMITTED)
+        _set_status(own_pcr, PCR.Status.REVISION)
         client.force_authenticate(user=pcr_secretariat)
         client.post(_action_url(own_pcr, "request_adjustments"))
 

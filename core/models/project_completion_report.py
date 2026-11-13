@@ -85,10 +85,16 @@ class PCR(models.Model):
         OTHER = "Other", "Other"
 
     class Status(models.TextChoices):
+        # Draft is only used for version 1 before it is submitted.
+        # When submitted, version 1 is archived as 'Initial submission'.
         DRAFT = "Draft", "Draft"
-        SUBMITTED = "Submitted", "Submitted"
-        ADJUSTMENTS_REQUESTED = "Adjustments requested", "Adjustments requested"
-        FINAL = "Final", "Final"
+        INITIAL_SUBMISSION = "Initial submission", "Initial submission"
+        REVISION = "Revision", "Revision"
+        REVISION_ADJUSTMENTS_REQUESTED = (
+            "Revision (adjustments requested)",
+            "Revision (adjustments requested)",
+        )
+        APPROVED = "Approved version", "Approved version"
 
     meta_project = models.ForeignKey(
         "MetaProject", on_delete=models.PROTECT, related_name="pcrs"
@@ -215,6 +221,9 @@ class PCR(models.Model):
         blank=True,
         help_text="Latest resubmission date, after adjustments were requested",
     )
+    approval_date = models.DateField(
+        null=True, blank=True, help_text="Approval date (version 3)"
+    )
     objects = PCRManager()
 
     def __str__(self):
@@ -223,12 +232,12 @@ class PCR(models.Model):
     @property
     def is_editable(self):
         """Archived versions and the final version are locked"""
-        return self.latest_pcr_id is None and self.status != self.Status.FINAL
+        return self.latest_pcr_id is None and self.status != self.Status.APPROVED
 
     @property
     def is_locked(self):
         """The lead agency can't work on the PCR while it is with MLFS or final"""
-        return self.status in [self.Status.SUBMITTED, self.Status.FINAL]
+        return self.status in [self.Status.REVISION, self.Status.APPROVED]
 
     @cached_property
     def total_number_of_enterprises(self):
@@ -290,9 +299,11 @@ class PCR(models.Model):
             new_pcr.save()
             return new_pcr
 
-    def increase_version(self, user):
+    def increase_version(self, user, archived_status=None):
         archived_pcr = self.copy_pcr()
         archived_pcr.latest_pcr = self
+        if archived_status:
+            archived_pcr.status = archived_status
         archived_pcr.save()
 
         self.version += 1
@@ -965,7 +976,7 @@ class OLD_PCR(models.Model):
     status = models.CharField(
         max_length=32,
         choices=PCR.Status.choices,
-        default=PCR.Status.FINAL,
+        default=PCR.Status.APPROVED,
         help_text="Workflow status of the PCR",
     )
     submission_date = models.DateField(
@@ -1105,6 +1116,92 @@ class OLD_PCRSupportingEvidence(models.Model):
 
     class Meta:
         verbose_name_plural = "OLD PCR supporting evidences"
+
+    def __str__(self):
+        return self.filename or ""
+
+
+class OLD_IndividualPCR(models.Model):
+    """
+    Legacy PCR of an individual project, developed outside the platform.
+    Unlike OLD_PCR, it is linked to a project, not to a meta project.
+    """
+
+    project = models.OneToOneField(
+        "Project", on_delete=models.CASCADE, related_name="old_individual_pcr"
+    )
+    status = models.CharField(
+        max_length=32,
+        choices=PCR.Status.choices,
+        default=PCR.Status.APPROVED,
+        help_text="Workflow status of the PCR",
+    )
+    submission_date = models.DateField(
+        null=True, blank=True, help_text="Initial submission date"
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "OLD Individual PCR"
+        verbose_name_plural = "OLD Individual PCRs"
+
+    def __str__(self):
+        return f"OLD Individual PCR {self.project.legacy_code or self.project.code}"
+
+
+class OLD_IndividualPCRLearnedLesson(models.Model):
+    """
+    Agency lessons learned of a legacy individual PCR.
+    """
+
+    old_individual_pcr = models.ForeignKey(
+        OLD_IndividualPCR, on_delete=models.CASCADE, related_name="learned_lessons"
+    )
+    description = models.TextField(blank=True, null=True)
+    report_filename = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="The PCR report (pdf) the lessons were taken from",
+    )
+    source_file = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "OLD Individual PCR Learned lessons"
+
+
+class OLD_IndividualPCRSupportingEvidence(models.Model):
+    """
+    Legacy individual PCR files (report pdfs and additional documents), imported
+    from the old PCR platform.
+    """
+
+    class DocumentType(models.TextChoices):
+        REPORT = "report", "PCR report"
+        ADDITIONAL_DOCUMENT = "additional_document", "Additional document"
+
+    old_individual_pcr = models.ForeignKey(
+        OLD_IndividualPCR,
+        on_delete=models.CASCADE,
+        related_name="supporting_evidences",
+    )
+    document_type = models.CharField(
+        max_length=32,
+        choices=DocumentType.choices,
+        default=DocumentType.REPORT,
+    )
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to="old_individual_pcr_files/",
+    )
+    filename = models.CharField(max_length=255, null=True, blank=True)
+    source_file = models.CharField(max_length=255, blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "OLD Individual PCR supporting evidences"
 
     def __str__(self):
         return self.filename or ""

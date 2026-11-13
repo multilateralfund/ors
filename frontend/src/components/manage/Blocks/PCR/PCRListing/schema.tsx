@@ -1,14 +1,13 @@
 import Link from '@ors/components/ui/Link/Link'
 import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
-import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { LegacyPCRIcon } from '../PCRArchive/PCRArchiveTabs/ArchiveHelperComponents'
 import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
-import { MdExpandLess, MdExpandMore, MdCheckCircle } from 'react-icons/md'
+import { MdExpandLess, MdExpandMore } from 'react-icons/md'
 import { Checkbox, Chip, Tooltip } from '@mui/material'
-import { isNil, map, sumBy } from 'lodash'
+import { map } from 'lodash'
 import {
   ValueGetterParams,
   ICellRendererParams,
@@ -67,13 +66,12 @@ export const defaultColDef = {
   sortable: false,
 }
 
-export const getNumberColsValue = (
-  params: ValueGetterParams | ITooltipParams,
-  field: string,
-) =>
-  params.data.type === 'Multi-year agreement'
-    ? sumBy(params.data.projects, field)
-    : params.data[field]
+const getTitleValue = (params: ValueGetterParams | ITooltipParams) =>
+  params.data.isMetaproject &&
+  params.data.type === 'Individual' &&
+  params.data.umbrella_code
+    ? `[${params.data.umbrella_code}] ${params.data.title ?? ''}`
+    : params.data.title
 
 const getColumnDefs = (
   pcrProjectsData: PCRUpdatedMetaproject[],
@@ -86,16 +84,21 @@ const getColumnDefs = (
 ) => ({
   columnDefs: [
     {
-      headerName: pcrFieldsMapping.title,
-      field: 'title',
-      tooltipField: 'title',
+      headerName: `${pcrFieldsMapping.metacode} / ${pcrFieldsMapping.title}`,
+      valueGetter: getTitleValue,
+      tooltipValueGetter: getTitleValue,
       minWidth: 300,
       cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => {
-        const pcrId = props.data.pcr_id ?? props.data.legacy_pcr_id
+        const pcrId =
+          props.data.pcr_id ??
+          props.data.legacy_pcr_id ??
+          props.data.legacy_individual_pcr_id
         const pcrHref = props.data.pcr_id
           ? `/pcr/${props.data.metaprojectId}/${props.data.pcr_id}`
-          : `/pcr/${props.data.metaprojectId}/archive/${props.data.legacy_pcr_id}`
+          : props.data.legacy_pcr_id
+            ? `/pcr/${props.data.metaprojectId}/archive/${props.data.legacy_pcr_id}`
+            : `/pcr/${props.data.metaprojectId}/archive-individual/${props.data.legacy_individual_pcr_id}`
 
         return (
           <div className="flex items-center gap-1 p-2">
@@ -133,28 +136,28 @@ const getColumnDefs = (
             )}
             {pcrId ? (
               <Link
-                className="flex flex-1 justify-center overflow-hidden truncate whitespace-nowrap text-sm text-inherit !underline"
+                className="min-w-0 flex-1 truncate text-center text-sm text-inherit !underline"
                 href={pcrHref}
               >
                 {props.value}
               </Link>
             ) : (
-              <span className="flex-1 overflow-hidden truncate whitespace-nowrap">
+              <span className="min-w-0 flex-1 truncate text-center">
                 {props.value}
               </span>
             )}
             {view === 'table' && (
               <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
-                {props.data.pcr_id && (
-                  <Tooltip title="Has PCR" placement="top" arrow>
-                    <span className="text-secondary">
-                      <MdCheckCircle size={18} />
-                    </span>
+                {props.data.pcr_approved_in_latest_meeting && (
+                  <Tooltip
+                    title="PCR approved in the most recent meeting"
+                    placement="top"
+                    arrow
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full bg-secondary" />
                   </Tooltip>
                 )}
-                {!props.data.pcr_id && props.data.legacy_pcr_id && (
-                  <LegacyPCRIcon />
-                )}
+                {!props.data.pcr_id && pcrId && <LegacyPCRIcon />}
               </div>
             )}
             {view === 'list' && (
@@ -210,36 +213,6 @@ const getColumnDefs = (
       minWidth: 150,
     },
     {
-      headerName: pcrFieldsMapping.metacode,
-      valueGetter: (params: ValueGetterParams) =>
-        params.data.isMetaproject
-          ? params.data.umbrella_code
-          : params.data.metacode,
-      tooltipValueGetter: (params: ITooltipParams) =>
-        params.data.isMetaproject
-          ? params.data.umbrella_code
-          : params.data.metacode,
-    },
-    {
-      headerName: pcrFieldsMapping.code,
-      field: 'code',
-      tooltipField: 'code',
-      cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 180,
-    },
-    {
-      headerName: pcrFieldsMapping.cluster,
-      field: 'cluster',
-      tooltipField: 'cluster',
-      minWidth: 150,
-    },
-    {
-      headerName: pcrFieldsMapping.tranche,
-      field: 'tranche',
-      tooltipField: 'tranche',
-      minWidth: 60,
-    },
-    {
       headerName: pcrFieldsMapping.agency,
       valueGetter: (params: ValueGetterParams) =>
         params.data.isMetaproject
@@ -250,6 +223,12 @@ const getColumnDefs = (
           ? params.data.lead_agency
           : params.data.agency,
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+    },
+    {
+      headerName: pcrFieldsMapping.cluster,
+      field: 'cluster',
+      tooltipField: 'cluster',
+      minWidth: 150,
     },
     {
       headerName: pcrFieldsMapping.project_type,
@@ -267,58 +246,6 @@ const getColumnDefs = (
       tooltipField: 'subsectors',
       minWidth: 200,
     },
-    {
-      headerName: pcrFieldsMapping.total_fund,
-      valueGetter: (params: ValueGetterParams) => {
-        const totalFund = getNumberColsValue(params, 'total_fund')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, total_fund: totalFund },
-        }
-
-        return !isNil(totalFund)
-          ? '$' + formatNumberColumns(updatedParams, 'total_fund')
-          : ''
-      },
-      tooltipValueGetter: (params: ITooltipParams) => {
-        const totalFund = getNumberColsValue(params, 'total_fund')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, total_fund: totalFund },
-        }
-
-        return formatNumberColumns(updatedParams, 'total_fund', {
-          maximumFractionDigits: 10,
-          minimumFractionDigits: 2,
-        })
-      },
-    },
-    {
-      headerName: pcrFieldsMapping.support_cost_psc,
-      valueGetter: (params: ValueGetterParams) => {
-        const supportCost = getNumberColsValue(params, 'support_cost_psc')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, support_cost_psc: supportCost },
-        }
-
-        return !isNil(supportCost)
-          ? '$' + formatNumberColumns(updatedParams, 'support_cost_psc')
-          : ''
-      },
-      tooltipValueGetter: (params: ITooltipParams) => {
-        const supportCost = getNumberColsValue(params, 'support_cost_psc')
-        const updatedParams = {
-          ...params,
-          data: { ...params.data, support_cost_psc: supportCost },
-        }
-
-        return formatNumberColumns(updatedParams, 'support_cost_psc', {
-          maximumFractionDigits: 10,
-          minimumFractionDigits: 2,
-        })
-      },
-    },
     ...(view === 'table'
       ? [
           {
@@ -327,6 +254,13 @@ const getColumnDefs = (
               formatDate(params.data.pcr_submission_date),
             tooltipValueGetter: (params: ITooltipParams) =>
               formatDate(params.data.pcr_submission_date),
+          },
+          {
+            headerName: pcrFieldsMapping.pcr_approval_date,
+            valueGetter: (params: ValueGetterParams) =>
+              formatDate(params.data.pcr_approval_date),
+            tooltipValueGetter: (params: ITooltipParams) =>
+              formatDate(params.data.pcr_approval_date),
           },
         ]
       : []),
