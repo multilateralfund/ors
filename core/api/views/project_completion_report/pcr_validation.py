@@ -244,3 +244,24 @@ def get_pcr_submission_error_message(errors, action):
     return (
         f"PCR cannot be {action}, required data is missing in: {', '.join(sections)}."
     )
+
+
+def get_pcr_not_approved_projects(pcr):
+    """
+    The projects of the PCR's meta project that are not approved yet. The PCR can be
+    started while some projects (e.g. later MYA tranches) are pending approval, but it
+    can only be submitted once all of them are approved.
+    """
+    return list(
+        pcr.meta_project.projects.pending_approval_for_pcr()
+        .select_related("submission_status")
+        .order_by("id")
+    )
+
+
+def get_pcr_not_approved_projects_message(projects, action):
+    codes = ", ".join(project.code or str(project.id) for project in projects)
+    return (
+        f"PCR cannot be {action} until all its projects are approved. "
+        f"Projects not approved yet: {codes}."
+    )

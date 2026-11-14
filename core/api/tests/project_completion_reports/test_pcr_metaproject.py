@@ -683,3 +683,70 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert response.status_code == 200
         meta_project.refresh_from_db()
         assert meta_project.pcr_due is True
+
+    def test_list_includes_projects_pending_approval(
+        self,
+        admin_user,
+        project_approved_status,
+        project_submitted_status,
+        project_draft_status,
+    ):
+        meta_project = MetaProjectFactory(
+            umbrella_code="PCR-MYA", type=MetaProject.MetaProjectType.MYA
+        )
+        approved_project = ProjectFactory(
+            meta_project=meta_project, submission_status=project_approved_status
+        )
+        submitted_project = ProjectFactory(
+            meta_project=meta_project, submission_status=project_submitted_status
+        )
+        ProjectFactory(
+            meta_project=meta_project, submission_status=project_draft_status
+        )
+        # not listed, as none of its projects is approved
+        pending_meta_project = MetaProjectFactory(umbrella_code="PCR-PENDING")
+        ProjectFactory(
+            meta_project=pending_meta_project,
+            submission_status=project_submitted_status,
+        )
+        self.client.force_authenticate(user=admin_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert [row["umbrella_code"] for row in response.data] == ["PCR-MYA"]
+        assert sorted(
+            (project["id"], project["submission_status"])
+            for project in response.data[0]["projects"]
+        ) == [
+            (approved_project.id, "Approved"),
+            (submitted_project.id, "Submitted"),
+        ]
+
+        url = reverse("pcr-metaprojects-detail", args=[meta_project.id])
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert sorted(project["id"] for project in response.data["projects"]) == [
+            approved_project.id,
+            submitted_project.id,
+        ]
+
+    def test_list_ordering(self, admin_user, project_approved_status):
+        for code, pcr_due in [("PCR-A", False), ("PCR-B", True), ("PCR-C", False)]:
+            ProjectFactory(
+                meta_project=MetaProjectFactory(umbrella_code=code, pcr_due=pcr_due),
+                submission_status=project_approved_status,
+            )
+        self.client.force_authenticate(user=admin_user)
+
+        def _codes(params):
+            response = self.client.get(self.url, params)
+            assert response.status_code == 200
+            return [row["umbrella_code"] for row in response.data]
+
+        # the PCR due meta projects first by default
+        assert _codes({}) == ["PCR-B", "PCR-A", "PCR-C"]
+        assert _codes({"ordering": "-pcr_due"}) == ["PCR-B", "PCR-A", "PCR-C"]
+        assert _codes({"ordering": "pcr_due"}) == ["PCR-A", "PCR-C", "PCR-B"]
+        assert _codes({"ordering": "-umbrella_code"}) == ["PCR-C", "PCR-B", "PCR-A"]
+        # unknown fields are ignored
+        assert _codes({"ordering": "title"}) == ["PCR-B", "PCR-A", "PCR-C"]

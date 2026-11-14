@@ -9,6 +9,7 @@ import {
   sdgsContributionField,
   requiredMessage,
   submitRequiredMessage,
+  notApprovedProjectMessage,
 } from './constants'
 import {
   PCRData,
@@ -26,6 +27,7 @@ import {
   OptionsType,
 } from './interfaces'
 import { useGetPCRDefaults } from './hooks/useGetPCRDefaults'
+import { ProjectType } from '@ors/types/api_projects'
 import { ApiAgency } from '@ors/types/api_agencies'
 
 import cx from 'classnames'
@@ -433,12 +435,20 @@ export const setRequiredError = (
 export const getSummaryOfKeyDataErrors = (
   project: PCRSummaryOfKeyDataType,
   prevErrors: Record<string, any> = {},
+  isNotApproved = false,
 ) => {
   let updatedErrors = setRequiredError(
     setRequiredError(prevErrors, 'funds_disbursed', project.funds_disbursed),
     'planned_date_of_completion',
     project.planned_date_of_completion,
   )
+
+  updatedErrors = isNotApproved
+    ? {
+        ...updatedErrors,
+        project_submission_status: [notApprovedProjectMessage],
+      }
+    : omit(updatedErrors, ['project_submission_status'])
 
   forEach(summaryOfKeyDataRowFields, (rowFields, section) => {
     const rows: Record<string, any>[] =
@@ -606,7 +616,11 @@ export const isSubmitDisabled = (errors: Record<string, any>) =>
 
 export const isSubmitPCRDisabled = (errors: Record<string, any>) =>
   some(errorSections, (section) =>
-    hasErrorMessage(errors[section], [requiredMessage, submitRequiredMessage]),
+    hasErrorMessage(errors[section], [
+      requiredMessage,
+      submitRequiredMessage,
+      notApprovedProjectMessage,
+    ]),
   )
 
 export const formatDate = (date: string | null | undefined) =>
@@ -725,3 +739,6 @@ export const getPcrHiddenFilters = (view: 'list' | 'table' | null) =>
   view === 'table'
     ? ['pcr_due']
     : ['pcr_status', 'pcr_submission_date_after', 'pcr_submission_date_before']
+
+export const isProjectNotApproved = (project?: ProjectType) =>
+  !!project?.submission_status && project.submission_status !== 'Approved'

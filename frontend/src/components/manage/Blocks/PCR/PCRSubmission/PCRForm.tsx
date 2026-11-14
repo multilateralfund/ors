@@ -25,6 +25,7 @@ import {
   normalizeErrors,
   getOtherOptionId,
   getSummaryOfKeyDataErrors,
+  isProjectNotApproved,
   setRequiredError,
 } from '../utils'
 import {
@@ -250,6 +251,11 @@ const PCRForm = ({ mode }: { mode: string }) => {
     JSON.stringify(map(summaryOfKeyData, 'project_id')),
   ])
 
+  const notApprovedProjectIds = map(
+    filter(pcrMetaproject.data?.projects, isProjectNotApproved),
+    'id',
+  )
+
   useEffect(() => {
     setErrors((prev: Record<string, any[]>) => ({
       ...prev,
@@ -257,10 +263,11 @@ const PCRForm = ({ mode }: { mode: string }) => {
         getSummaryOfKeyDataErrors(
           project,
           prev[summaryOfKeyDataField]?.[index],
+          notApprovedProjectIds.includes(project.project_id),
         ),
       ),
     }))
-  }, [JSON.stringify(summaryOfKeyData)])
+  }, [JSON.stringify(summaryOfKeyData), JSON.stringify(notApprovedProjectIds)])
 
   const resultsAssessmentData = PCRData.results_assessment || []
 
