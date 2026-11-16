@@ -43,7 +43,7 @@ const additionalProperties: Record<string, Record<string, unknown>> = {
   project_goal_achieved: overviewFieldsClassName,
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
-  delay_cluster_id: formatClassName('min-w-full'),
+  delay_cluster_id: formatClassName('!w-full min-w-0'),
   project_preparation: formatClassName('min-w-56 md:min-w-72'),
   prefilled: formatClassName('!w-56'),
 }

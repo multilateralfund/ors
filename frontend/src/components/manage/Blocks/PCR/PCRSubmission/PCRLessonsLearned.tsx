@@ -168,12 +168,16 @@ const PCRLessonsLearned = () => {
           <ErrorsList errors={formattedAgencyErrors} />
         )}
         <div className="mb-2 flex flex-col gap-y-6">
-          <div className="flex">
-            <div className="w-1/4 bg-primary px-6 py-4">
+          <div className="flex flex-col lg:flex-row">
+            <div className="w-full bg-primary px-6 py-4 lg:w-1/4">
               <div className="flex items-center gap-2">
                 <span className="text-lg uppercase text-mlfs-hlYellow">
                   Lessons learned
                 </span>
+                <FieldErrorIndicator
+                  errors={crtAgencyLevelErrors}
+                  field={llField}
+                />
                 <UserInfo
                   info="Select from the list the lesson(s) learned that correspond to the selected project element(s)."
                   className={{
@@ -223,7 +227,7 @@ const PCRLessonsLearned = () => {
             </div>
             <div
               className={cx(
-                'w-3/4 bg-white px-6 py-4',
+                'w-full bg-white px-6 py-4 lg:w-3/4 [&_textarea]:!min-w-0',
                 borderedContainerClassname,
               )}
             >
@@ -241,7 +245,7 @@ const PCRLessonsLearned = () => {
                       <div key={llIndex}>
                         <div className="flex gap-3">
                           {NrEntity(llIndex)}
-                          <div className="flex-1">
+                          <div className="min-w-0 flex-1">
                             <div className="mb-3 flex items-center">
                               <h4 className="m-0 text-lg font-semibold text-primary">
                                 {crtLlName}
@@ -280,7 +284,11 @@ const PCRLessonsLearned = () => {
               )}
             </div>
           </div>
-          <PCRProjectRecommendations {...{ crtTab }} errors={prAgencyErrors} />
+          <PCRProjectRecommendations
+            {...{ crtTab }}
+            errors={prAgencyErrors}
+            agencyLevelErrors={crtAgencyLevelErrors}
+          />
         </div>
       </div>
     </>
