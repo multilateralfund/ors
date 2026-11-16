@@ -251,14 +251,14 @@ const PCRSdgs = () => {
         )}
         <div
           className={cx(
-            'flex flex-col bg-white p-6',
+            'flex flex-col bg-white p-6 [&_textarea]:!min-w-0',
             borderedContainerClassname,
           )}
         >
           <span className="text-lg font-semibold text-primary">
             {pcrFieldsMapping.sdg_applying}
           </span>
-          <div className="mt-1.5 flex items-center gap-3">
+          <div className="mt-1.5 flex flex-wrap items-center gap-3">
             <Button
               className="mt-1"
               sx={buttonStyle(true)}
@@ -294,11 +294,11 @@ const PCRSdgs = () => {
           {sdgsApplying ? (
             <>
               <Divider className="my-5" />
-              <div className="mb-2 flex items-center gap-1.5">
+              <div className="mb-2 flex flex-wrap items-center gap-x-1.5">
                 <span className="text-lg font-semibold text-primary">
                   SDGs MLF –
                 </span>
-                <span className="pt-0.5 leading-none">
+                <span className="pt-0.5 leading-tight">
                   select from the drop-down list (multiple selection allowed)
                 </span>
               </div>
@@ -377,7 +377,7 @@ const PCRSdgs = () => {
                     ))
                   }
                   {...defaultProps}
-                  {...formatClassName('min-w-[300px] md:min-w-[800px]')}
+                  {...formatClassName('!w-full min-w-0 max-w-[800px]')}
                 />
                 <FieldErrorIndicator
                   errors={crtAgencyLevelErrors}
@@ -387,9 +387,9 @@ const PCRSdgs = () => {
               {sdgsData.length > 0 && (
                 <TableContainer
                   component={Paper}
-                  className="PcrViewTableContainer mt-5"
+                  className="PcrViewTableContainer mt-5 w-0 min-w-full"
                 >
-                  <Table stickyHeader className="PcrViewTable">
+                  <Table stickyHeader className="PcrViewTable !min-w-[800px]">
                     <TableHead>
                       <TableRow>
                         <TableCell>#</TableCell>

@@ -17,7 +17,7 @@ export const AddEntityButton = ({
     title={`+ ${title}`}
     onSubmit={action}
     className={cx(
-      'mr-auto h-10 !border-primary !bg-primary !font-normal !text-mlfs-hlYellow',
+      'mr-auto min-h-8 !border-primary !bg-primary !font-normal !text-mlfs-hlYellow',
       { 'mt-4': nrEntities > 0 },
     )}
   />

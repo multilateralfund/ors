@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRTextAreaWidget, PCRTextWidget } from './PCRWidgets'
 import { AddEntityButton } from './EditHelperComponents'
@@ -20,9 +21,11 @@ import cx from 'classnames'
 const PCRProjectRecommendations = ({
   crtTab,
   errors,
+  agencyLevelErrors,
 }: {
   crtTab: number
   errors: Record<string, any>[]
+  agencyLevelErrors?: Record<string, any>
 }) => {
   const sectionIdentifier = 'future_project_recommendations'
 
@@ -103,21 +106,27 @@ const PCRProjectRecommendations = ({
   }
 
   return (
-    <div className={cx('bg-white px-6 py-4', borderedContainerClassname)}>
-      <div className="mb-5 flex items-center gap-2">
+    <div
+      className={cx(
+        'bg-white px-6 py-4 [&_textarea]:!min-w-0',
+        borderedContainerClassname,
+      )}
+    >
+      <div className="mb-5 flex flex-wrap items-center gap-2">
         <MdOutlineLightbulb size={22} className="mb-1" />
         <SubSectionTitle>Recommendations for future projects</SubSectionTitle>
+        <FieldErrorIndicator errors={agencyLevelErrors} field={prField} />
         <UserInfo info="As part of the lessons learned from the challenges/good practices identified during project implementation, please suggest recommendations for future project design and implementation." />
       </div>
       {map(prData, (_, prIndex) => (
         <div key={prIndex}>
           <div className="flex gap-3">
             {NrEntity(prIndex)}
-            <div className="flex w-[65%] flex-col gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-3 md:w-[65%] md:flex-none">
               <PCRTextWidget
                 {...{ PCRData, setPCRData, sectionIdentifier }}
                 field="title"
-                className="w-full md:!min-w-[calc(100%-28px)]"
+                className="w-full max-md:!min-w-0 md:!min-w-[calc(100%-28px)]"
                 errors={errors}
                 indexes={[crtTab, prIndex]}
                 subFields={['', prField]}
