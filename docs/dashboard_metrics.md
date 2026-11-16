@@ -125,7 +125,7 @@ One rule set, applied to every figure on both pages.
 
 | Rule                | Value                                                                                                 |
 |---------------------|-------------------------------------------------------------------------------------------------------|
-| Population          | Latest version only (`Project.objects`, which filters `latest_project=None`)                          |
+| Population          | Latest version only (`Project.objects`, which filters `latest_project=None`), Approved submissions only |
 | Excluded statuses   | `Transferred`, `Closed` - everywhere, with the excluded count and amount reported as their own metric |
 | Production projects | Included                                                                                              |
 | Funding basis       | Raw `Project.total_fund` / `support_cost_psc`                                                         |
