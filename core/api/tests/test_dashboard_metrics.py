@@ -737,7 +737,7 @@ class TestFundValues(BaseTest):
         ProjectFactory(status=ongoing_status)
 
         with override_config(TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=Decimal("12.5")):
-            assert self.fund(user)["savings_to_society"]["value"] == "$12"
+            assert self.fund(user)["savings_to_society"]["value"] == "$12.50"
 
     def test_a_manual_figure_typed_as_text_is_shown_as_typed(
         self, user, ongoing_status

@@ -665,7 +665,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field=("constance " "TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC "),
-        compute=manual("TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC", True, "$"),
+        compute=manual("TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC", True, "$", 2),
     ),
     Metric(
         metric_id="savings_to_society",
@@ -677,7 +677,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field="constance TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR",
-        compute=manual("TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR", True, "$"),
+        compute=manual("TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR", True, "$", 2),
     ),
     Metric(
         metric_id="grant_funding_pledged",
