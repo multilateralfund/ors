@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 # rather than vanishing.
 EXCLUDED_STATUS_CODES = ("TRF", "CLO")
 
+# Only approved projects carry approved funding; drafts, submissions and
+# recommendations awaiting a meeting are left out of every figure.
+APPROVED_SUBMISSION_STATUS = "Approved"
+
 # A multi-year agreement is one project spread over several tranches, so it is
 # counted at a different grain from an individual project.
 MYA_CATEGORY_MARKER = "multi-"
@@ -31,21 +35,25 @@ def dashboard_projects() -> QuerySet[Project]:
     """The one population every dashboard metric counts.
 
     Latest version only - ``Project.objects`` filters ``latest_project=None``,
-    unlike ``Project.objects.really_all()``.
+    unlike ``Project.objects.really_all()`` - and approved only, so a project
+    still in draft, submitted or recommended is in no figure.
     """
-    return Project.objects.exclude(
-        status__code__in=EXCLUDED_STATUS_CODES
-    ).select_related(
-        "country",
-        "country__parent",
-        "country__parent__parent",
+    return (
+        Project.objects.filter(submission_status__name=APPROVED_SUBMISSION_STATUS)
+        .exclude(status__code__in=EXCLUDED_STATUS_CODES)
+        .select_related(
+            "country",
+            "country__parent",
+            "country__parent__parent",
+        )
     )
 
 
 def excluded_projects() -> QuerySet[Project]:
     """The complement, reported by the ``scope_excluded_status`` metric."""
     return Project.objects.filter(
-        status__code__in=EXCLUDED_STATUS_CODES
+        submission_status__name=APPROVED_SUBMISSION_STATUS,
+        status__code__in=EXCLUDED_STATUS_CODES,
     ).select_related("country", "country__parent", "country__parent__parent")
 
 
