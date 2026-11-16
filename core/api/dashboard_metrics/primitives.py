@@ -95,9 +95,17 @@ def _rows(projects: QuerySet[Project], country: Country | None) -> list[Project]
 
 
 def format_number(
-    num: float, decimals: int = 0, currency: str = "", full_number=False
+    num: float,
+    decimals: int = 0,
+    currency: str = "",
+    full_number=False,
+    trim_zeros=False,
 ) -> str:
-    """Format large number and optionally include currency."""
+    """Format large number and optionally include currency.
+
+    ``trim_zeros`` drops trailing zeros from the decimals (2.50 -> 2.5,
+    12.00 -> 12).
+    """
     sign = "-" if num < 0 else ""
     num = abs(num)
     if not full_number:
@@ -115,7 +123,10 @@ def format_number(
     value = Decimal(str(num))
     quantizer = Decimal("1." + "0" * decimals)
     value = value.quantize(quantizer, rounding=ROUND_DOWN)
-    return f"{currency}{sign}{value:,.{decimals}f}"
+    formatted = f"{value:,.{decimals}f}"
+    if trim_zeros and "." in formatted:
+        formatted = formatted.rstrip("0").rstrip(".")
+    return f"{currency}{sign}{formatted}"
 
 
 def apportion(values: Sequence[float], decimals: int = 0) -> tuple[float, list[float]]:

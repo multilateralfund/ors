@@ -767,7 +767,24 @@ class TestFundValues(BaseTest):
         approved_submission(status=ongoing_status)
 
         with override_config(TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=Decimal("12.5")):
-            assert self.fund(user)["savings_to_society"]["value"] == "$12.50"
+            assert self.fund(user)["savings_to_society"]["value"] == "$12.5"
+
+    @pytest.mark.parametrize(
+        "typed, shown", [("12", "$12"), ("12.00", "$12"), ("12.345", "$12.34")]
+    )
+    def test_a_savings_figure_drops_trailing_zeros(
+        self, user, ongoing_status, typed, shown
+    ):
+        approved_submission(status=ongoing_status)
+
+        with override_config(
+            TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=typed,
+            TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC=typed,
+        ):
+            fund = self.fund(user)
+
+        assert fund["savings_to_society"]["value"] == shown
+        assert fund["hfc_expected_savings_to_society"]["value"] == shown
 
     def test_a_manual_figure_typed_as_text_is_shown_as_typed(
         self, user, ongoing_status
