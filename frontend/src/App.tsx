@@ -99,6 +99,8 @@ import PCRArchiveIndividualPage from '@ors/app/pcr/archive-individual/page'
 import PCREditPage from '@ors/app/pcr/edit/page'
 import ManagePCRsPage from '@ors/app/pcr/manage/page'
 
+import config from '@ors/config'
+
 function RedirectToSection() {
   const permissions = useContext(PermissionsContext)
 
@@ -224,7 +226,11 @@ export default function App() {
           <Redirect to="/country-programme/reports" replace />
         </Route>
         <Route path="/">
-          <LandingPageWrapper />
+          {config.features.enableLandingPage ? (
+            <LandingPageWrapper />
+          ) : (
+            <RedirectToSection />
+          )}
         </Route>
         <Route path="/replenishment" nest>
           <ReplenishmentLayout>

@@ -1,11 +1,10 @@
 const apiPath = import.meta.env.VITE_PUBLIC_API_PATH || window.location.origin
 const host = import.meta.env.VITE_PUBLIC_HOST || window.location.host
-const protocol = import.meta.env.VITE_PUBLIC_PROTOCOL || window.location.protocol.split(':')[0]
+const protocol =
+  import.meta.env.VITE_PUBLIC_PROTOCOL || window.location.protocol.split(':')[0]
 
 export type BaseConfig = {
-  cookies: {
-    theme: string
-  }
+  cookies: { theme: string }
   defaultTheme: 'dark' | 'light'
   settings: {
     apiPath?: string
@@ -16,6 +15,7 @@ export type BaseConfig = {
     dsn?: string
     environment?: string
   }
+  features: { enableLandingPage: boolean }
 }
 
 const baseConfig: BaseConfig = {
@@ -31,7 +31,10 @@ const baseConfig: BaseConfig = {
   sentry: {
     dsn: import.meta.env.VITE_PUBLIC_SENTRY_DSN,
     environment: import.meta.env.VITE_PUBLIC_SENTRY_ENVIRONMENT,
-  }
+  },
+  features: {
+    enableLandingPage: import.meta.env.VITE_ENABLE_LANDING_PAGE === 'true',
+  },
 }
 
 export default baseConfig
