@@ -662,15 +662,28 @@ def test_pcr_project_create_with_multiple_projects(
     )
 
 
-def test_pcr_project_create_includes_only_approved_projects(
-    client, url, admin_user, project_approved_status, project_draft_status
+def test_pcr_project_create_includes_approved_and_pending_projects(
+    client,
+    url,
+    admin_user,
+    project_approved_status,
+    project_draft_status,
+    project_submitted_status,
+    project_not_approved_status,
 ):
     meta_project = MetaProjectFactory.create()
     approved_project = ProjectFactory.create(
         meta_project=meta_project, submission_status=project_approved_status
     )
+    # pending approval, included, but the PCR can't be submitted until approved
+    submitted_project = ProjectFactory.create(
+        meta_project=meta_project, submission_status=project_submitted_status
+    )
     draft_project = ProjectFactory.create(
         meta_project=meta_project, submission_status=project_draft_status
+    )
+    ProjectFactory.create(
+        meta_project=meta_project, submission_status=project_not_approved_status
     )
     client.force_authenticate(user=admin_user)
 
@@ -693,9 +706,10 @@ def test_pcr_project_create_includes_only_approved_projects(
 
     response = _post([])
     assert response.status_code == 201
-    assert [item["project_id"] for item in response.data["pcr_projects"]] == [
-        approved_project.id
-    ]
+    assert [
+        (item["project_id"], item["project_submission_status"])
+        for item in response.data["pcr_projects"]
+    ] == [(approved_project.id, "Approved"), (submitted_project.id, "Submitted")]
     assert not PCRProject.objects.filter(project=draft_project).exists()
 
 

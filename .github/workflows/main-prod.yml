@@ -25,6 +25,7 @@ jobs:
     with:
       SENTRY_DSN: ${{ vars.PROD_SENTRY_DSN }}
       SENTRY_ENVIRONMENT: ${{ vars.PROD_SENTRY_ENVIRONMENT }}
+      ENABLE_LANDING_PAGE: ${{ vars.PROD_ENABLE_LANDING_PAGE || 'false' }}
 
       build_app: ${{ inputs.build_app }}
       build_nextjs: ${{ inputs.build_nextjs }}

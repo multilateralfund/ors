@@ -8,6 +8,8 @@ import LoginPage from '@ors/app/login/page'
 import ResetPasswordPage from '@ors/app/reset-password/page'
 import ForgotPasswordPage from '@ors/app/forgot-password/page'
 
+import LandingPageWrapper from './app/landing-page/page'
+
 import CountryProgrammePage from '@ors/app/country-programme/reports/page'
 
 import CPCreatePage from '@ors/app/country-programme/create/page'
@@ -96,6 +98,8 @@ import PCRArchivePage from '@ors/app/pcr/archive/page'
 import PCRArchiveIndividualPage from '@ors/app/pcr/archive-individual/page'
 import PCREditPage from '@ors/app/pcr/edit/page'
 import ManagePCRsPage from '@ors/app/pcr/manage/page'
+
+import config from '@ors/config'
 
 function RedirectToSection() {
   const permissions = useContext(PermissionsContext)
@@ -222,7 +226,11 @@ export default function App() {
           <Redirect to="/country-programme/reports" replace />
         </Route>
         <Route path="/">
-          <RedirectToSection />
+          {config.features.enableLandingPage ? (
+            <LandingPageWrapper />
+          ) : (
+            <RedirectToSection />
+          )}
         </Route>
         <Route path="/replenishment" nest>
           <ReplenishmentLayout>

@@ -39,11 +39,13 @@ import {
   formatNumberProjectValue,
   getComputedFields,
   getEnterpriseAddresses,
+  isProjectNotApproved,
 } from '../utils'
 import {
   summaryOfKeyDataField,
   defaultSummaryOfKeyDataErrors,
   disposalTypeOptions,
+  notApprovedProjectMessage,
 } from '../constants'
 import {
   PCRAlternativeTechnologyType,
@@ -196,7 +198,7 @@ const SubstanceSelect = ({
   options: SubstanceOption[]
   value: number | null
 }) => (
-  <div className="min-w-56 sm:min-w-64">
+  <div className="min-w-0 max-sm:w-[min(14rem,100%)] sm:min-w-64">
     {label && <Label htmlFor={id}>{label}</Label>}
     <Field
       id={id}
@@ -230,7 +232,7 @@ const DisposalTypeSelect = ({
   value: number | null
   errors: Record<string, any>
 }) => (
-  <div className="min-w-56 sm:min-w-64">
+  <div className="w-full min-w-0">
     <div className={labelClassName}>
       <Label htmlFor={id}>{label}</Label>
     </div>
@@ -360,6 +362,9 @@ const PCRSummaryOfKeyData = () => {
                   errors: getSummaryOfKeyDataErrors(
                     draftSummaryData,
                     draftErrors,
+                    isProjectNotApproved(
+                      projects.find(({ id }) => id === editingProjectId),
+                    ),
                   ),
                 },
               ],
@@ -367,7 +372,7 @@ const PCRSummaryOfKeyData = () => {
             editingProjectId,
           )
         : defaultSummaryOfKeyDataErrors,
-    [editingProjectId, draftSummaryData, draftErrors],
+    [editingProjectId, draftSummaryData, draftErrors, projects],
   )
 
   const formattedErrors = useMemo(
@@ -380,6 +385,17 @@ const PCRSummaryOfKeyData = () => {
       ),
     [groupedErrors],
   )
+
+  const notApprovedErrors = isProjectNotApproved(
+    projects.find(({ id }) => id === editingProjectId),
+  )
+    ? formatErrors({ project_submission_status: [notApprovedProjectMessage] })
+    : []
+
+  const getTabErrors = (tab: string) => [
+    ...notApprovedErrors,
+    ...(formattedErrors[tab] ?? []),
+  ]
 
   const { alternativeTechnologiesErrors, enterprisesErrors, equipmentsErrors } =
     useMemo(
@@ -395,6 +411,7 @@ const PCRSummaryOfKeyData = () => {
   const editingProject = projects.find(
     (project) => project.id === editingProjectId,
   )
+
   const getSummaryData = useCallback(
     (projectId: number) =>
       PCRData.summary_of_key_data.find(
@@ -505,7 +522,7 @@ const PCRSummaryOfKeyData = () => {
                 className="cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap underline"
                 onClick={() => openDialog(params.data?.id)}
               >
-                {params.value}
+                {params.value ?? 'N/A'}
               </span>
               {!!hasErrors && <SectionErrorIndicator errors={[]} />}
             </div>
@@ -523,7 +540,8 @@ const PCRSummaryOfKeyData = () => {
     return (
       <div className="relative flex items-center justify-between gap-x-2">
         <div className="leading-tight">{label}</div>
-        {!!tabErrors && hasSectionErrors(tabErrors) && (
+        {(notApprovedErrors.length > 0 ||
+          (!!tabErrors && hasSectionErrors(tabErrors))) && (
           <SectionErrorIndicator errors={[]} />
         )}
       </div>
@@ -642,9 +660,11 @@ const PCRSummaryOfKeyData = () => {
             className="px-6 py-5 text-white"
           >
             <div className="flex items-center justify-between gap-4 text-2xl">
-              {editingProject.code}
+              <span className="min-w-0 break-words">
+                {editingProject.code ?? 'N/A'}
+              </span>
               <Link
-                className="flex h-6 w-6 cursor-pointer justify-center"
+                className="flex h-6 w-6 shrink-0 cursor-pointer justify-center"
                 href={null}
               >
                 <TfiClose size={18} color="white" onClick={closeDialog} />
@@ -695,10 +715,9 @@ const PCRSummaryOfKeyData = () => {
             <div className="flex flex-col gap-y-6 bg-white p-6">
               {currentTab === 0 && (
                 <div>
-                  {!!formattedErrors.general &&
-                    formattedErrors.general.length > 0 && (
-                      <ErrorsList errors={formattedErrors.general} />
-                    )}
+                  {getTabErrors('general').length > 0 && (
+                    <ErrorsList errors={getTabErrors('general')} />
+                  )}
                   <div className="flex flex-col">
                     <SubSectionTitle className="!mb-3">Funding</SubSectionTitle>
                     <div className="grid grid-cols-1 gap-x-7 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
@@ -801,12 +820,11 @@ const PCRSummaryOfKeyData = () => {
 
               {currentTab === 1 && (
                 <div>
-                  {!!formattedErrors.alternative_technologies &&
-                    formattedErrors.alternative_technologies.length > 0 && (
-                      <ErrorsList
-                        errors={formattedErrors.alternative_technologies}
-                      />
-                    )}
+                  {getTabErrors('alternative_technologies').length > 0 && (
+                    <ErrorsList
+                      errors={getTabErrors('alternative_technologies')}
+                    />
+                  )}
                   <div className="flex flex-col">
                     <div className="flex flex-col gap-y-4">
                       {summaryData.alternative_technologies.map(
@@ -815,6 +833,9 @@ const PCRSummaryOfKeyData = () => {
                             key={index}
                             className="grid max-w-5xl grid-cols-1 items-end gap-4 md:grid-cols-[18rem_18rem_auto]"
                           >
+                            {index > 0 && (
+                              <Divider className="col-span-full md:hidden" />
+                            )}
                             <div className="flex flex-col">
                               <div className={cx({ 'md:hidden': index !== 0 })}>
                                 <Label
@@ -905,7 +926,7 @@ const PCRSummaryOfKeyData = () => {
                           ],
                         }))
                       }
-                      className="mr-auto mt-4 h-8"
+                      className="mr-auto mt-4 min-h-8"
                     />
                   </div>
                 </div>
@@ -913,17 +934,19 @@ const PCRSummaryOfKeyData = () => {
 
               {currentTab === 2 && (
                 <div>
-                  {!!formattedErrors.enterprises &&
-                    formattedErrors.enterprises.length > 0 && (
-                      <ErrorsList errors={formattedErrors.enterprises} />
-                    )}
+                  {getTabErrors('enterprises').length > 0 && (
+                    <ErrorsList errors={getTabErrors('enterprises')} />
+                  )}
                   <div className="flex flex-col">
                     <div className="flex flex-col gap-y-4">
                       {summaryData.enterprises.map((entry, index) => (
                         <div
                           key={index}
-                          className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
+                          className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(0,36rem)_auto]"
                         >
+                          {index > 0 && (
+                            <Divider className="col-span-full md:hidden" />
+                          )}
                           <div className="flex flex-col">
                             <div className={cx({ 'md:hidden': index !== 0 })}>
                               <Label
@@ -933,7 +956,7 @@ const PCRSummaryOfKeyData = () => {
                               </Label>
                             </div>
                             <div className="flex items-center">
-                              <div className="w-full">
+                              <div className="w-full min-w-0">
                                 <SimpleInput
                                   id={`enterprise-name-${editingProject.id}-${index}`}
                                   label=""
@@ -967,7 +990,7 @@ const PCRSummaryOfKeyData = () => {
                               </Label>
                             </div>
                             <div className="flex items-center">
-                              <div className="w-full">
+                              <div className="w-full min-w-0">
                                 <TextareaAutosize
                                   id={`enterprise-address-${editingProject.id}-${index}`}
                                   className={`${textAreaClassname} min-h-24 w-full pb-2`}
@@ -995,7 +1018,7 @@ const PCRSummaryOfKeyData = () => {
                           </div>
                           <IconButton
                             aria-label="Remove enterprise"
-                            className="mb-7 self-end justify-self-start"
+                            className="self-end justify-self-start md:mb-7"
                             onClick={() => {
                               updateSummaryData((projectData) => ({
                                 ...projectData,
@@ -1031,10 +1054,9 @@ const PCRSummaryOfKeyData = () => {
 
               {currentTab === 3 && (
                 <div>
-                  {!!formattedErrors.equipments &&
-                    formattedErrors.equipments.length > 0 && (
-                      <ErrorsList errors={formattedErrors.equipments} />
-                    )}
+                  {getTabErrors('equipments').length > 0 && (
+                    <ErrorsList errors={getTabErrors('equipments')} />
+                  )}
                   <div className="flex flex-col">
                     <SubSectionTitle className="!mb-3">
                       Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment
@@ -1046,6 +1068,9 @@ const PCRSummaryOfKeyData = () => {
                           key={index}
                           className="grid max-w-[84rem] grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[16rem_22rem_16rem_14rem_auto]"
                         >
+                          {index > 0 && (
+                            <Divider className="col-span-full xl:hidden" />
+                          )}
                           <div className="w-full">
                             <div className={cx({ 'xl:hidden': index !== 0 })}>
                               <Label
@@ -1080,7 +1105,7 @@ const PCRSummaryOfKeyData = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="w-full md:col-span-2 xl:col-span-1">
+                          <div className="w-full">
                             <div className={cx({ 'xl:hidden': index !== 0 })}>
                               <Label
                                 htmlFor={`equipment-description-${editingProject.id}-${index}`}

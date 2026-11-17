@@ -261,12 +261,17 @@ class PCRProjectSerializer(serializers.ModelSerializer):
     )
     enterprises = PCRProjectEnterpriseSerializer(many=True, required=False)
     equipments = PCRProjectEquipmentSerializer(many=True, required=False)
+    # The PCR can't be submitted while some of its projects are not approved
+    project_submission_status = serializers.CharField(
+        source="project.submission_status.name", read_only=True
+    )
 
     class Meta:
         model = PCRProject
         fields = [
             "id",
             "project_id",
+            "project_submission_status",
             "funds_approved",
             "funds_disbursed",
             "funds_returned",
@@ -617,7 +622,11 @@ class PCRDetailSerializer(serializers.ModelSerializer):
 
     def get_pcr_projects(self, instance):
         return PCRProjectSerializer(
-            instance.pcr_projects.order_by("id"), many=True, context=self.context
+            instance.pcr_projects.select_related("project__submission_status").order_by(
+                "id"
+            ),
+            many=True,
+            context=self.context,
         ).data
 
 
@@ -1159,6 +1168,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
     subsector_ids = serializers.SerializerMethodField()
     status = serializers.SlugRelatedField("name", read_only=True)
     status_id = serializers.IntegerField(read_only=True, source="status.id")
+    submission_status = serializers.SlugRelatedField("name", read_only=True)
     funds_approved = serializers.SerializerMethodField()
     pcr_due = serializers.SerializerMethodField()
     hfc_phase_down_co2_actual = serializers.SerializerMethodField()
@@ -1211,6 +1221,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
             "support_cost_psc",
             "status",
             "status_id",
+            "submission_status",
             "title",
             "total_fund",
             "tranche",

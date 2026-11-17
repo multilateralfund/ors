@@ -144,6 +144,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         "meta_project__pcrs__delay_causes__root_causes_of_delay__name",
         "meta_project__pcrs__learned_lessons__lessons__name",
     ]
+    ORDERING_FIELDS = ["pcr_due", "umbrella_code"]
 
     @property
     def permission_classes(self):
@@ -184,11 +185,26 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         # Filtering on the meta project ids, not joining the projects, avoids
         # a slow nested loop on the listing (with the pcr_submitted filter)
         return MetaProject.objects.filter(
+            # not listed if all the projects are pending approval
+            Exists(
+                Project.objects.filter(
+                    meta_project=OuterRef("pk"), submission_status__name="Approved"
+                )
+            ),
             is_draft=False,
             id__in=filtered_projects_qs.values("meta_project_id"),
         ).exclude(
             Exists(Project.objects.filter(meta_project=OuterRef("pk"), pcr_waived=True))
         )
+
+    def _get_ordering(self, params):
+        ordering = [
+            field
+            for field in params.get("ordering", "").replace(" ", "").split(",")
+            if field.lstrip("-") in self.ORDERING_FIELDS
+        ]
+        # The PCR due meta projects are listed first by default
+        return [*(ordering or ["-pcr_due"]), "umbrella_code", "id"]
 
     def get_queryset(self, params=None):
         if params is None:
@@ -233,10 +249,25 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             self._get_meta_projects_queryset(filtered_projects_qs)
             .select_related("lead_agency", "old_pcr")
             .prefetch_related(prefetch, old_individual_pcr_prefetch)
-            .order_by("umbrella_code", "id")
+            .order_by(*self._get_ordering(params))
         )
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="ordering",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "Comma separated fields to order by, prefixed with '-' for "
+                    "descending order: pcr_due, umbrella_code. "
+                    "Defaults to '-pcr_due' (the PCR due meta projects first). "
+                    "Ties are ordered by umbrella_code."
+                ),
+                type=OpenApiTypes.STR,
+            ),
+        ],
+    )
     def list(self, request, *args, **kwargs):
         # Get the filtered MetaProjects with prefetched filtered_project
         queryset = self.get_queryset()
