@@ -18,6 +18,8 @@ from core.api.serializers.project_completion_report import (
 )
 from core.api.utils import log_pcr_history
 from core.api.views.project_completion_report.pcr_validation import (
+    get_pcr_not_approved_projects,
+    get_pcr_not_approved_projects_message,
     get_pcr_submission_error_message,
     get_pcr_submission_errors,
 )
@@ -58,6 +60,29 @@ class PCRWorkflowMixin:
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    @staticmethod
+    def _not_approved_projects(pcr, action_name):
+        """
+        The error response if some projects of the PCR are not approved yet.
+        """
+        projects = get_pcr_not_approved_projects(pcr)
+        if not projects:
+            return None
+        return Response(
+            {
+                "error": get_pcr_not_approved_projects_message(projects, action_name),
+                "not_approved_projects": [
+                    {
+                        "id": project.id,
+                        "code": project.code,
+                        "submission_status": project.submission_status.name,
+                    }
+                    for project in projects
+                ],
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     @extend_schema(
         description="""
         Submit the PCR for MLFS review, locking it for the lead agency.
@@ -68,6 +93,8 @@ class PCRWorkflowMixin:
         creating a new version and the revised submission date is set to the current date.
         An email notification is sent to the addresses set for agency PCR submission
         notifications (Secretariat).
+        All the projects of the meta project should be approved, otherwise the
+        response has the `not_approved_projects`.
         All the PCR required data should be filled, otherwise the response has the
         errors by field.
         """,
@@ -91,6 +118,9 @@ class PCRWorkflowMixin:
                     "PCR can only be submitted if it is in 'Draft' status and version 1 "
                     "or in 'Revision (adjustments requested)' status and version 2."
                 )
+            not_approved_response = self._not_approved_projects(pcr, "submitted")
+            if not_approved_response:
+                return not_approved_response
             incomplete_response = self._incomplete_pcr(pcr, "submitted")
             if incomplete_response:
                 return incomplete_response

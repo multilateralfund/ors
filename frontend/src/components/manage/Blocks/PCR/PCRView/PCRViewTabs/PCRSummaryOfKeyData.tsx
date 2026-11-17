@@ -127,7 +127,7 @@ const PCRSummaryOfKeyData = () => {
               className="cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap underline"
               onClick={() => openDialog(params.data?.id)}
             >
-              {params.value}
+              {params.value ?? 'N/A'}
             </span>
           </div>
         ),
@@ -190,7 +190,7 @@ const PCRSummaryOfKeyData = () => {
             className="px-6 py-5 text-white"
           >
             <div className="flex items-center justify-between gap-4 text-2xl">
-              {crtProject.code}
+              {crtProject.code ?? 'N/A'}
               <Link
                 className="flex h-6 w-6 cursor-pointer justify-center"
                 href={null}

@@ -16,6 +16,7 @@ from core.api.tests.factories import (
     MeetingFactory,
     MetaProjectFactory,
     ProjectFactory,
+    ProjectSubmissionStatusFactory,
 )
 from core.api.tests.project_completion_reports.utils import fill_pcr_required_data
 from core.models.meeting import Meeting
@@ -136,6 +137,66 @@ def test_submit_sends_notification(
 
     assert response.status_code == 200
     mock_send_pcr_notification.assert_called_once_with(pcr.id, is_resubmission=False)
+
+
+def test_submit_rejected_while_projects_not_approved(
+    client,
+    admin_user,
+    project_approved_status,
+    project_recommended_status,
+    mock_send_pcr_notification,
+):
+    meta_project = MetaProjectFactory.create()
+    ProjectFactory.create(
+        meta_project=meta_project, submission_status=project_approved_status
+    )
+    project = ProjectFactory.create(
+        meta_project=meta_project,
+        code="TRANCHE/2",
+        submission_status=project_recommended_status,
+    )
+    pcr = PCR.objects.create(meta_project=meta_project)
+    for meta_project_project in meta_project.projects.all():
+        PCRProject.objects.create(pcr=pcr, project=meta_project_project)
+    pcr = fill_pcr_required_data(pcr)
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(_action_url(pcr, "submit"))
+
+    assert response.status_code == 400
+    assert "TRANCHE/2" in response.data["error"]
+    assert response.data["not_approved_projects"] == [
+        {"id": project.id, "code": "TRANCHE/2", "submission_status": "Recommended"}
+    ]
+    pcr.refresh_from_db()
+    assert pcr.version == 1
+    assert pcr.status == PCR.Status.DRAFT
+    mock_send_pcr_notification.assert_not_called()
+
+    project.submission_status = project_approved_status
+    project.save()
+
+    response = client.post(_action_url(pcr, "submit"))
+
+    assert response.status_code == 200
+    assert response.data["status"] == PCR.Status.REVISION
+
+
+def test_submit_not_blocked_by_withdrawn_or_not_approved_projects(
+    client, admin_user, pcr, project_not_approved_status, mock_send_pcr_notification
+):
+    ProjectFactory.create(
+        meta_project=pcr.meta_project, submission_status=project_not_approved_status
+    )
+    ProjectFactory.create(
+        meta_project=pcr.meta_project,
+        submission_status=ProjectSubmissionStatusFactory.create(name="Withdrawn"),
+    )
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(_action_url(pcr, "submit"))
+
+    assert response.status_code == 200
 
 
 def test_request_adjustments_keeps_v2(client, admin_user, pcr):

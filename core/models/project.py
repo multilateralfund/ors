@@ -377,10 +377,23 @@ class MetaProject(models.Model):
 
 
 class ProjectQuerySet(models.QuerySet["Project"]):
+    # The projects pending approval are shown in the PCR (e.g. the later MYA
+    # tranches), but the PCR can't be submitted until they are approved
+    PCR_PENDING_SUBMISSION_STATUSES = ["Submitted", "Recommended"]
+
     def for_pcr(self):
         # projects that are shown in and reported on by a PCR
-        return self.filter(submission_status__name="Approved").exclude(
-            category="Individual", status__name="Transferred"
+        return self.filter(
+            submission_status__name__in=[
+                "Approved",
+                *self.PCR_PENDING_SUBMISSION_STATUSES,
+            ]
+        ).exclude(category="Individual", status__name="Transferred")
+
+    def pending_approval_for_pcr(self):
+        # projects shown in a PCR that block its submission
+        return self.for_pcr().filter(
+            submission_status__name__in=self.PCR_PENDING_SUBMISSION_STATUSES
         )
 
     def pcr_required(self):

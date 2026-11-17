@@ -83,7 +83,11 @@ const ChangeVersionModal = ({
         { variant: 'error' },
       )
 
-      if (!editPCR && data?.errors && pcr.data?.editable) {
+      if (
+        !editPCR &&
+        (data?.errors || data?.not_approved_projects) &&
+        pcr.data?.editable
+      ) {
         setLocation(`/pcr/${project_id}/${pcr_id}/edit`)
       }
     }

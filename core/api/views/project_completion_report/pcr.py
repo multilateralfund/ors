@@ -377,7 +377,11 @@ class PCRProjectViewSet(
                 "total_number_of_trainnes": meta_project.total_number_of_trainnes,
             }
 
-        first_project = meta_project.projects.for_pcr().order_by("date_created").first()
+        # the projects pending approval have no approval data yet
+        approved_projects = meta_project.projects.for_pcr().filter(
+            submission_status__name="Approved"
+        )
+        first_project = approved_projects.order_by("date_created").first()
         first_project_version_3_date_approved = (
             getattr(first_project.get_version(3), "date_approved", None)
             if first_project
@@ -388,7 +392,7 @@ class PCRProjectViewSet(
             "country": meta_project.country.id,
             "decisions": [
                 project.post_excom_decision.id
-                for project in meta_project.projects.for_pcr().filter(
+                for project in approved_projects.filter(
                     post_excom_decision__isnull=False
                 )
             ],
