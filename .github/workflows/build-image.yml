@@ -30,6 +30,11 @@ on:
         type: string
         default: "production"
 
+      ENABLE_LANDING_PAGE:
+        required: false
+        type: string
+        default: "false"
+
     secrets:
       VITE_FRONTEND_CLIENT_ID:
         required: false
@@ -103,6 +108,7 @@ jobs:
             VITE_TENANT_ID=${{ secrets.VITE_TENANT_ID || '' }}
             VITE_FRONTEND_CLIENT_ID=${{ secrets.VITE_FRONTEND_CLIENT_ID || '' }}
             VITE_APPLICATION_ID_URI=${{ secrets.VITE_APPLICATION_ID_URI || '' }}
+            VITE_ENABLE_LANDING_PAGE=${{ inputs.ENABLE_LANDING_PAGE }}
 
       - name: Mark image as built
         id: result
