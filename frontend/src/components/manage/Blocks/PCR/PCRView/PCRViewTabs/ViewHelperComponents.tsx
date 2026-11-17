@@ -240,7 +240,7 @@ export const SelectedEntity = (entity: string) => (
       'm-0 flex flex-row items-center gap-2 rounded-full border-primary bg-primary !p-2 !font-normal !leading-none text-white',
     )}
   >
-    <FaCheck size={12} color="#bdcb19" />
+    <FaCheck size={12} color="#bdcb19" className="shrink-0" />
     {entity}
   </h4>
 )
