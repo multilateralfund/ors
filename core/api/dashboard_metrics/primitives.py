@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 # rather than vanishing.
 EXCLUDED_STATUS_CODES = ("TRF", "CLO")
 
+# Only approved projects carry approved funding; drafts, submissions and
+# recommendations awaiting a meeting are left out of every figure.
+APPROVED_SUBMISSION_STATUS = "Approved"
+
 # A multi-year agreement is one project spread over several tranches, so it is
 # counted at a different grain from an individual project.
 MYA_CATEGORY_MARKER = "multi-"
@@ -31,21 +35,25 @@ def dashboard_projects() -> QuerySet[Project]:
     """The one population every dashboard metric counts.
 
     Latest version only - ``Project.objects`` filters ``latest_project=None``,
-    unlike ``Project.objects.really_all()``.
+    unlike ``Project.objects.really_all()`` - and approved only, so a project
+    still in draft, submitted or recommended is in no figure.
     """
-    return Project.objects.exclude(
-        status__code__in=EXCLUDED_STATUS_CODES
-    ).select_related(
-        "country",
-        "country__parent",
-        "country__parent__parent",
+    return (
+        Project.objects.filter(submission_status__name=APPROVED_SUBMISSION_STATUS)
+        .exclude(status__code__in=EXCLUDED_STATUS_CODES)
+        .select_related(
+            "country",
+            "country__parent",
+            "country__parent__parent",
+        )
     )
 
 
 def excluded_projects() -> QuerySet[Project]:
     """The complement, reported by the ``scope_excluded_status`` metric."""
     return Project.objects.filter(
-        status__code__in=EXCLUDED_STATUS_CODES
+        submission_status__name=APPROVED_SUBMISSION_STATUS,
+        status__code__in=EXCLUDED_STATUS_CODES,
     ).select_related("country", "country__parent", "country__parent__parent")
 
 
@@ -87,9 +95,17 @@ def _rows(projects: QuerySet[Project], country: Country | None) -> list[Project]
 
 
 def format_number(
-    num: float, decimals: int = 0, currency: str = "", full_number=False
+    num: float,
+    decimals: int = 0,
+    currency: str = "",
+    full_number=False,
+    trim_zeros=False,
 ) -> str:
-    """Format large number and optionally include currency."""
+    """Format large number and optionally include currency.
+
+    ``trim_zeros`` drops trailing zeros from the decimals (2.50 -> 2.5,
+    12.00 -> 12).
+    """
     sign = "-" if num < 0 else ""
     num = abs(num)
     if not full_number:
@@ -107,7 +123,10 @@ def format_number(
     value = Decimal(str(num))
     quantizer = Decimal("1." + "0" * decimals)
     value = value.quantize(quantizer, rounding=ROUND_DOWN)
-    return f"{currency}{sign}{value:,.{decimals}f}"
+    formatted = f"{value:,.{decimals}f}"
+    if trim_zeros and "." in formatted:
+        formatted = formatted.rstrip("0").rstrip(".")
+    return f"{currency}{sign}{formatted}"
 
 
 def apportion(values: Sequence[float], decimals: int = 0) -> tuple[float, list[float]]:

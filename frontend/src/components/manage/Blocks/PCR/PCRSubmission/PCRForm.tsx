@@ -291,12 +291,12 @@ const PCRForm = ({ mode }: { mode: string }) => {
     }))
   }, [JSON.stringify(resultsAssessmentData)])
 
-  const causesOfDelayData = PCRData.delay_causes || []
+  const delayCausesData = PCRData.delay_causes || []
 
   useEffect(() => {
     const cdData = flatMap(
-      causesOfDelayData,
-      ({ causes_of_delay }) => causes_of_delay,
+      delayCausesData,
+      ({ delay_clusters }) => delay_clusters,
     )
 
     setErrors((prev: Record<string, any[]>) => ({
@@ -329,7 +329,7 @@ const PCRForm = ({ mode }: { mode: string }) => {
         return normalizeErrors(updatedErrors)
       }),
     }))
-  }, [JSON.stringify(causesOfDelayData)])
+  }, [JSON.stringify(delayCausesData)])
 
   const lessonsLearnedData = PCRData.learned_lessons || []
 

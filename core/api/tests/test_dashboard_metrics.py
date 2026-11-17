@@ -43,6 +43,7 @@ from core.api.tests.factories import (
     ProjectOdsOdpFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
+    ProjectSubmissionStatusFactory,
     ProjectTypeFactory,
     SubstanceFactory,
     TriennialContributionStatusFactory,
@@ -59,6 +60,17 @@ def _explode(_context):
 _serial = count(1)
 
 
+def approved_submission(**kwargs):
+    """A project in the Approved submission status, which the dashboards count.
+
+    ``ProjectFactory`` gives it a random one, which no figure includes.
+    """
+    kwargs.setdefault(
+        "submission_status", ProjectSubmissionStatusFactory(name="Approved")
+    )
+    return ProjectFactory(**kwargs)
+
+
 def approved_project(**kwargs):
     """A project carrying the identifiers one gets on approval.
 
@@ -67,11 +79,11 @@ def approved_project(**kwargs):
     """
     kwargs.setdefault("code", f"PRJ/{next(_serial)}")
     kwargs.setdefault("metacode", kwargs["code"])
-    return ProjectFactory(**kwargs)
+    return approved_submission(**kwargs)
 
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0613,C0302,W0123,E8001
+# pylint: disable=C8008,W0613,C0302,W0123,E8001,R0904
 
 
 @pytest.fixture(name="core_caplog")
@@ -239,7 +251,7 @@ def _ongoing_status():
 @pytest.fixture(name="brazil")
 def _brazil(ongoing_status):
     country = CountryFactory(name="Brazil", iso3="BRA")
-    ProjectFactory(country=country, status=ongoing_status)
+    approved_submission(country=country, status=ongoing_status)
     return country
 
 
@@ -248,7 +260,7 @@ def _africa(ongoing_status):
     region = CountryFactory(
         name="Africa", abbr="AFR", location_type=Country.LocationType.REGION
     )
-    ProjectFactory(country=region, status=ongoing_status)
+    approved_submission(country=region, status=ongoing_status)
     return region
 
 
@@ -348,7 +360,7 @@ class TestDashboardMetricsCountryIndex(BaseTest):
         self, user, brazil
     ):
         chad = CountryFactory(name="Chad", iso3="TCD")
-        ProjectFactory(country=chad, status=ProjectStatusFactory(code="TRF"))
+        approved_submission(country=chad, status=ProjectStatusFactory(code="TRF"))
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
@@ -436,7 +448,9 @@ class TestBadDataDegradesQuietly(BaseTest):
     def test_unaddressable_country_is_dropped_not_fatal(
         self, user, brazil, ongoing_status
     ):
-        ProjectFactory(country=CountryFactory(name="Nowhere"), status=ongoing_status)
+        approved_submission(
+            country=CountryFactory(name="Nowhere"), status=ongoing_status
+        )
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
@@ -449,7 +463,7 @@ class TestBadDataDegradesQuietly(BaseTest):
         clash = CountryFactory(
             name="Caribbean", abbr="BRA", location_type=Country.LocationType.REGION
         )
-        ProjectFactory(country=clash, status=ongoing_status)
+        approved_submission(country=clash, status=ongoing_status)
         self.client.force_authenticate(user=user)
 
         index = self.client.get(self.url)
@@ -460,7 +474,9 @@ class TestBadDataDegradesQuietly(BaseTest):
         assert detail.status_code == 404
 
     def test_payload_discloses_no_diagnostics(self, user, brazil, ongoing_status):
-        ProjectFactory(country=CountryFactory(name="Nowhere"), status=ongoing_status)
+        approved_submission(
+            country=CountryFactory(name="Nowhere"), status=ongoing_status
+        )
         self.client.force_authenticate(user=user)
 
         scope = self.client.get(reverse("dashboard-metrics-fund")).data["scope"]
@@ -489,14 +505,14 @@ class TestRegistryAssertions:
         clash = CountryFactory(
             name="Caribbean", abbr="BRA", location_type=Country.LocationType.REGION
         )
-        ProjectFactory(country=clash, status=ongoing_status)
+        approved_submission(country=clash, status=ongoing_status)
 
         with pytest.raises(ImproperlyConfigured, match="keyspaces have collided"):
             registry.assert_entry_keys_disjoint()
 
     def test_project_bearing_country_without_a_key_raises(self, ongoing_status):
         unkeyed = CountryFactory(name="Nowhere")
-        ProjectFactory(country=unkeyed, status=ongoing_status)
+        approved_submission(country=unkeyed, status=ongoing_status)
 
         with pytest.raises(ImproperlyConfigured, match="no iso3/abbr key"):
             registry.assert_entry_keys_disjoint()
@@ -599,7 +615,7 @@ class TestFundValues(BaseTest):
         self, user, ongoing_status
     ):
         """The published figures carry no fund_transferred adjustment."""
-        ProjectFactory(
+        approved_submission(
             status=ongoing_status,
             total_fund=100_000,
             support_cost_psc=7_000,
@@ -616,6 +632,20 @@ class TestFundValues(BaseTest):
         approved_project(
             status=ProjectStatusFactory(code="TRF"), total_fund=900, support_cost_psc=0
         )
+
+        metrics = self.fund(user)
+        assert metrics["funds_approved"]["value"]["funds_approved"] == 100
+        assert metrics["projects_approved_total"]["value"]["projects_by_code"] == "1"
+
+    def test_a_project_not_yet_approved_is_in_no_figure(self, user, ongoing_status):
+        approved_project(status=ongoing_status, total_fund=100, support_cost_psc=0)
+        for name in ("Draft", "Submitted", "Recommended"):
+            approved_project(
+                status=ongoing_status,
+                submission_status=ProjectSubmissionStatusFactory(name=name),
+                total_fund=900,
+                support_cost_psc=0,
+            )
 
         metrics = self.fund(user)
         assert metrics["funds_approved"]["value"]["funds_approved"] == 100
@@ -729,20 +759,37 @@ class TestFundValues(BaseTest):
     def test_manual_figures_are_unavailable_until_someone_enters_them(
         self, user, ongoing_status
     ):
-        ProjectFactory(status=ongoing_status)
+        approved_submission(status=ongoing_status)
 
         assert self.fund(user)["savings_to_society"]["available"] is False
 
     def test_a_manual_figure_appears_once_entered(self, user, ongoing_status):
-        ProjectFactory(status=ongoing_status)
+        approved_submission(status=ongoing_status)
 
         with override_config(TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=Decimal("12.5")):
-            assert self.fund(user)["savings_to_society"]["value"] == "$12"
+            assert self.fund(user)["savings_to_society"]["value"] == "$12.5"
+
+    @pytest.mark.parametrize(
+        "typed, shown", [("12", "$12"), ("12.00", "$12"), ("12.345", "$12.34")]
+    )
+    def test_a_savings_figure_drops_trailing_zeros(
+        self, user, ongoing_status, typed, shown
+    ):
+        approved_submission(status=ongoing_status)
+
+        with override_config(
+            TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=typed,
+            TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC=typed,
+        ):
+            fund = self.fund(user)
+
+        assert fund["savings_to_society"]["value"] == shown
+        assert fund["hfc_expected_savings_to_society"]["value"] == shown
 
     def test_a_manual_figure_typed_as_text_is_shown_as_typed(
         self, user, ongoing_status
     ):
-        ProjectFactory(status=ongoing_status)
+        approved_submission(status=ongoing_status)
 
         with override_config(
             TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR=" 2.5 TN ",
@@ -761,24 +808,24 @@ class TestFundValues(BaseTest):
         assert fund["hfc_expected_cost_per_co2eq_tonne"]["value"] == "0.4-0.9 $"
 
     def test_a_manual_cost_keeps_its_cents(self, user, ongoing_status):
-        ProjectFactory(status=ongoing_status)
+        approved_submission(status=ongoing_status)
 
         with override_config(COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS="0.7"):
             assert self.fund(user)["ods_cost_per_odp_tonne"]["value"] == "$0.70"
 
     def test_avoided_ods_emissions_keep_one_decimal(self, user, ongoing_status):
-        ProjectFactory(status=ongoing_status)
+        approved_submission(status=ongoing_status)
 
         with override_config(TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES="53.6"):
             assert self.fund(user)["ods_avoided_emissions"]["value"] == "53.6"
 
     def test_pledges_are_unavailable_until_there_are_any(self, user, ongoing_status):
-        ProjectFactory(status=ongoing_status)
+        approved_submission(status=ongoing_status)
 
         assert self.fund(user)["grant_funding_pledged"]["available"] is False
 
     def test_pledges_total_every_triennium(self, user, ongoing_status):
-        ProjectFactory(status=ongoing_status)
+        approved_submission(status=ongoing_status)
         for start in (2021, 2024):
             TriennialContributionStatusFactory(
                 start_year=start,
@@ -1046,7 +1093,7 @@ class TestClassification:
     """Which bucket a project lands in, and in what order the rules are tried."""
 
     def project(self, **kwargs):
-        return ProjectFactory(status=ProjectStatusFactory(code="ONG"), **kwargs)
+        return approved_submission(status=ProjectStatusFactory(code="ONG"), **kwargs)
 
     def window(self, code):
         return FundingWindowFactory(
@@ -1207,7 +1254,7 @@ class TestInheritedAprAggregations:
         """One APR record per (type code, approved date, first disbursement)."""
         return [
             AnnualProjectReportFactory(
-                project=ProjectFactory(
+                project=approved_submission(
                     project_type=ProjectTypeFactory(code=type_code),
                     status=ProjectStatusFactory(code="ONG"),
                 ),
@@ -1273,7 +1320,7 @@ class TestSubstanceFamilySplit:
     """The per-country page splits ODS in two. The fund-wide page must not notice."""
 
     def project(self, **kwargs):
-        return ProjectFactory(status=ProjectStatusFactory(code="ONG"), **kwargs)
+        return approved_submission(status=ProjectStatusFactory(code="ONG"), **kwargs)
 
     def cluster_project(self, code):
         return self.project(cluster=ProjectClusterFactory(code=code, name=code))
@@ -1346,7 +1393,7 @@ class TestCountrySectorBuckets:
     """A second bucketing, because the two pages chart different sectors."""
 
     def project(self, code):
-        return ProjectFactory(
+        return approved_submission(
             status=ProjectStatusFactory(code="ONG"),
             sector=ProjectSectorFactory(code=code),
         )
@@ -1464,7 +1511,7 @@ class TestCountryValues(BaseTest):
     ):
         brazil = CountryFactory(name="Brazil", iso3="BRA")
         approved_project(country=brazil, status=ongoing_status, total_fund=100)
-        ProjectFactory(country=brazil, status=ongoing_status, total_fund=25)
+        approved_submission(country=brazil, status=ongoing_status, total_fund=25)
 
         metrics = self.entry(user)
         assert metrics["scope_no_code"]["value"] == 1

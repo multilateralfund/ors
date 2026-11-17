@@ -119,7 +119,7 @@ const PCRFilesViewer = ({
               className="flex flex-wrap items-end gap-x-4 gap-y-2"
             >
               <a
-                className="mb-1 flex gap-2.5 text-secondary no-underline"
+                className="mb-1 flex min-w-0 max-w-full gap-2.5 text-secondary no-underline"
                 download={fileName}
                 href={
                   downloadUrl
@@ -131,14 +131,14 @@ const PCRFilesViewer = ({
                   rel: 'noopener noreferrer',
                 })}
               >
-                <IoDownloadOutline className="mb-1 min-h-5 min-w-5" />
+                <IoDownloadOutline className="mb-1 min-h-5 min-w-5 shrink-0" />
                 <span className="text-lg font-medium">{fileName}</span>
                 <FieldErrorIndicator
                   errors={formattedErrors}
                   field="filename"
                 />
               </a>
-              <div className="flex-shrink basis-[270px]">
+              <div className="min-w-0 flex-shrink basis-[270px]">
                 <Label className="!mb-0.5 !text-[15px]">
                   {pcrFieldsMapping.section_id}
                 </Label>

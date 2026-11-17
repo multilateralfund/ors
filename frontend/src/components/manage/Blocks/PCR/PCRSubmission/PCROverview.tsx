@@ -102,7 +102,7 @@ const PCROverview = () => {
           <SubSectionTitle>Indicators</SubSectionTitle>
         </div>
         <div className="flex flex-col border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
-          <div className="md:w-[65%]">
+          <div className="md:w-[65%] [&_textarea]:!min-w-0">
             <PCRTextAreaWidget
               {...{ PCRData, setPCRData, sectionIdentifier }}
               field="addresses"
@@ -118,12 +118,11 @@ const PCROverview = () => {
               options={extendedBooleanFieldsOpts}
               errors={overviewErrors}
             />
-            <div className="flex flex-col gap-3 lg:w-1/2">
+            <div className="flex flex-col gap-3 md:w-[65%] lg:w-1/2 [&_textarea]:!min-w-0">
               <PCRTextAreaWidget
                 {...{ PCRData, setPCRData, sectionIdentifier }}
                 field="project_goal_achieved_explanation"
                 placeholder="Which goals were not achieved and why"
-                className="lg:!min-w-[unset]"
                 errors={overviewErrors}
               />
               {suggestedWordLimit}
@@ -142,17 +141,16 @@ const PCROverview = () => {
                 <PCRTextWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="rating_explanation_other"
-                  className="md:!min-w-72"
+                  className="max-sm:!w-[min(12rem,100%)] max-sm:!min-w-0 sm:!min-w-72"
                   errors={overviewErrors}
                 />
               )}
             </div>
-            <div className="flex flex-col gap-3 lg:w-1/2">
+            <div className="flex flex-col gap-3 md:w-[65%] lg:w-1/2 [&_textarea]:!min-w-0">
               <PCRTextAreaWidget
                 {...{ PCRData, setPCRData, sectionIdentifier }}
                 field="rating_explanation"
                 placeholder="Rationale for the rating selected"
-                className="lg:!min-w-[unset]"
                 errors={overviewErrors}
               />
               {suggestedWordLimit}
@@ -174,7 +172,7 @@ const PCROverview = () => {
           </div>
         </div>
         <div className="flex flex-col gap-y-4 border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {map(entityOptions, (entity) => {
               const crtEntityIndex = findIndex(
                 additionalCommentsData,
@@ -217,7 +215,7 @@ const PCROverview = () => {
               key={commentIndex}
               className={cx('rounded-lg p-6', borderedContainerClassname)}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between">
                 <div className="flex gap-2">
                   {detailItem(pcrFieldsMapping.entity, comment.entity)}
                   <FieldErrorIndicator
@@ -233,7 +231,7 @@ const PCROverview = () => {
                   }}
                 />
               </div>
-              <div className="mt-3 flex flex-col gap-3">
+              <div className="mt-3 flex flex-col gap-3 [&_textarea]:!min-w-0">
                 <PCRTextAreaWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="comment"

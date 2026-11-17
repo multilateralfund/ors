@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react'
 
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import {
   ErrorsList,
   FieldErrorIndicator,
@@ -76,7 +77,7 @@ const PCRCausesOfDelay = () => {
   const causesOfDelayErrors = [map(agencyErrors, dcField)]
 
   const DataHeader = (
-    <div className="mb-5 grid flex-1 grid-cols-2 gap-4">
+    <div className="mb-5 hidden flex-1 grid-cols-2 items-start gap-4 md:grid">
       <SubSectionTitle>Description of the root causes of delay</SubSectionTitle>
       <SubSectionTitle>Action taken</SubSectionTitle>
     </div>
@@ -295,8 +296,8 @@ const PCRCausesOfDelay = () => {
             const cdData = pc[dcField] || []
 
             return (
-              <div key={pcIndex} className="flex">
-                <div className="w-1/4 bg-primary px-6 py-4">
+              <div key={pcIndex} className="flex flex-col lg:flex-row">
+                <div className="w-full bg-primary px-6 py-4 lg:w-1/4">
                   <span className="text-lg uppercase text-mlfs-hlYellow">
                     Delay clusters
                   </span>
@@ -371,7 +372,7 @@ const PCRCausesOfDelay = () => {
                 </div>
                 <div
                   className={cx(
-                    'w-3/4 bg-white px-6 py-4',
+                    'w-full bg-white px-6 py-4 lg:w-3/4 [&_textarea]:!min-w-0',
                     borderedContainerClassname,
                   )}
                 >
@@ -379,7 +380,7 @@ const PCRCausesOfDelay = () => {
                     <>
                       <div className="relative">
                         {DataHeader}
-                        <div className="absolute right-0 top-0">
+                        <div className="mb-4 flex justify-end md:absolute md:right-0 md:top-0 md:mb-0">
                           <DeleteEntityButton
                             title="Remove delay cluster"
                             onAction={() => {
@@ -397,7 +398,7 @@ const PCRCausesOfDelay = () => {
 
                         return (
                           <div key={cdIndex}>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
                               <div className="flex items-center gap-3">
                                 {NrEntity(cdIndex)}
                                 <h4 className="m-0 text-lg font-semibold text-primary">
@@ -410,7 +411,7 @@ const PCRCausesOfDelay = () => {
                                   field="root_cause_id"
                                 />
                               </div>
-                              <div />
+                              <div className="hidden md:block" />
                               <PCRTextAreaWidget
                                 {...{ PCRData, setPCRData }}
                                 sectionIdentifier={delayField}
@@ -421,7 +422,10 @@ const PCRCausesOfDelay = () => {
                                 rows={2}
                                 className="md:!min-w-[calc(100%-28px)]"
                               />
-                              <div className="mt-[37px]">
+                              <div>
+                                <Label className="md:invisible">
+                                  Action taken
+                                </Label>
                                 <PCRTextAreaWidget
                                   {...{ PCRData, setPCRData }}
                                   sectionIdentifier={delayField}

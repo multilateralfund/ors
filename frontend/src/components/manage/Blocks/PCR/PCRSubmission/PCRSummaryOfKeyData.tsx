@@ -198,7 +198,7 @@ const SubstanceSelect = ({
   options: SubstanceOption[]
   value: number | null
 }) => (
-  <div className="min-w-56 sm:min-w-64">
+  <div className="min-w-0 max-sm:w-[min(14rem,100%)] sm:min-w-64">
     {label && <Label htmlFor={id}>{label}</Label>}
     <Field
       id={id}
@@ -232,7 +232,7 @@ const DisposalTypeSelect = ({
   value: number | null
   errors: Record<string, any>
 }) => (
-  <div className="min-w-56 sm:min-w-64">
+  <div className="w-full min-w-0">
     <div className={labelClassName}>
       <Label htmlFor={id}>{label}</Label>
     </div>
@@ -660,9 +660,11 @@ const PCRSummaryOfKeyData = () => {
             className="px-6 py-5 text-white"
           >
             <div className="flex items-center justify-between gap-4 text-2xl">
-              {editingProject.code ?? 'N/A'}
+              <span className="min-w-0 break-words">
+                {editingProject.code ?? 'N/A'}
+              </span>
               <Link
-                className="flex h-6 w-6 cursor-pointer justify-center"
+                className="flex h-6 w-6 shrink-0 cursor-pointer justify-center"
                 href={null}
               >
                 <TfiClose size={18} color="white" onClick={closeDialog} />
@@ -831,6 +833,9 @@ const PCRSummaryOfKeyData = () => {
                             key={index}
                             className="grid max-w-5xl grid-cols-1 items-end gap-4 md:grid-cols-[18rem_18rem_auto]"
                           >
+                            {index > 0 && (
+                              <Divider className="col-span-full md:hidden" />
+                            )}
                             <div className="flex flex-col">
                               <div className={cx({ 'md:hidden': index !== 0 })}>
                                 <Label
@@ -921,7 +926,7 @@ const PCRSummaryOfKeyData = () => {
                           ],
                         }))
                       }
-                      className="mr-auto mt-4 h-8"
+                      className="mr-auto mt-4 min-h-8"
                     />
                   </div>
                 </div>
@@ -937,8 +942,11 @@ const PCRSummaryOfKeyData = () => {
                       {summaryData.enterprises.map((entry, index) => (
                         <div
                           key={index}
-                          className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
+                          className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(0,36rem)_auto]"
                         >
+                          {index > 0 && (
+                            <Divider className="col-span-full md:hidden" />
+                          )}
                           <div className="flex flex-col">
                             <div className={cx({ 'md:hidden': index !== 0 })}>
                               <Label
@@ -948,7 +956,7 @@ const PCRSummaryOfKeyData = () => {
                               </Label>
                             </div>
                             <div className="flex items-center">
-                              <div className="w-full">
+                              <div className="w-full min-w-0">
                                 <SimpleInput
                                   id={`enterprise-name-${editingProject.id}-${index}`}
                                   label=""
@@ -982,7 +990,7 @@ const PCRSummaryOfKeyData = () => {
                               </Label>
                             </div>
                             <div className="flex items-center">
-                              <div className="w-full">
+                              <div className="w-full min-w-0">
                                 <TextareaAutosize
                                   id={`enterprise-address-${editingProject.id}-${index}`}
                                   className={`${textAreaClassname} min-h-24 w-full pb-2`}
@@ -1010,7 +1018,7 @@ const PCRSummaryOfKeyData = () => {
                           </div>
                           <IconButton
                             aria-label="Remove enterprise"
-                            className="mb-7 self-end justify-self-start"
+                            className="self-end justify-self-start md:mb-7"
                             onClick={() => {
                               updateSummaryData((projectData) => ({
                                 ...projectData,
@@ -1060,6 +1068,9 @@ const PCRSummaryOfKeyData = () => {
                           key={index}
                           className="grid max-w-[84rem] grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[16rem_22rem_16rem_14rem_auto]"
                         >
+                          {index > 0 && (
+                            <Divider className="col-span-full xl:hidden" />
+                          )}
                           <div className="w-full">
                             <div className={cx({ 'xl:hidden': index !== 0 })}>
                               <Label
@@ -1094,7 +1105,7 @@ const PCRSummaryOfKeyData = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="w-full md:col-span-2 xl:col-span-1">
+                          <div className="w-full">
                             <div className={cx({ 'xl:hidden': index !== 0 })}>
                               <Label
                                 htmlFor={`equipment-description-${editingProject.id}-${index}`}

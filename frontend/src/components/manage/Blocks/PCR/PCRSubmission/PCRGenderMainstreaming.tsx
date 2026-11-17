@@ -181,9 +181,9 @@ const PCRGenderMainstreaming = () => {
           {ppData.length > 0 && (
             <mui.TableContainer
               component={mui.Paper}
-              className="PcrViewTableContainer"
+              className="PcrViewTableContainer w-0 min-w-full"
             >
-              <mui.Table stickyHeader className="PcrViewTable">
+              <mui.Table stickyHeader className="PcrViewTable !min-w-[1000px]">
                 <mui.TableHead>
                   <TableRow>
                     <TableCell>#</TableCell>
