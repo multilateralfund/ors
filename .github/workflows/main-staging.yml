@@ -31,6 +31,7 @@ jobs:
     with:
       SENTRY_DSN: ${{ vars.STAGING_SENTRY_DSN }}
       SENTRY_ENVIRONMENT: ${{ vars.STAGING_SENTRY_ENVIRONMENT }}
+      ENABLE_LANDING_PAGE: ${{ vars.STAGING_ENABLE_LANDING_PAGE || 'false' }}
       build_app: ${{ github.event_name == 'workflow_dispatch' && inputs.build_app || false }}
       build_nextjs: ${{ github.event_name == 'workflow_dispatch' && inputs.build_nextjs || false }}
       build_nginx: ${{ github.event_name == 'workflow_dispatch' && inputs.build_nginx || false }}
