@@ -44,7 +44,7 @@ const PCRHeader = ({ mode }: { mode: string }) => {
             </div>
           </div>
           <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-            <PageHeading>
+            <PageHeading className="min-w-0 [overflow-wrap:anywhere]">
               {mode === 'edit' ? (
                 <>
                   <span className="font-medium text-[#4D4D4D]">Edit PCR: </span>

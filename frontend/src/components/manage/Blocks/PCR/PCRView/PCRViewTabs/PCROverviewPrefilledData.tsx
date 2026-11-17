@@ -48,6 +48,10 @@ const PCROverviewPrefilledData = () => {
             pcr.financial_figures_status,
             {
               ...borderedValueContainerClassname,
+              containerClassname: cx(
+                borderedValueContainerClassname.containerClassname,
+                'flex-wrap',
+              ),
               valueClassname: cx(
                 borderedValueContainerClassname.valueClassname,
                 'rounded-full !bg-[#faebd5] !text-[#7d5817] !border-[#eed3ad]',
@@ -57,7 +61,7 @@ const PCROverviewPrefilledData = () => {
         </div>
         <div className="border-0 border-t border-solid border-[#e5e7eb] bg-white p-6">
           <PCROverviewFundingData {...{ isFundingExpanded }} />
-          <div className="mt-8">
+          <div className="mt-8 w-0 min-w-full">
             {detailItem(
               pcrFieldsErrorsMapping.financial_figures_status_explanation,
               pcr.financial_figures_status_explanation,

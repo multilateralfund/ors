@@ -41,7 +41,7 @@ const PCRViewWrapper = () => {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                  <PageHeading>
+                  <PageHeading className="min-w-0 [overflow-wrap:anywhere]">
                     <span className="font-medium text-[#4D4D4D]">
                       View PCR:{' '}
                     </span>

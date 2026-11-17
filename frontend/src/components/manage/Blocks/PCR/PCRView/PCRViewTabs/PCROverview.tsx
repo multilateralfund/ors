@@ -35,7 +35,11 @@ const PCROverview = () => {
   const getExplanationClassname = (className: any) => ({
     containerClassname: overviewTextareaClassname.containerClassname,
     labelClassname: 'lg:w-[20%]',
-    valueClassname: cx(borderedValueClassname, 'rounded-full', className),
+    valueClassname: cx(
+      borderedValueClassname,
+      'rounded-full max-sm:!text-base',
+      className,
+    ),
   })
 
   return (

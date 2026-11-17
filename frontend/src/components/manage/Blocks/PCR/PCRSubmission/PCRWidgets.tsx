@@ -8,7 +8,6 @@ import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListi
 import { onTextareaFocus } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { STYLE } from '@ors/components/manage/Blocks/Replenishment/Inputs/constants'
-import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -30,7 +29,6 @@ import { ApiAgency } from '@ors/types/api_agencies'
 import { TextareaAutosize, Checkbox } from '@mui/material'
 import { find, map } from 'lodash'
 import cx from 'classnames'
-import dayjs from 'dayjs'
 
 const overviewFieldsClassName = formatClassName(
   'max-sm:!w-[min(12rem,100%)] max-sm:min-w-0 sm:min-w-72',
@@ -487,45 +485,6 @@ export const PCRBooleanWidget = ({
       >
         {pcrFieldsMapping[field]}
       </Label>
-    </div>
-  )
-}
-
-export const PCRDateWidget = ({
-  PCRData,
-  setPCRData,
-  sectionIdentifier,
-  field,
-  errors,
-  indexes,
-  subFields,
-  className,
-}: WidgetPprops) => {
-  const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
-  const formattedErrors = formatErrors(errors, indexes)
-
-  return (
-    <div>
-      <Label>{pcrFieldsMapping[field]}</Label>
-      <div className="flex items-center">
-        <DateInput
-          id={field}
-          value={value}
-          formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-          onChange={(event) =>
-            changeHandler['text'](
-              event,
-              sectionIdentifier,
-              field,
-              setPCRData,
-              indexes,
-              subFields,
-            )
-          }
-          className="!m-0 w-40 grow-0"
-        />
-        <FieldErrorIndicator errors={formattedErrors} field={field} />
-      </div>
     </div>
   )
 }
