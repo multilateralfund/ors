@@ -387,3 +387,13 @@ export type ArchiveIndividualPCRResponse = {
   learned_lessons: ArchiveIndividualPCRLearnedLesson[]
   supporting_evidences: ArchiveIndividualPCRSupportingEvidence[]
 }
+
+export type PCRExportType = {
+  id: number
+  status: 'pending' | 'in_progress' | 'completed' | 'failed'
+  output_format: string
+  pcr_count: number
+  filename: string
+  error: string
+  download_url: string | null
+}

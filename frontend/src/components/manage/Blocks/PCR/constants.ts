@@ -14,9 +14,9 @@ export const initialParams = {
   pcr_status: [],
   pcr_due: [],
   ad_hoc_pcr: [],
+  pcr_submission_year: [],
   pcr_submission_date_after: '',
   pcr_submission_date_before: '',
-  pcr_submission_year: [],
 }
 
 export const pcrFieldsMapping: { [key: string]: string } = {
@@ -275,8 +275,6 @@ export const fundingFields = [
 
 export const borderedContainerClassname = 'border border-solid border-[#e5e7eb]'
 
-// The PCR sections that can be selected in the bulk extraction, in the order of
-// the PCR view tabs
 export const pcrExportSections = [
   { id: 'overview', label: 'Overview' },
   { id: 'summary_of_key_data', label: 'Summary of key data' },

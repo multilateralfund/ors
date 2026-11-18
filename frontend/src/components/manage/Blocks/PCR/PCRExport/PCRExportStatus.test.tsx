@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react'
-import { render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
 
-import { api } from '@ors/helpers'
 import PCRExportStatus from './PCRExportStatus'
+import { api } from '@ors/helpers'
 
 vi.mock('@ors/helpers', () => ({
   api: vi.fn(),

@@ -74,14 +74,14 @@ const PCRDocumentation = () => {
                 <div key={index}>
                   <div className="flex flex-wrap gap-x-7 gap-y-3">
                     <a
-                      className="flex gap-2.5 text-secondary no-underline md:w-[45%]"
+                      className="flex w-full gap-2.5 text-secondary no-underline md:w-[45%]"
                       download={fileName}
                       href={formatApiUrl(downloadUrl)}
                     >
                       <IoDownloadOutline className="min-h-5 min-w-5" />
                       <span className="text-lg font-medium">{fileName}</span>
                     </a>
-                    <div className="md:w-[45%]">
+                    <div className="w-full md:w-[45%]">
                       {detailItem(pcrFieldsMapping.section_id, file.section)}
                     </div>
                   </div>

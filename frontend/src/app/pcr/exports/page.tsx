@@ -9,8 +9,9 @@ import { Redirect, useParams } from 'wouter'
 
 export default function PCRExportPage() {
   usePageTitle('PCR export')
-  const { canViewPCR } = useContext(PermissionsContext)
+
   const { export_id } = useParams<Record<string, string>>()
+  const { canViewPCR } = useContext(PermissionsContext)
 
   if (!canViewPCR) {
     return <Redirect to="/projects-listing/listing" />
