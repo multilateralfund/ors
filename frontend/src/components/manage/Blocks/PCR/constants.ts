@@ -259,6 +259,12 @@ export const textareaClassname = {
   ...commonClassnames,
 }
 
+export const substanceValueClassname = {
+  containerClassname: 'min-w-0',
+  labelClassname: 'sm:hidden',
+  valueClassname: 'break-words',
+}
+
 export const fundingFields = [
   'mlf_funding_approved',
   'mlf_funding_disbursed',

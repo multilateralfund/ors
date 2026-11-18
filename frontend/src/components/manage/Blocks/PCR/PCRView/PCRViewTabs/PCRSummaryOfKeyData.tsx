@@ -20,7 +20,7 @@ import {
   cloneSummaryData,
   getSummaryTableColumnDefs,
 } from '../../PCRSubmission/PCRSummaryOfKeyData'
-import { disposalTypeOptions } from '../../constants'
+import { disposalTypeOptions, substanceValueClassname } from '../../constants'
 import { getComputedFields } from '../../utils'
 import {
   PCRResponse,
@@ -112,7 +112,7 @@ const PCRSummaryOfKeyData = () => {
       {
         headerName: 'Project code',
         field: 'code',
-        minWidth: 210,
+        minWidth: 200,
         cellRenderer: (params: ICellRendererParams<ProjectType>) => (
           <div className="flex h-full items-center gap-x-2">
             <IconButton
@@ -190,9 +190,11 @@ const PCRSummaryOfKeyData = () => {
             className="px-6 py-5 text-white"
           >
             <div className="flex items-center justify-between gap-4 text-2xl">
-              {crtProject.code ?? 'N/A'}
+              <span className="min-w-0 break-words">
+                {crtProject.code ?? 'N/A'}
+              </span>
               <Link
-                className="flex h-6 w-6 cursor-pointer justify-center"
+                className="flex h-6 w-6 shrink-0 cursor-pointer justify-center"
                 href={null}
               >
                 <TfiClose size={18} color="white" onClick={closeDialog} />
@@ -231,7 +233,7 @@ const PCRSummaryOfKeyData = () => {
               {currentTab === 0 && (
                 <div className="flex flex-col">
                   <SubSectionTitle className="!mb-4">Funding</SubSectionTitle>
-                  <div className="grid grid-cols-3 gap-x-7 gap-y-4">
+                  <div className="grid grid-cols-1 gap-x-7 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
                     {numberDetailItem(
                       'Funds approved',
                       (crtProject.funds_approved
@@ -249,7 +251,7 @@ const PCRSummaryOfKeyData = () => {
                   </div>
                   <Divider className="my-5" />
                   <SubSectionTitle className="!mb-4">Schedule</SubSectionTitle>
-                  <div className="grid grid-cols-3 gap-x-7 gap-y-4">
+                  <div className="grid grid-cols-1 gap-x-7 gap-y-4 sm:grid-cols-2 md:grid-cols-3">
                     {dateDetailItem(
                       'Date approved',
                       (crtProject.date_approved as string) ?? '',
@@ -262,8 +264,6 @@ const PCRSummaryOfKeyData = () => {
                       'Actual date of completion',
                       (crtProject.actual_date_of_completion as string) ?? '',
                     )}
-                  </div>
-                  <div className="mt-4 grid grid-cols-3 gap-x-7 gap-y-5">
                     {numberDetailItem(
                       'Planned duration (months)',
                       String(computedFields.planned_duration),
@@ -287,7 +287,7 @@ const PCRSummaryOfKeyData = () => {
                 <div className="flex flex-col">
                   {summaryData.alternative_technologies.length > 0 ? (
                     <div className="flex flex-col gap-y-4">
-                      <div className="grid grid-cols-2 gap-x-7">
+                      <div className="hidden grid-cols-2 gap-x-7 sm:grid">
                         <Label className="pl-4">Substance converted from</Label>
                         <Label>Substance converted to</Label>
                       </div>
@@ -305,16 +305,24 @@ const PCRSummaryOfKeyData = () => {
                           return (
                             <div
                               key={index}
-                              className="grid grid-cols-2 gap-x-7 gap-y-4 rounded-lg border border-solid border-[#D8DADE] px-4 py-3"
+                              className="grid grid-cols-1 gap-x-7 gap-y-4 rounded-lg border border-solid border-[#D8DADE] px-4 py-3 sm:grid-cols-2"
                             >
-                              <div className="flex items-center justify-between">
-                                {detailItem('', substanceFromValue)}
+                              <div className="flex min-w-0 items-center justify-between gap-2 sm:items-start">
+                                {detailItem(
+                                  'Substance converted from',
+                                  substanceFromValue,
+                                  substanceValueClassname,
+                                )}
                                 <HiArrowLongRight
                                   size={40}
-                                  className="text-secondary"
+                                  className="shrink-0 text-secondary sm:-mt-1.5"
                                 />
                               </div>
-                              {detailItem('', substanceToValue)}
+                              {detailItem(
+                                'Substance converted to',
+                                substanceToValue,
+                                substanceValueClassname,
+                              )}
                             </div>
                           )
                         },
@@ -331,9 +339,12 @@ const PCRSummaryOfKeyData = () => {
                   {summaryData.enterprises.length > 0 ? (
                     <TableContainer
                       component={Paper}
-                      className="PcrViewTableContainer max-h-[400px]"
+                      className="PcrViewTableContainer max-h-[400px] w-0 min-w-full"
                     >
-                      <Table stickyHeader className="PcrViewTable">
+                      <Table
+                        stickyHeader
+                        className="PcrViewTable !min-w-[600px]"
+                      >
                         <TableHead>
                           <TableRow>
                             <TableCell>#</TableCell>
@@ -377,9 +388,12 @@ const PCRSummaryOfKeyData = () => {
                   {summaryData.equipments.length > 0 ? (
                     <TableContainer
                       component={Paper}
-                      className="PcrViewTableContainer max-h-[400px]"
+                      className="PcrViewTableContainer max-h-[400px] w-0 min-w-full"
                     >
-                      <Table stickyHeader className="PcrViewTable">
+                      <Table
+                        stickyHeader
+                        className="PcrViewTable !min-w-[800px]"
+                      >
                         <TableHead>
                           <TableRow>
                             <TableCell>#</TableCell>
