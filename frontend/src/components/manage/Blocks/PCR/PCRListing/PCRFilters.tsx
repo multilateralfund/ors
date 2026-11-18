@@ -24,13 +24,18 @@ const PCRFilters = ({
     value: [],
     getOptionLabel: (option: any) => option?.name,
     popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
-    FieldProps: { className: 'mb-0 w-[8.5rem] BPList' },
     componentsProps: {
       popupIndicator: { sx: { transform: 'none !important' } },
     },
   }
 
-  const FieldFilter = ({ field }: { field: string }) => {
+  const FieldFilter = ({
+    field,
+    width = 'w-[8.5rem]',
+  }: {
+    field: string
+    width?: string
+  }) => {
     const simpleFields = [
       'category',
       'pcr_status',
@@ -61,6 +66,7 @@ const PCRFilters = ({
           })
         }}
         {...defaultProps}
+        FieldProps={{ className: `mb-0 ${width} BPList` }}
       />
     )
   }
@@ -95,7 +101,9 @@ const PCRFilters = ({
       <FieldFilter field="category" />
       {view === 'list' && <FieldFilter field="pcr_due" />}
       <FieldFilter field="ad_hoc_pcr" />
-      {view === 'table' && <FieldFilter field="pcr_submission_year" />}
+      {view === 'table' && (
+        <FieldFilter field="pcr_submission_year" width="w-[11rem]" />
+      )}
       {view === 'table' && (
         <DateRangePicker
           label="PCR submission date"
