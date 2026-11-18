@@ -31,7 +31,7 @@ NON_LVC = "Non-LVC"
 # reproduces the published figures. Project.substance_type is read nowhere -
 # it is deprecated and null on roughly two thirds of the projects.
 HFC_CLUSTER_CODES = frozenset(
-    {"HFCIND", "KIP1", "KIP2", "KIP3", "KPP1", "KPP2", "KPP3", "EC 1"}
+    {"HFCIND", "KIP1", "KIP2", "KIP3", "KPP1", "KPP2", "KPP3", "EC1"}
 )
 HCFC_CLUSTER_CODES = frozenset(
     {

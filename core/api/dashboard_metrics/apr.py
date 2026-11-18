@@ -49,9 +49,6 @@ CO2_PHASED_OUT_FIELDS = ("consumption_phased_out_co2", "production_phased_out_co
 
 def paid_out(apr: AnnualProjectReport) -> float:
     """Funds disbursed plus the support cost disbursed alongside them."""
-    print(
-        f"Funds disbursed: {apr.funds_disbursed}, Support cost disbursed: {apr.support_cost_disbursed}"
-    )
     return (apr.funds_disbursed or 0) + (apr.support_cost_disbursed or 0)
 
 
