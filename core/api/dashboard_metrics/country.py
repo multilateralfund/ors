@@ -764,9 +764,9 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=Unit.USD,
         disposition=Disposition.COMPUTE,
-        formula="sum(Funds Disbursed (US$)) from the APR export for the country",
+        formula="sum(Funds Disbursed + Support Cost Disbursed (US$)) from the APR export for the country",
         db_source="NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed",
         compute=kf_funding_disbursed,
     ),
     Metric(

@@ -894,9 +894,11 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.BREAKDOWN,
         unit=Unit.USD,
         disposition=Disposition.COMPUTE,
-        formula=("sum(Funds Disbursed (US$)) grouped by classify.lvc_status"),
+        formula=(
+            "sum(Funds Disbursed + Support Cost Disbursed (US$)) grouped by classify.lvc_status"
+        ),
         db_source="NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed by Country.is_lvc",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed by Country.is_lvc",
         compute=funds_disbursed_lvc_split,
     ),
     Metric(
@@ -907,11 +909,11 @@ FUND_METRICS: tuple[Metric, ...] = (
         unit=Unit.USD,
         disposition=Disposition.COMPUTE,
         formula=(
-            "sum(Funds Disbursed (US$)) over the full APR export (status= → all "
+            "sum(Funds Disbursed + Support Cost Disbursed (US$)) over the full APR export (status= → all "
             "statuses); active-cycle = ONG+COM subset"
         ),
         db_source="NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed",
         compute=funds_disbursed,
     ),
     Metric(
@@ -923,7 +925,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         disposition=Disposition.COMPUTE,
         formula=("funds_lvc_split + unds_disbursed"),
         db_source="NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed + Country.is_lvc",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed + Country.is_lvc",
         compute=funds_approved_funds_disbursed_lvc_split,
     ),
     Metric(
@@ -1471,7 +1473,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         db_source="DB-COMPUTABLE+NEEDS-APR",
         src_model_field=(
             "approved: Project.total_fund by sector; disbursed: "
-            "AnnualProjectReport.funds_disbursed by project.sector"
+            "AnnualProjectReport.funds_disbursed + support_cost_disbursed by project.sector"
         ),
         compute=partial(sector, bucket=classify.SECTOR_AIR_CONDITIONING),
     ),
@@ -1506,9 +1508,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Sum of funds disbursed from apr",
+        formula="Sum of funds + support cost disbursed from apr",
         db_source="DB-COMPUTABLE+NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed",
         compute=partial(
             sector_funds_disbursed, bucket=classify.SECTOR_AIR_CONDITIONING
         ),
@@ -1556,9 +1558,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Sum of funds disbursed from apr",
+        formula="Sum of funds + support cost disbursed from apr",
         db_source="DB-COMPUTABLE+NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed",
         compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_REFRIGERATION),
     ),
     Metric(
@@ -1604,9 +1606,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Sum of funds disbursed from apr",
+        formula="Sum of funds + support cost disbursed from apr",
         db_source="DB-COMPUTABLE+NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed",
         compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_SERVICING),
     ),
     Metric(
@@ -1652,9 +1654,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Sum of funds disbursed from apr",
+        formula="Sum of funds + support cost disbursed from apr",
         db_source="DB-COMPUTABLE+NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed",
         compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_FOAM),
     ),
     Metric(
@@ -1700,9 +1702,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Sum of funds disbursed from apr",
+        formula="Sum of funds + support cost disbursed from apr",
         db_source="DB-COMPUTABLE+NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed",
         compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_AEROSOL),
     ),
     Metric(
@@ -1712,7 +1714,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.BREAKDOWN,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="count + Sum approved funding + Sum of funds disbursed from apr",
+        formula="count + Sum approved funding + Sum of funds + support cost disbursed from apr",
         db_source="DB-COMPUTABLE+NEEDS-APR",
         src_model_field="(same as #47)",
         compute=partial(sector, bucket=classify.SECTOR_SOLVENT),
@@ -1748,9 +1750,9 @@ FUND_METRICS: tuple[Metric, ...] = (
         kind=Kind.SCALAR,
         unit=None,
         disposition=Disposition.COMPUTE,
-        formula="Sum of funds disbursed from apr",
+        formula="Sum of funds + support cost disbursed from apr",
         db_source="DB-COMPUTABLE+NEEDS-APR",
-        src_model_field="AnnualProjectReport.funds_disbursed",
+        src_model_field="AnnualProjectReport.funds_disbursed + support_cost_disbursed",
         compute=partial(sector_funds_disbursed, bucket=classify.SECTOR_SOLVENT),
     ),
 )

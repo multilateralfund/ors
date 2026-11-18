@@ -2,12 +2,16 @@
 APR cycle resolution and aggregations.
 
 The aggregations are ORS's own: :class:`AprMetrics` subclasses the summary
-tables export writer and replaces only its ``__init__``, so the arithmetic is
+tables export writer and replaces its ``__init__``, so the arithmetic is
 inherited rather than redefined. That constructor exists to build a workbook:
 it narrows to the three statuses those sheets report on, and serializes every
 record for the one sheet that renders raw rows. We want neither, and the four
 aggregation helpers only ever read ``self.records`` - which this class sets
 itself.
+
+The one figure the dashboard reads differently is disbursement: it counts the
+support cost disbursed as well, to match approved funding, which is quoted
+with PSC. The export keeps its own definition.
 
 See ``docs/dashboard_metrics.md``.
 """
@@ -41,6 +45,14 @@ DATE_ACTUAL_COMPLETION = "date_actual_completion"
 # count towards both.
 ODP_PHASED_OUT_FIELDS = ("consumption_phased_out_odp", "production_phased_out_odp")
 CO2_PHASED_OUT_FIELDS = ("consumption_phased_out_co2", "production_phased_out_co2")
+
+
+def paid_out(apr: AnnualProjectReport) -> float:
+    """Funds disbursed plus the support cost disbursed alongside them."""
+    print(
+        f"Funds disbursed: {apr.funds_disbursed}, Support cost disbursed: {apr.support_cost_disbursed}"
+    )
+    return (apr.funds_disbursed or 0) + (apr.support_cost_disbursed or 0)
 
 
 class AprMetrics(APRSummaryTablesExportWriter):
@@ -97,15 +109,22 @@ class AprMetrics(APRSummaryTablesExportWriter):
         """The two disbursement figures over one set of records."""
         active = [apr for apr in records if apr.status in self._active_status_names]
         return {
-            "all_time": round(sum(apr.funds_disbursed or 0 for apr in records), 2),
-            "active_cycle": round(sum(apr.funds_disbursed or 0 for apr in active), 2),
+            "all_time": round(sum(paid_out(apr) for apr in records), 2),
+            "active_cycle": round(sum(paid_out(apr) for apr in active), 2),
         }
+
+    def _compute_group_data(self, records, include_odp_co2, sheet_type):
+        """The export's per-group figures, with disbursement including PSC."""
+        data = super()._compute_group_data(records, include_odp_co2, sheet_type)
+        data["total_funds_disbursed"] = sum(paid_out(apr) for apr in records)
+        return data
 
     def funds_disbursed(self) -> dict[str, float]:
         """Disbursement to date, and the part of it inside the active cycle.
 
-        ``funds_disbursed`` is cumulative per project, so the total over the
-        cycle's records is the since-inception figure.
+        ``funds_disbursed`` and ``support_cost_disbursed`` are cumulative per
+        project, so the total over the cycle's records is the since-inception
+        figure.
         """
         return self._disbursed(self.records)
 

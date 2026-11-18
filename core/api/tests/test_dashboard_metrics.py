@@ -989,6 +989,7 @@ class TestLvcSplits(BaseTest):
                 project=approved_project(country=country, status=ongoing_status),
                 report=agency_report,
                 funds_disbursed=disbursed,
+                support_cost_disbursed=None,
             )
 
         self.client.force_authenticate(user=user)
@@ -1294,8 +1295,9 @@ class TestInheritedAprAggregations:
         records = self.records(("INV", date(2020, 1, 1), date(2020, 2, 1)))
         records[0].sector_code_denorm = "AC"
         records[0].funds_disbursed = 250
+        records[0].support_cost_disbursed = 20
 
-        assert AprMetrics(records).disbursed_by_sector_code() == {"AC": 250}
+        assert AprMetrics(records).disbursed_by_sector_code() == {"AC": 270}
 
     def test_the_active_cycle_is_the_apr_row_status_not_the_project_status(self):
         """A project's own status only catches up once the cycle is endorsed."""
@@ -1307,12 +1309,14 @@ class TestInheritedAprAggregations:
         )
         records[0].status = "Ongoing"
         records[0].funds_disbursed = 100
+        records[0].support_cost_disbursed = 10
         records[1].status = "Financially completed"
         records[1].funds_disbursed = 900
+        records[1].support_cost_disbursed = None
 
         assert AprMetrics(records).funds_disbursed() == {
-            "all_time": 1000,
-            "active_cycle": 100,
+            "all_time": 1010,
+            "active_cycle": 110,
         }
 
 
@@ -1752,6 +1756,7 @@ class TestCountryValues(BaseTest):
             consumption_phased_out_co2=300,
             production_phased_out_co2=0,
             funds_disbursed=250,
+            support_cost_disbursed=25,
         )
 
         self.client.force_authenticate(user=user)
@@ -1762,7 +1767,8 @@ class TestCountryValues(BaseTest):
 
         assert metrics["kf_odp_phased"]["value"] == "5"
         assert metrics["kf_co2_phased"]["value"] == "300"
-        assert metrics["kf_funding_disbursed"]["value"] == "$250"
+        # Support cost disbursed counts, as PSC does on the approved side.
+        assert metrics["kf_funding_disbursed"]["value"] == "$275"
         assert metrics["kf_odp_approved"]["value"] == "99"
 
 
