@@ -542,6 +542,14 @@ EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS = 365
 
 CLAMD_ENABLED = env.bool("CLAMD_ENABLED", default=False)
 CLAMD_USE_TCP = env.bool("CLAMD_USE_TCP", default=True)
+# Large protected files (e.g. the PCR exports) are served by nginx, with an
+# X-Accel-Redirect to an internal location; without nginx (local development),
+# they are served by Django
+PROTECTED_MEDIA_X_ACCEL_REDIRECT = env.bool(
+    "PROTECTED_MEDIA_X_ACCEL_REDIRECT", default=not DEBUG
+)
+PROTECTED_MEDIA_X_ACCEL_PREFIX = "/protected-media/"
+
 CLAMD_TCP_ADDR = env.str("CLAMD_TCP_ADDR", default="localhost")
 
 CELERY_BROKER_URL = env("RABBITMQ_HOST", default="amqp://rabbitmq:5672")
@@ -566,6 +574,10 @@ CELERY_BEAT_SCHEDULE = {
     "refresh_dashboard_metrics_cache": {
         "task": "core.tasks.refresh_dashboard_metrics_cache",
         "schedule": crontab(minute="0", hour="0", day_of_month="*/2"),
+    },
+    "delete_old_pcr_exports": {
+        "task": "core.tasks.delete_old_pcr_exports",
+        "schedule": crontab(minute="30", hour="1"),
     },
 }
 

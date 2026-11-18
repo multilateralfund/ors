@@ -98,6 +98,7 @@ import PCRArchivePage from '@ors/app/pcr/archive/page'
 import PCRArchiveIndividualPage from '@ors/app/pcr/archive-individual/page'
 import PCREditPage from '@ors/app/pcr/edit/page'
 import ManagePCRsPage from '@ors/app/pcr/manage/page'
+import PCRExportPage from '@ors/app/pcr/exports/page'
 
 import config from '@ors/config'
 
@@ -485,6 +486,10 @@ export default function App() {
               <PCRCreatePage />
             </PCRDataProvider>
           </ProjectsDataProvider>
+        </Route>
+        {/* before the PCR view route, which would also match it */}
+        <Route path="/pcr/exports/:export_id">
+          <PCRExportPage />
         </Route>
         <Route path="/pcr/:project_id/:pcr_id">
           <ProjectsDataProvider>

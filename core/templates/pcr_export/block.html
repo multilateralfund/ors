@@ -1,0 +1,22 @@
+{% if block.type == "fields" %}
+  <table class="fields">
+    <tbody>
+      {% for label, value in block.items %}
+        <tr><th scope="row">{{ label }}</th><td>{{ value }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% elif block.rows %}
+  <table{% if block.headers|length > 6 %} class="wide"{% endif %}>
+    <thead>
+      <tr>{% for header in block.headers %}<th scope="col">{{ header }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for row in block.rows %}
+        <tr>{% for value in row %}<td>{{ value }}</td>{% endfor %}</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="no-data">No data reported.</p>
+{% endif %}
