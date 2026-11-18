@@ -19,6 +19,10 @@ from core.api.permissions import (
     HasPCRMarkPCRDueAccess,
     HasPCRViewAccess,
 )
+from core.api.serializers.pcr_export import (
+    PCRExportCreateSerializer,
+    PCRExportSerializer,
+)
 from core.api.serializers.project_completion_report import (
     PCRMetaProjectSerializer,
     PCRProjectSetAdHocOrPcrDueSerializer,
@@ -33,7 +37,13 @@ from core.api.views.utils import get_available_values, get_country_regions
 from core.models.annual_project_report import AnnualProjectReport
 from core.models.country import Country
 from core.models.project import MetaProject, Project
-from core.models.project_completion_report import OLD_IndividualPCR, OLD_PCR, PCR
+from core.models.project_completion_report import (
+    OLD_IndividualPCR,
+    OLD_PCR,
+    PCR,
+    PCRExport,
+)
+from core.tasks import run_pcr_export
 
 
 def get_regions(queryset: QuerySet[Project]):
@@ -127,6 +137,29 @@ def get_pcr_statuses(queryset: QuerySet[Project]):
     ]
 
 
+def get_pcr_submission_years(queryset: QuerySet[Project]):
+    # PCR.objects only returns the current PCR versions
+    meta_projects = queryset.values("meta_project")
+    years = (
+        set(
+            PCR.objects.filter(
+                meta_project__in=meta_projects, submission_date__isnull=False
+            ).values_list("submission_date__year", flat=True)
+        )
+        | set(
+            OLD_PCR.objects.filter(
+                meta_project__in=meta_projects, submission_date__isnull=False
+            ).values_list("submission_date__year", flat=True)
+        )
+        | set(
+            OLD_IndividualPCR.objects.filter(
+                project__meta_project__in=meta_projects, submission_date__isnull=False
+            ).values_list("submission_date__year", flat=True)
+        )
+    )
+    return [{"id": year, "name": str(year)} for year in sorted(years, reverse=True)]
+
+
 class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint that allows a listing of metaprojects (including their projects) to
@@ -148,7 +181,13 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "retrieve", "list_filters", "export_pcr_due"]:
+        if self.action in [
+            "list",
+            "retrieve",
+            "list_filters",
+            "export_pcr_due",
+            "export_pcrs",
+        ]:
             return [HasPCRViewAccess]
         if self.action == "set_pcr_or_ad_hoc":
             return [HasPCRMarkPCRDueAccess]
@@ -325,6 +364,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             "status": get_available_values(queryset, "status"),
             "completed_only": get_completed_only(queryset),
             "pcr_status": get_pcr_statuses(queryset),
+            "pcr_submission_year": get_pcr_submission_years(queryset),
             "pcr_due": get_meta_project_flag_options(queryset, "pcr_due"),
             "ad_hoc_pcr": get_meta_project_flag_options(queryset, "ad_hoc_pcr"),
         }
@@ -357,6 +397,52 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
         del wb[wb.sheetnames[0]]
 
         return workbook_response("PCR due", wb)
+
+    @extend_schema(
+        description="""
+        Start a bulk export of the PCRs of the listing (the same filters and
+        ordering, pagination is ignored). The export is generated in the background:
+        poll `pcr-exports/{id}/` until it is completed, then download it from
+        `pcr-exports/{id}/download/`. PDF and Word: a ZIP with one file per PCR,
+        the legacy PCRs as their original PDFs. Excel: one workbook with all the
+        PCRs, without the legacy ones.
+        """,
+        filters=True,
+        request=PCRExportCreateSerializer,
+        responses={status.HTTP_201_CREATED: PCRExportSerializer},
+    )
+    @action(methods=["POST"], detail=False)
+    def export_pcrs(self, request, *args, **kwargs):
+        serializer = PCRExportCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Only the meta projects with a (current or legacy) PCR
+        has_pcr = (
+            Exists(PCR.objects.filter(meta_project=OuterRef("pk")))
+            | Exists(OLD_PCR.objects.filter(meta_project=OuterRef("pk")))
+            | Exists(
+                OLD_IndividualPCR.objects.filter(project__meta_project=OuterRef("pk"))
+            )
+        )
+        meta_project_ids = list(
+            self.get_queryset().filter(has_pcr).values_list("id", flat=True)
+        )
+        if not meta_project_ids:
+            return Response(
+                {"detail": "No PCRs match the filters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        export = PCRExport.objects.create(
+            created_by=request.user,
+            output_format=serializer.validated_data["output_format"],
+            sections=serializer.validated_data["sections"],
+            meta_project_ids=meta_project_ids,
+        )
+        run_pcr_export.delay(export.id)
+        return Response(
+            PCRExportSerializer(export).data, status=status.HTTP_201_CREATED
+        )
 
     @extend_schema(
         description="""

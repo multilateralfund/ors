@@ -16,6 +16,7 @@ export const initialParams = {
   ad_hoc_pcr: [],
   pcr_submission_date_after: '',
   pcr_submission_date_before: '',
+  pcr_submission_year: [],
 }
 
 export const pcrFieldsMapping: { [key: string]: string } = {
@@ -31,6 +32,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   pcr_due: 'PCR due',
   ad_hoc_pcr: 'Ad-hoc PCR',
   pcr_submission_date: 'PCR submission date',
+  pcr_submission_year: 'Submission year',
   pcr_approval_date: 'PCR approval date',
   completed_only: 'Completed',
   title: 'Title',
@@ -266,3 +268,37 @@ export const fundingFields = [
 ]
 
 export const borderedContainerClassname = 'border border-solid border-[#e5e7eb]'
+
+// The PCR sections that can be selected in the bulk extraction, in the order of
+// the PCR view tabs
+export const pcrExportSections = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'summary_of_key_data', label: 'Summary of key data' },
+  { id: 'project_results', label: 'Project results' },
+  { id: 'causes_of_delay', label: 'Causes of delay' },
+  { id: 'lessons_learned', label: 'Lessons learned' },
+  { id: 'gender_mainstreaming', label: 'Gender mainstreaming' },
+  { id: 'sdgs', label: 'SDGs contribution' },
+  { id: 'supporting_evidence', label: 'Supporting documents (file names)' },
+]
+
+export const pcrExportFormats = [
+  {
+    id: 'pdf',
+    label: 'PDF',
+    description:
+      'A ZIP file with one PDF document per PCR. Legacy PCRs are included as their original PDF files.',
+  },
+  {
+    id: 'docx',
+    label: 'Word',
+    description:
+      'A ZIP file with one Word document per PCR. Legacy PCRs are included as their original PDF files.',
+  },
+  {
+    id: 'xlsx',
+    label: 'Excel',
+    description:
+      'One Excel file with the selected sections of all the PCRs, one sheet per section. Legacy PCRs are only available as their original PDF files, so they are not included.',
+  },
+]

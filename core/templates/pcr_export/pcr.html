@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 2cm 2cm 2cm 2.5cm;
+      @bottom-center {
+        content: counter(page);
+        font-family: "Times New Roman", "Liberation Serif", serif;
+        font-size: 9pt;
+      }
+    }
+    body {
+      font-family: "Times New Roman", "Liberation Serif", serif;
+      font-size: 11pt;
+      line-height: 1.25;
+    }
+    h1 {
+      font-size: 13pt;
+      text-align: center;
+      text-transform: uppercase;
+      margin: 0 0 16pt;
+    }
+    h2 {
+      font-size: 11pt;
+      text-transform: uppercase;
+      margin: 18pt 0 8pt;
+      break-after: avoid;
+    }
+    h3 {
+      font-size: 11pt;
+      margin: 12pt 0 6pt;
+      break-after: avoid;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10pt;
+    }
+    th, td {
+      border: 0.75pt solid #000;
+      padding: 3pt 5pt;
+      text-align: left;
+      vertical-align: top;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    th {
+      font-weight: bold;
+      background: #f2f2f2;
+    }
+    thead {
+      display: table-header-group;
+    }
+    tr {
+      break-inside: avoid;
+    }
+    table.fields th {
+      width: 40%;
+      background: none;
+    }
+    table.wide {
+      font-size: 7.5pt;
+    }
+    table.wide th, table.wide td {
+      padding: 2pt 3pt;
+    }
+    table.wide th {
+      /* the long header words are hyphenated, so the table fits the page width */
+      hyphens: auto;
+    }
+    .no-data {
+      font-style: italic;
+      margin: 0 0 10pt;
+    }
+  </style>
+</head>
+<body>
+  <h1>{{ title }}</h1>
+  {% include "pcr_export/block.html" with block=identification %}
+  {% for section in sections %}
+    <h2>Section {{ section.number }}: {{ section.title }}</h2>
+    {% for block in section.blocks %}
+      {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
+      {% include "pcr_export/block.html" %}
+    {% endfor %}
+  {% endfor %}
+</body>
+</html>

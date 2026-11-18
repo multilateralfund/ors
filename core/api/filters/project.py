@@ -29,6 +29,10 @@ from core.models.utils import SubstancesType
 # pylint: disable=W0613
 
 
+class NumberInFilter(filters.BaseInFilter, filters.NumberFilter):
+    pass
+
+
 def project_has_cooperating_agency_q(prefix=""):
     pref = f"{prefix}__" if prefix else ""
     return Q(**{f"{pref}lead_agency_submitting_on_behalf": True}) & (
@@ -127,6 +131,10 @@ class ProjectFilter(filters.FilterSet):
         method="filter_pcr_submission_date",
         help_text="Filter by PCR submission date range. Format: YYYY-MM-DD",
     )  ### pcr submission date
+    pcr_submission_year = NumberInFilter(
+        method="filter_pcr_submission_year",
+        help_text="Filter by the year(s) the PCR was submitted, comma separated",
+    )
     pcr_due_by_rules = filters.MultipleChoiceFilter(
         choices=[
             ("Yes", True),
@@ -261,16 +269,18 @@ class ProjectFilter(filters.FilterSet):
             | Q(country__parent__parent__in=region_ids)
         )
 
-    def filter_pcr_submission_date(self, queryset, name, value):
+    @staticmethod
+    def _filter_by_pcr_submission_date(queryset, date_filters):
+        """
+        Filter on the submission date of the PCR (new or legacy) of the projects.
+        `date_filters` are lookups on `submission_date`, e.g. {"gte": date}.
+        """
         # Only the current PCR version is checked, archived versions are ignored
         pcr_project_filters = {"pcr__latest_pcr__isnull": True}
         old_pcr_filters = {}
-        if value.start:
-            pcr_project_filters["pcr__submission_date__gte"] = value.start
-            old_pcr_filters["submission_date__gte"] = value.start
-        if value.stop:
-            pcr_project_filters["pcr__submission_date__lte"] = value.stop
-            old_pcr_filters["submission_date__lte"] = value.stop
+        for lookup, value in date_filters.items():
+            pcr_project_filters[f"pcr__submission_date__{lookup}"] = value
+            old_pcr_filters[f"submission_date__{lookup}"] = value
         # Legacy PCRs are linked to the meta project, not to its projects; the
         # legacy individual PCRs count for the meta project of their project
         return queryset.filter(
@@ -288,6 +298,20 @@ class ProjectFilter(filters.FilterSet):
                 )
             )
         )
+
+    def filter_pcr_submission_date(self, queryset, name, value):
+        date_filters = {}
+        if value.start:
+            date_filters["gte"] = value.start
+        if value.stop:
+            date_filters["lte"] = value.stop
+        return self._filter_by_pcr_submission_date(queryset, date_filters)
+
+    def filter_pcr_submission_year(self, queryset, name, value):
+        if not value:
+            return queryset
+        years = [int(year) for year in value]
+        return self._filter_by_pcr_submission_date(queryset, {"year__in": years})
 
     def filter_pcr_submitted(self, queryset, name, value):
         if not value:
@@ -408,6 +432,7 @@ class ProjectFilter(filters.FilterSet):
             "subsectors",
             "project_type_id",
             "pcr_submission_date",
+            "pcr_submission_year",
             "substance_type",
             "agency_id",
             "lead_agency_id",
