@@ -179,9 +179,6 @@ class BlanketApprovalDetailsViewset(
                 ],
             )
             .filter(transferred_from__isnull=True)
-            # Avoid duplication caused by project being in Approval (draft)
-            # as it's submission_status is still Recommended until being approved.
-            .exclude(submission_status__name="Recommended", version__gte=3)
         )
 
         # Requested in #35434.

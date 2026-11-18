@@ -13,6 +13,7 @@ from core.api.tests.factories import (
     ProjectOdsOdpFactory,
     ProjectSubmissionStatusFactory,
     ProjectTypeFactory,
+    UserFactory,
 )
 from core.api.views.blanket_approval_details import BlanketApprovalDetailsViewset
 from core.models.project import ProjectOdsOdp
@@ -64,6 +65,37 @@ def test_blanket_approval_details_excludes_projects_created_by_transfer():
     assert total_projects == 1
     assert project_ids == {approved_project.id}
     assert transferred_project.id not in project_ids
+
+
+def test_blanket_approval_details_includes_recommended_project_in_approval():
+    recommended_status = ProjectSubmissionStatusFactory.create(name="Recommended")
+    meeting = MeetingFactory.create(number=99)
+    project = ProjectFactory.create(
+        title="In approval",
+        meeting=meeting,
+        submission_status=recommended_status,
+        version=2,
+        excom_provision="Pre-approval provision",
+    )
+    # Moving to the Approval step archives v2 and bumps the live project to v3,
+    # which stays Recommended until approved.
+    project.increase_version(UserFactory.create())
+    project.excom_provision = "Approval tab provision"
+    project.save()
+
+    total_projects, _, result = get_blanket_approval_view(
+        {"meeting_id": meeting.id, "submission_status": "recommended"}
+    )._extract_data()
+
+    projects = [
+        project_data
+        for country in result
+        for country_data in country["country_data"]
+        for project_data in country_data["projects"]
+    ]
+    assert total_projects == 1
+    assert projects[0]["project_id"] == project.id
+    assert projects[0]["project_description"] == "Approval tab provision"
 
 
 def test_blanket_approval_details_aggregates_phaseout_once_per_project():
