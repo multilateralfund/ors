@@ -1,7 +1,7 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.utils import extend_schema
-from django.db.models import Case, CharField, F, Q, QuerySet, Value, When
+from django.db.models import Case, CharField, F, Q, QuerySet, Sum, Value, When
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets, filters, status
@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.api.dashboard_metrics.primitives import format_number
+from core.api.dashboard_metrics.primitives import dashboard_projects, format_number
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
     DenyAll,
@@ -725,50 +725,36 @@ class ProjectV2ViewSet(
     )
     @action(methods=["GET"], detail=False)
     def portofolio_metrics(self, request, *args, **kwargs):
-        projects_completed = Project.objects.filter(
-            status__name__in=[
-                "Financially completed",
-                "Completed",
-                "Closed",
-            ]
-        )
         latest_apr_year = list(
             AnnualProgressReport.objects.order_by("year")
             .values_list("year", flat=True)
             .distinct()
         )[-1]
         projects_approved = Project.objects.filter(submission_status__name="Approved")
+        # Transferred and Closed projects are left out of the counts and the
+        # phase-out, as on the dashboards (see dashboard_projects()).
+        projects_in_scope = dashboard_projects()
+        projects_completed = projects_in_scope.filter(
+            status__name__in=["Financially completed", "Completed"]
+        )
         aprs = AnnualProjectReport.objects.filter(
             report__progress_report__year=latest_apr_year, project__in=projects_approved
         )
         funds_approved = sum(
             (sum((p.total_fund, p.support_cost_psc)) for p in projects_approved)
         )
-        funds_disbursed = sum((apr.funds_disbursed or 0.0 for apr in aprs))
-        count_projects_approved = projects_approved.count()
+        funds_disbursed = sum(
+            (apr.funds_disbursed or 0.0) + (apr.support_cost_disbursed or 0.0)
+            for apr in aprs
+        )
+        count_projects_approved = projects_in_scope.count()
         count_projects_completed = projects_completed.count()
-        total_ods_phase_out = sum(
-            (
-                sum(
-                    (
-                        apr.consumption_phased_out_odp or 0.0,
-                        apr.production_phased_out_odp or 0.0,
-                    )
-                )
-                for apr in aprs
-            )
+        phase_out = projects_in_scope.aggregate(
+            odp=Sum("total_phase_out_odp_tonnes"),
+            co2=Sum("total_phase_out_co2_tonnes"),
         )
-        total_co2_phase_out = sum(
-            (
-                sum(
-                    (
-                        apr.consumption_phased_out_co2 or 0.0,
-                        apr.production_phased_out_co2 or 0.0,
-                    )
-                )
-                for apr in aprs
-            )
-        )
+        total_ods_phase_out = float(phase_out["odp"] or 0)
+        total_co2_phase_out = float(phase_out["co2"] or 0)
         return Response(
             {
                 "funds_approved": format_number(funds_approved, 0, "$"),

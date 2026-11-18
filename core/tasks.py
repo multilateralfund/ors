@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 
 from urllib.parse import urlencode
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from celery.utils.log import get_task_logger
@@ -467,6 +467,44 @@ def send_pcr_notification(pcr_id, is_resubmission=False):
         recipients,
         subject_template_name,
     )
+
+
+@app.task()
+def run_pcr_export(export_id):
+    """
+    Generate the file of a PCR bulk export. The user polls the export status and
+    downloads the file when it is completed.
+    """
+    from core.api.export.pcr.generate import generate_pcr_export
+    from core.models.project_completion_report import PCRExport
+
+    export = PCRExport.objects.select_related("created_by").get(id=export_id)
+    if export.status != PCRExport.Status.PENDING:
+        return
+
+    export.status = PCRExport.Status.IN_PROGRESS
+    export.save(update_fields=["status", "date_updated"])
+    try:
+        generate_pcr_export(export)
+        export.status = PCRExport.Status.COMPLETED
+    except Exception:
+        logger.exception("PCR export %s failed", export_id)
+        export.status = PCRExport.Status.FAILED
+        export.error = "The export could not be generated."
+    export.save()
+
+
+@app.task()
+def delete_old_pcr_exports():
+    """The export files are only kept for a day, they can be generated again"""
+    from core.models.project_completion_report import PCRExport
+
+    old_exports = PCRExport.objects.filter(
+        date_created__lt=timezone.now() - timedelta(days=1)
+    )
+    for export in old_exports:
+        # deletes the file as well
+        export.delete()
 
 
 # Country Programme

@@ -18,7 +18,7 @@ THEME_ORDER = (
     "Other ODS production",
     "Energy efficiency",
     "Disposal",
-    "Emission Control",
+    "Emission control",
     "Institutional strengthening",
     "Atmospheric Monitoring",
 )
@@ -104,9 +104,10 @@ THEME_BY_CLUSTER_CODE = {
     "CPOP": "Other ODS consumption",
     "CPPOP": "Other ODS production",
     "DISP": "Disposal",
-    "EC 1": "Emission Control",
-    "EC 2": "Emission Control",
-    "EC IND": "Emission Control",
+    "EC": "Emission control",
+    "EC1": "Emission control",
+    "EC2": "Emission control",
+    "ECIND": "Emission control",
     "EE": "Energy efficiency",
     "GOV": "Institutional strengthening",
     "HCFCIND": "HCFCs consumption",
@@ -138,7 +139,6 @@ KNOWN_UNMAPPED_CLUSTER_CODES = frozenset(
         "KPP3",  # Kigali Implementation Plan Production Stage 3
         "ATMON",  # Atmospheric Monitoring
         "CP",  # Country Programme
-        "EC",  # the bare Emission Control cluster; EC 1/2/IND are mapped
         "INS",
         "OTH",  # Other
     }

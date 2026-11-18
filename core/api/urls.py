@@ -158,6 +158,7 @@ from core.api.views.project_completion_report.old_individual_pcr import (
     OldIndividualPCRViewSet,
 )
 from core.api.views.project_completion_report.old_pcr import OldPCRViewSet
+from core.api.views.project_completion_report.pcr_export import PCRExportViewSet
 from core.api.views.project_completion_report.pcr_metaprojects import (
     PCRMetaprojectsViewSet,
 )
@@ -251,6 +252,7 @@ router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
 router.register("project-sector", ProjectSectorView)
 router.register("project-subsector", ProjectSubSectorView)
 router.register("pcr-metaprojects", PCRMetaprojectsViewSet, basename="pcr-metaprojects")
+router.register("pcr-exports", PCRExportViewSet, basename="pcr-export")
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
 router.register("business-plan-activity", BPActivityViewSet, basename="bpactivity")

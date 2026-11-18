@@ -36,9 +36,10 @@ from core.api.dashboard_metrics.registry import (
 COMPLETED_STATUS_CODES = ("COM", "FIN")
 ONGOING_STATUS_CODES = ("ONG",)
 
-# The ODS funding figure is about phase-out, so the money spent working out what
-# to phase out and the money keeping an ozone unit open are left out of it.
-ODS_FUNDING_EXCLUDED_TYPE_CODES = ("PRP", "INS")
+# The ODS funding figure is about phase-out, so the money keeping an ozone unit
+# open is left out of it. Preparation stays in: the client's published figure
+# counts it.
+ODS_FUNDING_EXCLUDED_TYPE_CODES = ("INS",)
 
 # The portfolio headline is quoted to the nearest thousand, rounded down.
 PORTFOLIO_ROUNDING = 1000
@@ -85,8 +86,16 @@ def _project_type_code(row) -> str | None:
 def ods_phased_out(
     context: MetricContext, family: str = ODS, use_format_number: bool = True
 ) -> float:
-    """Ozone-depleting substances removed, consumption and production together."""
-    result = phase_out(context.with_family(family), "total_phase_out_odp_tonnes")
+    """Ozone-depleting substances removed, consumption and production together.
+
+    Only ozone-depleting substances carry ODP, so the ODS figure also takes the
+    projects no family could be read for (legacy rows naming a substance as
+    free text, e.g. "CFC" on institutional strengthening projects).
+    """
+    rows = context.with_family(family)
+    if family == ODS:
+        rows += context.with_family(None)
+    result = phase_out(rows, "total_phase_out_odp_tonnes")
     if use_format_number:
         result = format_number(result)
     return result
@@ -770,8 +779,8 @@ FUND_METRICS: tuple[Metric, ...] = (
         unit=Unit.USD,
         disposition=Disposition.COMPUTE,
         formula=(
-            "Sum approved funding over is_ods AND Type not in {Preparation; "
-            "Institutional strengthening}"
+            "Sum approved funding over is_ods AND Type not in {Institutional "
+            "strengthening}"
         ),
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_fund + support_cost_psc, filtered is_ods",

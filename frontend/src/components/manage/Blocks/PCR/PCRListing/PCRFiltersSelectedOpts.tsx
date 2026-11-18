@@ -85,6 +85,11 @@ const PCRFiltersSelectedOpts = ({
       entityIdentifier: 'ad_hoc_pcr',
       extraLabel: pcrFieldsMapping.ad_hoc_pcr,
     },
+    {
+      entities: getEntities('pcr_submission_year', 'pcr_submission_year'),
+      entityIdentifier: 'pcr_submission_year',
+      extraLabel: pcrFieldsMapping.pcr_submission_year,
+    },
   ]
 
   const displayDateFilter = (label: string, filterKey: string) =>

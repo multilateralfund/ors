@@ -7,8 +7,10 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import {
   RedirectBackButton,
   CreateButton,
+  SubmitButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import PCRBulkExtractionModal from './PCRBulkExtractionModal'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
 import PCRTable from './PCRTable'
@@ -82,6 +84,7 @@ const PCRListingWrapper = () => {
   const [projectId, setProjectId] = useState<number | null>(null)
   const [pcrId, setPcrId] = useState<number | null>(null)
   const [pcrEditable, setPcrEditable] = useState(false)
+  const [isBulkExtractionOpen, setIsBulkExtractionOpen] = useState(false)
   const [filters, setFilters] = useState<Record<string, any>>(
     initialState.filters,
   )
@@ -94,7 +97,7 @@ const PCRListingWrapper = () => {
   }, [filters])
 
   const pcrProjects = useGetPCRProjects(initialState.params)
-  const { loading, setParams } = pcrProjects
+  const { loading, setParams, params, count } = pcrProjects
 
   const pcrFilters = useGetPcrFilters(initialState.params)
   const { data: filterOptions, setParams: setParamsFilters } = pcrFilters
@@ -110,6 +113,7 @@ const PCRListingWrapper = () => {
     pcr_status: filterOptions?.pcr_status ?? [],
     pcr_due: filterOptions?.pcr_due ?? [],
     ad_hoc_pcr: filterOptions?.ad_hoc_pcr ?? [],
+    pcr_submission_year: filterOptions?.pcr_submission_year ?? [],
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {
@@ -151,7 +155,15 @@ const PCRListingWrapper = () => {
             <RedirectBackButton />
             <PageHeading>Project Completion Reports</PageHeading>
           </div>
-          <div className="ml-auto mt-auto">
+          <div className="ml-auto mt-auto flex flex-wrap items-center gap-3">
+            {view === 'table' && (
+              <SubmitButton
+                title="Bulk extraction"
+                onSubmit={() => setIsBulkExtractionOpen(true)}
+                isDisabled={loading || !count}
+                className="!h-10 !text-lg"
+              />
+            )}
             {view === 'list' ? (
               <CreateButton
                 title="Raise a PCR"
@@ -170,6 +182,14 @@ const PCRListingWrapper = () => {
           </div>
         </div>
       </HeaderTitle>
+      {isBulkExtractionOpen && (
+        <PCRBulkExtractionModal
+          open={isBulkExtractionOpen}
+          onClose={() => setIsBulkExtractionOpen(false)}
+          params={params}
+          pcrCount={count ?? 0}
+        />
+      )}
       <div className="flex flex-col gap-6" key={key}>
         <div className="flex flex-col gap-2.5">
           <div className="flex flex-col justify-between gap-4 md:flex-row">

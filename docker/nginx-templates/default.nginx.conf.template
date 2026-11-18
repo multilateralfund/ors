@@ -25,6 +25,13 @@ server {
         expires 365d;
     }
 
+    # Protected files, served after the backend checked the permissions
+    # (X-Accel-Redirect), e.g. the PCR exports
+    location /protected-media/ {
+        internal;
+        alias /.fs/protected_media/;
+    }
+
     location ~ ^/(admin|api|__debug__|oauth2)/ {
         client_max_body_size 174m;
         include /etc/nginx/conf.d/proxy_pass_backend;

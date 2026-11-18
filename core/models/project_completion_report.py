@@ -1205,3 +1205,55 @@ class OLD_IndividualPCRSupportingEvidence(models.Model):
 
     def __str__(self):
         return self.filename or ""
+
+
+class PCRExport(models.Model):
+    """
+    A PCR bulk export, generated in the background (it can contain hundreds of PCRs
+    and legacy PDFs). The PCRs are selected when the export is requested, with the
+    filters and the permissions of the user.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        IN_PROGRESS = "in_progress", "In progress"
+        COMPLETED = "completed", "Completed"
+        FAILED = "failed", "Failed"
+
+    class OutputFormat(models.TextChoices):
+        PDF = "pdf", "PDF"
+        DOCX = "docx", "Word"
+        XLSX = "xlsx", "Excel"
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="pcr_exports"
+    )
+    status = models.CharField(
+        max_length=16, choices=Status.choices, default=Status.PENDING
+    )
+    output_format = models.CharField(max_length=8, choices=OutputFormat.choices)
+    sections = models.JSONField(default=list, help_text="The exported PCR sections")
+    meta_project_ids = models.JSONField(
+        default=list, help_text="The meta projects of the exported PCRs, in order"
+    )
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to="pcr_exports/",
+        null=True,
+        blank=True,
+    )
+    filename = models.CharField(max_length=255, blank=True)
+    error = models.TextField(blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "PCR exports"
+
+    def __str__(self):
+        return f"PCR export {self.id} ({self.status})"
+
+    def delete(self, *args, **kwargs):
+        if self.file:
+            self.file.delete(save=False)
+        return super().delete(*args, **kwargs)

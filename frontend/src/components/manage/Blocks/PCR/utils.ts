@@ -738,7 +738,12 @@ export const mergeSaveErrors = (
 export const getPcrHiddenFilters = (view: 'list' | 'table' | null) =>
   view === 'table'
     ? ['pcr_due']
-    : ['pcr_status', 'pcr_submission_date_after', 'pcr_submission_date_before']
+    : [
+        'pcr_status',
+        'pcr_submission_date_after',
+        'pcr_submission_date_before',
+        'pcr_submission_year',
+      ]
 
 export const isProjectNotApproved = (project?: ProjectType) =>
   !!project?.submission_status && project.submission_status !== 'Approved'

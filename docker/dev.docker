@@ -13,7 +13,7 @@ RUN mkdir /.fs /app
 WORKDIR /app
 VOLUME ["/.fs"]
 
-RUN runDeps="wait-for-it gettext build-essential gcc libreoffice-calc-nogui" \
+RUN runDeps="wait-for-it gettext build-essential gcc libreoffice-calc-nogui libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-liberation" \
     && apt-get update -y \
     && apt-get install -y --no-install-recommends $runDeps \
     && apt-get clean \
