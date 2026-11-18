@@ -78,15 +78,20 @@ const PCRGenderMainstreaming = () => {
           )}
         >
           {ppData.length > 0 ? (
-            <TableContainer component={Paper} className="PcrViewTableContainer">
-              <Table stickyHeader className="PcrViewTable">
+            <TableContainer
+              component={Paper}
+              className="PcrViewTableContainer w-0 min-w-full"
+            >
+              <Table stickyHeader className="PcrViewTable !min-w-[800px]">
                 <TableHead>
                   <TableRow>
                     <TableCell>#</TableCell>
                     <TableCell className="NameColumn">
                       {pcrFieldsMapping.project_preparation}
                     </TableCell>
-                    <TableCell>{pcrFieldsMapping.prefilled}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {pcrFieldsMapping.prefilled}
+                    </TableCell>
                     <TableCell>
                       {pcrFieldsMapping.qualitative_description}
                     </TableCell>

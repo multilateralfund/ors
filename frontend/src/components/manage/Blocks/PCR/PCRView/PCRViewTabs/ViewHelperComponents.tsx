@@ -94,7 +94,7 @@ export const booleanDetailItem = (
   const { labelClassname, valueClassname } = classname ?? {}
 
   return (
-    <span className="flex flex-row items-center gap-4">
+    <span className="flex flex-row flex-wrap items-center gap-x-4 gap-y-2">
       <span className={cx('text-[#4D4D4D]', labelClassname)}>{fieldName}</span>
       <h4
         className={cx(
@@ -227,9 +227,18 @@ export const NoDataReported = ({
       borderedContainerClassname,
     )}
   >
-    <FiInfo size={18} className="mr-1.5" />
-    <div className="font-semibold text-primary">{text}</div>
-    <div className="text-[#333]">{additionalText}</div>
+    <FiInfo
+      className={cx('mr-1.5 shrink-0', { 'self-start': additionalText })}
+      size={18}
+    />
+    {additionalText ? (
+      <div className="leading-snug">
+        <span className="font-semibold text-primary">{text}</span>{' '}
+        <span className="text-[#333]">{additionalText}</span>
+      </div>
+    ) : (
+      <div className="font-semibold text-primary">{text}</div>
+    )}
   </div>
 )
 

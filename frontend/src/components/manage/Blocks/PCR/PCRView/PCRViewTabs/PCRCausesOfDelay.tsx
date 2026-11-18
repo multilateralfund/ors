@@ -65,8 +65,8 @@ const PCRCausesOfDelay = () => {
               const cdData = pc.root_causes_of_delay || []
 
               return (
-                <div key={pcIndex} className="flex">
-                  <div className="w-1/4 bg-primary px-6 py-4">
+                <div key={pcIndex} className="flex flex-col lg:flex-row">
+                  <div className="w-full bg-primary px-6 py-4 lg:w-1/4">
                     {detailItem(
                       'Delay clusters',
                       pc.delay_cluster.name,
@@ -92,13 +92,13 @@ const PCRCausesOfDelay = () => {
                   </div>
                   <div
                     className={cx(
-                      'w-3/4 bg-white px-6 py-4',
+                      'w-full bg-white px-6 py-4 lg:w-3/4',
                       borderedContainerClassname,
                     )}
                   >
                     {cdData.length > 0 ? (
                       <>
-                        <div className="mb-5 grid grid-cols-2 gap-4">
+                        <div className="mb-5 hidden grid-cols-2 items-start gap-4 md:grid">
                           <SubSectionTitle>
                             Description of the root causes of delay
                           </SubSectionTitle>
@@ -106,14 +106,14 @@ const PCRCausesOfDelay = () => {
                         </div>
                         {map(cdData, (cd, cdIndex) => (
                           <div key={cdIndex}>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                               <div className="flex gap-3">
                                 {NrEntity(cdIndex)}
                                 <h4 className="m-0 text-lg font-semibold text-primary">
                                   {cd.root_cause || '-'}
                                 </h4>
                               </div>
-                              <div />
+                              <div className="hidden md:block" />
                               {detailItem(
                                 pcrFieldsMapping.description_roots_causes_of_delay,
                                 cd.description_roots_causes_of_delay,
@@ -121,23 +121,33 @@ const PCRCausesOfDelay = () => {
                                   ...textareaClassname,
                                   containerClassname: cx(
                                     textareaClassname.containerClassname,
-                                    'ml-9',
+                                    'ml-9 max-lg:w-auto',
                                   ),
                                 },
                               )}
-                              {detailItem(
-                                pcrFieldsMapping.action_taken,
-                                cd.action_taken,
-                                {
-                                  ...textareaClassname,
-                                  containerClassname: cx(
-                                    textareaClassname.containerClassname,
-                                    'bg-[#edf1f4] rounded !w-full py-3 px-4',
-                                  ),
-                                },
-                                false,
-                                false,
-                              )}
+                              <div className="ml-9 flex flex-col gap-1 md:ml-0">
+                                <span
+                                  className={cx(
+                                    'text-[#4D4D4D] md:invisible',
+                                    textareaClassname.labelClassname,
+                                  )}
+                                >
+                                  {pcrFieldsMapping.action_taken}
+                                </span>
+                                {detailItem(
+                                  pcrFieldsMapping.action_taken,
+                                  cd.action_taken,
+                                  {
+                                    ...textareaClassname,
+                                    containerClassname: cx(
+                                      textareaClassname.containerClassname,
+                                      'bg-[#edf1f4] rounded !w-full py-3 px-4',
+                                    ),
+                                  },
+                                  false,
+                                  false,
+                                )}
+                              </div>
                             </div>
                             {cdIndex !== cdData.length - 1 && (
                               <Divider className="-mx-6 my-4" />

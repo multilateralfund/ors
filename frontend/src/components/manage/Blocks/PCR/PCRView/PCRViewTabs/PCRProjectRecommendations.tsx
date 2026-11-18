@@ -31,8 +31,8 @@ const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
 
   return (
     <div className={cx('bg-white px-6 py-4', borderedContainerClassname)}>
-      <div className="mb-5 flex items-center gap-2">
-        <MdOutlineLightbulb size={22} className="mb-1" />
+      <div className="mb-5 flex items-start gap-2">
+        <MdOutlineLightbulb size={22} className="mt-0.5 shrink-0" />
         <SubSectionTitle>Recommendations for future projects</SubSectionTitle>
       </div>
       {prData.length > 0 ? (
@@ -40,7 +40,7 @@ const PCRProjectRecommendations = ({ crtTab }: { crtTab: number }) => {
           <div key={prIndex}>
             <div className="flex gap-3">
               {NrEntity(prIndex)}
-              <div>
+              <div className="min-w-0 flex-1">
                 <h4 className="m-0 text-lg font-semibold text-primary">
                   {pr.title || '-'}
                 </h4>

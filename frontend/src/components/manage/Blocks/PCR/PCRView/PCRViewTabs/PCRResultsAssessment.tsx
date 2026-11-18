@@ -78,9 +78,9 @@ const PCRResultsAssessment = () => {
             {activitiesData.length > 0 ? (
               <TableContainer
                 component={Paper}
-                className="PcrViewTableContainer"
+                className="PcrViewTableContainer w-0 min-w-full"
               >
-                <Table stickyHeader className="PcrViewTable">
+                <Table stickyHeader className="PcrViewTable !min-w-[1000px]">
                   <TableHead>
                     <TableRow>
                       <TableCell>#</TableCell>

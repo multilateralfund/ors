@@ -3,8 +3,12 @@ import { useState } from 'react'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { pcrExportFormats, pcrExportSections } from '../constants'
+import { PCRExportType } from '../interfaces'
 import { api } from '@ors/helpers'
 
+import { enqueueSnackbar } from 'notistack'
+import { find, map, omit } from 'lodash'
+import { useLocation } from 'wouter'
 import {
   Box,
   Checkbox,
@@ -15,9 +19,6 @@ import {
   RadioGroup,
   Typography,
 } from '@mui/material'
-import { enqueueSnackbar } from 'notistack'
-import { useLocation } from 'wouter'
-import { find, map, omit } from 'lodash'
 
 const allSectionIds = map(pcrExportSections, 'id')
 
@@ -52,12 +53,19 @@ const PCRBulkExtractionModal = ({
     setIsProcessing(true)
 
     try {
-      const pcrExport = await api('api/pcr-metaprojects/export_pcrs/', {
-        method: 'POST',
-        // the PCRs of the listing, with all its filters
-        params: omit(params, ['limit', 'offset']),
-        data: { output_format: outputFormat, sections },
-      })
+      const pcrExport = await api<PCRExportType>(
+        'api/pcr-metaprojects/export_pcrs/',
+        {
+          // the PCRs of the listing, with all its filters
+          params: omit(params, ['limit', 'offset']),
+          data: { output_format: outputFormat, sections },
+          method: 'POST',
+        },
+      )
+
+      if (!pcrExport) {
+        throw new Error('Empty export response')
+      }
 
       setLocation(`/pcr/exports/${pcrExport.id}`)
     } catch (error) {
@@ -136,10 +144,10 @@ const PCRBulkExtractionModal = ({
           <div className="flex flex-col">
             <Typography className="mb-1 text-lg font-medium">Format</Typography>
             <RadioGroup
-              row
               aria-label="Export format"
               value={outputFormat}
               onChange={(event) => setOutputFormat(event.target.value)}
+              row
             >
               {map(pcrExportFormats, ({ id, label }) => (
                 <FormControlLabel
@@ -161,8 +169,8 @@ const PCRBulkExtractionModal = ({
             onClick={startExport}
             disabled={isProcessing || sections.length === 0}
             href={null}
-            color="secondary"
             variant="contained"
+            color="secondary"
             button
           >
             Extract

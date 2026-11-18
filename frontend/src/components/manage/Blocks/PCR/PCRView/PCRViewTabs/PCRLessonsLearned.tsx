@@ -63,8 +63,8 @@ const PCRLessonsLearned = () => {
       <div className="border-0 border-t border-solid border-primary pt-6">
         <div className="flex flex-col gap-y-6">
           {llData.length > 0 ? (
-            <div className="flex">
-              <div className="w-1/4 bg-primary px-6 py-4">
+            <div className="flex flex-col lg:flex-row">
+              <div className="bg-primary px-6 py-4 lg:w-1/4">
                 <span className="text-lg uppercase text-mlfs-hlYellow">
                   Lessons learned
                 </span>
@@ -75,7 +75,7 @@ const PCRLessonsLearned = () => {
                       <div className="mt-1 flex h-5 min-h-5 w-5 min-w-5 items-center justify-center rounded-full bg-mlfs-hlYellow text-lg font-bold text-primary">
                         {llIndex + 1}
                       </div>
-                      <h4 className="m-0 text-lg font-normal text-white">
+                      <h4 className="m-0 min-w-0 text-lg font-normal text-white">
                         {ll.lesson?.split('(')[0].trim() || '-'}
                       </h4>
                     </div>
@@ -84,7 +84,7 @@ const PCRLessonsLearned = () => {
               </div>
               <div
                 className={cx(
-                  'w-3/4 bg-white px-6 py-4',
+                  'min-w-0 bg-white px-6 py-4 lg:w-3/4',
                   borderedContainerClassname,
                 )}
               >
@@ -95,7 +95,7 @@ const PCRLessonsLearned = () => {
                   <div key={llIndex}>
                     <div className="flex gap-3">
                       {NrEntity(llIndex)}
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <h4 className="m-0 mb-3 text-lg font-semibold text-primary">
                           {ll.lesson || '-'}
                         </h4>

@@ -1,16 +1,16 @@
-import type { ReactNode } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
 
-import { api } from '@ors/helpers'
 import PCRBulkExtractionModal from './PCRBulkExtractionModal'
+import { api } from '@ors/helpers'
 
 const setLocation = vi.fn()
 
-vi.mock('@ors/helpers', () => ({ api: vi.fn() }))
 vi.mock('wouter', () => ({ useLocation: () => ['/pcr', setLocation] }))
 vi.mock('notistack', () => ({ enqueueSnackbar: vi.fn() }))
+vi.mock('@ors/helpers', () => ({ api: vi.fn() }))
 vi.mock('@ors/components/ui/Link/Link', () => ({
   default: ({
     children,

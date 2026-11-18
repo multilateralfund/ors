@@ -259,19 +259,19 @@ const DisposalTypeSelect = ({
 export const getSummaryTableColumnDefs = () => [
   {
     headerName: 'Type',
-    minWidth: 150,
+    minWidth: 140,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(params.data?.project_type),
   },
   {
     headerName: 'Sector',
-    minWidth: 150,
+    minWidth: 140,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(params.data?.sector),
   },
   {
     headerName: 'Agency',
-    minWidth: 130,
+    minWidth: 120,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(params.data?.agency),
   },
@@ -283,7 +283,7 @@ export const getSummaryTableColumnDefs = () => [
   },
   {
     headerName: 'Date approved',
-    minWidth: 105,
+    minWidth: 90,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatProjectValue(formatDate(params.data?.date_approved)),
   },
@@ -295,31 +295,32 @@ export const getSummaryTableColumnDefs = () => [
   },
   {
     headerName: 'Funds approved',
-    minWidth: 140,
+    minWidth: 105,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.funds_approved, 0, 0),
   },
   {
     headerName: 'ODP phase-out (Approved)',
-    minWidth: 150,
+    minWidth: 120,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.odp_phase_out_approved, 1, 1),
   },
   {
     headerName: 'ODP phase out (Actual)',
-    minWidth: 150,
+    minWidth: 120,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.odp_phase_out_actual, 1, 1),
   },
   {
-    headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)',
-    minWidth: 205,
+    headerName: 'HFCs PHASED-DOWN\n(CO2 eq-tonnes) (Approved)',
+    headerClass: 'ag-text-center [&_.ag-header-cell-text]:whitespace-pre-line',
+    minWidth: 180,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.hfc_phase_down_co2_approved, 0, 0),
   },
   {
     headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)',
-    minWidth: 205,
+    minWidth: 140,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.hfc_phase_down_co2_actual, 0, 0),
   },
@@ -499,7 +500,7 @@ const PCRSummaryOfKeyData = () => {
       {
         headerName: 'Project code',
         field: 'code',
-        minWidth: 210,
+        minWidth: 200,
         cellRenderer: (params: ICellRendererParams<ProjectType>) => {
           const hasErrors = find(
             Object.entries(projectsErrors),
