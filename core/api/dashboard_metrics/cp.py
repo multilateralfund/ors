@@ -14,8 +14,8 @@ already does the work, unit conversions included:
 - ``get_consumption_set`` / ``get_mbr_consumption_data`` - the consumption
   rules and the methyl bromide QPS split
 
-Call it once for the whole portfolio and index by country; it computes
-everything at once, so calling it per country is pathological. This module
+For many entries, call it once for the whole portfolio and index by country.
+For one entry, pass the country and every query is narrowed to it. This module
 reshapes ``record_value_<year>`` keys into ``[[year, value], ...]``, drops the
 pre-seeded zero rows, and keeps genuine zero years - a country reaching zero is
 the result worth showing.
@@ -151,7 +151,11 @@ class CountryProgrammeTrends:
 
 
 def load_trends(country=None) -> CountryProgrammeTrends:
-    """Build the whole portfolio's trends in one pass."""
+    """Build the trends in one pass: one country's, or the whole portfolio's.
+
+    Every query is narrowed to ``country`` when one is given, so a single
+    entry's payload reads only that country's reports.
+    """
     span = _reported_years()
     if span is None:
         return CountryProgrammeTrends({}, {}, {})
@@ -159,7 +163,9 @@ def load_trends(country=None) -> CountryProgrammeTrends:
     min_year, max_year = span
     export = CPDataExtractionAllExport()
     existent_reports = export.get_existent_reports(min_year, max_year, country)
-    consumption_set = export.get_consumption_set(min_year, max_year, list_sort=False)
+    consumption_set = export.get_consumption_set(
+        min_year, max_year, list_sort=False, country=country
+    )
 
     # Called, not reimplemented, so that the consumption rules and the ODP and
     # GWP conversions keep one definition. Change them there and this follows;
@@ -170,11 +176,16 @@ def load_trends(country=None) -> CountryProgrammeTrends:
         ),
         hfc_consumption=_totalled(
             export._get_hfc_consumption_data(
-                min_year, max_year, consumption_set, existent_reports, list_sort=False
+                min_year,
+                max_year,
+                consumption_set,
+                existent_reports,
+                list_sort=False,
+                country=country,
             ),
             HFC_CONSUMPTION_PREFIX,
         ),
-        ods_production=_production_by_country(min_year, max_year),
+        ods_production=_production_by_country(min_year, max_year, country),
     )
 
 
@@ -285,7 +296,9 @@ def _consumption_by_group(
     return totals
 
 
-def _production_by_country(min_year: int, max_year: int) -> ByGroup:
+def _production_by_country(
+    min_year: int, max_year: int, country: Country | None = None
+) -> ByGroup:
     """Production in ODP tonnes per country, group and year."""
     names = dict(Country.objects.values_list("id", "name"))
     records = get_final_records_for_years(
@@ -293,6 +306,7 @@ def _production_by_country(min_year: int, max_year: int) -> ByGroup:
         max_year,
         [models.Q(section=CONSUMPTION_SECTION), models.Q(substance__isnull=False)],
         list_sort=False,
+        country=country,
     )
 
     totals: ByGroup = {}

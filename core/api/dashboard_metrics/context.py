@@ -86,9 +86,15 @@ class MetricContext:
         """The projects matching a rule."""
         return [row for row in self.projects if predicate(row)]
 
-    def apr_where(self, project_ids):
-        records = apr_records(self.apr_year, self.country, project_ids)
-        return AprMetrics(records) if records else None
+    def apr_where(self, project_ids) -> AprMetrics:
+        """The cycle's reports on the given projects; empty when none match.
+
+        Filtered from :attr:`apr` in memory rather than queried again. An empty
+        list of projects selects no reports, not all of them.
+        """
+        if self.apr is None:
+            return AprMetrics([])
+        return self.apr.subset(project_ids)
 
     def with_status(self, *codes: str) -> list[ClassifiedProject]:
         """The projects in any of the given statuses."""

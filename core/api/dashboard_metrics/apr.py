@@ -17,7 +17,7 @@ See ``docs/dashboard_metrics.md``.
 """
 
 from functools import cached_property
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Iterable, Sequence
 
 from core.api.dashboard_metrics import classify
 from core.api.dashboard_metrics.primitives import dashboard_projects
@@ -147,8 +147,24 @@ class AprMetrics(APRSummaryTablesExportWriter):
             sum(getattr(apr, field) or 0 for apr in self.records for field in fields), 2
         )
 
+    def subset(self, project_ids: Iterable[int]) -> "AprMetrics":
+        """The reports on the given projects, filtered in memory.
+
+        Shares this cycle's status lookup rather than querying it again.
+        """
+        wanted = set(project_ids)
+        subset = AprMetrics([apr for apr in self.records if apr.project_id in wanted])
+        # Prefill the cached_property: the statuses are the same for any subset.
+        subset.__dict__["_active_status_names"] = self._active_status_names
+        return subset
+
     def disbursed_by_sector_code(self) -> dict[str, float]:
         """``{sector code: funds disbursed}``, through the export's own grouping."""
+        return self._disbursed_by_sector_code
+
+    @cached_property
+    def _disbursed_by_sector_code(self) -> dict[str, float]:
+        """Computed once: every sector metric reads the same grouping."""
         grouped = self._compute_grouped_data(
             self.records,
             "sector_code_denorm",

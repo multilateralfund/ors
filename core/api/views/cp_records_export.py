@@ -1002,6 +1002,7 @@ class CPDataExtractionAllExport(views.APIView):
         using_consumption_value_set,
         existent_reports,
         list_sort=True,
+        country=None,
     ):
         """
         Get HFC consumption data for the given year
@@ -1024,7 +1025,11 @@ class CPDataExtractionAllExport(views.APIView):
         }
         """
         records = get_final_records_for_years(
-            min_year, max_year, [models.Q(section="B")], list_sort=list_sort
+            min_year,
+            max_year,
+            [models.Q(section="B")],
+            list_sort=list_sort,
+            country=country,
         )
         country_records = {}
         for record in records:

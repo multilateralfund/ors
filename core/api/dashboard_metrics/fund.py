@@ -466,7 +466,7 @@ def sector_funds_disbursed(context: MetricContext, bucket: str) -> dict[str, Any
         if context.apr
         else {}
     )
-    return format_number(disbursed[bucket], 0, "$")
+    return format_number(disbursed.get(bucket, 0), 0, "$")
 
 
 def funds_disbursed(context: MetricContext) -> dict[str, float] | None:
