@@ -102,8 +102,9 @@ def format_number(
 ) -> str:
     """Format large number and optionally include currency.
 
-    Trailing zeros after the decimal point are dropped (121.0M -> 121M,
-    0.70 -> 0.7, 12.00 -> 12).
+    Rounded half up, to ``decimals`` places or to one decimal of the K/M/B
+    unit (8,740.59 -> 8,741). Trailing zeros after the decimal point are
+    dropped (121.0M -> 121M, 0.70 -> 0.7, 12.00 -> 12).
     """
     sign = "-" if num < 0 else ""
     num = abs(num)
@@ -118,7 +119,7 @@ def format_number(
                 return f"{currency}{sign}{scaled}{suffix}"
     value = Decimal(str(num))
     quantizer = Decimal("1." + "0" * decimals)
-    value = value.quantize(quantizer, rounding=ROUND_DOWN)
+    value = value.quantize(quantizer, rounding=ROUND_HALF_UP)
     formatted = _trim_zeros(f"{value:,.{decimals}f}")
     return f"{currency}{sign}{formatted}"
 

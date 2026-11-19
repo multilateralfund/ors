@@ -16,7 +16,6 @@ from typing import Any
 from core.api.dashboard_metrics import classify, taxonomy
 from core.api.dashboard_metrics.apr import CO2_PHASED_OUT_FIELDS, ODP_PHASED_OUT_FIELDS
 from core.api.dashboard_metrics.classify import (
-    HCFC,
     HFC,
     OTHER_ODS,
     ClassifiedProject,
@@ -364,20 +363,25 @@ def theme_unmapped(context: MetricContext) -> float:
     ]
 
 
+# Passed as ``family`` to chart every consumption project, whatever it addresses.
+ANY_FAMILY = "ANY"
+
+
 def sector_tonnage(
     context: MetricContext, family: str | None, field: str
 ) -> list[dict[str, Any]] | None:
     """Phase-out by sector for one substance family, consumption projects only.
 
     ``family=None`` is the residual: the projects whose family neither their
-    cluster nor their substances could settle. Every bucket is returned, zeros
-    included, so the chart's slices stay put between countries - but a family
-    that phases nothing out here has no chart at all.
+    cluster nor their substances could settle. ``family=ANY_FAMILY`` takes every
+    consumption project. Every bucket is returned, zeros included, so the
+    chart's slices stay put between countries - but a family that phases
+    nothing out here has no chart at all.
     """
     rows = [
         row
         for row in context.projects
-        if row.family_detail == family and not row.is_production
+        if family in (ANY_FAMILY, row.family_detail) and not row.is_production
     ]
     buckets: dict[str, list[ClassifiedProject]] = {}
     for row in rows:
@@ -393,10 +397,18 @@ def sector_tonnage(
 
     if not any(row["tonnage"] for row in table):
         return
-    # A slice under 1 would read "0" at whole tonnes, so the chart goes to one
+    # ODP tonnes are small numbers, so they always keep one decimal. Elsewhere a
+    # slice under 1 would read "0" at whole tonnes, so the chart goes to one
     # decimal - the total too, so the two stay comparable.
-    decimals = 1 if any(0 < row["tonnage"] < 1 for row in table) else 0
+    decimals = (
+        1
+        if field == TOTAL_PHASE_OUT_ODP or any(0 < row["tonnage"] < 1 for row in table)
+        else 0
+    )
     total, shown = apportion([row["tonnage"] for row in table], decimals)
+    # ODP tonnes are quoted in full (135,439.1, not 135.4K); CO2-eq tonnes run
+    # into millions and keep the short form.
+    full_number = field == TOTAL_PHASE_OUT_ODP
     coloration = (
         taxonomy.SECTOR_HFC_COLORING if family == HFC else taxonomy.SECTOR_HCFC_COLORING
     )
@@ -415,14 +427,16 @@ def sector_tonnage(
         "donuts": [
             {
                 "label": None,
-                "total": format_number(total, decimals),
+                "total": format_number(total, decimals, full_number=full_number),
                 "total_label": "TOTAL",
                 "total_position": "above",
                 "series": [
                     {
                         "name": row["group"],
                         "value": row["tonnage"],
-                        "displayValue": format_number(slice_value, decimals),
+                        "displayValue": format_number(
+                            slice_value, decimals, full_number=full_number
+                        ),
                         "color": coloring["color"],
                         "icon": coloring["icon"],
                     }
@@ -938,16 +952,19 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         kind=Kind.TABLE,
         unit=Unit.ODP_TONNES,
         disposition=Disposition.COMPUTE,
+        # The client's rule: every project without the production flag, whatever
+        # substance it addresses, so it overlaps sector_other_ods and
+        # sector_unclassified.
         formula=(
             "sum Projects-sheet 'Total phase-out (ODP tonnes)' by Sector bucket, for "
-            "projects whose substance family is HCFC; consumption only"
+            "every project not flagged as production"
         ),
         db_source="DB-COMPUTABLE",
         src_model_field=(
-            "Project.substance_type + Project.sector + "
+            "Project.production + Project.sector + "
             "Project.total_phase_out_odp_tonnes"
         ),
-        compute=partial(sector_tonnage, family=HCFC, field=TOTAL_PHASE_OUT_ODP),
+        compute=partial(sector_tonnage, family=ANY_FAMILY, field=TOTAL_PHASE_OUT_ODP),
     ),
     Metric(
         metric_id="sector_other_ods",

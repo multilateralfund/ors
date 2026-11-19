@@ -770,7 +770,7 @@ class TestFundValues(BaseTest):
             assert self.fund(user)["savings_to_society"]["value"] == "$12.5"
 
     @pytest.mark.parametrize(
-        "typed, shown", [("12", "$12"), ("12.00", "$12"), ("12.345", "$12.34")]
+        "typed, shown", [("12", "$12"), ("12.00", "$12"), ("12.345", "$12.35")]
     )
     def test_a_savings_figure_drops_trailing_zeros(
         self, user, ongoing_status, typed, shown
@@ -1595,7 +1595,7 @@ class TestCountryValues(BaseTest):
         assert by_bucket[classify.SECTOR_OTHER] == 7
         assert by_bucket[classify.SECTOR_REFRIGERATION] == 0
 
-    def test_the_families_are_charted_apart(self, user, ongoing_status):
+    def test_the_odp_chart_takes_every_consumption_project(self, user, ongoing_status):
         brazil = CountryFactory(name="Brazil", iso3="BRA")
         sector = ProjectSectorFactory(code="AC")
         approved_project(
@@ -1620,7 +1620,8 @@ class TestCountryValues(BaseTest):
             total_phase_out_co2_tonnes=4000,
         )
         metrics = self.entry(user)
-        assert self.tonnage(metrics["sector_hcfc"]) == 30
+        # HCFC and other ODS together: the client charts all ODP consumption.
+        assert self.tonnage(metrics["sector_hcfc"]) == 38
         assert self.tonnage(metrics["sector_other_ods"]) == 8
         assert self.tonnage(metrics["sector_hfc"]) == 4000
         assert metrics["sector_unclassified"]["available"] is False
@@ -1766,7 +1767,7 @@ class TestCountryValues(BaseTest):
         )
         metrics = metrics_by_id(response.data)
 
-        assert metrics["kf_odp_phased"]["value"] == "5"
+        assert metrics["kf_odp_phased"]["value"] == "6"
         assert metrics["kf_co2_phased"]["value"] == "300"
         # Support cost disbursed counts, as PSC does on the approved side.
         assert metrics["kf_funding_disbursed"]["value"] == "$275"
