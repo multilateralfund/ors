@@ -624,7 +624,7 @@ class TestFundValues(BaseTest):
 
         assert self.fund(user)["funds_approved"]["value"] == {
             "funds_approved": 100000.0,
-            "funds_plus_psc": "107.0K",
+            "funds_plus_psc": "107K",
         }
 
     def test_a_transferred_project_is_in_no_figure(self, user, ongoing_status):
@@ -807,11 +807,11 @@ class TestFundValues(BaseTest):
         )
         assert fund["hfc_expected_cost_per_co2eq_tonne"]["value"] == "0.4-0.9 $"
 
-    def test_a_manual_cost_keeps_its_cents(self, user, ongoing_status):
+    def test_a_manual_cost_drops_trailing_zeros(self, user, ongoing_status):
         approved_submission(status=ongoing_status)
 
         with override_config(COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS="0.7"):
-            assert self.fund(user)["ods_cost_per_odp_tonne"]["value"] == "$0.70"
+            assert self.fund(user)["ods_cost_per_odp_tonne"]["value"] == "$0.7"
 
     def test_avoided_ods_emissions_keep_one_decimal(self, user, ongoing_status):
         approved_submission(status=ongoing_status)

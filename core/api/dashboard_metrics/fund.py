@@ -55,7 +55,6 @@ def manual(
     use_format_number: bool = False,
     currency: str = "",
     decimals: int = 0,
-    trim_zeros: bool = False,
 ):
     """A figure an administrator types in in constance, unavailable until someone does.
 
@@ -72,7 +71,7 @@ def manual(
         except ValueError:
             return value
         if use_format_number:
-            return format_number(result, decimals, currency, trim_zeros=trim_zeros)
+            return format_number(result, decimals, currency)
         return result
 
     return read
@@ -666,9 +665,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field=("constance " "TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC "),
-        compute=manual(
-            "TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC", True, "$", 2, trim_zeros=True
-        ),
+        compute=manual("TOTAL_EXPECTED_SAVINGS_TO_SOCIETY_HFC", True, "$", 2),
     ),
     Metric(
         metric_id="savings_to_society",
@@ -680,9 +677,7 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field="constance TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR",
-        compute=manual(
-            "TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR", True, "$", 2, trim_zeros=True
-        ),
+        compute=manual("TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR", True, "$", 2),
     ),
     Metric(
         metric_id="grant_funding_pledged",

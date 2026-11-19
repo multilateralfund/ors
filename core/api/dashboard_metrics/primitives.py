@@ -99,34 +99,35 @@ def format_number(
     decimals: int = 0,
     currency: str = "",
     full_number=False,
-    trim_zeros=False,
 ) -> str:
     """Format large number and optionally include currency.
 
-    ``trim_zeros`` drops trailing zeros from the decimals (2.50 -> 2.5,
-    12.00 -> 12).
+    Trailing zeros after the decimal point are dropped (121.0M -> 121M,
+    0.70 -> 0.7, 12.00 -> 12).
     """
     sign = "-" if num < 0 else ""
     num = abs(num)
     if not full_number:
-        if num >= 1_000_000_000:
-            if num % 1_000_000_000 == 0:
-                return f"{currency}{sign}{num // 1_000_000_000}B"
-            return f"{currency}{sign}{round(num / 1_000_000_000, 1)}B"
-
-        if num >= 1_000_000:
-            if num % 1_000_000 == 0:
-                return f"{currency}{sign}{num // 1_000_000}M"
-            return f"{currency}{sign}{round(num / 1_000_000, 1)}M"
-        if num >= 100_000:
-            return f"{currency}{sign}{round(num / 1_000, 1)}K"
+        for threshold, scale, suffix in (
+            (1_000_000_000, 1_000_000_000, "B"),
+            (1_000_000, 1_000_000, "M"),
+            (100_000, 1_000, "K"),
+        ):
+            if num >= threshold:
+                scaled = _trim_zeros(f"{round(num / scale, 1)}")
+                return f"{currency}{sign}{scaled}{suffix}"
     value = Decimal(str(num))
     quantizer = Decimal("1." + "0" * decimals)
     value = value.quantize(quantizer, rounding=ROUND_DOWN)
-    formatted = f"{value:,.{decimals}f}"
-    if trim_zeros and "." in formatted:
-        formatted = formatted.rstrip("0").rstrip(".")
+    formatted = _trim_zeros(f"{value:,.{decimals}f}")
     return f"{currency}{sign}{formatted}"
+
+
+def _trim_zeros(formatted: str) -> str:
+    """Drop the trailing zeros after a decimal point, and the point if bare."""
+    if "." not in formatted:
+        return formatted
+    return formatted.rstrip("0").rstrip(".")
 
 
 def apportion(values: Sequence[float], decimals: int = 0) -> tuple[float, list[float]]:

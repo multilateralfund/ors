@@ -258,14 +258,10 @@ class ProjectListV2Serializer(ProjectListSerializer):
         return format_number(self.get_project_funding(obj), 0, "$", True)
 
     def get_total_phase_out_odp_tonnes_display(self, obj):
-        return format_number(
-            obj.total_phase_out_odp_tonnes or 0, 2, full_number=True, trim_zeros=True
-        )
+        return format_number(obj.total_phase_out_odp_tonnes or 0, 2, full_number=True)
 
     def get_total_phase_out_co2_tonnes_display(self, obj):
-        return format_number(
-            obj.total_phase_out_co2_tonnes or 0, 2, full_number=True, trim_zeros=True
-        )
+        return format_number(obj.total_phase_out_co2_tonnes or 0, 2, full_number=True)
 
     class Meta:
         model = Project
