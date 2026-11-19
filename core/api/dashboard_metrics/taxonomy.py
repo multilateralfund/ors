@@ -123,6 +123,8 @@ THEME_BY_CLUSTER_CODE = {
     "KIP2": "HFCs consumption",
     "KIP3": "HFCs consumption",
     "OOI": "Other ODS consumption",
+    # Obsolete, so the mapped-clusters check skips it, but projects still use it.
+    "OOIP": "Other ODS production",
     "OOPPP": "Other ODS production",
     "OOSP": "Other ODS consumption",
     "ATMON": "Atmospheric Monitoring",
