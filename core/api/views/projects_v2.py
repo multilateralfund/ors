@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.api.dashboard_metrics.apr import resolve_apr_year
 from core.api.dashboard_metrics.primitives import dashboard_projects, format_number
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
@@ -36,7 +37,7 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
 )
 from core.api.serializers.annual_project_report import ProjectAPRHistorySerializer
-from core.models.annual_project_report import AnnualProgressReport, AnnualProjectReport
+from core.models.annual_project_report import AnnualProjectReport
 from core.models.project import (
     Project,
     ProjectOdsOdp,
@@ -725,11 +726,8 @@ class ProjectV2ViewSet(
     )
     @action(methods=["GET"], detail=False)
     def portofolio_metrics(self, request, *args, **kwargs):
-        latest_apr_year = list(
-            AnnualProgressReport.objects.order_by("year")
-            .values_list("year", flat=True)
-            .distinct()
-        )[-1]
+        # As on the dashboards: the newest endorsed cycle, else the newest one.
+        latest_apr_year = resolve_apr_year()
         projects_approved = Project.objects.filter(submission_status__name="Approved")
         # Transferred and Closed projects are left out of the counts and the
         # phase-out, as on the dashboards (see dashboard_projects()).
