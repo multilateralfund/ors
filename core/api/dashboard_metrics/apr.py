@@ -19,6 +19,7 @@ See ``docs/dashboard_metrics.md``.
 from functools import cached_property
 from typing import Any, Callable, Sequence
 
+from core.api.dashboard_metrics import classify
 from core.api.dashboard_metrics.primitives import dashboard_projects
 from core.api.export.annual_project_report import APRSummaryTablesExportWriter
 from core.api.utils import get_latest_endorsed_year
@@ -164,14 +165,12 @@ class AprMetrics(APRSummaryTablesExportWriter):
             include_odp_co2=False,
             sheet_type="cumulative",
         )
-        result = {}
-        for code, data in grouped:
-            code_name = code.name
-            if code_name == "Europe":
-                code_name = "Region: Europe and Central Asia"
-            elif code_name == "West Asia":
-                code_name = "Region: Asia and the Pacific"
-            result[code_name] = data["total_funds_disbursed"]
+        # Folded the way the funding side is (Europe into Europe and Central
+        # Asia, West Asia into Asia and the Pacific), so the two meet per row.
+        result: dict[str, float] = {}
+        for region, data in grouped:
+            name = classify.region_bucket(region) or region.name
+            result[name] = result.get(name, 0.0) + data["total_funds_disbursed"]
         return result
 
     def disbursed_by_theme(self) -> dict[str, float]:
