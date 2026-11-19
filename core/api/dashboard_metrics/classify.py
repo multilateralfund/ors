@@ -63,7 +63,6 @@ HFC_ANNEXES = frozenset({"F"})
 ODS_ANNEXES = frozenset({"A", "B", "C", "E"})
 HCFC_GROUP_IDS = frozenset({"CI"})
 
-PRODUCTION_SECTOR_CODES = frozenset({"PRO"})
 EE_CLUSTER_CODES = frozenset({"EE"})
 EE_WINDOW_CODES = frozenset({"89/6", "91/65", "94/60", "95/87"})
 DISPOSAL_CLUSTER_CODES = frozenset({"DISP"})
@@ -255,14 +254,11 @@ def substance_family(project: Project) -> str | None:
 def is_production(project: Project) -> bool:
     """Whether the project phases out production rather than consumption.
 
-    Three signals, any of which is enough. ``ProjectCluster.production`` is null
-    on clusters that allow both, which is not a production project on its own.
+    Read from the project's own flag only, as the client counts it. The
+    Production sector and production clusters also hold preparation and
+    consumption-side projects, so neither is enough on its own.
     """
-    if project.production:
-        return True
-    if project.sector and project.sector.code in PRODUCTION_SECTOR_CODES:
-        return True
-    return bool(project.cluster and project.cluster.production)
+    return bool(project.production)
 
 
 def project_theme(

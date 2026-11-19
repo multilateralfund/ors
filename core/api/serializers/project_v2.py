@@ -214,6 +214,8 @@ class ProjectListV2Serializer(ProjectListSerializer):
     umbrella_code = serializers.SerializerMethodField()
     project_funding = serializers.SerializerMethodField()
     project_funding_display = serializers.SerializerMethodField()
+    total_phase_out_odp_tonnes_display = serializers.SerializerMethodField()
+    total_phase_out_co2_tonnes_display = serializers.SerializerMethodField()
 
     def get_editable(self, obj):
         """
@@ -254,6 +256,16 @@ class ProjectListV2Serializer(ProjectListSerializer):
 
     def get_project_funding_display(self, obj):
         return format_number(self.get_project_funding(obj), 0, "$", True)
+
+    def get_total_phase_out_odp_tonnes_display(self, obj):
+        return format_number(
+            obj.total_phase_out_odp_tonnes or 0, 2, full_number=True, trim_zeros=True
+        )
+
+    def get_total_phase_out_co2_tonnes_display(self, obj):
+        return format_number(
+            obj.total_phase_out_co2_tonnes or 0, 2, full_number=True, trim_zeros=True
+        )
 
     class Meta:
         model = Project
@@ -382,6 +394,10 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "total_number_of_nou_personnel_supported",
             "total_psc_cost",
             "total_psc_transferred",
+            "total_phase_out_odp_tonnes",
+            "total_phase_out_odp_tonnes_display",
+            "total_phase_out_co2_tonnes",
+            "total_phase_out_co2_tonnes_display",
             "version_created_by",
             "version",
             "umbrella_code",

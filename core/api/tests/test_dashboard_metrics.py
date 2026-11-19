@@ -1110,13 +1110,14 @@ class TestClassification:
             classify.THEME_PRODUCTION
         )
 
-    def test_production_is_read_from_the_cluster_as_well_as_the_project(self):
+    def test_production_is_read_from_the_project_flag_only(self):
         project = self.project(
             production=False,
             cluster=ProjectClusterFactory(code="KPP1", name="KPP1", production=True),
+            sector=ProjectSectorFactory(code="PRO", name="Production"),
         )
 
-        assert classify.is_production(project) is True
+        assert classify.is_production(project) is False
 
     def test_a_cluster_that_allows_both_is_not_production_on_its_own(self):
         project = self.project(
