@@ -59,7 +59,7 @@ from core.models.country_programme_archive import (
 )
 from core.utils import IMPORT_DB_MAX_YEAR
 
-# pylint: disable=C0302(too-many-lines)
+# pylint: disable=C0302(too-many-lines),R0913(too-many-arguments)
 
 EXCLUDE_FROM_CONSUMPTION = [
     "HBFC",
