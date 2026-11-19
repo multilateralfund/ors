@@ -728,18 +728,18 @@ class ProjectV2ViewSet(
     def portofolio_metrics(self, request, *args, **kwargs):
         # As on the dashboards: the newest endorsed cycle, else the newest one.
         latest_apr_year = resolve_apr_year()
-        projects_approved = Project.objects.filter(submission_status__name="Approved")
-        # Transferred and Closed projects are left out of the counts and the
-        # phase-out, as on the dashboards (see dashboard_projects()).
+        # Approved projects without the Transferred and Closed ones, the same
+        # population as the dashboards (see dashboard_projects()).
         projects_in_scope = dashboard_projects()
         projects_completed = projects_in_scope.filter(
             status__name__in=["Financially completed", "Completed"]
         )
         aprs = AnnualProjectReport.objects.filter(
-            report__progress_report__year=latest_apr_year, project__in=projects_approved
+            report__progress_report__year=latest_apr_year, project__in=projects_in_scope
         )
         funds_approved = sum(
-            (sum((p.total_fund, p.support_cost_psc)) for p in projects_approved)
+            (p.total_fund or 0.0) + (p.support_cost_psc or 0.0)
+            for p in projects_in_scope
         )
         funds_disbursed = sum(
             (apr.funds_disbursed or 0.0) + (apr.support_cost_disbursed or 0.0)

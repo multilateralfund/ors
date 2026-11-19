@@ -479,70 +479,58 @@ def funds_disbursed(context: MetricContext) -> dict[str, float] | None:
     return result
 
 
+# The donut's slices, in drawing order. Not classified is a slice of its own so
+# that each donut's total is the whole portfolio, the same figure the portfolio
+# page quotes, rather than only the countries with an LVC status.
+LVC_DONUT_SLICES = (
+    ("lvc", "Low-Volume Consuming (LVC) countries", "var(--deep-teal)"),
+    ("non_lvc", "Non-LVC countries", "var(--data-purple)"),
+    (NOT_CLASSIFIED, "Not classified", "#F2F2F2"),
+)
+
+
+def _lvc_donut(label: str, amounts: dict[str, float]) -> dict[str, Any]:
+    """One donut: a slice per LVC component, totalled over all of them."""
+    return {
+        "label": label,
+        "total": format_number(sum(amounts.values()), 0, "$"),
+        "series": [
+            {
+                "name": name,
+                "value": amounts[component],
+                "displayValue": format_number(amounts[component], 0, "$"),
+                "color": color,
+            }
+            for component, name, color in LVC_DONUT_SLICES
+        ],
+    }
+
+
 def funds_approved_funds_disbursed_lvc_split(
     context: MetricContext,
-) -> dict[str, float] | None:
-    """What has actually been paid out, in total and within the current cycle."""
-    funds_approved_lvc_split_result = funds_lvc_split(context, False)
-    funds_approved_lvc = funds_approved_lvc_split_result["lvc"]["funds_plus_psc"]
-    funds_approved_non_lvc = funds_approved_lvc_split_result["non_lvc"][
-        "funds_plus_psc"
-    ]
-    sum_funds = funds_approved_lvc + funds_approved_non_lvc
-    total_funds_approved = format_number(sum_funds, 0, "$")
-    funds_disbursed_lvc_split_result = funds_disbursed_lvc_split(context)
-    try:
-        funds_disbursed_lvc = funds_disbursed_lvc_split_result["lvc"]["all_time"]
-        funds_disbursed_non_lvc = funds_disbursed_lvc_split_result["non_lvc"][
-            "all_time"
-        ]
-    except (AttributeError, TypeError):
-        funds_disbursed_lvc = 0
-        funds_disbursed_non_lvc = 0
-    total_funds_disbursed = format_number(
-        funds_disbursed_lvc + funds_disbursed_non_lvc, 0, "$"
-    )
+) -> dict[str, Any]:
+    """Funds approved and funds disbursed, each split by LVC classification."""
+    approved = funds_lvc_split(context, False)
+    disbursed = funds_disbursed_lvc_split(context) or {}
     return {
         "type": "donut",
         "title": None,
         "subtitle": None,
         "donuts": [
-            {
-                "label": "Funds approved",
-                "total": total_funds_approved,
-                "series": [
-                    {
-                        "name": "Low-Volume Consuming (LVC) countries",
-                        "value": funds_approved_lvc,
-                        "displayValue": format_number(funds_approved_lvc, 0, "$"),
-                        "color": "var(--deep-teal)",
-                    },
-                    {
-                        "name": "Non-LVC countries",
-                        "value": funds_approved_non_lvc,
-                        "displayValue": format_number(funds_approved_non_lvc, 0, "$"),
-                        "color": "var(--data-purple)",
-                    },
-                ],
-            },
-            {
-                "label": "Funds disbursed",
-                "total": total_funds_disbursed,
-                "series": [
-                    {
-                        "name": "Low-Volume Consuming (LVC) countries",
-                        "value": funds_disbursed_lvc,
-                        "displayValue": format_number(funds_disbursed_lvc, 0, "$"),
-                        "color": "var(--deep-teal)",
-                    },
-                    {
-                        "name": "Non-LVC countries",
-                        "value": funds_disbursed_non_lvc,
-                        "displayValue": format_number(funds_disbursed_non_lvc, 0, "$"),
-                        "color": "var(--data-purple)",
-                    },
-                ],
-            },
+            _lvc_donut(
+                "Funds approved",
+                {
+                    component: approved[component]["funds_plus_psc"]
+                    for component, _, _ in LVC_DONUT_SLICES
+                },
+            ),
+            _lvc_donut(
+                "Funds disbursed",
+                {
+                    component: disbursed.get(component, {}).get("all_time", 0.0)
+                    for component, _, _ in LVC_DONUT_SLICES
+                },
+            ),
         ],
         "meta": {"currency": "USD"},
     }
