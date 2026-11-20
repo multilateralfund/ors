@@ -12,7 +12,11 @@ from decimal import Decimal
 from functools import cached_property
 from typing import Callable
 
-from core.api.dashboard_metrics.apr import AprMetrics, apr_records
+from core.api.dashboard_metrics.apr import (
+    AprMetrics,
+    apr_records,
+    latest_apr_records,
+)
 from core.api.dashboard_metrics.classify import (
     ClassifiedProject,
     classify,
@@ -76,6 +80,17 @@ class MetricContext:
         return AprMetrics(records) if records else None
 
     @cached_property
+    def disbursement(self) -> AprMetrics | None:
+        """Each project's latest report up to the selected cycle.
+
+        What disbursement is read from: the figures are cumulative, and a
+        project financially completed before the cycle is not reported in it.
+        Its active-cycle figure still counts only the selected cycle's rows.
+        """
+        records = latest_apr_records(self.apr_year, self.country)
+        return AprMetrics(records, cycle_year=self.apr_year) if records else None
+
+    @cached_property
     def pledged(self) -> Decimal | None:
         """Cumulative pledged contributions."""
         return pledged_total()
@@ -95,6 +110,12 @@ class MetricContext:
         if self.apr is None:
             return AprMetrics([])
         return self.apr.subset(project_ids)
+
+    def disbursement_where(self, project_ids) -> AprMetrics:
+        """:attr:`disbursement` narrowed to the given projects, in memory."""
+        if self.disbursement is None:
+            return AprMetrics([])
+        return self.disbursement.subset(project_ids)
 
     def with_status(self, *codes: str) -> list[ClassifiedProject]:
         """The projects in any of the given statuses."""

@@ -149,6 +149,7 @@ cost a couple of dozen queries rather than an independent sweep per metric:
 | `context.projects` | the in-scope projects, each already bucketed by theme, sector and substance family (`classify.py`) |
 | `context.excluded` | the projects the Transferred/Closed rule removes, so the removal can be reported                   |
 | `context.apr`      | the selected reporting cycle's project reports                                                     |
+| `context.disbursement` | each project's latest report up to the selected cycle - every disbursement figure reads this, since a project financially completed before the cycle is no longer reported in it; `active_cycle` still counts only the selected cycle's Ongoing/Completed rows |
 | `context.cp`       | every country's reported consumption and production, computed for the whole portfolio at once      |
 | `context.pledged`  | cumulative pledged contributions                                                                   |
 

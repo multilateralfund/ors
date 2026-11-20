@@ -807,11 +807,18 @@ class TestFundValues(BaseTest):
         )
         assert fund["hfc_expected_cost_per_co2eq_tonne"]["value"] == "0.4-0.9 $"
 
-    def test_a_manual_cost_drops_trailing_zeros(self, user, ongoing_status):
+    def test_a_manual_cost_keeps_both_decimals(self, user, ongoing_status):
+        """The client quotes these costs to the cent: $0.70, not $0.7."""
         approved_submission(status=ongoing_status)
 
-        with override_config(COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS="0.7"):
-            assert self.fund(user)["ods_cost_per_odp_tonne"]["value"] == "$0.7"
+        with override_config(
+            COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS="0.7",
+            COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_CONTROLLED_SUBSTANCES="3",
+        ):
+            fund = self.fund(user)
+
+        assert fund["ods_cost_per_odp_tonne"]["value"] == "$0.70"
+        assert fund["controlled_substances_cost_per_co2eq_tonne"]["value"] == "$3.00"
 
     def test_avoided_ods_emissions_keep_one_decimal(self, user, ongoing_status):
         approved_submission(status=ongoing_status)
@@ -1002,6 +1009,47 @@ class TestLvcSplits(BaseTest):
         # And they total what the undivided figure reports.{
         result = sum(c["all_time"] for c in disbursed.values())
         assert f"{int(result)}" == (metrics["funds_disbursed"]["value"]["all_time"])
+
+    def test_disbursement_counts_projects_no_longer_reported(
+        self, user, ongoing_status
+    ):
+        """Each project's latest report up to the cycle, not only the cycle's.
+
+        A project financially completed before the selected cycle drops out of
+        the APR, but what was paid out on it is still disbursed.
+        """
+        cycles = {
+            year: AnnualAgencyProjectReportFactory(
+                progress_report=AnnualProgressReportFactory(year=year)
+            )
+            for year in (2023, 2024, 2025)
+        }
+        closed = approved_project(status=ongoing_status)
+        running = approved_project(status=ongoing_status)
+        for project, year, status, disbursed in (
+            (closed, 2023, "Financially completed", 500),
+            # Cumulative per project: the newer report replaces the older one.
+            (running, 2023, "Ongoing", 100),
+            (running, 2024, "Ongoing", 250),
+            # After the selected cycle, so not counted yet.
+            (running, 2025, "Ongoing", 999),
+        ):
+            AnnualProjectReportFactory(
+                project=project,
+                report=cycles[year],
+                status=status,
+                funds_disbursed=disbursed,
+                support_cost_disbursed=None,
+            )
+
+        self.client.force_authenticate(user=user)
+        metrics = metrics_by_id(self.client.get(self.url, {"apr_year": 2024}).data)
+
+        assert metrics["funds_disbursed"]["value"] == {
+            "all_time": "750",
+            "active_cycle": "250",
+        }
+        assert metrics["theme_consumption_funds_disbursed"]["value"] == "$750"
 
     def test_a_component_with_no_reports_is_zero_rather_than_missing(
         self, user, ongoing_status
@@ -1680,8 +1728,8 @@ class TestCountryValues(BaseTest):
                 if entry.get("percent", None):
                     groups.append(entry["label"])
         assert groups == [
-            "HFCs consumption",
-            "HCFCs consumption",
+            "HFC Consumption",
+            "HCFC Consumption",
             "Disposal",
         ]
         assert table["groups"][0]["items"][0]["displayValue"] == "$900"
@@ -1738,7 +1786,7 @@ class TestCountryValues(BaseTest):
             for entry in group["items"]:
                 if entry.get("percent", None):
                     groups.append(entry["label"])
-        assert groups == ["HCFCs consumption"]
+        assert groups == ["HCFC Consumption"]
 
     def test_the_reporting_cycle_supplies_the_actual_phase_out(
         self, user, ongoing_status

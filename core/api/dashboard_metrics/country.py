@@ -278,7 +278,11 @@ def kf_projects_ongoing(context: MetricContext) -> int:
 
 def kf_funding_disbursed(context: MetricContext) -> float | None:
     """What has actually been paid out to the country."""
-    result = context.apr.funds_disbursed()["all_time"] if context.apr else None
+    result = (
+        context.disbursement.funds_disbursed()["all_time"]
+        if context.disbursement
+        else None
+    )
     if result:
         return format_number(result, 0, "$")
     return
@@ -412,11 +416,11 @@ def sector_tonnage(
     coloration = (
         taxonomy.SECTOR_HFC_COLORING if family == HFC else taxonomy.SECTOR_HCFC_COLORING
     )
-    title = "Tonnage approved - HFCs" if family == HFC else "Tonnage approved - HCFCs"
+    title = "Tonnage approved – HFCs" if family == HFC else "Tonnage approved"
     subtitle = (
-        "CO₂-EQ-Tonnes, breakdown by sector"
+        "CO₂-EQ Tonnes, breakdown by sector"
         if family == "HFC"
-        else "ODP-Tonnes, breakdown by sector"
+        else "ODP Tonnes, breakdown by sector"
     )
 
     return {

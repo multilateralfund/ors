@@ -19,6 +19,8 @@ See ``docs/dashboard_metrics.md``.
 from functools import cached_property
 from typing import Any, Callable, Iterable, Sequence
 
+from django.db.models import F
+
 from core.api.dashboard_metrics import classify
 from core.api.dashboard_metrics.primitives import dashboard_projects
 from core.api.export.annual_project_report import APRSummaryTablesExportWriter
@@ -58,8 +60,16 @@ class AprMetrics(APRSummaryTablesExportWriter):
 
     # The parent's constructor is replaced wholesale, arguments and all.
     # pylint: disable=W0231
-    def __init__(self, records: Sequence[AnnualProjectReport]):
+    def __init__(
+        self,
+        records: Sequence[AnnualProjectReport],
+        cycle_year: int | None = None,
+    ):
         self.records = list(records)
+        # Set when the records span several cycles (see
+        # :func:`latest_apr_records`): only the selected cycle's own rows can
+        # be inside the active cycle, whatever status an older row was left in.
+        self.cycle_year = cycle_year
 
     def investment(self) -> list[AnnualProjectReport]:
         """Investment project reports."""
@@ -105,7 +115,15 @@ class AprMetrics(APRSummaryTablesExportWriter):
 
     def _disbursed(self, records: Sequence[AnnualProjectReport]) -> dict[str, float]:
         """The two disbursement figures over one set of records."""
-        active = [apr for apr in records if apr.status in self._active_status_names]
+        active = [
+            apr
+            for apr in records
+            if apr.status in self._active_status_names
+            and (
+                self.cycle_year is None
+                or getattr(apr, "cycle_year", None) == self.cycle_year
+            )
+        ]
         return {
             "all_time": round(sum(paid_out(apr) for apr in records), 2),
             "active_cycle": round(sum(paid_out(apr) for apr in active), 2),
@@ -153,7 +171,10 @@ class AprMetrics(APRSummaryTablesExportWriter):
         Shares this cycle's status lookup rather than querying it again.
         """
         wanted = set(project_ids)
-        subset = AprMetrics([apr for apr in self.records if apr.project_id in wanted])
+        subset = AprMetrics(
+            [apr for apr in self.records if apr.project_id in wanted],
+            cycle_year=self.cycle_year,
+        )
         # Prefill the cached_property: the statuses are the same for any subset.
         subset.__dict__["_active_status_names"] = self._active_status_names
         return subset
@@ -223,6 +244,48 @@ def resolve_apr_year(requested: int | None = None) -> int | None:
     return years[-1] if years else None
 
 
+def _apr_queryset(country: Country | None):
+    """Reports on the projects this dashboard counts, with what metrics read."""
+    records = AnnualProjectReport.objects.filter(
+        project__in=dashboard_projects(),
+    ).select_related(
+        "project__project_type",
+        "project__status",
+        "project__country",
+        "project__country__parent",
+        "project__country__parent__parent",
+        "main_region",
+    )
+    if country is not None:
+        records = records.filter(project__country=country)
+    return records
+
+
+def latest_apr_records(
+    year: int | None, country: Country | None
+) -> list[AnnualProjectReport]:
+    """Each project's most recent report up to and including ``year``.
+
+    The source for disbursement. ``funds_disbursed`` and
+    ``support_cost_disbursed`` are cumulative per project, so a project's latest
+    report carries everything paid out on it to date. One cycle alone is not
+    enough: a project that was financially completed before it is no longer
+    reported, and its disbursement would drop out of the totals.
+
+    Each record carries ``cycle_year``, the cycle it was reported in.
+    """
+    if year is None:
+        return []
+    records = (
+        _apr_queryset(country)
+        .filter(report__progress_report__year__lte=year)
+        .annotate(cycle_year=F("report__progress_report__year"))
+        .order_by("project_id", "-report__progress_report__year", "-id")
+        .distinct("project_id")
+    )
+    return sorted(records, key=lambda apr: apr.id)
+
+
 def apr_records(
     year: int | None, country: Country | None, project_ids: list | None = None
 ) -> list[AnnualProjectReport]:
@@ -238,19 +301,7 @@ def apr_records(
     """
     if year is None:
         return []
-    records = AnnualProjectReport.objects.filter(
-        report__progress_report__year=year,
-        project__in=dashboard_projects(),
-    ).select_related(
-        "project__project_type",
-        "project__status",
-        "project__country",
-        "project__country__parent",
-        "project__country__parent__parent",
-        "main_region",
-    )
-    if country is not None:
-        records = records.filter(project__country=country)
+    records = _apr_queryset(country).filter(report__progress_report__year=year)
     if project_ids:
         records = records.filter(project_id__in=project_ids)
     return list(records.order_by("id"))

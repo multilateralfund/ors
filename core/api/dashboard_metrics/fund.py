@@ -55,10 +55,12 @@ def manual(
     use_format_number: bool = False,
     currency: str = "",
     decimals: int = 0,
+    keep_zeros: bool = False,
 ):
     """A figure an administrator types in in constance, unavailable until someone does.
 
-    A plain number is formatted like the computed figures. Anything else
+    A plain number is formatted like the computed figures; ``keep_zeros``
+    shows every one of its ``decimals`` places (0.70 rather than 0.7). Anything else
     ("2.5 TN", "25.3 - 56.7 CO2 EQ GT", "0.4-0.9 $") is shown as typed.
     """
 
@@ -71,7 +73,7 @@ def manual(
         except ValueError:
             return value
         if use_format_number:
-            return format_number(result, decimals, currency)
+            return format_number(result, decimals, currency, keep_zeros=keep_zeros)
         return result
 
     return read
@@ -181,7 +183,9 @@ def by_region(context: MetricContext) -> list[dict[str, Any]]:
     result = grouped(
         context.projects, lambda row: classify.region_bucket(row.project.country)
     )
-    disbursed = context.apr.disbursed_by_region() if context.apr else {}
+    disbursed = (
+        context.disbursement.disbursed_by_region() if context.disbursement else {}
+    )
     for entry in result:
         entry["funds_disbursed"] = (
             format_number(disbursed[entry["group"]], 0, "$")
@@ -202,7 +206,7 @@ def _prepare_horizontal_bar_structure(
 ) -> list[dict[str, Any]]:
     return {
         "type": "bar_horizontal",
-        "title": "Percentage of baseline consumption phased out by substance (%)",
+        "title": "Baseline consumption phased out by substance (%)",
         "subtitle": None,
         "categories": [
             "Hydrofluorocarbons (HFCs)",
@@ -323,9 +327,9 @@ def funds_lvc_split(
 
 def funds_disbursed_lvc_split(context: MetricContext) -> dict[str, Any] | None:
     """Disbursement split by LVC classification."""
-    if context.apr is None:
+    if context.disbursement is None:
         return None
-    reported = context.apr.disbursed_grouped(
+    reported = context.disbursement.disbursed_grouped(
         lambda record: LVC_COMPONENTS[classify.lvc_status(record.project.country)]
     )
     empty = {"all_time": 0.0, "active_cycle": 0.0}
@@ -401,9 +405,9 @@ def theme(context: MetricContext, name: str) -> dict[str, Any]:
     """One funding theme's share of the portfolio."""
     projects = context.where(lambda row: row.theme == name)
     result = totals(projects)
-    disbursed = context.apr_where([p.project.id for p in projects])
+    disbursed = context.disbursement_where([p.project.id for p in projects])
     result["funds_disbursed"] = format_number(
-        disbursed.funds_disbursed()["active_cycle"], 0, "$"
+        disbursed.funds_disbursed()["all_time"], 0, "$"
     )
     result["funds_plus_psc"] = format_number(result["funds_plus_psc"], 0, "$")
     result["projects_by_code"] = format_number(result["projects_by_code"])
@@ -426,16 +430,16 @@ def theme_funds_approved(context: MetricContext, name: str) -> dict[str, Any]:
 def theme_funds_disbursed(context: MetricContext, name: str) -> dict[str, Any]:
     """One funding theme's share of the portfolio."""
     projects = context.where(lambda row: row.theme == name)
-    disbursed = context.apr_where([p.project.id for p in projects])
-    return format_number(disbursed.funds_disbursed()["active_cycle"], 0, "$")
+    disbursed = context.disbursement_where([p.project.id for p in projects])
+    return format_number(disbursed.funds_disbursed()["all_time"], 0, "$")
 
 
 def sector(context: MetricContext, bucket: str) -> dict[str, Any]:
     """One sector's share of the portfolio, and what has been paid out against it."""
     value = totals(context.where(lambda row: row.sector_bucket == bucket))
     disbursed = (
-        classify.disbursed_by_bucket(context.apr.disbursed_by_sector_code())
-        if context.apr
+        classify.disbursed_by_bucket(context.disbursement.disbursed_by_sector_code())
+        if context.disbursement
         else {}
     )
     value["funds_disbursed"] = (
@@ -462,8 +466,8 @@ def sector_funds_approved(context: MetricContext, bucket: str) -> dict[str, Any]
 def sector_funds_disbursed(context: MetricContext, bucket: str) -> dict[str, Any]:
     """One sector's share of the portfolio, and what has been paid out against it."""
     disbursed = (
-        classify.disbursed_by_bucket(context.apr.disbursed_by_sector_code())
-        if context.apr
+        classify.disbursed_by_bucket(context.disbursement.disbursed_by_sector_code())
+        if context.disbursement
         else {}
     )
     return format_number(disbursed.get(bucket, 0), 0, "$")
@@ -471,7 +475,7 @@ def sector_funds_disbursed(context: MetricContext, bucket: str) -> dict[str, Any
 
 def funds_disbursed(context: MetricContext) -> dict[str, float] | None:
     """What has actually been paid out, in total and within the current cycle."""
-    result = context.apr.funds_disbursed() if context.apr else None
+    result = context.disbursement.funds_disbursed() if context.disbursement else None
     if result:
         result["all_time"] = format_number(result["all_time"])
         result["active_cycle"] = format_number(result["active_cycle"])
@@ -701,7 +705,13 @@ FUND_METRICS: tuple[Metric, ...] = (
         formula="manual admin field",
         db_source="MANUAL-CONSTANCE",
         src_model_field="constance COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS",
-        compute=manual("COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS", True, "$", 2),
+        compute=manual(
+            "COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS",
+            True,
+            "$",
+            2,
+            keep_zeros=True,
+        ),
     ),
     Metric(
         metric_id="controlled_substances_cost_per_co2eq_tonne",
@@ -721,6 +731,7 @@ FUND_METRICS: tuple[Metric, ...] = (
             True,
             "$",
             2,
+            keep_zeros=True,
         ),
     ),
     Metric(
@@ -799,7 +810,7 @@ FUND_METRICS: tuple[Metric, ...] = (
     Metric(
         metric_id="baseline_phased_out_by_substance",
         label="Baseline consumption phased out, by substance",
-        section="Percentage of baseline consumption phased out by substance (%)",
+        section="Baseline consumption phased out by substance (%)",
         kind=Kind.TABLE,
         unit=Unit.PERCENT,
         disposition=Disposition.COMPUTE,

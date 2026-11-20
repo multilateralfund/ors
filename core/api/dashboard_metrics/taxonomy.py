@@ -11,9 +11,9 @@ of 34 clusters. Use ``ProjectCluster.production`` for the production test.
 
 # Bar order on the funding-by-theme chart.
 THEME_ORDER = (
-    "HFCs consumption",
-    "HCFCs consumption",
-    "HCFCs production",
+    "HFC Consumption",
+    "HCFC Consumption",
+    "HCFC production",
     "Other ODS consumption",
     "Other ODS production",
     "Energy efficiency",
@@ -24,11 +24,11 @@ THEME_ORDER = (
 )
 
 THEME_STRUCTURE = [
-    {"items": [{"label": "HFCs consumption", "color": "#025B80"}]},
+    {"items": [{"label": "HFC Consumption", "color": "#025B80"}]},
     {
         "items": [
-            {"label": "HCFCs consumption", "color": "#026F9E"},
-            {"label": "HCFCs production", "color": "#026F9E"},
+            {"label": "HCFC Consumption", "color": "#026F9E"},
+            {"label": "HCFC production", "color": "#026F9E"},
         ]
     },
     {
@@ -110,18 +110,18 @@ THEME_BY_CLUSTER_CODE = {
     "ECIND": "Emission control",
     "EE": "Energy efficiency",
     "GOV": "Institutional strengthening",
-    "HCFCIND": "HCFCs consumption",
-    "HPMP1": "HCFCs consumption",
-    "HPMP2": "HCFCs consumption",
-    "HPMP3": "HCFCs consumption",
-    "HPMP4": "HCFCs consumption",
-    "HPPMP1": "HCFCs production",
-    "HPPMP2": "HCFCs production",
-    "HPPMP3": "HCFCs production",
-    "HFCIND": "HFCs consumption",
-    "KIP1": "HFCs consumption",
-    "KIP2": "HFCs consumption",
-    "KIP3": "HFCs consumption",
+    "HCFCIND": "HCFC Consumption",
+    "HPMP1": "HCFC Consumption",
+    "HPMP2": "HCFC Consumption",
+    "HPMP3": "HCFC Consumption",
+    "HPMP4": "HCFC Consumption",
+    "HPPMP1": "HCFC production",
+    "HPPMP2": "HCFC production",
+    "HPPMP3": "HCFC production",
+    "HFCIND": "HFC Consumption",
+    "KIP1": "HFC Consumption",
+    "KIP2": "HFC Consumption",
+    "KIP3": "HFC Consumption",
     "OOI": "Other ODS consumption",
     # Obsolete, so the mapped-clusters check skips it, but projects still use it.
     "OOIP": "Other ODS production",
