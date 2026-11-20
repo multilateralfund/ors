@@ -145,7 +145,7 @@ COUNTRY_SECTOR_ORDER = (
 # Each of these gets its own row; everything else sums into one. WMO is an
 # implementer-in-waiting and is simply absent until it has projects.
 IMPLEMENTING_AGENCY_NAMES = ("UNDP", "UNEP", "UNIDO", "World Bank", "WMO")
-BILATERAL_LABEL = "Bilateral Agencies"
+BILATERAL_LABEL = "Bilateral agencies"
 
 EUROPE_ABBR = "EUR"
 EUROPE_AND_CENTRAL_ASIA_NAME = "Region: Europe and Central Asia"

@@ -747,7 +747,7 @@ class TestFundValues(BaseTest):
                 support_cost_psc=0,
             )
         table = self.fund(user)["by_agency"]["value"]
-        assert table["categories"] == ["UNDP", "Bilateral Agencies"]
+        assert table["categories"] == ["UNDP", "Bilateral agencies"]
         assert table["series"][1]["data"][-1] == "$200"
         assert table["series"][0]["data"][-1] == "2"
 
