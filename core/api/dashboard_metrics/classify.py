@@ -30,8 +30,11 @@ NON_LVC = "Non-LVC"
 # signal, not a fallback: it is curated, it covers the whole portfolio, and it
 # reproduces the published figures. Project.substance_type is read nowhere -
 # it is deprecated and null on roughly two thirds of the projects.
+# HFC-23 by-product control (EC1) is not part of the HFC family: the client's
+# HFC funding figure leaves it out. It has a theme of its own instead (see
+# HFC23_CLUSTER_CODES).
 HFC_CLUSTER_CODES = frozenset(
-    {"HFCIND", "KIP1", "KIP2", "KIP3", "KPP1", "KPP2", "KPP3", "EC1"}
+    {"HFCIND", "KIP1", "KIP2", "KIP3", "KPP1", "KPP2", "KPP3"}
 )
 HCFC_CLUSTER_CODES = frozenset(
     {

@@ -21,6 +21,7 @@ THEME_ORDER = (
     "Emission control",
     "Institutional strengthening",
     "Atmospheric Monitoring",
+    "Revolving fund",
 )
 
 THEME_STRUCTURE = [
@@ -41,6 +42,7 @@ THEME_STRUCTURE = [
     {"items": [{"label": "Disposal", "color": "#43B4E4"}]},
     {"items": [{"label": "Emission control", "color": "#6AC5EC"}]},
     {"items": [{"label": "Atmospheric Monitoring", "color": "#94D9F6"}]},
+    {"items": [{"label": "Revolving fund", "color": "#ABE3FA"}]},
     {"items": [{"label": "Institutional strengthening", "color": "#BFECFF"}]},
 ]
 
@@ -128,6 +130,7 @@ THEME_BY_CLUSTER_CODE = {
     "OOPPP": "Other ODS production",
     "OOSP": "Other ODS consumption",
     "ATMON": "Atmospheric Monitoring",
+    "AFM": "Revolving fund",  # Alternative Financing Mechanism
 }
 
 # Clusters that deliberately have no theme. Their funding is reported as
@@ -135,7 +138,6 @@ THEME_BY_CLUSTER_CODE = {
 KNOWN_UNMAPPED_CLUSTER_CODES = frozenset(
     {
         "AGC",  # Agency Programme
-        "AFM",  # Alternative Financing Mechanism
         "KPP1",  # Kigali Implementation Plan Production Stage 1
         "KPP2",  # Kigali Implementation Plan Production Stage 2
         "KPP3",  # Kigali Implementation Plan Production Stage 3

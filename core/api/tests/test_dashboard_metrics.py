@@ -1405,6 +1405,15 @@ class TestSubstanceFamilySplit:
         assert classify.substance_family_detail(project) == classify.HFC
         assert classify.substance_family(project) == classify.HFC
 
+    def test_hfc23_by_product_control_is_not_hfc_funding(self):
+        """The client's HFC funding figure leaves HFC-23 (EC1) out."""
+        project = self.cluster_project("EC1")
+
+        assert classify.substance_family(project) is None
+        assert classify.project_theme(project, production=False) == (
+            classify.THEME_HFC23
+        )
+
     def test_the_annex_fallback_finds_hcfcs_in_annex_c_group_one(self):
         project = self.project(cluster=None)
         ProjectOdsOdpFactory(
@@ -1757,6 +1766,31 @@ class TestCountryValues(BaseTest):
         assert items["Disposal"]["value"] == 26_750
         assert items["Disposal"]["displayValue"] == "$26,750"
         assert items["Energy efficiency"]["value"] == 0
+
+    def test_alternative_financing_is_charted_as_revolving_fund(
+        self, user, ongoing_status
+    ):
+        """It is in the callout total, so it needs a bar of its own."""
+        brazil = CountryFactory(name="Brazil", iso3="BRA")
+        for code, fund in (("HPMP1", 500), ("AFM", 300)):
+            approved_project(
+                country=brazil,
+                status=ongoing_status,
+                cluster=ProjectClusterFactory(code=code, name=code),
+                total_fund=fund,
+                support_cost_psc=0,
+            )
+
+        metrics = self.entry(user)
+        items = {
+            item["label"]: item
+            for group in metrics["theme_funding"]["value"]["groups"]
+            for item in group["items"]
+        }
+        assert items["Revolving fund"]["value"] == 300
+        assert items["Revolving fund"]["displayValue"] == "$300"
+        assert metrics["theme_total"]["value"] == "$800"
+        assert metrics["theme_unmapped"]["value"] in (None, "$0", 0)
 
     def test_funding_with_no_theme_is_reported_beside_the_total(
         self, user, ongoing_status
