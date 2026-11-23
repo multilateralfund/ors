@@ -213,15 +213,9 @@ const getColumnDefs = (
       minWidth: 150,
     },
     {
-      headerName: pcrFieldsMapping.agency,
-      valueGetter: (params: ValueGetterParams) =>
-        params.data.isMetaproject
-          ? params.data.lead_agency
-          : params.data.agency,
-      tooltipValueGetter: (params: ITooltipParams) =>
-        params.data.isMetaproject
-          ? params.data.lead_agency
-          : params.data.agency,
+      headerName: pcrFieldsMapping.lead_agency,
+      field: 'lead_agency',
+      tooltipField: 'lead_agency',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     },
     {

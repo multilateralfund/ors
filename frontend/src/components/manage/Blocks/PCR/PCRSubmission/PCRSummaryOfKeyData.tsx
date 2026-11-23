@@ -40,6 +40,7 @@ import {
   getComputedFields,
   getEnterpriseAddresses,
   isProjectNotApproved,
+  getPastedNumber,
 } from '../utils'
 import {
   summaryOfKeyDataField,
@@ -306,21 +307,22 @@ export const getSummaryTableColumnDefs = () => [
       formatNumberProjectValue(params.data?.odp_phase_out_approved, 1, 1),
   },
   {
-    headerName: 'ODP phase out (Actual)',
+    headerName: 'ODP phase-out (Actual)',
     minWidth: 120,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.odp_phase_out_actual, 1, 1),
   },
   {
-    headerName: 'HFCs PHASED-DOWN\n(CO2 eq-tonnes) (Approved)',
+    headerName: 'HFCs phased-down\n(CO₂ eq-tonnes) (Approved)',
     headerClass: 'ag-text-center [&_.ag-header-cell-text]:whitespace-pre-line',
-    minWidth: 180,
+    minWidth: 160,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.hfc_phase_down_co2_approved, 0, 0),
   },
   {
-    headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)',
-    minWidth: 140,
+    headerName: 'HFCs phased-down\n(CO₂ eq-tonnes) (Actual)',
+    headerClass: 'ag-text-center [&_.ag-header-cell-text]:whitespace-pre-line',
+    minWidth: 160,
     valueGetter: (params: ValueGetterParams<ProjectType>) =>
       formatNumberProjectValue(params.data?.hfc_phase_down_co2_actual, 0, 0),
   },
@@ -557,6 +559,17 @@ const PCRSummaryOfKeyData = () => {
     )
   }
 
+  const setFundsDisbursed = (value: string) => {
+    if (isNaN(Number(value))) {
+      return
+    }
+
+    updateSummaryData((projectData) => ({
+      ...projectData,
+      funds_disbursed: value,
+    }))
+  }
+
   const updateAlternativeTechnology = (
     index: number,
     field: keyof PCRAlternativeTechnologyType,
@@ -737,17 +750,26 @@ const PCRSummaryOfKeyData = () => {
                             className="!m-0 w-40"
                             value={summaryData.funds_disbursed}
                             withoutDefaultValue={true}
-                            onChange={(event) => {
-                              const value = event.target.value
+                            onChange={(event) =>
+                              setFundsDisbursed(event.target.value)
+                            }
+                            onPaste={(event) => {
+                              event.preventDefault()
 
-                              if (isNaN(Number(value))) {
-                                return
-                              }
+                              const input = event.currentTarget
+                              const start = input.selectionStart ?? 0
+                              const end =
+                                input.selectionEnd ?? input.value.length
 
-                              updateSummaryData((projectData) => ({
-                                ...projectData,
-                                funds_disbursed: value,
-                              }))
+                              const pastedValue = getPastedNumber(
+                                event.clipboardData,
+                              )
+
+                              setFundsDisbursed(
+                                input.value.slice(0, start) +
+                                  pastedValue +
+                                  input.value.slice(end),
+                              )
                             }}
                           />
                           <FieldErrorIndicator

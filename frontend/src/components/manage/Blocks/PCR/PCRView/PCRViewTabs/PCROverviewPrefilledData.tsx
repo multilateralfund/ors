@@ -17,11 +17,16 @@ import {
   borderedContainerClassname,
 } from '../../constants'
 
+import { flatMap, isEqual, uniqWith } from 'lodash'
 import cx from 'classnames'
 
 const PCROverviewPrefilledData = () => {
   const { pcr: pcrData } = useContext(PCRDataContext)
   const pcr = pcrData.data as PCRResponse
+
+  const alternativeTechnologies = flatMap(pcr.pcr_projects, (project) =>
+    uniqWith(project.alternative_technologies ?? [], isEqual),
+  )
 
   const [isFundingExpanded, setIsFundingExpanded] = useState(false)
 
@@ -33,6 +38,7 @@ const PCROverviewPrefilledData = () => {
     <>
       <PCROverviewProjectOverview
         numberEnterprises={pcr.total_number_of_enterprises}
+        alternativeTechnologies={alternativeTechnologies}
       />
       <div className={cx('mb-9 flex flex-col', borderedContainerClassname)}>
         <div className="flex flex-wrap justify-between gap-4 bg-[#f4f5f6] px-6 py-4">
