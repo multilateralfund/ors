@@ -39,7 +39,6 @@ export interface PCRDefaultData {
   phase_out_co2_eq_t_actual: string | null
   phase_out_co2_eq_t_approved: string | null
   total_number_of_enterprises: string | null
-  total_number_of_trainnes: string | null
 }
 
 type AdditionalCommentType = { entity: string; comment: string }
@@ -52,6 +51,7 @@ export interface PCROverviewProps {
   total_mlf_funding_disbursed: number
   total_mlf_funding_returned: number
   total_number_of_enterprises: number
+  alternative_technologies: PCRAlternativeTechnologyType[]
 }
 
 export interface PCROverviewData {

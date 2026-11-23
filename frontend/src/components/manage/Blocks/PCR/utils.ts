@@ -76,8 +76,9 @@ const cleanNumber = (value: string) => {
 
 const cleanDate = (value: string) => value.trim() || undefined
 
-const isAlternativeTechnologySent = (entry: PCRAlternativeTechnologyType) =>
-  entry.substance_from !== null || entry.substance_to !== null
+export const isAlternativeTechnologySent = (
+  entry: PCRAlternativeTechnologyType,
+) => entry.substance_from !== null || entry.substance_to !== null
 
 export const isEnterpriseSent = (entry: PCREnterpriseType) =>
   hasText(entry.name) || hasText(entry.address)
@@ -198,6 +199,11 @@ export const alignSummaryOfKeyDataErrors = (
 
   return { ...errors, [summaryOfKeyDataField]: alignedErrors }
 }
+
+export const getValueToDisplay = (
+  options: OptionsType[],
+  value: number | null,
+) => options.find((option) => option.id === value)?.name ?? ''
 
 export const getOtherOptionId = (options: OptionsType[]) =>
   find(options, (option) => lowerCase(option.name).includes('other'))?.id
@@ -747,3 +753,42 @@ export const getPcrHiddenFilters = (view: 'list' | 'table' | null) =>
 
 export const isProjectNotApproved = (project?: ProjectType) =>
   !!project?.submission_status && project.submission_status !== 'Approved'
+
+const getLangFromHTML = (html: string) => {
+  if (!html) {
+    return null
+  }
+
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+
+  return (
+    doc.documentElement.getAttribute('lang') ||
+    doc.body.getAttribute('lang') ||
+    null
+  )
+}
+
+const getNumberSeparators = (lang?: string) => {
+  try {
+    const formattedNumber = new Intl.NumberFormat(lang).formatToParts(1234567.8)
+
+    return {
+      group: formattedNumber.find(({ type }) => type === 'group')?.value ?? ',',
+      decimal:
+        formattedNumber.find(({ type }) => type === 'decimal')?.value ?? '.',
+    }
+  } catch {
+    return { group: ',', decimal: '.' }
+  }
+}
+
+export const getPastedNumber = (clipboardData: DataTransfer) => {
+  const text = clipboardData.getData('text')
+  const lang = getLangFromHTML(clipboardData.getData('text/html')) ?? undefined
+  const separators = getNumberSeparators(lang)
+
+  return text
+    .replace(/\s/g, '')
+    .replaceAll(separators.group, '')
+    .replace(separators.decimal, '.')
+}
