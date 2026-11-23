@@ -11,10 +11,11 @@ from rest_framework.decorators import action
 from core.api.serializers.project_completion_report import (
     PCRDetailSerializer,
     PCRVersionSerializer,
-    HISTORY_DESCRIPTION_SUBMIT_V1,
-    HISTORY_DESCRIPTION_RESUBMIT_V2,
-    HISTORY_DESCRIPTION_REQUEST_ADJUSTMENTS_V2,
-    HISTORY_DESCRIPTION_APPROVE_V3,
+    HISTORY_DESCRIPTION_ENDORSE,
+    HISTORY_DESCRIPTION_RESUBMIT,
+    HISTORY_DESCRIPTION_SEND_BACK,
+    HISTORY_DESCRIPTION_SEND_BACK_ENDORSED,
+    HISTORY_DESCRIPTION_SUBMIT,
 )
 from core.api.utils import log_pcr_history
 from core.api.views.project_completion_report.pcr_validation import (
@@ -30,10 +31,13 @@ from core.tasks import send_pcr_notification
 class PCRWorkflowMixin:
     """
     PCR workflow:
-        V1 Draft -> submit -> V2 Revision (V1 is archived as 'Initial submission')
-        V2 Revision -> request_adjustments -> V2 Revision (adjustments requested)
-        V2 Revision (adjustments requested) -> submit -> V2 Revision (no new version)
-        V2 Revision -> approve -> V3 Approved version (V2 is archived)
+        V1 Draft -> submit -> V2 Submitted (V1 is archived)
+        V2/V3 Submitted -> send_back_for_revision -> Revision (no new version)
+        V2/V3 Revision -> submit -> Submitted (no new version)
+        V2 Submitted -> endorse -> V3 Endorsed (V2 is archived)
+        V3 Submitted -> endorse -> V3 Endorsed (no new version)
+        V3 Endorsed -> send_back_for_revision -> V3 Revision (no new version)
+    There are at most 3 versions: V1 and V2 archived, V3 the current one.
     """
 
     def _get_locked_pcr(self):
@@ -85,12 +89,12 @@ class PCRWorkflowMixin:
 
     @extend_schema(
         description="""
-        Submit the PCR for MLFS review, locking it for the lead agency.
-        A version 1 'Draft' PCR is archived as 'Initial submission' and the PCR is
-        increased to version 2, 'Revision'.
-        The submission date is set to the current date.
-        A version 2 PCR that had adjustments requested is resubmitted without
-        creating a new version and the revised submission date is set to the current date.
+        Submit the PCR to the Secretariat, locking it for the lead agency.
+        A version 1 'Draft' PCR is archived (as 'Draft') and the PCR is increased to
+        version 2, 'Submitted'. The submission date is set to the current date.
+        A version 2 or 3 PCR in 'Revision' status (sent back by the Secretariat) is
+        resubmitted without creating a new version, and the revised submission date
+        is set to the current date.
         An email notification is sent to the addresses set for agency PCR submission
         notifications (Secretariat).
         All the projects of the meta project should be approved, otherwise the
@@ -110,13 +114,12 @@ class PCRWorkflowMixin:
             pcr = self._get_locked_pcr()
             is_initial_submission = pcr.version == 1 and pcr.status == PCR.Status.DRAFT
             is_resubmission = (
-                pcr.version == 2
-                and pcr.status == PCR.Status.REVISION_ADJUSTMENTS_REQUESTED
+                pcr.version in (2, 3) and pcr.status == PCR.Status.REVISION
             )
             if not (is_initial_submission or is_resubmission):
                 return self._invalid_transition(
                     "PCR can only be submitted if it is in 'Draft' status and version 1 "
-                    "or in 'Revision (adjustments requested)' status and version 2."
+                    "or in 'Revision' status."
                 )
             not_approved_response = self._not_approved_projects(pcr, "submitted")
             if not_approved_response:
@@ -125,15 +128,14 @@ class PCRWorkflowMixin:
             if incomplete_response:
                 return incomplete_response
             if is_initial_submission:
-                pcr.increase_version(
-                    request.user, archived_status=PCR.Status.INITIAL_SUBMISSION
-                )
+                # the archived version 1 keeps the 'Draft' status
+                pcr.increase_version(request.user)
                 pcr.submission_date = timezone.now().date()
-                history_description = HISTORY_DESCRIPTION_SUBMIT_V1
+                history_description = HISTORY_DESCRIPTION_SUBMIT
             else:
                 pcr.revised_submission_date = timezone.now().date()
-                history_description = HISTORY_DESCRIPTION_RESUBMIT_V2
-            pcr.status = PCR.Status.REVISION
+                history_description = HISTORY_DESCRIPTION_RESUBMIT
+            pcr.status = PCR.Status.SUBMITTED
             pcr.save()
             log_pcr_history(
                 pcr,
@@ -149,9 +151,9 @@ class PCRWorkflowMixin:
 
     @extend_schema(
         description="""
-        Send the PCR back to the lead agency for adjustments, unlocking it.
-        The PCR should be in 'Revision' status and version 2.
-        The version is not changed.
+        Send the PCR back to the lead agency for revision, unlocking it.
+        The PCR should be in 'Submitted' status (version 2 or 3) or in 'Endorsed'
+        status (version 3). It moves to 'Revision' and the version is not changed.
         """,
         request=None,
         responses={
@@ -160,20 +162,26 @@ class PCRWorkflowMixin:
         },
     )
     @action(methods=["POST"], detail=True)
-    def request_adjustments(self, request, *args, **kwargs):
+    def send_back_for_revision(self, request, *args, **kwargs):
         with transaction.atomic():
             pcr = self._get_locked_pcr()
-            if pcr.version != 2 or pcr.status != PCR.Status.REVISION:
+            is_submitted = pcr.version in (2, 3) and pcr.status == PCR.Status.SUBMITTED
+            is_endorsed = pcr.version == 3 and pcr.status == PCR.Status.ENDORSED
+            if not (is_submitted or is_endorsed):
                 return self._invalid_transition(
-                    "Adjustments can only be requested if the PCR is in "
-                    "'Revision' status and version 2."
+                    "PCR can only be sent back for revision if it is in 'Submitted' "
+                    "or 'Endorsed' status."
                 )
-            pcr.status = PCR.Status.REVISION_ADJUSTMENTS_REQUESTED
+            pcr.status = PCR.Status.REVISION
             pcr.save()
             log_pcr_history(
                 pcr,
                 request.user,
-                HISTORY_DESCRIPTION_REQUEST_ADJUSTMENTS_V2,
+                (
+                    HISTORY_DESCRIPTION_SEND_BACK_ENDORSED
+                    if is_endorsed
+                    else HISTORY_DESCRIPTION_SEND_BACK
+                ),
                 lock_action=PCRHistory.LockAction.UNLOCKED,
             )
 
@@ -181,12 +189,14 @@ class PCRWorkflowMixin:
 
     @extend_schema(
         description="""
-        Approve and finalize the PCR.
-        The PCR should be in 'Revision' status and version 2.
-        Version 2 is archived and the PCR is increased to version 3, 'Approved version',
-        which can no longer be edited.
+        Endorse the PCR, which can then no longer be edited (unless it is sent back
+        for revision).
+        The PCR should be in 'Submitted' status.
+        On the first endorsement, version 2 is archived (as 'Submitted') and the PCR is
+        increased to version 3. A version 3 PCR that was sent back for revision and
+        resubmitted is endorsed again without creating a new version.
         The approval date is set to the current date.
-        No email notification is sent, approved PCRs are highlighted in the PCR listing.
+        No email notification is sent, endorsed PCRs are highlighted in the PCR listing.
         All the PCR required data should be filled, otherwise the response has the
         errors by field.
         """,
@@ -197,21 +207,23 @@ class PCRWorkflowMixin:
         },
     )
     @action(methods=["POST"], detail=True)
-    def approve(self, request, *args, **kwargs):
+    def endorse(self, request, *args, **kwargs):
         with transaction.atomic():
             pcr = self._get_locked_pcr()
-            if pcr.version != 2 or pcr.status != PCR.Status.REVISION:
+            if pcr.version not in (2, 3) or pcr.status != PCR.Status.SUBMITTED:
                 return self._invalid_transition(
-                    "PCR can only be approved if it is in 'Revision' status and version 2."
+                    "PCR can only be endorsed if it is in 'Submitted' status."
                 )
-            incomplete_response = self._incomplete_pcr(pcr, "approved")
+            incomplete_response = self._incomplete_pcr(pcr, "endorsed")
             if incomplete_response:
                 return incomplete_response
-            pcr.increase_version(request.user)
-            pcr.status = PCR.Status.APPROVED
+            if pcr.version == 2:
+                # the archived version 2 keeps the 'Submitted' status
+                pcr.increase_version(request.user)
+            pcr.status = PCR.Status.ENDORSED
             pcr.approval_date = timezone.now().date()
             pcr.save()
-            log_pcr_history(pcr, request.user, HISTORY_DESCRIPTION_APPROVE_V3)
+            log_pcr_history(pcr, request.user, HISTORY_DESCRIPTION_ENDORSE)
 
         return Response(self.get_serializer(pcr).data, status=status.HTTP_200_OK)
 

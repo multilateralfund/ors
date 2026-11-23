@@ -124,8 +124,8 @@ class PCRProjectViewSet(
         "update",
         "partial_update",
         "submit",
-        "request_adjustments",
-        "approve",
+        "send_back_for_revision",
+        "endorse",
         "versions",
         "download_supporting_evidence",
     ]
@@ -150,9 +150,9 @@ class PCRProjectViewSet(
             return [HasPCREditAccess]
         if self.action == "submit":
             return [HasPCRSubmitAccess]
-        if self.action == "request_adjustments":
+        if self.action == "send_back_for_revision":
             return [HasPCRRequestAdjustmentsAccess]
-        if self.action == "approve":
+        if self.action == "endorse":
             return [HasPCRApproveAccess]
         return [DenyAll]
 
@@ -160,7 +160,7 @@ class PCRProjectViewSet(
         match self.action:
             case "create" | "create_defaults":
                 return PCRCreateSerializer
-            case "retrieve" | "submit" | "request_adjustments" | "approve":
+            case "retrieve" | "submit" | "send_back_for_revision" | "endorse":
                 return PCRDetailSerializer
             case "versions":
                 return PCRVersionSerializer
@@ -184,8 +184,8 @@ class PCRProjectViewSet(
             "list",
             "retrieve",
             "submit",
-            "request_adjustments",
-            "approve",
+            "send_back_for_revision",
+            "endorse",
         ]:
             # used to set editable on serializer
             context["edit_queryset_ids"] = set(
