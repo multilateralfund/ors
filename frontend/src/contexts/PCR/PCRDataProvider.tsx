@@ -28,6 +28,7 @@ import {
 } from '@ors/components/manage/Blocks/PCR/constants'
 import {
   PCRData,
+  PCRAlternativeTechnologyType,
   PCRResultsAssessmentData,
   PCRCausesOfDelayData,
   PCRGenderMainstreamingData,
@@ -41,6 +42,7 @@ import {
   alignSummaryOfKeyDataErrors,
   mergeSaveErrors,
   alignSdgsErrors,
+  isAlternativeTechnologySent,
   isEnterpriseSent,
 } from '@ors/components/manage/Blocks/PCR/utils'
 import PCRDataContext from './PCRDataContext'
@@ -56,6 +58,7 @@ import {
   forEach,
   groupBy,
   isEmpty,
+  isEqual,
   keys,
   map,
   mergeWith,
@@ -63,6 +66,7 @@ import {
   pick,
   reduce,
   uniq,
+  uniqWith,
 } from 'lodash'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
@@ -434,6 +438,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       mlf_funding_disbursed,
       total_mlf_funding_disbursed,
       total_number_of_enterprises,
+      alternative_technologies,
     } = reduce(
       PCRData.summary_of_key_data,
       (acc, entry) => {
@@ -451,6 +456,12 @@ const PCRDataProvider = (props: PropsWithChildren) => {
           entry.enterprises,
           isEnterpriseSent,
         ).length
+        acc.alternative_technologies.push(
+          ...uniqWith(
+            filter(entry.alternative_technologies, isAlternativeTechnologySent),
+            isEqual,
+          ),
+        )
 
         return acc
       },
@@ -458,6 +469,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
         mlf_funding_disbursed: {} as Record<number, number>,
         total_mlf_funding_disbursed: 0,
         total_number_of_enterprises: 0,
+        alternative_technologies: [] as PCRAlternativeTechnologyType[],
       },
     )
 
@@ -486,6 +498,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       total_mlf_funding_disbursed,
       total_mlf_funding_returned,
       total_number_of_enterprises,
+      alternative_technologies,
     }
   }, [projects, PCRData.summary_of_key_data])
 

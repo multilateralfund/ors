@@ -21,12 +21,8 @@ import {
   getSummaryTableColumnDefs,
 } from '../../PCRSubmission/PCRSummaryOfKeyData'
 import { disposalTypeOptions, substanceValueClassname } from '../../constants'
-import { getComputedFields } from '../../utils'
-import {
-  PCRResponse,
-  OptionsType,
-  PCRSummaryOfKeyDataType,
-} from '../../interfaces'
+import { PCRResponse, PCRSummaryOfKeyDataType } from '../../interfaces'
+import { getComputedFields, getValueToDisplay } from '../../utils'
 import { ProjectType } from '@ors/types/api_projects'
 
 import { ColDef, ICellRendererParams } from 'ag-grid-community'
@@ -61,9 +57,6 @@ const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
   enterprises: [],
   equipments: [],
 })
-
-const getValueToDisplay = (options: OptionsType[], value: number | null) =>
-  options.find((option) => option.id === value)?.name ?? ''
 
 const PCRSummaryOfKeyData = () => {
   const {
