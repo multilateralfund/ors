@@ -150,7 +150,7 @@ const getColumnDefs = (
               <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
                 {props.data.pcr_approved_in_latest_meeting && (
                   <Tooltip
-                    title="PCR approved in the most recent meeting"
+                    title="PCR endorsed in the most recent meeting"
                     placement="top"
                     arrow
                   >

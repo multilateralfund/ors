@@ -33,7 +33,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   ad_hoc_pcr: 'Ad-hoc PCR',
   pcr_submission_date: 'PCR submission date',
   pcr_submission_year: 'Submission year',
-  pcr_approval_date: 'PCR approval date',
+  pcr_approval_date: 'PCR endorsement date',
   completed_only: 'Completed',
   title: 'Title',
   metacode: 'Metacode',
