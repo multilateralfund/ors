@@ -193,7 +193,7 @@ class PCRDocumentBuilder:
             ("PCR status", pcr.status),
             ("Submission date", pcr.submission_date),
             ("Revised submission date", pcr.revised_submission_date),
-            ("Approval date", pcr.approval_date),
+            ("Endorsement date", pcr.approval_date),
         ]
         return Fields(items)
 

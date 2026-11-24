@@ -55,10 +55,13 @@ from core.models.substance import Substance
 
 HISTORY_DESCRIPTION_CREATE = "PCR created"
 HISTORY_DESCRIPTION_SAVE = "PCR saved"
-HISTORY_DESCRIPTION_SUBMIT_V1 = "PCR initial submission"
-HISTORY_DESCRIPTION_RESUBMIT_V2 = "PCR resubmission after adjustments"
-HISTORY_DESCRIPTION_REQUEST_ADJUSTMENTS_V2 = "Adjustment requested from Lead Agency"
-HISTORY_DESCRIPTION_APPROVE_V3 = "PCR approved"
+HISTORY_DESCRIPTION_SUBMIT = "PCR initial submission"
+HISTORY_DESCRIPTION_RESUBMIT = "PCR resubmission after revision"
+HISTORY_DESCRIPTION_SEND_BACK = "PCR sent back to Lead Agency for revision"
+HISTORY_DESCRIPTION_SEND_BACK_ENDORSED = (
+    "Endorsed PCR unlocked and sent back to Lead Agency for revision"
+)
+HISTORY_DESCRIPTION_ENDORSE = "PCR endorsed"
 
 
 class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
@@ -981,11 +984,17 @@ class PCRVersionSerializer(serializers.ModelSerializer):
 
 def is_approved_in_latest_meeting(pcr, context):
     """
-    Whether the PCR was approved in the `latest_meeting_approval_period` from the
+    Whether the PCR was endorsed in the `latest_meeting_approval_period` from the
     serializer context (see `get_latest_meeting_approval_period`).
+    A PCR sent back for revision after its endorsement is not highlighted.
     """
     period = context.get("latest_meeting_approval_period")
-    if not pcr or not period or not pcr.approval_date:
+    if (
+        not pcr
+        or not period
+        or not pcr.approval_date
+        or pcr.status != PCR.Status.ENDORSED
+    ):
         return False
     start, end = period
     return (start is None or pcr.approval_date > start) and pcr.approval_date <= end

@@ -107,7 +107,7 @@ class TestMetaProjectLegacyIndividualPCR:
         assert data["legacy_pcr_id"] is None
         assert data["legacy_individual_pcr_id"] == own_old_pcr.id
         assert data["pcr_id"] is None
-        assert data["pcr_status"] == PCR.Status.APPROVED
+        assert data["pcr_status"] == PCR.Status.ENDORSED
         assert data["pcr_submission_date"] is None
 
     def test_legacy_ids_in_listing(
@@ -152,7 +152,7 @@ class TestMetaProjectLegacyIndividualPCR:
         PCRFactory(meta_project=with_pcr)
 
         self.client.force_authenticate(user=admin_user)
-        assert self._get_ids({"pcr_status": PCR.Status.APPROVED}) == {
+        assert self._get_ids({"pcr_status": PCR.Status.ENDORSED}) == {
             own_old_pcr.project.meta_project_id
         }
         assert self._get_ids({"pcr_status": PCR.Status.DRAFT}) == {with_pcr.id}
@@ -161,7 +161,7 @@ class TestMetaProjectLegacyIndividualPCR:
         assert response.status_code == 200
         assert {status["id"] for status in response.data["pcr_status"]} == {
             PCR.Status.DRAFT,
-            PCR.Status.APPROVED,
+            PCR.Status.ENDORSED,
         }
 
     def test_pcr_submission_date_filter(self, admin_user, own_old_pcr):
@@ -192,7 +192,7 @@ class TestOldIndividualPCRViewSet(BaseTest):
         assert data["id"] == own_old_pcr.id
         assert data["project_id"] == own_old_pcr.project_id
         assert data["meta_project_id"] == own_old_pcr.project.meta_project_id
-        assert data["status"] == PCR.Status.APPROVED
+        assert data["status"] == PCR.Status.ENDORSED
         assert data["submission_date"] is None
         assert len(data["learned_lessons"]) == 1
         assert data["learned_lessons"][0]["report_filename"] == "AFG1.pdf"
@@ -337,7 +337,7 @@ class TestImportOldIndividualPCR:
 
         assert OLD_IndividualPCR.objects.count() == 3
         afg = OLD_IndividualPCR.objects.get(project=projects["AFG/PHA/47/TAS/05"])
-        assert afg.status == PCR.Status.APPROVED
+        assert afg.status == PCR.Status.ENDORSED
         assert {
             (lesson.description, lesson.report_filename)
             for lesson in afg.learned_lessons.all()

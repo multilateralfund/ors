@@ -443,7 +443,7 @@ def send_project_recommended_notification(project_ids):
 def send_pcr_notification(pcr_id, is_resubmission=False):
     """
     Notify the Secretariat (MLFS) that an agency submitted a PCR for review or,
-    if `is_resubmission` is set, resubmitted it after adjustments were requested.
+    if `is_resubmission` is set, resubmitted it after it was sent back for revision.
     """
     pcr = PCR.objects.select_related("meta_project").get(id=pcr_id)
 

@@ -5,6 +5,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
   SubSectionTitle,
+  NoDataReported,
   getCollapseIcon,
   detailItem,
   dateDetailItem,
@@ -142,11 +143,11 @@ const PCROverviewProjectOverview = ({
               replacement technology
             </span>
           </span>
-          {isAltTechsExpanded && (
-            <>
-              <span className="self-baseline text-[#4D4D4D]">Projects</span>
-              {alternativeTechnologiesData.length > 0 ? (
-                map(
+          {isAltTechsExpanded &&
+            (alternativeTechnologiesData.length > 0 ? (
+              <>
+                <span className="self-baseline text-[#4D4D4D]">Projects</span>
+                {map(
                   alternativeTechnologiesData,
                   ({ substanceFrom, substanceTo, nrEntries }) => {
                     const isHCFC = substanceFrom.startsWith('HCFC')
@@ -183,12 +184,13 @@ const PCROverviewProjectOverview = ({
                       </Fragment>
                     )
                   },
-                )
-              ) : (
-                <span className="col-span-2">-</span>
-              )}
-            </>
-          )}
+                )}
+              </>
+            ) : (
+              <div className="col-span-2">
+                <NoDataReported text="No data reported." />
+              </div>
+            ))}
         </div>
       </div>
     </div>

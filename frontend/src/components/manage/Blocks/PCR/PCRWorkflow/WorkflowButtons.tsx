@@ -27,43 +27,42 @@ const WorkflowButtons = ({
 
   return (
     <>
-      {canSubmitPCR &&
-        (status === 'Draft' ||
-          status === 'Revision (adjustments requested)') && (
-          <IncreaseVersionButton
-            title="Submit to Secretariat"
-            onSubmit={() => {
-              setModalType('submit')
-            }}
-            isDisabled={isSubmitDisabled}
-            className={cx({ 'border border-solid': isSubmitDisabled })}
-          />
-        )}
-      {canApprovePCR && status === 'Revision' && (
+      {canSubmitPCR && (status === 'Draft' || status === 'Revision') && (
         <IncreaseVersionButton
-          title="Approve"
+          title="Submit to Secretariat"
           onSubmit={() => {
-            setModalType('approve')
+            setModalType('submit')
           }}
           isDisabled={isSubmitDisabled}
           className={cx({ 'border border-solid': isSubmitDisabled })}
         />
       )}
-      {canRequestAdjustmentsPCR && status === 'Revision' && (
-        <Button
-          className={cx('border border-solid px-4 py-2', {
-            'border-red-900 bg-white text-red-900': !isSaveDisabled,
-          })}
-          size="large"
-          variant="outlined"
-          onClick={() => {
-            setModalType('request changes')
+      {canApprovePCR && status === 'Submitted' && (
+        <IncreaseVersionButton
+          title="Endorse"
+          onSubmit={() => {
+            setModalType('endorse')
           }}
-          disabled={isSaveDisabled}
-        >
-          Request changes
-        </Button>
+          isDisabled={isSubmitDisabled}
+          className={cx({ 'border border-solid': isSubmitDisabled })}
+        />
       )}
+      {canRequestAdjustmentsPCR &&
+        (status === 'Submitted' || status === 'Endorsed') && (
+          <Button
+            className={cx('border border-solid px-4 py-2', {
+              'border-red-900 bg-white text-red-900': !isSaveDisabled,
+            })}
+            size="large"
+            variant="outlined"
+            onClick={() => {
+              setModalType('send back')
+            }}
+            disabled={isSaveDisabled}
+          >
+            Send back for revision
+          </Button>
+        )}
       <ChangeVersionModal {...{ modalType, setModalType, editPCR }} />
     </>
   )

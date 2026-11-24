@@ -317,7 +317,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
             PCRFactory(
                 meta_project=meta_project,
                 version=3 if approval_date else 1,
-                status=PCR.Status.APPROVED if approval_date else PCR.Status.DRAFT,
+                status=PCR.Status.ENDORSED if approval_date else PCR.Status.DRAFT,
                 approval_date=approval_date,
             )
             meta_projects[code] = (meta_project, approval_date)

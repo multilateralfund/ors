@@ -24,7 +24,6 @@ from core.models.project import Project
 from core.models.project_completion_report import (
     PCR,
     PCRAdditionalComment,
-    PCRHistory,
     PCRProject,
 )
 from core.tasks import send_pcr_notification
@@ -110,17 +109,17 @@ def test_submit_archives_v1_and_creates_v2(
 
     assert response.status_code == 200
     assert response.data["version"] == 2
-    assert response.data["status"] == PCR.Status.REVISION
+    assert response.data["status"] == PCR.Status.SUBMITTED
     assert response.data["submission_date"] is not None
 
     pcr.refresh_from_db()
     assert pcr.version == 2
-    assert pcr.status == PCR.Status.REVISION
+    assert pcr.status == PCR.Status.SUBMITTED
     assert pcr.version_created_by == admin_user
 
     archived = _archived_versions(pcr).get()
     assert archived.version == 1
-    assert archived.status == PCR.Status.INITIAL_SUBMISSION
+    assert archived.status == PCR.Status.DRAFT
     assert archived.addresses == "Initial address"
     assert archived.pcr_projects.count() == 1
     assert archived.additional_comments.get().comment == "V1"
@@ -179,7 +178,7 @@ def test_submit_rejected_while_projects_not_approved(
     response = client.post(_action_url(pcr, "submit"))
 
     assert response.status_code == 200
-    assert response.data["status"] == PCR.Status.REVISION
+    assert response.data["status"] == PCR.Status.SUBMITTED
 
 
 def test_submit_not_blocked_by_withdrawn_or_not_approved_projects(
@@ -199,34 +198,36 @@ def test_submit_not_blocked_by_withdrawn_or_not_approved_projects(
     assert response.status_code == 200
 
 
-def test_request_adjustments_keeps_v2(client, admin_user, pcr):
-    _set_state(pcr, 2, PCR.Status.REVISION)
+def test_send_back_for_revision_keeps_v2(client, admin_user, pcr):
+    _set_state(pcr, 2, PCR.Status.SUBMITTED)
     client.force_authenticate(user=admin_user)
 
-    response = client.post(_action_url(pcr, "request_adjustments"))
+    response = client.post(_action_url(pcr, "send_back_for_revision"))
 
     assert response.status_code == 200
+    assert response.data["status"] == PCR.Status.REVISION
+    assert response.data["is_locked"] is False
     pcr.refresh_from_db()
     assert pcr.version == 2
-    assert pcr.status == PCR.Status.REVISION_ADJUSTMENTS_REQUESTED
+    assert pcr.status == PCR.Status.REVISION
     assert not _archived_versions(pcr).exists()
 
 
-def test_resubmit_after_adjustments_does_not_create_new_version(
+def test_resubmit_after_revision_does_not_create_new_version(
     client, admin_user, pcr, mock_send_pcr_notification, pcr_notifications_enabled
 ):
     client.force_authenticate(user=admin_user)
     client.post(_action_url(pcr, "submit"))
 
     for _ in range(2):
-        response = client.post(_action_url(pcr, "request_adjustments"))
+        response = client.post(_action_url(pcr, "send_back_for_revision"))
         assert response.status_code == 200
         response = client.post(_action_url(pcr, "submit"))
         assert response.status_code == 200
 
     pcr.refresh_from_db()
     assert pcr.version == 2
-    assert pcr.status == PCR.Status.REVISION
+    assert pcr.status == PCR.Status.SUBMITTED
     assert [p.version for p in _archived_versions(pcr)] == [1]
     assert mock_send_pcr_notification.call_args_list == [
         call(pcr.id, is_resubmission=False),
@@ -235,8 +236,8 @@ def test_resubmit_after_adjustments_does_not_create_new_version(
     ]
 
 
-def test_v2_is_editable_while_adjustments_requested(client, admin_user, pcr):
-    _set_state(pcr, 2, PCR.Status.REVISION_ADJUSTMENTS_REQUESTED)
+def test_v2_is_editable_while_in_revision(client, admin_user, pcr):
+    _set_state(pcr, 2, PCR.Status.REVISION)
     client.force_authenticate(user=admin_user)
 
     response = _patch_pcr(client, pcr, {"addresses": "Adjusted address"})
@@ -247,40 +248,100 @@ def test_v2_is_editable_while_adjustments_requested(client, admin_user, pcr):
     assert pcr.version == 2
 
 
-def test_approve_archives_v2_and_creates_final_v3(
+def test_endorse_archives_v2_and_creates_v3(
     client, admin_user, pcr, mock_send_pcr_notification, pcr_notifications_enabled
 ):
     client.force_authenticate(user=admin_user)
     client.post(_action_url(pcr, "submit"))
     _patch_pcr(client, pcr, {"addresses": "MLFS revised address"})
 
-    response = client.post(_action_url(pcr, "approve"))
+    response = client.post(_action_url(pcr, "endorse"))
 
     assert response.status_code == 200
     assert response.data["version"] == 3
-    assert response.data["status"] == PCR.Status.APPROVED
+    assert response.data["status"] == PCR.Status.ENDORSED
     assert response.data["is_editable"] is False
+    assert response.data["is_locked"] is True
 
     pcr.refresh_from_db()
     assert pcr.version == 3
-    assert pcr.status == PCR.Status.APPROVED
+    assert pcr.status == PCR.Status.ENDORSED
     assert pcr.approval_date is not None
     assert response.data["approval_date"] == pcr.approval_date.isoformat()
 
     archived = list(_archived_versions(pcr))
     assert [(p.version, p.status) for p in archived] == [
-        (1, PCR.Status.INITIAL_SUBMISSION),
-        (2, PCR.Status.REVISION),
+        (1, PCR.Status.DRAFT),
+        (2, PCR.Status.SUBMITTED),
     ]
     assert archived[0].addresses == "Initial address"
     assert archived[1].addresses == "MLFS revised address"
     assert archived[1].approval_date is None
-    # only the submission is notified, there is no email on approval
+    # only the submission is notified, there is no email on endorsement
     mock_send_pcr_notification.assert_called_once_with(pcr.id, is_resubmission=False)
 
 
-def test_final_pcr_is_not_editable(client, admin_user, pcr):
-    _set_state(pcr, 3, PCR.Status.APPROVED)
+def test_endorsed_pcr_sent_back_for_revision_keeps_v3(
+    client, admin_user, pcr, mock_send_pcr_notification, pcr_notifications_enabled
+):
+    client.force_authenticate(user=admin_user)
+    client.post(_action_url(pcr, "submit"))
+    client.post(_action_url(pcr, "endorse"))
+    PCR.objects.filter(pk=pcr.pk).update(approval_date=date(2020, 1, 1))
+
+    for cycle in range(2):
+        response = client.post(_action_url(pcr, "send_back_for_revision"))
+        assert response.status_code == 200
+        assert response.data["version"] == 3
+        assert response.data["status"] == PCR.Status.REVISION
+        assert response.data["is_editable"] is True
+        assert response.data["is_locked"] is False
+
+        response = _patch_pcr(client, pcr, {"addresses": f"Revised address {cycle}"})
+        assert response.status_code == 200
+
+        response = client.post(_action_url(pcr, "submit"))
+        assert response.status_code == 200
+        assert response.data["version"] == 3
+        assert response.data["status"] == PCR.Status.SUBMITTED
+        assert response.data["is_locked"] is True
+
+        response = client.post(_action_url(pcr, "endorse"))
+        assert response.status_code == 200
+        assert response.data["version"] == 3
+        assert response.data["status"] == PCR.Status.ENDORSED
+
+    pcr.refresh_from_db()
+    assert pcr.addresses == "Revised address 1"
+    assert pcr.approval_date == date.today()
+    assert pcr.revised_submission_date == date.today()
+    # always v1 - v2 - v3, no new versions after the first endorsement
+    assert [(p.version, p.status) for p in _archived_versions(pcr)] == [
+        (1, PCR.Status.DRAFT),
+        (2, PCR.Status.SUBMITTED),
+    ]
+    # the resubmissions of the endorsed PCR are notified to the Secretariat
+    assert mock_send_pcr_notification.call_args_list == [
+        call(pcr.id, is_resubmission=False),
+        call(pcr.id, is_resubmission=True),
+        call(pcr.id, is_resubmission=True),
+    ]
+
+
+def test_endorsed_pcr_sent_back_from_submitted_v3(client, admin_user, pcr):
+    _set_state(pcr, 3, PCR.Status.SUBMITTED)
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(_action_url(pcr, "send_back_for_revision"))
+
+    assert response.status_code == 200
+    pcr.refresh_from_db()
+    assert (pcr.version, pcr.status) == (3, PCR.Status.REVISION)
+    assert not _archived_versions(pcr).exists()
+
+
+def test_endorsed_pcr_is_not_editable(client, admin_user, pcr):
+    _set_state(pcr, 3, PCR.Status.ENDORSED)
     client.force_authenticate(user=admin_user)
 
     response = _patch_pcr(client, pcr, {"addresses": "Changed"})
@@ -312,14 +373,16 @@ def test_archived_version_can_be_retrieved_but_not_edited(client, admin_user, pc
 @pytest.mark.parametrize(
     "action,version,status",
     [
-        ("submit", 2, PCR.Status.REVISION),
-        ("submit", 3, PCR.Status.APPROVED),
-        ("request_adjustments", 1, PCR.Status.DRAFT),
-        ("request_adjustments", 2, PCR.Status.REVISION_ADJUSTMENTS_REQUESTED),
-        ("request_adjustments", 3, PCR.Status.APPROVED),
-        ("approve", 1, PCR.Status.DRAFT),
-        ("approve", 2, PCR.Status.REVISION_ADJUSTMENTS_REQUESTED),
-        ("approve", 3, PCR.Status.APPROVED),
+        ("submit", 2, PCR.Status.SUBMITTED),
+        ("submit", 3, PCR.Status.SUBMITTED),
+        ("submit", 3, PCR.Status.ENDORSED),
+        ("send_back_for_revision", 1, PCR.Status.DRAFT),
+        ("send_back_for_revision", 2, PCR.Status.REVISION),
+        ("send_back_for_revision", 3, PCR.Status.REVISION),
+        ("endorse", 1, PCR.Status.DRAFT),
+        ("endorse", 2, PCR.Status.REVISION),
+        ("endorse", 3, PCR.Status.REVISION),
+        ("endorse", 3, PCR.Status.ENDORSED),
     ],
 )
 def test_invalid_transitions(client, admin_user, pcr, action, version, status):
@@ -339,7 +402,7 @@ def test_invalid_transitions(client, admin_user, pcr, action, version, status):
 def test_versions_lists_all_versions(client, admin_user, pcr):
     client.force_authenticate(user=admin_user)
     client.post(_action_url(pcr, "submit"))
-    client.post(_action_url(pcr, "approve"))
+    client.post(_action_url(pcr, "endorse"))
     archived_v1 = _archived_versions(pcr).first()
 
     for pcr_id in [pcr.id, archived_v1.id]:
@@ -348,9 +411,9 @@ def test_versions_lists_all_versions(client, admin_user, pcr):
         )
         assert response.status_code == 200
         assert [(v["version"], v["status"]) for v in response.data] == [
-            (1, PCR.Status.INITIAL_SUBMISSION),
-            (2, PCR.Status.REVISION),
-            (3, PCR.Status.APPROVED),
+            (1, PCR.Status.DRAFT),
+            (2, PCR.Status.SUBMITTED),
+            (3, PCR.Status.ENDORSED),
         ]
         assert response.data[2]["id"] == pcr.id
 
@@ -365,7 +428,7 @@ def test_list_excludes_archived_versions(client, admin_user, pcr):
     results = _results(response)
     assert [row["pcr_id"] for row in results] == [pcr.id]
     assert results[0]["pcr_version"] == 2
-    assert results[0]["pcr_status"] == PCR.Status.REVISION
+    assert results[0]["pcr_status"] == PCR.Status.SUBMITTED
 
 
 def test_project_pcr_filters_ignore_archived_versions(client, admin_user, pcr):
@@ -382,7 +445,7 @@ def test_project_pcr_filters_ignore_archived_versions(client, admin_user, pcr):
 
 
 def test_workflow_actions_permissions(client, user, pcr):
-    for action in ["submit", "request_adjustments", "approve"]:
+    for action in ["submit", "send_back_for_revision", "endorse"]:
         response = client.post(_action_url(pcr, action))
         assert response.status_code == 403
 
@@ -398,7 +461,7 @@ def test_send_pcr_notification(pcr, pcr_notifications_enabled):
 
     assert len(mail.outbox) == 2
     assert "New PCR submission" in mail.outbox[0].subject
-    assert "PCR resubmitted after adjustments" in mail.outbox[1].subject
+    assert "PCR resubmitted after revision" in mail.outbox[1].subject
     assert mail.outbox[0].bcc == ["mlfs@ors.org"]
     assert f"/pcr/{pcr.meta_project_id}/{pcr.id}/" in mail.outbox[1].body
 
@@ -415,8 +478,8 @@ def _meeting(start, end=None, status=Meeting.MeetingStatus.COMPLETED):
     return MeetingFactory.create(date=start, end_date=end, status=status)
 
 
-def _approved_in_latest_meeting(client, pcr, approval_date):
-    _set_state(pcr, 3, PCR.Status.APPROVED)
+def _approved_in_latest_meeting(client, pcr, approval_date, status=PCR.Status.ENDORSED):
+    _set_state(pcr, 3, status)
     PCR.objects.filter(pk=pcr.pk).update(approval_date=approval_date)
     response = client.get(reverse("project-completion-report-list"))
     assert response.status_code == 200
@@ -465,23 +528,53 @@ def test_list_approved_in_latest_meeting_edge_cases(client, admin_user, pcr):
     assert _approved_in_latest_meeting(client, pcr, today) is False
 
 
-def test_approval_date_migration_backfill(client, admin_user, pcr):
-    # pylint: disable-next=import-outside-toplevel
-    from core.api.serializers.project_completion_report import (
-        HISTORY_DESCRIPTION_APPROVE_V3,
-    )
-
-    migration = importlib.import_module("core.migrations.0346_pcr_approval_date")
+def test_list_not_highlighted_when_sent_back_for_revision(client, admin_user, pcr):
     client.force_authenticate(user=admin_user)
-    client.post(_action_url(pcr, "submit"))
-    client.post(_action_url(pcr, "approve"))
-    approved_at = PCRHistory.objects.get(
-        pcr=pcr, description=HISTORY_DESCRIPTION_APPROVE_V3
-    ).created_at
-    PCR.objects.filter(pk=pcr.pk).update(approval_date=None)
+    today = date.today()
+    _meeting(today - timedelta(days=3))
+    approval_date = today - timedelta(days=10)
 
-    migration.set_approval_dates(django_apps, None)
+    assert _approved_in_latest_meeting(client, pcr, approval_date) is True
+    for status in [PCR.Status.REVISION, PCR.Status.SUBMITTED]:
+        assert (
+            _approved_in_latest_meeting(client, pcr, approval_date, status=status)
+            is False
+        )
 
-    pcr.refresh_from_db()
-    assert pcr.approval_date == approved_at.date()
-    assert migration.APPROVE_HISTORY_DESCRIPTION == HISTORY_DESCRIPTION_APPROVE_V3
+
+def test_endorsed_statuses_migration(pcr):
+    migration = importlib.import_module("core.migrations.0349_pcr_endorsed_statuses")
+    meta_project = pcr.meta_project
+    archived_v1 = PCR.objects.create(
+        meta_project=meta_project, latest_pcr=pcr, version=1
+    )
+    archived_v2 = PCR.objects.create(
+        meta_project=meta_project, latest_pcr=pcr, version=2
+    )
+    other_pcr = PCR.objects.create(meta_project=MetaProjectFactory.create(), version=2)
+    old_statuses = {
+        archived_v1.pk: "Initial submission",
+        archived_v2.pk: "Revision",
+        pcr.pk: "Approved version",
+        other_pcr.pk: "Revision (adjustments requested)",
+    }
+    for pk, old_status in old_statuses.items():
+        PCR.objects.really_all().filter(pk=pk).update(status=old_status)
+
+    def _statuses():
+        return dict(
+            PCR.objects.really_all()
+            .filter(pk__in=old_statuses)
+            .values_list("pk", "status")
+        )
+
+    migration.forwards(django_apps, None)
+    assert _statuses() == {
+        archived_v1.pk: PCR.Status.DRAFT,
+        archived_v2.pk: PCR.Status.SUBMITTED,
+        pcr.pk: PCR.Status.ENDORSED,
+        other_pcr.pk: PCR.Status.REVISION,
+    }
+
+    migration.backwards(django_apps, None)
+    assert _statuses() == old_statuses

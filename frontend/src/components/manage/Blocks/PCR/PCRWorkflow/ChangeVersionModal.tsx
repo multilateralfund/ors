@@ -43,15 +43,20 @@ const ChangeVersionModal = ({
         'Are you sure you want to submit this PCR to the MLF Secretariat?',
       label: 'Submit to Secretariat',
     },
-    'request changes': {
-      title: 'request changes for',
-      endpoint: 'request_adjustments',
-      successMessage: 'Changes requested successfully for PCR.',
+    'send back': {
+      title: 'send back',
+      endpoint: 'send_back_for_revision',
+      successMessage: 'PCR sent back for revision successfully.',
+      confirmMessage:
+        pcr.data?.status === 'Endorsed'
+          ? 'Are you sure you want to unlock this endorsed PCR and send it back to the lead agency for revision?'
+          : 'Are you sure you want to send this PCR back to the lead agency for revision?',
+      label: 'Send back for revision',
     },
-    approve: {
-      title: 'approve',
-      endpoint: 'approve',
-      successMessage: 'PCR approved successfully.',
+    endorse: {
+      title: 'endorse',
+      endpoint: 'endorse',
+      successMessage: 'PCR endorsed successfully.',
     },
   }
 
