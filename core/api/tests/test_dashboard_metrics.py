@@ -407,11 +407,12 @@ class TestDashboardMetricsCountry(BaseTest):
                 "kf_projects_ongoing",
                 "kf_funding_approved",
                 "kf_odp_approved",
-                "kf_co2_approved",
                 "theme_total",
                 "theme_unmapped",
             }
         )
+        # A zero CO2-eq approved total is reported as missing, not as 0.
+        assert metrics["kf_co2_approved"]["value"] is None
 
     def test_region_resolves_on_the_same_route(self, user, africa):
         self.client.force_authenticate(user=user)

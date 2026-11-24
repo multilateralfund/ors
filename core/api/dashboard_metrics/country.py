@@ -288,6 +288,12 @@ def kf_funding_disbursed(context: MetricContext) -> float | None:
     return
 
 
+def kf_co2_approved(context: MetricContext) -> str | None:
+    """Approved CO2-eq total; None when nothing was approved, so it shows as empty."""
+    total = phase_out(context.projects, TOTAL_PHASE_OUT_CO2)
+    return format_number(total) if total else None
+
+
 def kf_phased_out(context: MetricContext, fields: tuple[str, ...]) -> float | None:
     """What the reporting cycle says was removed, as against what was approved."""
     response = context.apr.phased_out(fields) if context.apr else None
@@ -847,9 +853,7 @@ COUNTRY_METRICS: tuple[Metric, ...] = (
         formula="sum(Total phase-out (CO2-eq tonnes)) - the approved/planned total",
         db_source="DB-COMPUTABLE",
         src_model_field="Project.total_phase_out_co2_tonnes",
-        compute=lambda context: format_number(
-            phase_out(context.projects, TOTAL_PHASE_OUT_CO2)
-        ),
+        compute=kf_co2_approved,
     ),
     Metric(
         metric_id="trend_ods_consumption",
