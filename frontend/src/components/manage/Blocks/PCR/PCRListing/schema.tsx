@@ -255,6 +255,7 @@ const getColumnDefs = (
               formatDate(params.data.pcr_approval_date),
             tooltipValueGetter: (params: ITooltipParams) =>
               formatDate(params.data.pcr_approval_date),
+            minWidth: 140,
           },
         ]
       : []),

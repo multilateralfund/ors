@@ -376,81 +376,76 @@ const PCRCausesOfDelay = () => {
                     borderedContainerClassname,
                   )}
                 >
+                  <div className="relative">
+                    {DataHeader}
+                    <div className="mb-4 flex justify-end md:absolute md:right-0 md:top-0 md:mb-0">
+                      <DeleteEntityButton
+                        title="Remove delay cluster"
+                        onAction={() => {
+                          onRemoveDelayCluster(pcIndex)
+                        }}
+                      />
+                    </div>
+                  </div>
                   {cdData.length > 0 ? (
-                    <>
-                      <div className="relative">
-                        {DataHeader}
-                        <div className="mb-4 flex justify-end md:absolute md:right-0 md:top-0 md:mb-0">
-                          <DeleteEntityButton
-                            title="Remove delay cluster"
-                            onAction={() => {
-                              onRemoveDelayCluster(pcIndex)
-                            }}
-                          />
-                        </div>
-                      </div>
-                      {map(cdData, (cd, cdIndex) => {
-                        const crtCdName =
-                          find(
-                            rootCauseOfDelayOptions,
-                            (cdOpt) => cdOpt.id === cd.root_cause_id,
-                          )?.name ?? '-'
+                    map(cdData, (cd, cdIndex) => {
+                      const crtCdName =
+                        find(
+                          rootCauseOfDelayOptions,
+                          (cdOpt) => cdOpt.id === cd.root_cause_id,
+                        )?.name ?? '-'
 
-                        return (
-                          <div key={cdIndex}>
-                            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-                              <div className="flex items-center gap-3">
-                                {NrEntity(cdIndex)}
-                                <h4 className="m-0 text-lg font-semibold text-primary">
-                                  {crtCdName}
-                                </h4>
-                                <FieldErrorIndicator
-                                  errors={
-                                    agencyErrors[pcIndex]?.[dcField]?.[cdIndex]
-                                  }
-                                  field="root_cause_id"
-                                />
-                              </div>
-                              <div className="hidden md:block" />
+                      return (
+                        <div key={cdIndex}>
+                          <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+                            <div className="flex items-center gap-3">
+                              {NrEntity(cdIndex)}
+                              <h4 className="m-0 text-lg font-semibold text-primary">
+                                {crtCdName}
+                              </h4>
+                              <FieldErrorIndicator
+                                errors={
+                                  agencyErrors[pcIndex]?.[dcField]?.[cdIndex]
+                                }
+                                field="root_cause_id"
+                              />
+                            </div>
+                            <div className="hidden md:block" />
+                            <PCRTextAreaWidget
+                              {...{ PCRData, setPCRData }}
+                              sectionIdentifier={delayField}
+                              field="description_roots_causes_of_delay"
+                              errors={causesOfDelayErrors}
+                              indexes={[crtTab, pcIndex, cdIndex]}
+                              subFields={['', cdField, dcField]}
+                              rows={2}
+                              className="md:!min-w-[calc(100%-28px)]"
+                            />
+                            <div>
+                              <Label className="md:invisible">
+                                Action taken
+                              </Label>
                               <PCRTextAreaWidget
                                 {...{ PCRData, setPCRData }}
                                 sectionIdentifier={delayField}
-                                field="description_roots_causes_of_delay"
+                                field="action_taken"
                                 errors={causesOfDelayErrors}
                                 indexes={[crtTab, pcIndex, cdIndex]}
                                 subFields={['', cdField, dcField]}
                                 rows={2}
+                                excludeLabel={true}
                                 className="md:!min-w-[calc(100%-28px)]"
                               />
-                              <div>
-                                <Label className="md:invisible">
-                                  Action taken
-                                </Label>
-                                <PCRTextAreaWidget
-                                  {...{ PCRData, setPCRData }}
-                                  sectionIdentifier={delayField}
-                                  field="action_taken"
-                                  errors={causesOfDelayErrors}
-                                  indexes={[crtTab, pcIndex, cdIndex]}
-                                  subFields={['', cdField, dcField]}
-                                  rows={2}
-                                  excludeLabel={true}
-                                  className="md:!min-w-[calc(100%-28px)]"
-                                />
-                              </div>
                             </div>
-                            {cdIndex !== cdData.length - 1 && (
-                              <Divider className="-mx-6 my-4" />
-                            )}
                           </div>
-                        )
-                      })}
-                    </>
+                          {cdIndex !== cdData.length - 1 && (
+                            <Divider className="-mx-6 my-4" />
+                          )}
+                        </div>
+                      )
+                    })
                   ) : (
-                    <>
-                      {DataHeader}
-                      <NoDataReported text="No data reported." />
-                    </>
+                    <NoDataReported text="No data reported." />
                   )}
                 </div>
               </div>
