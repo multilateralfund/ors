@@ -2,7 +2,7 @@
 
 Dear MLFS user,
 
-{% if is_resubmission %}The following project completion report has been resubmitted by the lead agency after adjustments were requested:{% else %}The following project completion report has been submitted by the lead agency for MLFS review:{% endif %}
+{% if is_resubmission %}The following project completion report has been resubmitted by the lead agency after it was sent back for revision:{% else %}The following project completion report has been submitted by the lead agency for MLFS review:{% endif %}
 
     Metacode: {{ pcr.meta_project.umbrella_code }}
     Country: {{ pcr.meta_project.country }}

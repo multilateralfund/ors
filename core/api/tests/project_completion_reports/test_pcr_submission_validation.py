@@ -244,7 +244,7 @@ def test_submit_incomplete_pcr(client, empty_pcr):
 
 
 def test_resubmit_incomplete_pcr(client, pcr):
-    _set_state(pcr, 2, PCR.Status.REVISION_ADJUSTMENTS_REQUESTED)
+    _set_state(pcr, 2, PCR.Status.REVISION)
     PCRAdditionalComment.objects.filter(pcr=pcr).delete()
 
     response = client.post(_action_url(pcr, "submit"))
@@ -255,29 +255,29 @@ def test_resubmit_incomplete_pcr(client, pcr):
     )
     assert response.data["errors"] == {"additional_comments": REQUIRED}
     pcr.refresh_from_db()
-    assert pcr.status == PCR.Status.REVISION_ADJUSTMENTS_REQUESTED
+    assert pcr.status == PCR.Status.REVISION
     assert pcr.revised_submission_date is None
 
 
-def test_approve_incomplete_pcr(client, pcr):
-    _set_state(pcr, 2, PCR.Status.REVISION)
+def test_endorse_incomplete_pcr(client, pcr):
+    _set_state(pcr, 2, PCR.Status.SUBMITTED)
     PCR.objects.filter(pk=pcr.pk).update(completed_by=None)
 
-    response = client.post(_action_url(pcr, "approve"))
+    response = client.post(_action_url(pcr, "endorse"))
 
     assert response.status_code == 400
     assert response.data["error"] == (
-        "PCR cannot be approved, required data is missing in: Overview."
+        "PCR cannot be endorsed, required data is missing in: Overview."
     )
     assert response.data["errors"] == {"completed_by": REQUIRED}
     pcr.refresh_from_db()
     assert pcr.version == 2
-    assert pcr.status == PCR.Status.REVISION
+    assert pcr.status == PCR.Status.SUBMITTED
     assert not PCR.objects.really_all().filter(latest_pcr=pcr).exists()
 
 
 def test_invalid_transition_is_checked_before_data(client, empty_pcr):
-    _set_state(empty_pcr, 3, PCR.Status.APPROVED)
+    _set_state(empty_pcr, 3, PCR.Status.ENDORSED)
 
     response = client.post(_action_url(empty_pcr, "submit"))
 

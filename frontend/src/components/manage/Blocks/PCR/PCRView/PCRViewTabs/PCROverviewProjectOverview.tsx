@@ -1,28 +1,38 @@
-import { useContext } from 'react'
+import { Fragment, useContext, useState } from 'react'
 
 import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
   SubSectionTitle,
+  NoDataReported,
+  getCollapseIcon,
   detailItem,
   dateDetailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
 import { pcrFieldsMapping, borderedContainerClassname } from '../../constants'
+import { PCRAlternativeTechnologyType } from '../../interfaces'
+import { getValueToDisplay } from '../../utils'
 import { useStore } from '@ors/store'
 
-import { find, map, uniq } from 'lodash'
+import { find, groupBy, map, orderBy, uniq } from 'lodash'
+import { HiArrowLongRight } from 'react-icons/hi2'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
 const PCROverviewProjectOverview = ({
   numberEnterprises,
+  alternativeTechnologies,
 }: {
   numberEnterprises: string
+  alternativeTechnologies: PCRAlternativeTechnologyType[]
 }) => {
-  const { pcrMetaproject, pcrDefaultData } = useContext(PCRDataContext)
+  const { pcrMetaproject, pcrDefaultData, substanceOptions } =
+    useContext(PCRDataContext)
   const { countries } = useContext(ProjectsDataContext)
+
+  const [isAltTechsExpanded, setIsAltTechsExpanded] = useState(false)
 
   const { data: defaultData } = pcrDefaultData
   const { country, decisions } = defaultData || {}
@@ -39,6 +49,29 @@ const PCROverviewProjectOverview = ({
     uniq(decisions),
     (decision) => find(allDecisions, (d) => d.id === decision)?.title,
   ).join(', ')
+
+  const alternativeTechnologiesData = orderBy(
+    map(
+      groupBy(
+        alternativeTechnologies,
+        ({ substance_from, substance_to }) =>
+          `${substance_from}-${substance_to}`,
+      ),
+      (entries) => ({
+        substanceFrom: getValueToDisplay(
+          substanceOptions,
+          entries[0].substance_from,
+        ),
+        substanceTo: getValueToDisplay(
+          substanceOptions,
+          entries[0].substance_to,
+        ),
+        nrEntries: entries.length,
+      }),
+    ),
+    'nrEntries',
+    'desc',
+  )
 
   const fieldsValues = [
     detailItem(pcrFieldsMapping.country, countryValue?.name ?? ''),
@@ -76,11 +109,6 @@ const PCROverviewProjectOverview = ({
       numberEnterprises,
       'number',
     ),
-    numberDetailItem(
-      pcrFieldsMapping.total_number_of_trainnes,
-      defaultData?.total_number_of_trainnes as string,
-      'number',
-    ),
   ]
 
   return (
@@ -99,6 +127,70 @@ const PCROverviewProjectOverview = ({
         </div>
         <div className="w-full lg:w-[85%]">
           {detailItem(pcrFieldsMapping.decisions, decisionsValues ?? '')}
+        </div>
+        <Divider className="my-4" />
+        <div className="grid w-fit max-w-full grid-cols-[minmax(0,auto)_auto] items-center gap-x-6 gap-y-3 text-primary sm:gap-x-20">
+          <span
+            className="mb-1 flex cursor-pointer items-start gap-x-2 self-baseline text-xl font-bold"
+            onClick={() => setIsAltTechsExpanded(!isAltTechsExpanded)}
+          >
+            <span className="mt-0.5 flex shrink-0">
+              {getCollapseIcon(isAltTechsExpanded)}
+            </span>
+            <span className="flex flex-wrap items-center gap-x-2 self-baseline">
+              Baseline substance
+              <HiArrowLongRight size={24} />
+              replacement technology
+            </span>
+          </span>
+          {isAltTechsExpanded &&
+            (alternativeTechnologiesData.length > 0 ? (
+              <>
+                <span className="self-baseline text-[#4D4D4D]">Projects</span>
+                {map(
+                  alternativeTechnologiesData,
+                  ({ substanceFrom, substanceTo, nrEntries }) => {
+                    const isHCFC = substanceFrom.startsWith('HCFC')
+                    const isHFC = substanceFrom.startsWith('HFC')
+
+                    return (
+                      <Fragment key={`${substanceFrom}-${substanceTo}`}>
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span
+                            className={cx(
+                              'max-w-[50%] shrink-0 cursor-default truncate text-base',
+                              {
+                                'rounded-full px-3 py-0.5 font-medium':
+                                  isHCFC || isHFC,
+                                'bg-[#e6d7f8] text-[#6b4f9e]': isHCFC,
+                                'bg-[#e6f0f4] text-[#4a7189]': isHFC,
+                              },
+                            )}
+                            title={substanceFrom}
+                          >
+                            {substanceFrom || '-'}
+                          </span>
+                          <HiArrowLongRight size={16} className="shrink-0" />
+                          <span
+                            className="min-w-0 cursor-default truncate text-base"
+                            title={substanceTo}
+                          >
+                            {substanceTo || '-'}
+                          </span>
+                        </div>
+                        <span className="justify-self-end font-medium">
+                          {nrEntries}
+                        </span>
+                      </Fragment>
+                    )
+                  },
+                )}
+              </>
+            ) : (
+              <div className="col-span-2">
+                <NoDataReported text="No data reported." />
+              </div>
+            ))}
         </div>
       </div>
     </div>

@@ -24,10 +24,13 @@ pytestmark = pytest.mark.django_db
 
 HISTORY_DESCRIPTION_CREATE = "PCR created"
 HISTORY_DESCRIPTION_SAVE = "PCR saved"
-HISTORY_DESCRIPTION_SUBMIT_V1 = "PCR initial submission"
-HISTORY_DESCRIPTION_RESUBMIT_V2 = "PCR resubmission after adjustments"
-HISTORY_DESCRIPTION_REQUEST_ADJUSTMENTS_V2 = "Adjustment requested from Lead Agency"
-HISTORY_DESCRIPTION_APPROVE_V3 = "PCR approved"
+HISTORY_DESCRIPTION_SUBMIT = "PCR initial submission"
+HISTORY_DESCRIPTION_RESUBMIT = "PCR resubmission after revision"
+HISTORY_DESCRIPTION_SEND_BACK = "PCR sent back to Lead Agency for revision"
+HISTORY_DESCRIPTION_SEND_BACK_ENDORSED = (
+    "Endorsed PCR unlocked and sent back to Lead Agency for revision"
+)
+HISTORY_DESCRIPTION_ENDORSE = "PCR endorsed"
 
 SUBMIT_DATE = date(2026, 7, 1)
 RESUBMIT_DATE = date(2026, 8, 15)
@@ -132,29 +135,47 @@ def test_workflow_logs_history_and_submission_dates(client, admin_user, pcr):
     assert response.data["submission_date"] == "2026-07-01"
     assert response.data["revised_submission_date"] is None
 
-    _post(client, pcr, "request_adjustments")
+    _post(client, pcr, "send_back_for_revision")
     response = _post(client, pcr, "submit", RESUBMIT_DATE)
     assert response.data["submission_date"] == "2026-07-01"
     assert response.data["revised_submission_date"] == "2026-08-15"
 
-    _post(client, pcr, "approve")
+    _post(client, pcr, "endorse")
 
     pcr.refresh_from_db()
     assert pcr.submission_date == SUBMIT_DATE
     assert pcr.revised_submission_date == RESUBMIT_DATE
     assert _history(pcr, "description", "lock_action") == [
-        (HISTORY_DESCRIPTION_SUBMIT_V1, PCRHistory.LockAction.LOCKED),
-        (HISTORY_DESCRIPTION_REQUEST_ADJUSTMENTS_V2, PCRHistory.LockAction.UNLOCKED),
-        (HISTORY_DESCRIPTION_RESUBMIT_V2, PCRHistory.LockAction.LOCKED),
-        (HISTORY_DESCRIPTION_APPROVE_V3, None),
+        (HISTORY_DESCRIPTION_SUBMIT, PCRHistory.LockAction.LOCKED),
+        (HISTORY_DESCRIPTION_SEND_BACK, PCRHistory.LockAction.UNLOCKED),
+        (HISTORY_DESCRIPTION_RESUBMIT, PCRHistory.LockAction.LOCKED),
+        (HISTORY_DESCRIPTION_ENDORSE, None),
     ]
     assert set(PCRHistory.objects.values_list("user", flat=True)) == {admin_user.id}
+
+
+def test_send_back_endorsed_pcr_logs_history(client, pcr):
+    _post(client, pcr, "submit", SUBMIT_DATE)
+    _post(client, pcr, "endorse")
+    _post(client, pcr, "send_back_for_revision")
+    _post(client, pcr, "submit", RESUBMIT_DATE)
+    _post(client, pcr, "endorse")
+
+    pcr.refresh_from_db()
+    assert pcr.revised_submission_date == RESUBMIT_DATE
+    assert _history(pcr, "description", "lock_action") == [
+        (HISTORY_DESCRIPTION_SUBMIT, PCRHistory.LockAction.LOCKED),
+        (HISTORY_DESCRIPTION_ENDORSE, None),
+        (HISTORY_DESCRIPTION_SEND_BACK_ENDORSED, PCRHistory.LockAction.UNLOCKED),
+        (HISTORY_DESCRIPTION_RESUBMIT, PCRHistory.LockAction.LOCKED),
+        (HISTORY_DESCRIPTION_ENDORSE, None),
+    ]
 
 
 def test_revised_submission_date_tracks_latest_resubmission(client, pcr):
     _post(client, pcr, "submit", SUBMIT_DATE)
     for resubmit_date in [date(2026, 8, 1), date(2026, 9, 1)]:
-        _post(client, pcr, "request_adjustments")
+        _post(client, pcr, "send_back_for_revision")
         _post(client, pcr, "submit", resubmit_date)
 
     pcr.refresh_from_db()
@@ -181,13 +202,13 @@ def test_edits_are_logged_and_cannot_set_submission_dates(client, admin_user, pc
     assert pcr.submission_date == SUBMIT_DATE
     assert pcr.revised_submission_date is None
     assert _history(pcr, "description", "lock_action", "user") == [
-        (HISTORY_DESCRIPTION_SUBMIT_V1, PCRHistory.LockAction.LOCKED, admin_user.id),
+        (HISTORY_DESCRIPTION_SUBMIT, PCRHistory.LockAction.LOCKED, admin_user.id),
         (HISTORY_DESCRIPTION_SAVE, None, admin_user.id),
     ]
 
 
 def test_rejected_edit_of_final_pcr_is_not_logged(client, pcr):
-    PCR.objects.filter(pk=pcr.pk).update(version=3, status=PCR.Status.APPROVED)
+    PCR.objects.filter(pk=pcr.pk).update(version=3, status=PCR.Status.ENDORSED)
 
     response = _patch_pcr(client, pcr, {"addresses": "Changed"})
 
@@ -196,7 +217,7 @@ def test_rejected_edit_of_final_pcr_is_not_logged(client, pcr):
 
 
 def test_failed_transition_is_not_logged(client, pcr):
-    response = _post(client, pcr, "approve")
+    response = _post(client, pcr, "endorse")
 
     assert response.status_code == 400
     assert not PCRHistory.objects.filter(pcr=pcr).exists()
@@ -213,7 +234,7 @@ def test_detail_history_is_shared_by_archived_versions(client, pcr):
         assert response.status_code == 200
         assert [
             (h["description"], h["lock_action"]) for h in response.data["history"]
-        ] == [(HISTORY_DESCRIPTION_SUBMIT_V1, PCRHistory.LockAction.LOCKED)]
+        ] == [(HISTORY_DESCRIPTION_SUBMIT, PCRHistory.LockAction.LOCKED)]
         assert response.data["history"][0]["user"]["username"]
 
 
@@ -222,9 +243,11 @@ def test_detail_history_is_shared_by_archived_versions(client, pcr):
     [
         ([], False),
         (["submit"], True),
-        (["submit", "request_adjustments"], False),
-        (["submit", "request_adjustments", "submit"], True),
-        (["submit", "approve"], True),
+        (["submit", "send_back_for_revision"], False),
+        (["submit", "send_back_for_revision", "submit"], True),
+        (["submit", "endorse"], True),
+        (["submit", "endorse", "send_back_for_revision"], False),
+        (["submit", "endorse", "send_back_for_revision", "submit"], True),
     ],
 )
 def test_lock_follows_workflow(client, pcr, actions, is_locked):
@@ -240,7 +263,7 @@ def test_lock_follows_workflow(client, pcr, actions, is_locked):
 
 def test_list_exposes_submission_dates(client, pcr):
     _post(client, pcr, "submit", SUBMIT_DATE)
-    _post(client, pcr, "request_adjustments")
+    _post(client, pcr, "send_back_for_revision")
     _post(client, pcr, "submit", RESUBMIT_DATE)
 
     response = client.get(reverse("project-completion-report-list"))
@@ -259,7 +282,7 @@ def test_export_submission_log(client, pcr):
         ),
     )
     _post(client, pcr, "submit", SUBMIT_DATE)
-    _post(client, pcr, "request_adjustments")
+    _post(client, pcr, "send_back_for_revision")
     _post(client, pcr, "submit", RESUBMIT_DATE)
 
     response = client.get(

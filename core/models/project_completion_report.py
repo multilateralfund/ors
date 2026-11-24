@@ -85,16 +85,14 @@ class PCR(models.Model):
         OTHER = "Other", "Other"
 
     class Status(models.TextChoices):
-        # Draft is only used for version 1 before it is submitted.
-        # When submitted, version 1 is archived as 'Initial submission'.
+        # Version 1, worked on by the lead agency, until it is first submitted
         DRAFT = "Draft", "Draft"
-        INITIAL_SUBMISSION = "Initial submission", "Initial submission"
+        # Version 2 or 3, sent back to the lead agency for revision
         REVISION = "Revision", "Revision"
-        REVISION_ADJUSTMENTS_REQUESTED = (
-            "Revision (adjustments requested)",
-            "Revision (adjustments requested)",
-        )
-        APPROVED = "Approved version", "Approved version"
+        # Version 2 or 3, with the Secretariat, locked for the lead agency
+        SUBMITTED = "Submitted", "Submitted"
+        # Version 3, locked
+        ENDORSED = "Endorsed", "Endorsed"
 
     meta_project = models.ForeignKey(
         "MetaProject", on_delete=models.PROTECT, related_name="pcrs"
@@ -219,10 +217,10 @@ class PCR(models.Model):
     revised_submission_date = models.DateField(
         null=True,
         blank=True,
-        help_text="Latest resubmission date, after adjustments were requested",
+        help_text="Latest resubmission date, after the PCR was sent back for revision",
     )
     approval_date = models.DateField(
-        null=True, blank=True, help_text="Approval date (version 3)"
+        null=True, blank=True, help_text="Latest endorsement date (version 3)"
     )
     impact_indicators = models.JSONField(
         default=list,
@@ -239,13 +237,13 @@ class PCR(models.Model):
 
     @property
     def is_editable(self):
-        """Archived versions and the final version are locked"""
-        return self.latest_pcr_id is None and self.status != self.Status.APPROVED
+        """Archived versions and the endorsed version are locked"""
+        return self.latest_pcr_id is None and self.status != self.Status.ENDORSED
 
     @property
     def is_locked(self):
-        """The lead agency can't work on the PCR while it is with MLFS or final"""
-        return self.status in [self.Status.REVISION, self.Status.APPROVED]
+        """The lead agency can't work on the PCR while it is submitted or endorsed"""
+        return self.status in [self.Status.SUBMITTED, self.Status.ENDORSED]
 
     @cached_property
     def total_funds_approved(self):
@@ -301,11 +299,13 @@ class PCR(models.Model):
             new_pcr.save()
             return new_pcr
 
-    def increase_version(self, user, archived_status=None):
+    def increase_version(self, user):
+        """
+        Archive a copy of the current version, with its current status, and
+        increase the version of the PCR.
+        """
         archived_pcr = self.copy_pcr()
         archived_pcr.latest_pcr = self
-        if archived_status:
-            archived_pcr.status = archived_status
         archived_pcr.save()
 
         self.version += 1
@@ -978,7 +978,7 @@ class OLD_PCR(models.Model):
     status = models.CharField(
         max_length=32,
         choices=PCR.Status.choices,
-        default=PCR.Status.APPROVED,
+        default=PCR.Status.ENDORSED,
         help_text="Workflow status of the PCR",
     )
     submission_date = models.DateField(
@@ -1135,7 +1135,7 @@ class OLD_IndividualPCR(models.Model):
     status = models.CharField(
         max_length=32,
         choices=PCR.Status.choices,
-        default=PCR.Status.APPROVED,
+        default=PCR.Status.ENDORSED,
         help_text="Workflow status of the PCR",
     )
     submission_date = models.DateField(

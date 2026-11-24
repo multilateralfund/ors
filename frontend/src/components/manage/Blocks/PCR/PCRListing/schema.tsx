@@ -150,7 +150,7 @@ const getColumnDefs = (
               <div className="flex min-w-14 shrink-0 items-center justify-end gap-1">
                 {props.data.pcr_approved_in_latest_meeting && (
                   <Tooltip
-                    title="PCR approved in the most recent meeting"
+                    title="PCR endorsed in the most recent meeting"
                     placement="top"
                     arrow
                   >
@@ -213,15 +213,9 @@ const getColumnDefs = (
       minWidth: 150,
     },
     {
-      headerName: pcrFieldsMapping.agency,
-      valueGetter: (params: ValueGetterParams) =>
-        params.data.isMetaproject
-          ? params.data.lead_agency
-          : params.data.agency,
-      tooltipValueGetter: (params: ITooltipParams) =>
-        params.data.isMetaproject
-          ? params.data.lead_agency
-          : params.data.agency,
+      headerName: pcrFieldsMapping.lead_agency,
+      field: 'lead_agency',
+      tooltipField: 'lead_agency',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     },
     {
@@ -261,6 +255,7 @@ const getColumnDefs = (
               formatDate(params.data.pcr_approval_date),
             tooltipValueGetter: (params: ITooltipParams) =>
               formatDate(params.data.pcr_approval_date),
+            minWidth: 140,
           },
         ]
       : []),

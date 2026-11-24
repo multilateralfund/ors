@@ -157,8 +157,8 @@ const PCROverview = () => {
         )}
       >
         {detailItem(pcrFieldsMapping.completed_by, pcr.completed_by)}
-        {pcr.status === 'Approved version' &&
-          dateDetailItem('Approval date', pcr.approval_date ?? '')}
+        {pcr.status === 'Endorsed' &&
+          dateDetailItem('Endorsement date', pcr.approval_date ?? '')}
       </div>
     </>
   )
