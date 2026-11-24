@@ -336,7 +336,7 @@ export const VersionsDropdown = ({
             >
               <div className="flex items-center justify-between gap-2 whitespace-nowrap hover:text-white">
                 <div className="ml-1">
-                  {status} (v{version})
+                  Version {version}: {status}
                 </div>
                 {!latest_pcr_id && (
                   <span className="mx-1 rounded-md bg-gray-400 p-1 text-xs uppercase text-white">
