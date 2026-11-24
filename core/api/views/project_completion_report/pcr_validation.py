@@ -112,6 +112,15 @@ def _get_overview_errors(pcr):
     )
     if comments_errors:
         errors["additional_comments"] = comments_errors
+
+    # All the indicators should be reported, including the booleans
+    indicators_errors = {
+        indicator["field"]: [SUBMIT_REQUIRED_MESSAGE]
+        for indicator in pcr.impact_indicators or []
+        if indicator.get("value") is None
+    }
+    if indicators_errors:
+        errors["impact_indicators"] = indicators_errors
     return errors
 
 
@@ -170,6 +179,7 @@ def get_pcr_submission_errors(pcr):
       otherwise the errors of the invalid rows by row id
     - sections filled per agency: the errors of each invalid agency by agency id
     - `pcr_projects`: the errors of each invalid PCR project by project id
+    - `impact_indicators`: the required message by indicator field name
     """
     pcr_projects = list(
         PCRProject.objects.filter(pcr=pcr)

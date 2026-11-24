@@ -28,6 +28,12 @@ from core.models.project_completion_report import (
 )
 
 
+def _impact_indicator_value(indicator):
+    if indicator.get("value") is not None:
+        return indicator["value"]
+    return True if indicator["data_type"] == "boolean" else 1
+
+
 def fill_pcr_required_data(pcr):
     """
     Fill all the data required to submit and approve the PCR, for the lead agency
@@ -42,6 +48,10 @@ def fill_pcr_required_data(pcr):
         rating=PCR.Rating.HIGHLY_SATISFACTORY,
         rating_explanation="Explanation",
         completed_by=PCR.CompletedBy.LEAD_AGENCY,
+        impact_indicators=[
+            {**indicator, "value": _impact_indicator_value(indicator)}
+            for indicator in pcr.impact_indicators or []
+        ],
     )
     pcr.refresh_from_db()
     if not pcr.additional_comments.exists():

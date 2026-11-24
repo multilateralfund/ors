@@ -224,6 +224,14 @@ class PCR(models.Model):
     approval_date = models.DateField(
         null=True, blank=True, help_text="Approval date (version 3)"
     )
+    impact_indicators = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "Actual values of the Impact indicators of the PCR projects, built "
+            "when the PCR is created (see core.api.pcr_impact_indicators)"
+        ),
+    )
     objects = PCRManager()
 
     def __str__(self):
@@ -238,12 +246,6 @@ class PCR(models.Model):
     def is_locked(self):
         """The lead agency can't work on the PCR while it is with MLFS or final"""
         return self.status in [self.Status.REVISION, self.Status.APPROVED]
-
-    @cached_property
-    def total_number_of_enterprises(self):
-        return sum(
-            (pcr_project.enterprises.count() for pcr_project in self.pcr_projects.all())
-        )
 
     @cached_property
     def total_funds_approved(self):
