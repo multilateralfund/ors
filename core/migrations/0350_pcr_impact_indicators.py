@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0348_pcr_export"),
+        ("core", "0349_pcr_endorsed_statuses"),
     ]
 
     operations = [
