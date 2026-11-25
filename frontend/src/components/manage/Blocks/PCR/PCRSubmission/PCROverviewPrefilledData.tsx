@@ -33,6 +33,7 @@ const PCROverviewPrefilledData = () => {
       <PCROverviewProjectOverview
         numberEnterprises={fundsByAgency.total_number_of_enterprises.toString()}
         alternativeTechnologies={fundsByAgency.alternative_technologies}
+        isEditable
       />
       <div className={cx('mb-9 flex flex-col', borderedContainerClassname)}>
         <div className="flex flex-wrap justify-between gap-4 bg-[#f4f5f6] px-6 py-4">

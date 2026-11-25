@@ -248,12 +248,20 @@ class PCRDocumentBuilder:
             title="Multilateral Fund (MLF) funding (US$)",
         )
 
+    def _impact_indicators_table(self):
+        # Always added, even if empty, as the Excel export matches the blocks of
+        # the PCRs by their position in the section
+        return Table(
+            ["Indicator", "Actual value"],
+            [
+                [indicator["label"], indicator.get("value")]
+                for indicator in self.pcr.impact_indicators or []
+            ],
+            title="Impact indicators",
+        )
+
     def build_overview(self):
         pcr = self.pcr
-        number_of_enterprises = sum(
-            len(pcr_project.enterprises.all())
-            for pcr_project in self.pcr_projects.values()
-        )
         return [
             Fields(
                 [
@@ -280,14 +288,10 @@ class PCRDocumentBuilder:
                         "HFCs phased down (CO2 eq-tonnes) (Actual)",
                         pcr.phase_out_co2_eq_t_actual,
                     ),
-                    ("Number of enterprises", number_of_enterprises),
-                    (
-                        "Total number of trainees",
-                        self.meta_project.total_number_of_trainnes,
-                    ),
                 ],
                 title="Project overview",
             ),
+            self._impact_indicators_table(),
             self._funding_table(),
             Fields(
                 [

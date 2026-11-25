@@ -40,7 +40,7 @@ import {
   getComputedFields,
   getEnterpriseAddresses,
   isProjectNotApproved,
-  getPastedNumber,
+  getNumberPasteHandler,
 } from '../utils'
 import {
   summaryOfKeyDataField,
@@ -753,24 +753,7 @@ const PCRSummaryOfKeyData = () => {
                             onChange={(event) =>
                               setFundsDisbursed(event.target.value)
                             }
-                            onPaste={(event) => {
-                              event.preventDefault()
-
-                              const input = event.currentTarget
-                              const start = input.selectionStart ?? 0
-                              const end =
-                                input.selectionEnd ?? input.value.length
-
-                              const pastedValue = getPastedNumber(
-                                event.clipboardData,
-                              )
-
-                              setFundsDisbursed(
-                                input.value.slice(0, start) +
-                                  pastedValue +
-                                  input.value.slice(end),
-                              )
-                            }}
+                            onPaste={getNumberPasteHandler(setFundsDisbursed)}
                           />
                           <FieldErrorIndicator
                             errors={groupedErrors.general}

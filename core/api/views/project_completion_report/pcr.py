@@ -25,6 +25,10 @@ from core.api.filters.project_completion_report import (
     PCRProjectFilter,
     project_has_cooperating_agency_q,
 )
+from core.api.pcr_impact_indicators import (
+    build_impact_indicators,
+    represent_impact_indicators,
+)
 from core.api.permissions import (
     DenyAll,
     HasPCRApproveAccess,
@@ -474,8 +478,7 @@ class PCRProjectViewSet(
                 "phase_out_ods_actual": pcr.phase_out_ods_actual,
                 "phase_out_co2_eq_t_approved": pcr.phase_out_co2_eq_t_approved,
                 "phase_out_co2_eq_t_actual": pcr.phase_out_co2_eq_t_actual,
-                "total_number_of_enterprises": pcr.total_number_of_enterprises,
-                "total_number_of_trainnes": meta_project.total_number_of_trainnes,
+                "impact_indicators": represent_impact_indicators(pcr.impact_indicators),
             }
 
         # the projects pending approval have no approval data yet
@@ -505,8 +508,9 @@ class PCRProjectViewSet(
             "phase_out_ods_actual": None,  # no field on meta_project
             "phase_out_co2_eq_t_approved": meta_project.phase_out_co2_eq_t,
             "phase_out_co2_eq_t_actual": None,  # no field on meta_project
-            "total_number_of_enterprises": 0,
-            "total_number_of_trainnes": meta_project.total_number_of_trainnes,
+            "impact_indicators": represent_impact_indicators(
+                build_impact_indicators(meta_project.projects.for_pcr())
+            ),
         }
 
     @extend_schema(

@@ -931,8 +931,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "id": "subsectors_list",
                 "headerName": "Subsector",
                 "column_width": self.COLUMN_WIDTH * 1.5,
+                # sorted in Python, so that the prefetched subsectors are used
                 "method": lambda project, _: ", ".join(
-                    subsector.name for subsector in project.subsectors.all()
+                    sorted(subsector.name for subsector in project.subsectors.all())
                 ),
             },
             {

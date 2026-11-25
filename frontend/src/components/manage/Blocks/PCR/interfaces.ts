@@ -28,6 +28,15 @@ export type PCRFiltersProps = {
   handleParamsChange: (params: { [key: string]: any }) => void
 }
 
+export interface PCRImpactIndicatorType {
+  field: string
+  label: string
+  data_type: 'number' | 'decimal' | 'boolean'
+  value: number | boolean | string | null
+  prefilled_value: number | boolean | null
+  prefilled: boolean
+}
+
 export interface PCRDefaultData {
   country: number
   decisions: number[]
@@ -39,6 +48,7 @@ export interface PCRDefaultData {
   phase_out_co2_eq_t_actual: string | null
   phase_out_co2_eq_t_approved: string | null
   total_number_of_enterprises: string | null
+  impact_indicators: PCRImpactIndicatorType[]
 }
 
 type AdditionalCommentType = { entity: string; comment: string }
@@ -125,6 +135,7 @@ export type PCRResponse = {
   submission_date: string | null
   approval_date: string | null
   total_number_of_enterprises: string
+  impact_indicators: PCRImpactIndicatorType[]
   financial_figures_status: string
   financial_figures_status_explanation: string
   addresses: string
@@ -260,6 +271,7 @@ export type FormattedSupportingEvidencesData = Evidence & { agency_id: number }
 
 export interface PCRData {
   overview: PCROverviewData
+  impact_indicators: PCRImpactIndicatorType[]
   summary_of_key_data: PCRSummaryOfKeyDataType[]
   results_assessment: PCRResultsAssessmentData[]
   delay_causes: PCRCausesOfDelayData[]

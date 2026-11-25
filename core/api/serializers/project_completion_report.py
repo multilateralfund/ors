@@ -10,6 +10,11 @@ from rest_framework import serializers
 
 from core.api.serializers.meeting import DecisionSerializer
 from core.api.serializers.project_history import UserSerializer
+from core.api.pcr_impact_indicators import (
+    apply_impact_indicator_values,
+    build_impact_indicators,
+    represent_impact_indicators,
+)
 from core.api.utils import log_pcr_history
 from core.api.export.projects_inventory_report import project_actual_fund
 from core.api.export.projects_inventory_report import project_apr_co2_actual
@@ -522,6 +527,36 @@ class PCRSustainableDevelopmentGoalSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class PCRImpactIndicatorSerializer(serializers.Serializer):
+    """An impact indicator of the PCR, as returned by the API (read only)"""
+
+    field = serializers.CharField(help_text="Project field name")
+    label = serializers.CharField()
+    data_type = serializers.ChoiceField(choices=["number", "decimal", "boolean"])
+    value = serializers.JSONField(allow_null=True)
+    prefilled_value = serializers.JSONField(
+        allow_null=True,
+        help_text="Value prefilled from the projects when the PCR was created",
+    )
+    prefilled = serializers.BooleanField(
+        help_text="Whether the value is still the one prefilled from the projects"
+    )
+
+
+class PCRImpactIndicatorValueSerializer(serializers.Serializer):
+    """The value of an impact indicator, as sent by the user"""
+
+    field = serializers.CharField()
+    value = serializers.JSONField(allow_null=True, required=False)
+
+
+def validate_impact_indicator_values(indicators, values):
+    indicators, errors = apply_impact_indicator_values(indicators, values)
+    if errors:
+        raise serializers.ValidationError({"impact_indicators": errors})
+    return indicators
+
+
 class PCRHistorySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
@@ -560,6 +595,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
     future_project_recommendations = PCRFutureProjectRecommendationSerializer(many=True)
     supporting_evidences = PCRSupportingEvidenceSerializer(many=True)
     sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(many=True)
+    impact_indicators = serializers.SerializerMethodField()
 
     class Meta:
         model = PCR
@@ -605,11 +641,15 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "approval_date",
             "supporting_evidences",
             "sustainable_development_goals",
-            "total_number_of_enterprises",
+            "impact_indicators",
             "total_funds_approved",
             "total_funds_disbursed",
             "total_funds_returned",
         ]
+
+    @extend_schema_field(PCRImpactIndicatorSerializer(many=True))
+    def get_impact_indicators(self, instance):
+        return represent_impact_indicators(instance.impact_indicators)
 
     def get_editable(self, instance):
         # whether the current user can edit this PCR
@@ -664,6 +704,11 @@ class PCRCreateSerializer(serializers.ModelSerializer):
     sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(
         many=True, required=False
     )
+    impact_indicators = PCRImpactIndicatorValueSerializer(
+        many=True,
+        required=False,
+        help_text="The values of the impact indicators, the list is built by the server",
+    )
 
     class Meta:
         model = PCR
@@ -676,6 +721,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "financial_figures_status",
             "financial_figures_status_explanation",
             "gender_mainstreamings",
+            "impact_indicators",
             "meta_project_id",
             "phase_out_ods_actual",
             "phase_out_ods_approved",
@@ -720,6 +766,13 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             attrs["meta_project"].projects.for_pcr().values_list("id", flat=True)
         )
         validate_pcr_project_references(pcr_projects, allowed_project_ids)
+
+        # The indicators are always built from the projects, the user only sends
+        # the values
+        attrs["impact_indicators"] = validate_impact_indicator_values(
+            build_impact_indicators(attrs["meta_project"].projects.for_pcr()),
+            attrs.get("impact_indicators", []),
+        )
 
         files_by_name = self._get_files_by_name()
 
@@ -829,12 +882,18 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
     )
     delay_causes = PCRDelayCauseSerializer(many=True, required=False)
     learned_lessons = PCRLearnedLessonSerializer(many=True, required=False)
+    impact_indicators = PCRImpactIndicatorValueSerializer(
+        many=True,
+        required=False,
+        help_text="The values of the impact indicators to change, the others are kept",
+    )
 
     class Meta:
         model = PCR
         fields = [
             "additional_comments",
             "submission_date",
+            "impact_indicators",
             "gender_mainstreamings",
             "project_date_approved",
             "project_date_completion",
@@ -871,6 +930,12 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
             "project_id", flat=True
         )
         validate_pcr_project_references(pcr_projects, allowed_project_ids)
+
+        # The list of indicators is fixed at creation, only the values change
+        if "impact_indicators" in attrs:
+            attrs["impact_indicators"] = validate_impact_indicator_values(
+                self.instance.impact_indicators, attrs["impact_indicators"]
+            )
 
         files_by_name = self._get_files_by_name()
 

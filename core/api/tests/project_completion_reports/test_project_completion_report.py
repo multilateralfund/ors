@@ -943,8 +943,8 @@ def test_pcr_create_dafaults(client, admin_user, decision, project_approved_stat
         response.data["phase_out_co2_eq_t_approved"] == meta_project.phase_out_co2_eq_t
     )
     assert response.data["phase_out_co2_eq_t_actual"] is None
-    assert response.data["total_number_of_enterprises"] == 0
-    assert response.data["total_number_of_trainnes"] == 10
+    # no project specific fields set up for the project
+    assert response.data["impact_indicators"] == []
 
 
 def test_pcr_create_defaults_receive_pcr(client, admin_user, decision):
@@ -993,8 +993,7 @@ def test_pcr_create_defaults_receive_pcr(client, admin_user, decision):
         response.data["phase_out_co2_eq_t_approved"] == pcr.phase_out_co2_eq_t_approved
     )
     assert response.data["phase_out_co2_eq_t_actual"] == pcr.phase_out_co2_eq_t_actual
-    assert response.data["total_number_of_enterprises"] == 2
-    assert response.data["total_number_of_trainnes"] == 12
+    assert response.data["impact_indicators"] == []
 
 
 def test_pcr_retrieve(client, admin_user):

@@ -9,7 +9,8 @@ import {
 import Link from '@ors/components/ui/Link/Link'
 import { getFormattedNumericValue } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { PCRVersion } from '../../interfaces'
+import { PCRVersion, PCRImpactIndicatorType } from '../../interfaces'
+import { getImpactIndicatorSource } from '../../utils'
 import {
   borderedContainerClassname,
   borderedValueClassname,
@@ -241,6 +242,28 @@ export const NoDataReported = ({
     )}
   </div>
 )
+
+export const ImpactIndicatorSourceTag = ({
+  indicator,
+}: {
+  indicator: PCRImpactIndicatorType
+}) => {
+  const source = getImpactIndicatorSource(indicator)
+
+  if (!source) {
+    return null
+  }
+
+  return source === 'prefilled' ? (
+    <span className="flex items-center rounded-lg border border-solid border-[#2E708E] px-3 font-semibold italic text-[#2E708E]">
+      Prefilled
+    </span>
+  ) : (
+    <span className="flex items-center rounded-lg border border-solid border-[#9CA3AF] px-3 font-semibold italic text-[#6B7280]">
+      Edited
+    </span>
+  )
+}
 
 export const SelectedEntity = (entity: string) => (
   <h4

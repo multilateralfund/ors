@@ -21,6 +21,7 @@ import {
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import {
   formatErrors,
+  formatImpactIndicatorsErrors,
   hasSectionErrors,
   normalizeErrors,
   getOtherOptionId,
@@ -50,6 +51,7 @@ import {
   flatMap,
   forEach,
   isEmpty,
+  isNil,
   isPlainObject,
   keys,
   map,
@@ -191,6 +193,30 @@ const PCRForm = ({ mode }: { mode: string }) => {
       return updatedErrors
     })
   }, [JSON.stringify(overviewRequiredData), isOtherRating])
+
+  const impactIndicatorsValues = map(
+    PCRData.impact_indicators,
+    ({ field, value }) => ({
+      field,
+      isEmpty: isNil(value) || value === '',
+    }),
+  )
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any>) => {
+      let indicatorsErrors = { ...prev.impact_indicators }
+
+      forEach(impactIndicatorsValues, ({ field, isEmpty }) => {
+        if (isEmpty) {
+          indicatorsErrors[field] = [submitRequiredMessage]
+        } else if (indicatorsErrors[field]?.includes(submitRequiredMessage)) {
+          indicatorsErrors = omit(indicatorsErrors, [field])
+        }
+      })
+
+      return { ...prev, impact_indicators: indicatorsErrors }
+    })
+  }, [JSON.stringify(impactIndicatorsValues)])
 
   const additionalCommentsField = 'additional_comments'
   const additionalCommentsData = overviewData[additionalCommentsField] || []
@@ -484,9 +510,23 @@ const PCRForm = ({ mode }: { mode: string }) => {
         {tabs
           .filter((_, index) => index === currentTab)
           .map(({ id, title, component, shouldDisplayErrors }) => {
-            const tabErrors = formatErrors(
-              tabMapping[id as keyof typeof tabMapping].errors,
-            )
+            const crtTabErrors =
+              tabMapping[id as keyof typeof tabMapping].errors
+            const tabErrors =
+              id === 'overview'
+                ? [
+                    ...formatImpactIndicatorsErrors(
+                      crtTabErrors,
+                      PCRData.impact_indicators,
+                    ),
+                    ...formatErrors(
+                      omit(
+                        crtTabErrors,
+                        map(PCRData.impact_indicators, 'field'),
+                      ),
+                    ),
+                  ]
+                : formatErrors(crtTabErrors)
 
             return (
               <span key={id}>
