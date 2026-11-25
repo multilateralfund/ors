@@ -106,8 +106,8 @@ class PCRDueWriter(BaseWriter):
                 "method": lambda record: record["country"],
             },
             {
-                "id": "agency",
-                "headerName": "Agency",
+                "id": "lead_agency",
+                "headerName": "Lead agency",
                 "method": lambda record: record["lead_agency"],
             },
             {
@@ -133,6 +133,13 @@ class PCRDueWriter(BaseWriter):
                 "id": "ad_hoc_pcr",
                 "headerName": "Ad-hoc PCR",
                 "method": lambda record: "Yes" if record["ad_hoc_pcr"] else "No",
+            },
+            {
+                "id": "status",
+                "headerName": "Status",
+                # the project status for individual meta projects,
+                # Completed/Not completed for MYAs, as in the listing
+                "method": lambda record: record["status"],
             },
             {
                 "id": "date_of_completion",
