@@ -118,6 +118,7 @@ const PCREditWrapper = () => {
     setPCRData((prevData) => ({
       ...prevData,
       overview: pick(pcrData, keys(initialOverviewData)) as PCROverviewData,
+      impact_indicators: pcrData.impact_indicators ?? [],
       summary_of_key_data: pcrData.pcr_projects.map((pcrProject) => {
         const projectData = {
           project_id: pcrProject.project_id,

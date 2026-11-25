@@ -1,5 +1,10 @@
-import { getProjectDuration } from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import { ClipboardEvent } from 'react'
+
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
+import {
+  getProjectDuration,
+  getFormattedNumericValue,
+} from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import {
   cdField,
   pcrFieldsMapping,
@@ -13,6 +18,7 @@ import {
 } from './constants'
 import {
   PCRData,
+  PCRImpactIndicatorType,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
@@ -40,9 +46,9 @@ import {
   flatMap,
   forEach,
   isEmpty,
+  isNil,
   isObject,
   isPlainObject,
-  keys,
   lowerCase,
   map,
   omit,
@@ -339,6 +345,28 @@ export const formatErrors = (
     )
 }
 
+export const formatImpactIndicatorsErrors = (
+  errors: Record<string, any>,
+  indicators: PCRImpactIndicatorType[],
+) => {
+  const labelsByMessage: Record<string, string[]> = {}
+
+  forEach(indicators, ({ field, label }) => {
+    forEach(errors[field], (message: string) => {
+      labelsByMessage[message] = [...(labelsByMessage[message] ?? []), label]
+    })
+  })
+
+  return map(labelsByMessage, (labels, message) => ({
+    id: `impact-indicators-${message}`,
+    message: `Impact indicators: ${labels.join(', ')}: ${
+      labels.length > 1
+        ? message.replace(/^This field is/, 'These fields are')
+        : message
+    }`,
+  }))
+}
+
 export const getErrorIndex = (
   sectionData: any,
   field: string,
@@ -503,6 +531,50 @@ export const groupSummaryOfKeyDataErrors = (
   return groupedErrors
 }
 
+export const formatImpactIndicatorValue = (
+  dataType: PCRImpactIndicatorType['data_type'],
+  value: PCRImpactIndicatorType['value'],
+) => {
+  if (isNil(value) || value === '') {
+    return ''
+  }
+
+  if (dataType === 'boolean') {
+    return value ? 'Yes' : 'No'
+  }
+
+  return getFormattedNumericValue(String(value), dataType === 'decimal' ? 2 : 0)
+}
+
+export const getImpactIndicatorSource = ({
+  value,
+  prefilled_value,
+}: PCRImpactIndicatorType) => {
+  const hasValue = !isNil(value) && value !== ''
+
+  if (isNil(prefilled_value)) {
+    return hasValue ? 'edited' : null
+  }
+
+  const isPrefilled = hasValue && Number(value) === Number(prefilled_value)
+
+  return isPrefilled ? 'prefilled' : 'edited'
+}
+
+const buildImpactIndicatorPayload = ({
+  field,
+  data_type,
+  value,
+}: PCRImpactIndicatorType) => ({
+  field,
+  value:
+    isNil(value) || value === ''
+      ? null
+      : data_type === 'boolean'
+        ? value
+        : Number(value),
+})
+
 export const getFormData = (
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>,
   PCRData: PCRData,
@@ -587,6 +659,10 @@ export const getFormData = (
     meta_project_id: metaProjectId,
     ...overviewPrefilledData,
     ...overviewData,
+    impact_indicators: map(
+      PCRData.impact_indicators,
+      buildImpactIndicatorPayload,
+    ),
     pcr_projects: filteredSummaryOfKeyData,
     overall_assessment_highlights: resultsAssessmentData,
     delay_causes: causesOfDelayData,
@@ -782,7 +858,7 @@ const getNumberSeparators = (lang?: string) => {
   }
 }
 
-export const getPastedNumber = (clipboardData: DataTransfer) => {
+const getPastedNumber = (clipboardData: DataTransfer) => {
   const text = clipboardData.getData('text')
   const lang = getLangFromHTML(clipboardData.getData('text/html')) ?? undefined
   const separators = getNumberSeparators(lang)
@@ -792,3 +868,19 @@ export const getPastedNumber = (clipboardData: DataTransfer) => {
     .replaceAll(separators.group, '')
     .replace(separators.decimal, '.')
 }
+
+export const getNumberPasteHandler =
+  (setValue: (value: string) => void) =>
+  (event: ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault()
+
+    const input = event.currentTarget
+    const start = input.selectionStart ?? 0
+    const end = input.selectionEnd ?? input.value.length
+
+    setValue(
+      input.value.slice(0, start) +
+        getPastedNumber(event.clipboardData) +
+        input.value.slice(end),
+    )
+  }

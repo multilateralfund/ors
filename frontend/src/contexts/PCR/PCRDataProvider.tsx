@@ -93,6 +93,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
   const [PCRData, setPCRDataNoFieldTracking] = useState<PCRData>({
     overview: initialOverviewData,
+    impact_indicators: [],
     summary_of_key_data: [],
     results_assessment: [],
     delay_causes: [],
@@ -344,9 +345,6 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     const resultsAssessmentErrors = formatResultsAssessmentErrors(
       pick(errors, 'overall_assessment_highlights'),
     )
-    // const projectComponentsErrors = formatProjectComponentsErrors(
-    //   pick(errors, 'project_components'),
-    // )
     const causesOfDelayErrors = formatCausesOfDelayErrors(
       pick(errors, delayField),
     )
@@ -365,7 +363,10 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     )
 
     return {
-      overview: overviewErrors,
+      overview: {
+        ...overviewErrors,
+        ...(errors.impact_indicators as unknown as Record<string, string[]>),
+      },
       summary_of_key_data: summaryOfKeyDataErrors,
       results_assessment: resultsAssessmentErrors,
       delay_causes: causesOfDelayErrors,

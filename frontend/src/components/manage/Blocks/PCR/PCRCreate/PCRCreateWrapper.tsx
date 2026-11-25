@@ -11,8 +11,10 @@ import { Redirect } from 'wouter'
 import { map } from 'lodash'
 
 const PCRCreateWrapper = () => {
-  const { pcrMetaproject, agencyIds, setPCRData } = useContext(PCRDataContext)
+  const { pcrMetaproject, pcrDefaultData, agencyIds, setPCRData } =
+    useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
+  const impactIndicators = pcrDefaultData.data?.impact_indicators
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
@@ -53,6 +55,13 @@ const PCRCreateWrapper = () => {
       })),
     }))
   }, [data, agencyIds, setPCRData])
+
+  useEffect(() => {
+    setPCRData((prevData) => ({
+      ...prevData,
+      impact_indicators: impactIndicators ?? [],
+    }))
+  }, [impactIndicators, setPCRData])
 
   useEffect(() => {
     clearUpdatedFields()

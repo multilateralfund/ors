@@ -3,6 +3,7 @@ import { Fragment, useContext, useState } from 'react'
 import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import PCRImpactIndicators from './PCRImpactIndicators'
 import {
   SubSectionTitle,
   NoDataReported,
@@ -24,13 +25,15 @@ import cx from 'classnames'
 const PCROverviewProjectOverview = ({
   numberEnterprises,
   alternativeTechnologies,
+  isEditable = false,
 }: {
   numberEnterprises: string
   alternativeTechnologies: PCRAlternativeTechnologyType[]
+  isEditable?: boolean
 }) => {
+  const { countries } = useContext(ProjectsDataContext)
   const { pcrMetaproject, pcrDefaultData, substanceOptions } =
     useContext(PCRDataContext)
-  const { countries } = useContext(ProjectsDataContext)
 
   const [isAltTechsExpanded, setIsAltTechsExpanded] = useState(false)
 
@@ -104,11 +107,11 @@ const PCROverviewProjectOverview = ({
       defaultData?.phase_out_co2_eq_t_actual as string,
       'decimal',
     ),
-    numberDetailItem(
-      pcrFieldsMapping.total_number_of_enterprises,
-      numberEnterprises,
-      'number',
-    ),
+    // numberDetailItem(
+    //   pcrFieldsMapping.total_number_of_enterprises,
+    //   numberEnterprises,
+    //   'number',
+    // ),
   ]
 
   return (
@@ -192,6 +195,8 @@ const PCROverviewProjectOverview = ({
               </div>
             ))}
         </div>
+        <Divider className="my-4" />
+        <PCRImpactIndicators isEditable={isEditable} />
       </div>
     </div>
   )
