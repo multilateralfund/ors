@@ -230,7 +230,7 @@ class PCRSupportingEvidenceSerializer(serializers.ModelSerializer):
     pcr_id = serializers.IntegerField(read_only=True)
     agency_id = serializers.IntegerField()
     agency = serializers.SlugRelatedField("name", read_only=True)
-    section_id = serializers.IntegerField()
+    section_id = serializers.IntegerField(required=False, allow_null=True)
     section = serializers.SlugRelatedField("name", read_only=True)
     file = serializers.FileField(required=False, allow_null=True)
     filename = serializers.CharField(required=False)
@@ -391,7 +391,7 @@ class PCRDelayCauseSerializer(serializers.ModelSerializer):
     agency_id = serializers.IntegerField()
     agency = serializers.SlugRelatedField("name", read_only=True)
     delay_cluster = PCRDelayClusterSerializer(required=False)
-    delay_cluster_id = serializers.IntegerField()
+    delay_cluster_id = serializers.IntegerField(required=False, allow_null=True)
     root_causes_of_delay = PCRDelayCauseRootCauseSerializer(
         many=True,
         source="pcrdelaycauserootcause_set",
