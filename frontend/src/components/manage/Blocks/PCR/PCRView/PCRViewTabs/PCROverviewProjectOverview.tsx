@@ -13,8 +13,8 @@ import {
   numberDetailItem,
 } from './ViewHelperComponents'
 import { pcrFieldsMapping, borderedContainerClassname } from '../../constants'
+import { getValueToDisplay, getSubstanceClassName } from '../../utils'
 import { PCRAlternativeTechnologyType } from '../../interfaces'
-import { getValueToDisplay } from '../../utils'
 import { useStore } from '@ors/store'
 
 import { find, groupBy, map, orderBy, uniq } from 'lodash'
@@ -152,41 +152,34 @@ const PCROverviewProjectOverview = ({
                 <span className="self-baseline text-[#4D4D4D]">Projects</span>
                 {map(
                   alternativeTechnologiesData,
-                  ({ substanceFrom, substanceTo, nrEntries }) => {
-                    const isHCFC = substanceFrom.startsWith('HCFC')
-                    const isHFC = substanceFrom.startsWith('HFC')
-
-                    return (
-                      <Fragment key={`${substanceFrom}-${substanceTo}`}>
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span
-                            className={cx(
-                              'max-w-[50%] shrink-0 cursor-default truncate text-base',
-                              {
-                                'rounded-full px-3 py-0.5 font-medium':
-                                  isHCFC || isHFC,
-                                'bg-[#e6d7f8] text-[#6b4f9e]': isHCFC,
-                                'bg-[#e6f0f4] text-[#4a7189]': isHFC,
-                              },
-                            )}
-                            title={substanceFrom}
-                          >
-                            {substanceFrom || '-'}
-                          </span>
-                          <HiArrowLongRight size={16} className="shrink-0" />
-                          <span
-                            className="min-w-0 cursor-default truncate text-base"
-                            title={substanceTo}
-                          >
-                            {substanceTo || '-'}
-                          </span>
-                        </div>
-                        <span className="justify-self-end font-medium">
-                          {nrEntries}
+                  ({ substanceFrom, substanceTo, nrEntries }) => (
+                    <Fragment key={`${substanceFrom}-${substanceTo}`}>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          className={cx(
+                            'max-w-[50%] shrink-0 cursor-default truncate text-base',
+                            getSubstanceClassName(substanceFrom),
+                          )}
+                          title={substanceFrom}
+                        >
+                          {substanceFrom || '-'}
                         </span>
-                      </Fragment>
-                    )
-                  },
+                        <HiArrowLongRight size={16} className="shrink-0" />
+                        <span
+                          className={cx(
+                            'min-w-0 cursor-default truncate text-base',
+                            getSubstanceClassName(substanceTo),
+                          )}
+                          title={substanceTo}
+                        >
+                          {substanceTo || '-'}
+                        </span>
+                      </div>
+                      <span className="justify-self-end font-medium">
+                        {nrEntries}
+                      </span>
+                    </Fragment>
+                  ),
                 )}
               </>
             ) : (

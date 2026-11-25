@@ -884,3 +884,15 @@ export const getNumberPasteHandler =
         input.value.slice(end),
     )
   }
+
+export const getSubstanceClassName = (substance: string) => {
+  const isHCFC = substance.startsWith('HCFC')
+  const isHFC = substance.startsWith('HFC')
+
+  return cx({
+    'rounded-full border border-solid px-3 py-0.5 font-medium': !!substance,
+    'border-transparent bg-[#e6d7f8] text-[#6b4f9e]': isHCFC,
+    'border-transparent bg-[#e6f0f4] text-[#4a7189]': isHFC,
+    'border-current': !!substance && !isHCFC && !isHFC,
+  })
+}
