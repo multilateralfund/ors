@@ -457,13 +457,14 @@ export const setRequiredError = (
   errors: Record<string, any>,
   field: string,
   value: unknown,
-  message = submitRequiredMessage,
 ) => {
   if (!String(value ?? '').trim()) {
-    return { ...errors, [field]: [message] }
+    return { ...errors, [field]: [submitRequiredMessage] }
   }
 
-  return errors[field]?.includes(message) ? omit(errors, [field]) : errors
+  return errors[field]?.includes(submitRequiredMessage)
+    ? omit(errors, [field])
+    : errors
 }
 
 export const getSummaryOfKeyDataErrors = (

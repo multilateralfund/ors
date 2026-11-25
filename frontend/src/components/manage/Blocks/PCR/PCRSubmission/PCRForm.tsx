@@ -331,13 +331,11 @@ const PCRForm = ({ mode }: { mode: string }) => {
         const cdIdField = 'delay_cluster_id'
 
         const existingErrors = prev[delayField]?.[index] ?? {}
-        let updatedErrors = { ...existingErrors }
-
-        if (!cd[cdIdField]) {
-          updatedErrors[cdIdField] = [requiredMessage]
-        } else if (updatedErrors[cdIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [cdIdField])
-        }
+        const updatedErrors: Record<string, any> = setRequiredError(
+          existingErrors,
+          cdIdField,
+          cd[cdIdField],
+        )
 
         updatedErrors[dcField] = isEmpty(cd[dcField])
           ? [submitRequiredMessage]
@@ -413,13 +411,7 @@ const PCRForm = ({ mode }: { mode: string }) => {
             'prefilled',
             'qualitative_description',
           ] as const,
-          (acc, field) =>
-            setRequiredError(
-              acc,
-              field,
-              pp[field],
-              field === 'project_preparation' ? requiredMessage : undefined,
-            ),
+          (acc, field) => setRequiredError(acc, field, pp[field]),
           prev[ppField]?.[index] ?? {},
         )
       }),
@@ -472,15 +464,14 @@ const PCRForm = ({ mode }: { mode: string }) => {
         const evidenceIdField = 'section_id'
 
         const existingErrors = prev[supportingEvidencesField]?.[index] ?? {}
-        let updatedErrors = { ...existingErrors }
 
-        if (!evidence[evidenceIdField]) {
-          updatedErrors[evidenceIdField] = [requiredMessage]
-        } else if (updatedErrors[evidenceIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [evidenceIdField])
-        }
-
-        return normalizeErrors(updatedErrors)
+        return normalizeErrors(
+          setRequiredError(
+            existingErrors,
+            evidenceIdField,
+            evidence[evidenceIdField],
+          ),
+        )
       }),
     }))
   }, [JSON.stringify(supportingEvidencesData)])

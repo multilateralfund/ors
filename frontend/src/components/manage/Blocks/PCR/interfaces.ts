@@ -151,7 +151,7 @@ export type PCRResponse = {
   delay_causes: {
     agency_id: number
     delay_cluster_id: number | null
-    delay_cluster: { name: string }
+    delay_cluster: { name: string } | null
     root_causes_of_delay: {
       root_cause_id: number | null
       root_cause?: string
@@ -177,7 +177,7 @@ export type PCRResponse = {
   }[]
   supporting_evidences: {
     agency_id: number
-    section: string
+    section: string | null
     filename: string
     file: string
     download_url: string | null

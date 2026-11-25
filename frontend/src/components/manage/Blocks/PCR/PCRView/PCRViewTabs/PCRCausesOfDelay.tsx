@@ -69,7 +69,7 @@ const PCRCausesOfDelay = () => {
                   <div className="w-full bg-primary px-6 py-4 lg:w-1/4">
                     {detailItem(
                       'Delay clusters',
-                      pc.delay_cluster.name,
+                      pc.delay_cluster?.name ?? '',
                       pcTitleClassname,
                     )}
                     {cdData.length > 0 && (
