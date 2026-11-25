@@ -198,15 +198,8 @@ class BaseWriter:
         vertical_align="center",
     ):
         cell = self.sheet.cell(row, column, value)
-        cell.font = Font(color=None)
-        cell.alignment = Alignment(
-            horizontal=align, vertical=vertical_align, wrap_text=True
-        )
-        cell.border = Border(
-            left=Side(style="hair"),
-            right=Side(style="hair"),
-            top=Side(style="hair"),
-            bottom=Side(style="hair"),
+        self._apply_record_cell_style(
+            cell, align, vertical_align, cell_format, read_only
         )
         if can_be_clipped:
             # We assume that only string values can be clipped.
@@ -218,6 +211,32 @@ class BaseWriter:
                 self.sheet.row_dimensions[row].height = (
                     self.ROW_HEIGHT * needed_rows / 2
                 )
+        return cell
+
+    def _apply_record_cell_style(
+        self, cell, align, vertical_align, cell_format, read_only
+    ):
+        """
+        Setting the style objects on a cell is slow, as openpyxl looks each one
+        up in the workbook style tables. The style is built once for each
+        combination and then the resulting style indices are copied to the cells.
+        """
+        key = (align, vertical_align, cell_format, read_only)
+        cache = self.__dict__.setdefault("_record_cell_styles", {})
+        if key in cache:
+            cell._style = copy(cache[key])  # pylint: disable=protected-access
+            return
+
+        cell.font = Font(color=None)
+        cell.alignment = Alignment(
+            horizontal=align, vertical=vertical_align, wrap_text=True
+        )
+        cell.border = Border(
+            left=Side(style="hair"),
+            right=Side(style="hair"),
+            top=Side(style="hair"),
+            bottom=Side(style="hair"),
+        )
         if cell_format:
             cell.number_format = cell_format
         elif align == "right":
@@ -227,7 +246,7 @@ class BaseWriter:
             cell.fill = PatternFill(
                 start_color="EEEEEE", end_color="EEEEEE", fill_type="solid"
             )
-        return cell
+        cache[key] = copy(cell._style)  # pylint: disable=protected-access
 
 
 class CPReportBase:

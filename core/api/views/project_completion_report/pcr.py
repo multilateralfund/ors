@@ -3,7 +3,7 @@ import json
 
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
-from django.db.models import Exists, OuterRef, QuerySet
+from django.db.models import Exists, OuterRef, Prefetch, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_spectacular.types import OpenApiTypes
@@ -57,10 +57,21 @@ from core.models.country import Country
 from core.models.project import Project
 from core.models.project_completion_report import (
     PCR,
-    PCRLearnedLessonCategory,
-    PCRProject,
+    PCRAdditionalComment,
+    PCRDelayCause,
+    PCRDelayCauseRootCause,
     PCRDelayCluster,
+    PCRFutureProjectRecommendation,
+    PCRGenderMainstreaming,
+    PCRLearnedLesson,
+    PCRLearnedLessonCategory,
+    PCRLearnedLessonDescription,
+    PCROverallAssessmentHighlight,
+    PCRProject,
     PCRRootCausesOfDelay,
+    PCRSupportingEvidence,
+    PCRSustainableDevelopmentGoal,
+    PCRSustainableDevelopmentGoalDescription,
 )
 
 
@@ -128,6 +139,80 @@ class PCRProjectViewSet(
         "endorse",
         "versions",
         "download_supporting_evidence",
+    ]
+    # The nested objects of PCRDetailSerializer, avoids a query per nested row.
+    # Only used for retrieve: the other actions modify the PCR, so the prefetched
+    # objects could be stale in the response.
+    PCR_DETAIL_PREFETCH = [
+        Prefetch(
+            "pcr_projects",
+            queryset=PCRProject.objects.select_related(
+                "project__submission_status"
+            ).order_by("id"),
+        ),
+        "decisions",
+        Prefetch(
+            "overall_assessment_highlights",
+            queryset=PCROverallAssessmentHighlight.objects.select_related(
+                "agency"
+            ).order_by("id"),
+        ),
+        Prefetch(
+            "additional_comments",
+            queryset=PCRAdditionalComment.objects.order_by("id"),
+        ),
+        Prefetch(
+            "delay_causes",
+            queryset=PCRDelayCause.objects.select_related(
+                "agency", "delay_cluster"
+            ).order_by("id"),
+        ),
+        Prefetch(
+            "delay_causes__pcrdelaycauserootcause_set",
+            queryset=PCRDelayCauseRootCause.objects.select_related(
+                "root_cause"
+            ).order_by("id"),
+        ),
+        Prefetch(
+            "learned_lessons",
+            queryset=PCRLearnedLesson.objects.select_related("agency").order_by("id"),
+        ),
+        Prefetch(
+            "learned_lessons__pcrlearnedlessondescription_set",
+            queryset=PCRLearnedLessonDescription.objects.select_related(
+                "lesson"
+            ).order_by("id"),
+        ),
+        Prefetch(
+            "gender_mainstreamings",
+            queryset=PCRGenderMainstreaming.objects.select_related("agency").order_by(
+                "id"
+            ),
+        ),
+        Prefetch(
+            "future_project_recommendations",
+            queryset=PCRFutureProjectRecommendation.objects.select_related(
+                "agency"
+            ).order_by("id"),
+        ),
+        Prefetch(
+            "supporting_evidences",
+            queryset=PCRSupportingEvidence.objects.select_related(
+                "agency", "section"
+            ).order_by("id"),
+        ),
+        Prefetch(
+            "sustainable_development_goals",
+            queryset=PCRSustainableDevelopmentGoal.objects.select_related(
+                "agency"
+            ).order_by("id"),
+        ),
+        Prefetch(
+            "sustainable_development_goals__pcrsustainabledevelopmentgoaldescription_set",
+            queryset=PCRSustainableDevelopmentGoalDescription.objects.select_related(
+                "goal"
+            ).order_by("id"),
+        ),
     ]
 
     @property
@@ -225,7 +310,13 @@ class PCRProjectViewSet(
                 in ["retrieve", "versions", "download_supporting_evidence"]
                 else PCR.objects.all()
             )
-            queryset = manager_queryset.select_related("meta_project").prefetch_related(
+            queryset = manager_queryset.select_related("meta_project")
+            if self.action == "retrieve":
+                # before the pcr_projects lookups below, as it replaces "pcr_projects"
+                queryset = queryset.select_related(
+                    "meta_project__country", "latest_pcr"
+                ).prefetch_related(*self.PCR_DETAIL_PREFETCH)
+            queryset = queryset.prefetch_related(
                 "pcr_projects",
                 "pcr_projects__alternative_technologies",
                 "pcr_projects__enterprises",
@@ -302,7 +393,11 @@ class PCRProjectViewSet(
 
     @staticmethod
     def _get_pcr_due_values(queryset: QuerySet[PCRProject]):
-        values = set(queryset.values_list("pcr_due_value", flat=True).distinct())
+        # order_by() clears the listing ordering, which would otherwise be added
+        # to the DISTINCT and return one row per PCR project
+        values = set(
+            queryset.order_by().values_list("pcr_due_value", flat=True).distinct()
+        )
         options = []
         if True in values:
             options.append({"id": "true", "name": "Yes"})
@@ -351,7 +446,13 @@ class PCRProjectViewSet(
     )
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        # only the relations used by the writer, the listing ones are not needed
+        queryset = (
+            self.filter_queryset(self.get_queryset())
+            .select_related(None)
+            .select_related("pcr", "project__country", "project__cluster")
+            .prefetch_related(None)
+        )
         wb = openpyxl.Workbook()
         PCRSubmissionLogWriter(wb).write(queryset)
 

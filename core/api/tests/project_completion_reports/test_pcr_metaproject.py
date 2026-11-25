@@ -534,8 +534,8 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         )
         response = self.client.get(url, {"pcr_due_union": "true"})
         assert response.data["completed_only"] == [
-            {"id": "Yes", "name": "Yes"},
-            {"id": "No", "name": "No"},
+            {"id": "Yes", "name": "Completed"},
+            {"id": "No", "name": "Not completed"},
         ]
         assert response.data["pcr_due"] == [
             {"id": "Yes", "name": "Yes"},
@@ -546,7 +546,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
             {"id": "No", "name": "No"},
         ]
         response = self.client.get(url, {"pcr_due": "No"})
-        assert response.data["completed_only"] == [{"id": "Yes", "name": "Yes"}]
+        assert response.data["completed_only"] == [{"id": "Yes", "name": "Completed"}]
         assert response.data["pcr_due"] == [{"id": "No", "name": "No"}]
 
         response = self.client.get(url, {"pcr_due_union": "true", "ad_hoc_pcr": "Yes"})
@@ -595,9 +595,10 @@ class TestPCRMetaprojectsViewSet(BaseTest):
             "Metacode",
             "Title",
             "Country",
-            "Agency",
+            "Lead agency",
             "Cooperating agencies",
             "Ad-hoc PCR",
+            "Status",
             "Date completed",
             "PCR due",
         ]
@@ -611,7 +612,9 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         # individual meta projects have no cooperating agencies
         assert rows[1][4] is None
         assert rows[1][5] == "Yes"
-        assert rows[1][7] == "01.09.2026"
+        # individual meta projects have the status of their project
+        assert rows[1][6] == (projects[0].status.name if projects[0].status else None)
+        assert rows[1][8] == "01.09.2026"
 
         # the listing filters are applied
         response = self.client.get(url, {"search": "Project 2"})
@@ -640,6 +643,14 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         }
         assert rows[meta_project_mya.umbrella_code][4] == "/".join(
             sorted([agency.name, projects[1].agency.name])
+        )
+        # MYA meta projects are Completed only if all their projects are
+        mya_completed = all(
+            project.status and project.status.name in ["Completed", "Transferred"]
+            for project in meta_project_mya.projects.all()
+        )
+        assert rows[meta_project_mya.umbrella_code][6] == (
+            "Completed" if mya_completed else "Not completed"
         )
 
     def test_set_pcr_or_ad_hoc(self, admin_user):
