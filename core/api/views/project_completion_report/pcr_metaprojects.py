@@ -1,6 +1,7 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from django.db.models import Exists, OuterRef, Prefetch, QuerySet
+from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
 import openpyxl
 
@@ -77,15 +78,19 @@ def get_completed_only(queryset: QuerySet[Project]):
     is_completed = queryset.filter(meta_project__in=completed_meta_projects())
     options = []
     if is_completed.exists():
-        options.append({"id": "Yes", "name": "Yes"})
+        options.append({"id": "Yes", "name": "Completed"})
     if queryset.exclude(id__in=is_completed.values("id")).exists():
-        options.append({"id": "No", "name": "No"})
+        options.append({"id": "No", "name": "Not completed"})
     return options
 
 
 def get_meta_project_flag_options(queryset: QuerySet[Project], field_name: str):
+    # order_by() clears the default Project ordering, which would otherwise be
+    # added to the DISTINCT and return one row per project
     values = set(
-        queryset.values_list(f"meta_project__{field_name}", flat=True).distinct()
+        queryset.order_by()
+        .values_list(f"meta_project__{field_name}", flat=True)
+        .distinct()
     )
     options = []
     if True in values:
@@ -348,8 +353,19 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
             params["pcr_due"] = "Yes,No"
         filtered_projects_qs = self._get_filtered_projects_queryset(params)
         # only the projects shown in the listing
-        queryset = filtered_projects_qs.filter(
-            meta_project__in=self._get_meta_projects_queryset(filtered_projects_qs)
+        project_ids = list(
+            filtered_projects_qs.filter(
+                meta_project__in=self._get_meta_projects_queryset(filtered_projects_qs)
+            )
+            .order_by()
+            .values_list("id", flat=True)
+            .distinct()
+        )
+        # The filters (permissions, PCR submitted, search etc.) are expensive, so
+        # they are evaluated once instead of in each of the option queries below
+        # unnest() sends the ids as a single array parameter, not one per id
+        queryset = Project.objects.filter(
+            id__in=RawSQL("SELECT unnest(%s::bigint[])", (project_ids,))
         )
         result = {
             "region": get_regions(queryset),

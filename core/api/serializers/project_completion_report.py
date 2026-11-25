@@ -624,10 +624,15 @@ class PCRDetailSerializer(serializers.ModelSerializer):
         return PCRHistorySerializer(queryset, many=True).data
 
     def get_pcr_projects(self, instance):
+        if "pcr_projects" in getattr(instance, "_prefetched_objects_cache", {}):
+            # prefetched by the view, ordered by id
+            pcr_projects = instance.pcr_projects.all()
+        else:
+            pcr_projects = instance.pcr_projects.select_related(
+                "project__submission_status"
+            ).order_by("id")
         return PCRProjectSerializer(
-            instance.pcr_projects.select_related("project__submission_status").order_by(
-                "id"
-            ),
+            pcr_projects,
             many=True,
             context=self.context,
         ).data

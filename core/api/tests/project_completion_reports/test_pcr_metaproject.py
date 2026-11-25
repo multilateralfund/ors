@@ -534,8 +534,8 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         )
         response = self.client.get(url, {"pcr_due_union": "true"})
         assert response.data["completed_only"] == [
-            {"id": "Yes", "name": "Yes"},
-            {"id": "No", "name": "No"},
+            {"id": "Yes", "name": "Completed"},
+            {"id": "No", "name": "Not completed"},
         ]
         assert response.data["pcr_due"] == [
             {"id": "Yes", "name": "Yes"},
@@ -546,7 +546,7 @@ class TestPCRMetaprojectsViewSet(BaseTest):
             {"id": "No", "name": "No"},
         ]
         response = self.client.get(url, {"pcr_due": "No"})
-        assert response.data["completed_only"] == [{"id": "Yes", "name": "Yes"}]
+        assert response.data["completed_only"] == [{"id": "Yes", "name": "Completed"}]
         assert response.data["pcr_due"] == [{"id": "No", "name": "No"}]
 
         response = self.client.get(url, {"pcr_due_union": "true", "ad_hoc_pcr": "Yes"})
