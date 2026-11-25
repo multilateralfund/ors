@@ -21,7 +21,7 @@ import ManagePCRsTable from './ManagePCRsTable'
 import {
   initialFilters,
   categoryOpts,
-  booleanFieldsOpts,
+  completedOnlyOpts,
   requiredMessage,
   borderedContainerClassname,
 } from '../constants'
@@ -41,7 +41,7 @@ const ManagePCRsWrapper = () => {
 
   const updatedInitialFilters = {
     ...initialFilters,
-    completed_only: [booleanFieldsOpts[0]],
+    completed_only: [completedOnlyOpts[0]],
     category: [categoryOpts[1]],
   }
   const updatedInitialParams = {

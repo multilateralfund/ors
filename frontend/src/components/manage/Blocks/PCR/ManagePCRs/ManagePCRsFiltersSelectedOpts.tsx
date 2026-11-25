@@ -48,7 +48,6 @@ const ManagePCRsFiltersSelectedOpts = ({
     {
       entities: formatEntity(fieldToOptionsMapping.completed_only),
       entityIdentifier: 'completed_only',
-      extraLabel: 'Completed',
     },
   ]
 
@@ -69,7 +68,6 @@ const ManagePCRsFiltersSelectedOpts = ({
             handleFilterChange,
             handleParamsChange,
             'id',
-            selectedOpt.extraLabel,
           ),
         )}
         <Typography

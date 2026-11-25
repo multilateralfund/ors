@@ -34,7 +34,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   pcr_submission_date: 'PCR submission date',
   pcr_submission_year: 'Submission year',
   pcr_approval_date: 'PCR endorsement date',
-  completed_only: 'Completed',
+  completed_only: 'Status',
   title: 'Title',
   metacode: 'Metacode',
   status: 'Status',
@@ -143,6 +143,11 @@ export const categoryOpts = [
 export const booleanFieldsOpts = [
   { id: 'Yes', name: 'Yes' },
   { id: 'No', name: 'No' },
+]
+
+export const completedOnlyOpts = [
+  { id: 'Yes', name: 'Completed' },
+  { id: 'No', name: 'Not completed' },
 ]
 
 export const extendedBooleanFieldsOpts = [
