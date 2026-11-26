@@ -5,7 +5,6 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import { VersionsList } from '../PCRView/PCRViewTabs/ViewHelperComponents'
 import PCRCreateActionButtons from '../PCRCreate/PCRCreateActionButtons'
 import PCREditActionButtons from '../PCREdit/PCREditActionButtons'
@@ -17,15 +16,14 @@ import { useLocation } from 'wouter'
 const PCRHeader = ({ mode }: { mode: string }) => {
   const [_, setLocation] = useLocation()
 
-  const { pcr, pcrMetaproject } = useContext(PCRDataContext)
-  const { updatedFields } = useUpdatedFields()
+  const { pcr, pcrMetaproject, updatedSections } = useContext(PCRDataContext)
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
 
   const onCancel = () => {
-    if (updatedFields.size > 0) {
+    if (updatedSections.size > 0) {
       setIsCancelModalOpen(true)
     } else {
       setLocation('/projects-listing/listing')

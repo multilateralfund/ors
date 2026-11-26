@@ -12,9 +12,11 @@ import {
   summaryOfKeyDataField,
   summaryOfKeyDataRowFields,
   sdgsContributionField,
-  requiredMessage,
+  supportingEvidencesField,
   submitRequiredMessage,
   notApprovedProjectMessage,
+  pcrSectionPayloadKeys,
+  pcrSectionDataKeys,
 } from './constants'
 import {
   PCRData,
@@ -57,9 +59,12 @@ import {
   some,
   sumBy,
   isString,
+  keys,
   mapValues,
+  omitBy,
   mergeWith,
   uniq,
+  values,
 } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
@@ -392,7 +397,7 @@ export const getErrorIndex = (
 
 const hasErrorMessage = (
   errors: Record<string, any>,
-  messages: string[] = [requiredMessage],
+  messages: string[],
 ): boolean => {
   if (typeof errors === 'string') {
     return messages.includes(errors)
@@ -576,11 +581,25 @@ const buildImpactIndicatorPayload = ({
         : Number(value),
 })
 
+const nestedPayloadKeys = flatMap(values(pcrSectionPayloadKeys))
+
+export const pickSectionPayload = (
+  data: Record<string, any>,
+  section: string,
+) =>
+  section === 'overview'
+    ? omit(data, nestedPayloadKeys)
+    : pick(data, pcrSectionPayloadKeys[section] ?? [])
+
+export const getSectionDataKeys = (section: string) =>
+  pcrSectionDataKeys[section] ?? [section]
+
 export const getFormData = (
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>,
   PCRData: PCRData,
   metaProjectId: number,
   ratingOptions: OptionsType[],
+  section?: string,
 ) => {
   const {
     overview,
@@ -674,11 +693,15 @@ export const getFormData = (
     supporting_evidences: supportingEvidencesData,
   }
 
+  const metadata = section ? pickSectionPayload(payload, section) : payload
   const formData = new FormData()
-  formData.append('metadata', JSON.stringify(payload))
-  formattedSupportingEvidence.forEach((evidence) => {
-    formData.append('files', evidence.file)
-  })
+  formData.append('metadata', JSON.stringify(metadata))
+
+  if (!section || section === supportingEvidencesField) {
+    formattedSupportingEvidence.forEach((evidence) => {
+      formData.append('files', evidence.file)
+    })
+  }
 
   return formData
 }
@@ -694,13 +717,9 @@ const errorSections = [
   'supporting_evidences',
 ]
 
-export const isSubmitDisabled = (errors: Record<string, any>) =>
-  some(errorSections, (section) => hasErrorMessage(errors[section]))
-
 export const isSubmitPCRDisabled = (errors: Record<string, any>) =>
   some(errorSections, (section) =>
     hasErrorMessage(errors[section], [
-      requiredMessage,
       submitRequiredMessage,
       notApprovedProjectMessage,
     ]),
@@ -783,27 +802,47 @@ export const getEnterpriseAddresses = (
 const isMessageList = (value: unknown): value is string[] =>
   Array.isArray(value) && value.length > 0 && value.every(isString)
 
-const formMessages = [requiredMessage, submitRequiredMessage]
-
 export const keepFormMessages = (errors: unknown): unknown => {
   if (Array.isArray(errors)) {
     return errors.every(isString)
-      ? errors.filter((message) => formMessages.includes(message))
+      ? errors.filter((message) => message === submitRequiredMessage)
       : errors.map(keepFormMessages)
   }
 
   return isPlainObject(errors)
-    ? mapValues(errors as Record<string, unknown>, keepFormMessages)
+    ? omitBy(
+        mapValues(errors as Record<string, unknown>, keepFormMessages),
+        (value) =>
+          Array.isArray(value) &&
+          value.every((item) => isPlainObject(item) && isEmpty(item)),
+      )
     : errors
+}
+
+export const keepSectionFormMessages = (
+  errors: Record<string, any>,
+  section?: string,
+) => {
+  if (!section) {
+    return keepFormMessages(errors) as Record<string, any>
+  }
+
+  const sectionErrors = pickSectionPayload(errors, section)
+
+  return {
+    ...omit(errors, keys(sectionErrors)),
+    ...(keepFormMessages(sectionErrors) as Record<string, any>),
+  }
 }
 
 export const mergeSaveErrors = (
   errors: Record<string, any>,
   saveErrors: Record<string, any>,
+  section?: string,
 ) =>
   mergeWith(
     {},
-    keepFormMessages(errors),
+    keepSectionFormMessages(errors, section),
     saveErrors,
     (value: unknown, saveValue: unknown) => {
       if (isMessageList(saveValue)) {

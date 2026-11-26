@@ -7,6 +7,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRSummaryOfKeyData, { createSummaryData } from './PCRSummaryOfKeyData'
+import PCREditSectionButtons from '../PCREdit/PCREditSectionButtons'
 import PCRGenderMainstreaming from './PCRGenderMainstreaming'
 import PCRHistory from '../PCRView/PCRViewTabs/PCRHistory'
 import PCRResultsAssessment from './PCRResultsAssessment'
@@ -41,7 +42,6 @@ import {
   supportingEvidencesField,
   overviewRequiredFields,
   initialActivitiesData,
-  requiredMessage,
   submitRequiredMessage,
 } from '../constants'
 
@@ -122,7 +122,7 @@ const PCRForm = ({ mode }: { mode: string }) => {
       id: 'summary_of_key_data',
       label: <TabLabel field="summary_of_key_data" />,
       title: 'Summary of key data',
-      component: <PCRSummaryOfKeyData />,
+      component: <PCRSummaryOfKeyData mode={mode} />,
     },
     {
       id: 'results_assessment',
@@ -230,12 +230,6 @@ const PCRForm = ({ mode }: { mode: string }) => {
             const prevErrors = prev[additionalCommentsField]?.[index]
             const existingErrors = isPlainObject(prevErrors) ? prevErrors : {}
             let updatedErrors = { ...existingErrors }
-
-            if (!comment.entity) {
-              updatedErrors = { ...updatedErrors, entity: [requiredMessage] }
-            } else if (existingErrors.entity?.includes(requiredMessage)) {
-              updatedErrors = omit(updatedErrors, ['entity'])
-            }
 
             if (!comment.comment?.trim()) {
               updatedErrors = {
@@ -519,6 +513,24 @@ const PCRForm = ({ mode }: { mode: string }) => {
                   ]
                 : formatErrors(crtTabErrors)
 
+            const hasNextTab = currentTab !== tabs.length - 1
+
+            const tabButtons =
+              mode === 'edit'
+                ? id !== 'history' && (
+                    <PCREditSectionButtons
+                      section={id}
+                      hasNextTab={hasNextTab}
+                      setCurrentTab={setCurrentTab}
+                    />
+                  )
+                : hasNextTab && (
+                    <NavigationButton
+                      setCurrentTab={setCurrentTab}
+                      className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
+                    />
+                  )
+
             return (
               <span key={id}>
                 {title && (
@@ -537,21 +549,11 @@ const PCRForm = ({ mode }: { mode: string }) => {
                   <ErrorsList errors={tabErrors} />
                 )}
                 {component}
-                <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
-                  {currentTab !== 0 && (
-                    <NavigationButton
-                      type="previous"
-                      setCurrentTab={setCurrentTab}
-                      className="!h-10"
-                    />
-                  )}
-                  {currentTab !== tabs.length - 1 && (
-                    <NavigationButton
-                      setCurrentTab={setCurrentTab}
-                      className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
-                    />
-                  )}
-                </div>
+                {tabButtons && (
+                  <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
+                    {tabButtons}
+                  </div>
+                )}
               </span>
             )
           })}

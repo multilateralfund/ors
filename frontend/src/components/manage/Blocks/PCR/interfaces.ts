@@ -320,6 +320,11 @@ export type FieldHandler = (
 
 export type PCRActionButtons = { setIsLoading: (isLoading: boolean) => void }
 
+export type EditPCROptions = {
+  pcrData?: PCRData
+  onErrors?: (errors: Record<string, any>) => void
+}
+
 export type OptionsType = { id: number | string; name: string }
 
 export type ManagePCRsTableProps = {

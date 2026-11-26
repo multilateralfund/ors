@@ -2,7 +2,6 @@ import { useContext, useEffect } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
@@ -11,12 +10,16 @@ import { Redirect } from 'wouter'
 import { map } from 'lodash'
 
 const PCRCreateWrapper = () => {
-  const { pcrMetaproject, pcrDefaultData, agencyIds, setPCRData } =
-    useContext(PCRDataContext)
+  const {
+    pcrMetaproject,
+    pcrDefaultData,
+    agencyIds,
+    setPCRData,
+    updatedSections,
+    clearUpdatedSections,
+  } = useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
   const impactIndicators = pcrDefaultData.data?.impact_indicators
-
-  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   useEffect(() => {
     if (!data) return
@@ -64,10 +67,10 @@ const PCRCreateWrapper = () => {
   }, [impactIndicators, setPCRData])
 
   useEffect(() => {
-    clearUpdatedFields()
-  }, [clearUpdatedFields])
+    clearUpdatedSections()
+  }, [clearUpdatedSections])
 
-  useVisibilityChange(updatedFields.size > 0)
+  useVisibilityChange(updatedSections.size > 0)
 
   if (data?.pcr_id) {
     return <Redirect to="/pcr" />

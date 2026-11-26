@@ -4,93 +4,25 @@ import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/Pr
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import WorkflowButtons from '../PCRWorkflow/WorkflowButtons'
-import { getFormData, isSubmitDisabled, keepFormMessages } from '../utils'
 import { PCRActionButtons } from '../interfaces'
-import { formatApiUrl } from '@ors/helpers'
+import { useEditPCR } from './useEditPCR'
 
-import { useLocation, useParams } from 'wouter'
-import { enqueueSnackbar } from 'notistack'
-import Cookies from 'js-cookie'
+import { useLocation } from 'wouter'
 
 const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
-  const { pcr_id } = useParams<Record<string, string>>()
-  const {
-    PCRData,
-    errors,
-    setErrors,
-    pcrMetaproject,
-    pcrDefaultData,
-    ratingOptions,
-  } = useContext(PCRDataContext)
+  const { pcrMetaproject, updatedSections } = useContext(PCRDataContext)
   const metaProjectId = pcrMetaproject.data?.id
-
-  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
-  const isSaveDisabled = !metaProjectId || isSubmitDisabled(errors)
+  const isSaveDisabled = !metaProjectId
 
-  const editPCR = async (showSuccess = true) => {
-    setIsLoading(true)
-
-    try {
-      if (!pcr_id || !metaProjectId) {
-        throw new Error('PCR id is not available.')
-      }
-
-      const formData = getFormData(
-        pcrDefaultData,
-        PCRData,
-        metaProjectId,
-        ratingOptions,
-      )
-
-      const csrftoken = Cookies.get('csrftoken')
-
-      const response = await fetch(
-        formatApiUrl(`api/project-completion-reports/${pcr_id}/`),
-        {
-          body: formData,
-          headers: { ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}) },
-          credentials: 'include',
-          method: 'PATCH',
-        },
-      )
-      const data = await response.json().catch(() => null)
-
-      if (!response.ok) {
-        setErrors(data)
-
-        throw data ?? { message: 'An error occurred' }
-      }
-      if (showSuccess) {
-        enqueueSnackbar(<>PCR updated successfully.</>, {
-          variant: 'success',
-        })
-      }
-      setErrors(
-        (prevErrors: Record<string, any[]>) =>
-          keepFormMessages(prevErrors) as Record<string, any[]>,
-      )
-      clearUpdatedFields()
-
-      return true
-    } catch (error) {
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
-
-      return false
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const editPCR = useEditPCR(setIsLoading)
 
   const onCancel = () => {
-    if (updatedFields.size > 0) {
+    if (updatedSections.size > 0) {
       setIsCancelModalOpen(true)
     } else {
       setLocation('/pcr')
@@ -101,7 +33,7 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       <SubmitButton
-        title="Update PCR"
+        title="Save PCR"
         onSubmit={() => editPCR()}
         isDisabled={isSaveDisabled}
         className="!py-2"

@@ -4,9 +4,8 @@ import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/Pr
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
-import { getFormData, isSubmitDisabled } from '../utils'
 import { PCRActionButtons } from '../interfaces'
+import { getFormData } from '../utils'
 import { formatApiUrl } from '@ors/helpers'
 
 import { enqueueSnackbar } from 'notistack'
@@ -17,19 +16,18 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
   const {
     PCRData,
-    errors,
     setErrors,
     pcrMetaproject,
     pcrDefaultData,
     ratingOptions,
+    updatedSections,
+    clearUpdatedSections,
   } = useContext(PCRDataContext)
   const metaProjectId = pcrMetaproject.data?.id
 
-  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
-
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
-  const isSaveDisabled = !metaProjectId || isSubmitDisabled(errors)
+  const isSaveDisabled = !metaProjectId
 
   const createPCR = async () => {
     setIsLoading(true)
@@ -68,7 +66,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
       enqueueSnackbar(<>PCR created successfully.</>, {
         variant: 'success',
       })
-      clearUpdatedFields()
+      clearUpdatedSections()
       setLocation(`/pcr/${metaProjectId}/${data.id}/edit`)
     } catch (error) {
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
@@ -80,7 +78,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   }
 
   const onCancel = () => {
-    if (updatedFields.size > 0) {
+    if (updatedSections.size > 0) {
       setIsCancelModalOpen(true)
     } else {
       setLocation('/pcr')

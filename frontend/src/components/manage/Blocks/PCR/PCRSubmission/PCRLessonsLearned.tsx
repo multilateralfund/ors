@@ -246,7 +246,7 @@ const PCRLessonsLearned = () => {
                         <div className="flex gap-3">
                           {NrEntity(llIndex)}
                           <div className="min-w-0 flex-1">
-                            <div className="mb-3 flex items-center">
+                            <div className="mb-3 flex items-center gap-2">
                               <h4 className="m-0 text-lg font-semibold text-primary">
                                 {crtLlName}
                               </h4>
