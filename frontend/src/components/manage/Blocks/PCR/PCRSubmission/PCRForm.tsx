@@ -195,7 +195,7 @@ const PCRForm = ({ mode }: { mode: string }) => {
   }, [JSON.stringify(overviewRequiredData), isOtherRating])
 
   const impactIndicatorsValues = map(
-    PCRData.impact_indicators,
+    filter(PCRData.impact_indicators, 'editable'),
     ({ field, value }) => ({
       field,
       isEmpty: isNil(value) || value === '',

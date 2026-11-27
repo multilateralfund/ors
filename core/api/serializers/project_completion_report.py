@@ -15,6 +15,7 @@ from core.api.pcr_impact_indicators import (
     build_impact_indicators,
     represent_impact_indicators,
 )
+from core.api.pcr_phase_out import get_pcr_phase_out
 from core.api.utils import log_pcr_history
 from core.api.export.projects_inventory_report import project_actual_fund
 from core.api.export.projects_inventory_report import project_apr_co2_actual
@@ -538,6 +539,12 @@ class PCRImpactIndicatorSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Value prefilled from the projects when the PCR was created",
     )
+    editable = serializers.BooleanField(
+        help_text=(
+            "Whether the user can change the value, the numeric indicators are "
+            "computed from the projects"
+        )
+    )
     prefilled = serializers.BooleanField(
         help_text="Whether the value is still the one prefilled from the projects"
     )
@@ -723,10 +730,6 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "gender_mainstreamings",
             "impact_indicators",
             "meta_project_id",
-            "phase_out_ods_actual",
-            "phase_out_ods_approved",
-            "phase_out_co2_eq_t_approved",
-            "phase_out_co2_eq_t_actual",
             "project_date_approved",
             "project_date_completion",
             "project_goal_achieved",
@@ -802,6 +805,8 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         }
 
         nested_data_pcr = pop_nested_data(validated_data, PCR_NESTED_MODELS)
+        # Computed from the projects, can't be changed in the PCR
+        validated_data.update(get_pcr_phase_out(validated_data["meta_project"]))
         pcr = PCR.objects.create(**validated_data)
 
         replace_nested_data(
@@ -903,10 +908,6 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
             "delay_causes",
             "learned_lessons",
             "pcr_projects",
-            "phase_out_ods_approved",
-            "phase_out_ods_actual",
-            "phase_out_co2_eq_t_approved",
-            "phase_out_co2_eq_t_actual",
             "financial_figures_status",
             "financial_figures_status_explanation",
             "addresses",

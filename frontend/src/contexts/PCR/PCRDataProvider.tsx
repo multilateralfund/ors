@@ -75,7 +75,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
 
   const { pcr_id, project_id } = useParams<Record<string, string>>()
-  const pcrDefaultData = useGetPCRDefaults(project_id)
+  const pcrDefaultData = useGetPCRDefaults(project_id, pcr_id)
   const pcr = useGetPCR(pcr_id)
   const pcrVersions = useGetPCRVersions(pcr_id)
 
