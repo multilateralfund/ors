@@ -35,6 +35,7 @@ export interface PCRImpactIndicatorType {
   value: number | boolean | string | null
   prefilled_value: number | boolean | null
   prefilled: boolean
+  editable: boolean
 }
 
 export interface PCRDefaultData {

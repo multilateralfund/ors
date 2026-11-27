@@ -4,6 +4,7 @@ import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/u
 import {
   getProjectDuration,
   getFormattedNumericValue,
+  formatFieldLabel,
 } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import {
   cdField,
@@ -358,7 +359,10 @@ export const formatImpactIndicatorsErrors = (
 
   forEach(indicators, ({ field, label }) => {
     forEach(errors[field], (message: string) => {
-      labelsByMessage[message] = [...(labelsByMessage[message] ?? []), label]
+      labelsByMessage[message] = [
+        ...(labelsByMessage[message] ?? []),
+        formatFieldLabel(label),
+      ]
     })
   })
 
@@ -616,10 +620,6 @@ export const getFormData = (
     ...pick(pcrDefaultData.data, [
       'project_date_approved',
       'project_date_completion',
-      'phase_out_ods_actual',
-      'phase_out_ods_approved',
-      'phase_out_co2_eq_t_actual',
-      'phase_out_co2_eq_t_approved',
     ]),
     decision_ids: pcrDefaultData.data?.decisions,
   }
@@ -680,7 +680,7 @@ export const getFormData = (
     ...overviewPrefilledData,
     ...overviewData,
     impact_indicators: map(
-      PCRData.impact_indicators,
+      filter(PCRData.impact_indicators, 'editable'),
       buildImpactIndicatorPayload,
     ),
     pcr_projects: filteredSummaryOfKeyData,

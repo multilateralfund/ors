@@ -250,7 +250,7 @@ export const ImpactIndicatorSourceTag = ({
 }) => {
   const source = getImpactIndicatorSource(indicator)
 
-  if (!source) {
+  if (!indicator.editable || !source) {
     return null
   }
 

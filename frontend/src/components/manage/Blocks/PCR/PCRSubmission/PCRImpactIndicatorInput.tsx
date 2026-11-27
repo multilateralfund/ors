@@ -2,7 +2,9 @@ import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { disabledClassName } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { ImpactIndicatorSourceTag } from '../PCRView/PCRViewTabs/ViewHelperComponents'
@@ -10,6 +12,7 @@ import { PCRImpactIndicatorType } from '../interfaces'
 import { getNumberPasteHandler } from '../utils'
 
 import { find, isNil, map } from 'lodash'
+import cx from 'classnames'
 
 const booleanOptions = [
   { id: true, name: 'Yes' },
@@ -26,7 +29,7 @@ const PCRImpactIndicatorInput = ({
 }) => {
   const { setPCRData, errors } = useContext(PCRDataContext)
 
-  const { field, label, data_type, value } = indicator
+  const { field, label, data_type, value, editable } = indicator
 
   const onChange = (value: PCRImpactIndicatorType['value']) => {
     setPCRData(
@@ -48,7 +51,7 @@ const PCRImpactIndicatorInput = ({
 
   return (
     <div className="flex flex-col justify-between">
-      <Label>{label}</Label>
+      <Label>{formatFieldLabel(label)}</Label>
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center">
           {data_type === 'boolean' ? (
@@ -67,10 +70,11 @@ const PCRImpactIndicatorInput = ({
           ) : (
             <FormattedNumberInput
               id={field}
-              className="!m-0 w-48"
+              className={cx('!m-0 w-48', { [disabledClassName]: !editable })}
               value={isNil(value) ? '' : String(value)}
               decimalDigits={data_type === 'decimal' ? 2 : 0}
               withoutDefaultValue={true}
+              disabled={!editable}
               onChange={(event) => setNumber(event.target.value)}
               onPaste={getNumberPasteHandler(setNumber)}
             />
