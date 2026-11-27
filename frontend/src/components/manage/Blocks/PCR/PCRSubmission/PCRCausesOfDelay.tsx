@@ -44,6 +44,8 @@ const PCRCausesOfDelay = () => {
     rootCauseOfDelayOptions,
     errors,
     setErrors,
+    stashRemovedEntry,
+    takeRemovedEntry,
   } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
@@ -163,14 +165,20 @@ const PCRCausesOfDelay = () => {
     })
   }
 
+  const getCauseOfDelayKey = (dcIndex: number, cdId: number) =>
+    `delay:${crtAgencyId}:${dcData[dcIndex]?.delay_cluster_id}:${cdId}`
+
   const onAddCauseOfDelay = (dcIndex: number, cdId: number) => {
+    const initialCauseOfDelay = takeRemovedEntry(
+      getCauseOfDelayKey(dcIndex, cdId),
+    ) ?? {
+      root_cause_id: cdId,
+      description_roots_causes_of_delay: '',
+      action_taken: '',
+    }
+
     setPCRData((prevData) => {
       const sectionData = prevData[delayField] || []
-      const initialCauseOfDelay = {
-        root_cause_id: cdId,
-        description_roots_causes_of_delay: '',
-        action_taken: '',
-      }
 
       return {
         ...prevData,
@@ -197,6 +205,14 @@ const PCRCausesOfDelay = () => {
   }
 
   const onRemoveCauseOfDelay = (cdId: number, dcIndex: number) => {
+    stashRemovedEntry(
+      getCauseOfDelayKey(dcIndex, cdId),
+      find(
+        dcData[dcIndex]?.[dcField],
+        (cd) => Number(cd.root_cause_id) === cdId,
+      ),
+    )
+
     setPCRData((prevData) => {
       const sectionData = prevData[delayField] || []
 

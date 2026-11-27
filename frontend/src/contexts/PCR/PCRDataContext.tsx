@@ -14,6 +14,8 @@ import { ApiSubstance } from '@ors/types/api_substances'
 type PCRDataContextProps = PCRFormData & {
   errors: Record<string, any>
   setErrors: Dispatch<SetStateAction<(error: Record<string, any[]>) => void>>
+  stashRemovedEntry: (key: string, entry: any) => void
+  takeRemovedEntry: (key: string) => any
   pcrMetaproject: ReturnType<typeof useGetPCRProject>
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
   pcr: ReturnType<typeof useGetPCR>
