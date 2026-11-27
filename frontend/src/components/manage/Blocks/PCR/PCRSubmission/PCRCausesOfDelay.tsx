@@ -24,7 +24,7 @@ import {
   borderedContainerClassname,
 } from '../constants'
 
-import { filter, find, map, omit } from 'lodash'
+import { filter, find, map, omit, uniqueId } from 'lodash'
 import cx from 'classnames'
 import {
   Tabs,
@@ -45,7 +45,7 @@ const PCRCausesOfDelay = () => {
     errors,
     setErrors,
     stashRemovedEntry,
-    takeRemovedEntry,
+    retrieveRemovedEntry,
   } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
@@ -86,12 +86,14 @@ const PCRCausesOfDelay = () => {
   )
 
   const onAddDelayCluster = () => {
+    const initialDelayClusterData = {
+      uid: uniqueId('delay-cluster-'),
+      delay_cluster_id: null,
+      [dcField]: [],
+    }
+
     setPCRData((prevData) => {
       const sectionData = prevData[delayField] || []
-      const initialDelayClusterData = {
-        delay_cluster_id: null,
-        [dcField]: [],
-      }
 
       return {
         ...prevData,
@@ -166,10 +168,10 @@ const PCRCausesOfDelay = () => {
   }
 
   const getCauseOfDelayKey = (dcIndex: number, cdId: number) =>
-    `delay:${crtAgencyId}:${dcData[dcIndex]?.delay_cluster_id}:${cdId}`
+    `delay:${dcData[dcIndex]?.uid}:${cdId}`
 
   const onAddCauseOfDelay = (dcIndex: number, cdId: number) => {
-    const initialCauseOfDelay = takeRemovedEntry(
+    const initialCauseOfDelay = retrieveRemovedEntry(
       getCauseOfDelayKey(dcIndex, cdId),
     ) ?? {
       root_cause_id: cdId,

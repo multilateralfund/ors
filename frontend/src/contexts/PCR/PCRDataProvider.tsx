@@ -191,7 +191,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     removedEntriesRef.current[key] = entry
   }, [])
 
-  const takeRemovedEntry = useCallback((key: string) => {
+  const retrieveRemovedEntry = useCallback((key: string) => {
     const entry = removedEntriesRef.current[key]
     delete removedEntriesRef.current[key]
 
@@ -638,7 +638,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       errors,
       setErrors,
       stashRemovedEntry,
-      takeRemovedEntry,
+      retrieveRemovedEntry,
       fundsByAgency,
       ratingOptions,
       entityOptions,
@@ -663,7 +663,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       errors,
       setErrors,
       stashRemovedEntry,
-      takeRemovedEntry,
+      retrieveRemovedEntry,
       fundsByAgency,
       ratingOptions,
       entityOptions,

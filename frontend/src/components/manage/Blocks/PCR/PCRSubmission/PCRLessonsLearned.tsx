@@ -44,7 +44,7 @@ const PCRLessonsLearned = () => {
     errors,
     setErrors,
     stashRemovedEntry,
-    takeRemovedEntry,
+    retrieveRemovedEntry,
   } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
@@ -88,7 +88,7 @@ const PCRLessonsLearned = () => {
   const getLessonLearnedKey = (llId: number) => `lesson:${crtAgencyId}:${llId}`
 
   const onAddLessonLearned = (llId: number) => {
-    const initialLessonLearned = takeRemovedEntry(
+    const initialLessonLearned = retrieveRemovedEntry(
       getLessonLearnedKey(llId),
     ) ?? { lesson_id: llId, description: '' }
 

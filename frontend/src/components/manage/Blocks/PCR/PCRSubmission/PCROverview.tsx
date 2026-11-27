@@ -31,7 +31,7 @@ const PCROverview = () => {
     errors,
     setErrors,
     stashRemovedEntry,
-    takeRemovedEntry,
+    retrieveRemovedEntry,
     ratingOptions,
     entityOptions,
     completionReportDoneByOptions,
@@ -54,7 +54,7 @@ const PCROverview = () => {
   ]
 
   const onAddAdditionalComment = (entity: string) => {
-    const additionalComment = takeRemovedEntry(`comment:${entity}`) ?? {
+    const additionalComment = retrieveRemovedEntry(`comment:${entity}`) ?? {
       entity,
       comment: '',
     }

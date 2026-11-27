@@ -77,7 +77,7 @@ const PCRSdgs = () => {
     errors,
     setErrors,
     stashRemovedEntry,
-    takeRemovedEntry,
+    retrieveRemovedEntry,
   } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
@@ -142,7 +142,7 @@ const PCRSdgs = () => {
   const getSdgKey = (sdgId: number | null) => `sdg:${crtAgencyId}:${sdgId}`
 
   const onAddSdg = (sdgId: number) => {
-    const initialSdgsData = takeRemovedEntry(getSdgKey(sdgId)) ?? {
+    const initialSdgsData = retrieveRemovedEntry(getSdgKey(sdgId)) ?? {
       goal_id: sdgId,
       description: '',
     }

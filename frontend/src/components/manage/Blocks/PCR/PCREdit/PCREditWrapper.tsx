@@ -9,7 +9,7 @@ import { PCROverviewData } from '../interfaces'
 import { hasPCRProjectData } from '../utils'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
-import { groupBy, keyBy, keys, map, pick } from 'lodash'
+import { groupBy, keyBy, keys, map, pick, uniqueId } from 'lodash'
 import { Redirect, useParams } from 'wouter'
 
 const PCREditWrapper = () => {
@@ -50,6 +50,7 @@ const PCREditWrapper = () => {
       delay_clusters: map(
         groupedDelayCauses[agency_id],
         ({ delay_cluster_id, root_causes_of_delay }) => ({
+          uid: uniqueId('delay-cluster-'),
           delay_cluster_id,
           root_causes_of_delay: map(
             root_causes_of_delay,
