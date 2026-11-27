@@ -117,7 +117,7 @@ export interface PCRSummaryOfKeyDataType {
   hasSavedData?: boolean
 }
 
-type PCRProjectResponse = {
+export type PCRProjectResponse = {
   project_id: number
   funds_disbursed?: string | null
   planned_date_of_completion?: string | null

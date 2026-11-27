@@ -30,6 +30,7 @@ import {
 } from '@ors/components/manage/Blocks/PCR/constants'
 import {
   PCRData,
+  PCRProjectResponse,
   PCRAlternativeTechnologyType,
   PCRResultsAssessmentData,
   PCRCausesOfDelayData,
@@ -448,6 +449,12 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     [initialErrors, sdgsApplying, entriesCount],
   )
 
+  const summaryOfKeyData: PCRProjectResponse[] = isEmpty(
+    PCRData.summary_of_key_data,
+  )
+    ? (pcr.data?.pcr_projects ?? [])
+    : PCRData.summary_of_key_data
+
   const fundsByAgency = useMemo(() => {
     const {
       projectAgencyMap,
@@ -482,7 +489,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       total_number_of_enterprises,
       alternative_technologies,
     } = reduce(
-      PCRData.summary_of_key_data,
+      summaryOfKeyData,
       (acc, entry) => {
         const agencyId = projectAgencyMap[entry.project_id]
 
@@ -542,7 +549,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       total_number_of_enterprises,
       alternative_technologies,
     }
-  }, [projects, PCRData.summary_of_key_data])
+  }, [projects, summaryOfKeyData])
 
   const { data: ratings } = useApi({
     options: { withStoreCache: true },
