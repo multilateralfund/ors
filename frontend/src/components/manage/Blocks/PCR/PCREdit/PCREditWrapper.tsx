@@ -2,7 +2,6 @@ import { useContext, useEffect } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import { initialOverviewData } from '../constants'
@@ -15,9 +14,14 @@ import { Redirect, useParams } from 'wouter'
 
 const PCREditWrapper = () => {
   const { pcr_id, project_id } = useParams<Record<string, string>>()
-  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
-  const { pcr, pcrMetaproject, agencyIds, setPCRData } =
-    useContext(PCRDataContext)
+  const {
+    pcr,
+    pcrMetaproject,
+    agencyIds,
+    setPCRData,
+    updatedSections,
+    clearUpdatedSections,
+  } = useContext(PCRDataContext)
   const { data } = pcrMetaproject
 
   const loading = pcr.loading || pcrMetaproject.loading || !pcr.loaded
@@ -140,10 +144,10 @@ const PCREditWrapper = () => {
       sdgs_contribution: sdgsContribution,
       supporting_evidences: supportingEvidences,
     }))
-    clearUpdatedFields()
-  }, [clearUpdatedFields, pcr.data, agencyIds, setPCRData])
+    clearUpdatedSections()
+  }, [clearUpdatedSections, pcr.data, agencyIds, setPCRData])
 
-  useVisibilityChange(updatedFields.size > 0)
+  useVisibilityChange(updatedSections.size > 0)
 
   if (!loading && !data?.pcr_id) {
     return <Redirect to="/pcr" />

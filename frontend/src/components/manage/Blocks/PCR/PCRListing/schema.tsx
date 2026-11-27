@@ -116,7 +116,7 @@ const getColumnDefs = (
                     )}
                   </div>
                 ) : (
-                  <div className="w-4" />
+                  <div className="w-4 shrink-0" />
                 )}
                 {(view === 'list' ? canEditPCR : props.data.pcr_editable) && (
                   <Checkbox
