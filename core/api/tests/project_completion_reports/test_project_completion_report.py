@@ -492,10 +492,11 @@ def test_pcr_project_create(
     assert response.data["submission_date"] is None
     assert response.data["project_date_approved"] == "2026-07-20"
     assert response.data["project_date_completion"] == "2026-07-21"
-    assert Decimal(response.data["phase_out_ods_approved"]) == Decimal(10)
-    assert Decimal(response.data["phase_out_ods_actual"]) == Decimal(2)
-    assert Decimal(response.data["phase_out_co2_eq_t_approved"]) == Decimal(5)
-    assert Decimal(response.data["phase_out_co2_eq_t_actual"]) == Decimal(14)
+    # computed from the projects (no data here), the sent values are ignored
+    assert response.data["phase_out_ods_approved"] is None
+    assert response.data["phase_out_ods_actual"] is None
+    assert response.data["phase_out_co2_eq_t_approved"] is None
+    assert response.data["phase_out_co2_eq_t_actual"] is None
     assert response.data["addresses"] == "Test project address"
     assert response.data["decisions"][0]["id"] == decision.id
 
@@ -937,11 +938,10 @@ def test_pcr_create_dafaults(client, admin_user, decision, project_approved_stat
     assert response.data["decisions"] == [decision.id]
     assert response.data["project_date_approved"] == project.date_approved
     assert response.data["project_date_completion"] == project.date_completion
-    assert response.data["phase_out_ods_approved"] == meta_project.phase_out_odp
+    # no ODS/ODP entries nor APRs (see test_pcr_phase_out.py)
+    assert response.data["phase_out_ods_approved"] is None
     assert response.data["phase_out_ods_actual"] is None
-    assert (
-        response.data["phase_out_co2_eq_t_approved"] == meta_project.phase_out_co2_eq_t
-    )
+    assert response.data["phase_out_co2_eq_t_approved"] is None
     assert response.data["phase_out_co2_eq_t_actual"] is None
     # no project specific fields set up for the project
     assert response.data["impact_indicators"] == []

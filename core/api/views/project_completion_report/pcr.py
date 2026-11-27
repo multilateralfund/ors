@@ -29,6 +29,7 @@ from core.api.pcr_impact_indicators import (
     build_impact_indicators,
     represent_impact_indicators,
 )
+from core.api.pcr_phase_out import get_pcr_phase_out
 from core.api.permissions import (
     DenyAll,
     HasPCRApproveAccess,
@@ -504,10 +505,7 @@ class PCRProjectViewSet(
             "project_date_completion": (
                 first_project.date_completion if first_project else None
             ),
-            "phase_out_ods_approved": meta_project.phase_out_odp,
-            "phase_out_ods_actual": None,  # no field on meta_project
-            "phase_out_co2_eq_t_approved": meta_project.phase_out_co2_eq_t,
-            "phase_out_co2_eq_t_actual": None,  # no field on meta_project
+            **get_pcr_phase_out(meta_project),
             "impact_indicators": represent_impact_indicators(
                 build_impact_indicators(meta_project.projects.for_pcr())
             ),

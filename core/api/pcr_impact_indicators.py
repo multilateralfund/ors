@@ -6,9 +6,15 @@ differ by the cluster, type and sector of each project (`ProjectSpecificFields`)
 so a PCR gets the union of the fields of all its projects.
 
 The list is built once, when the PCR is created, and is not refreshed later: the
-PCR closes the projects it starts with. Each indicator keeps the value prefilled
-from the projects (`prefilled_value`), so the API can tell whether the user
-changed it. Only the actual values are reported in the PCR.
+PCR closes the projects it starts with. Only the actual values are reported in
+the PCR:
+- the numeric indicators are the sum over the projects and can't be changed
+  (except the ratios, see NOT_PREFILLED_FIELDS)
+- the boolean indicators are prefilled with the union over the projects (any
+  "yes" is "yes", otherwise any "no" is "no") and can be changed by the user
+
+Each indicator keeps the value prefilled from the projects (`prefilled_value`),
+so the API can tell whether the user changed it.
 
 Stored entry:
     {
@@ -31,9 +37,10 @@ DECIMAL = "decimal"
 BOOLEAN = "boolean"
 DATA_TYPES = (NUMBER, DECIMAL, BOOLEAN)
 
-# Ratios, the sum over the projects is meaningless.
-# TODO: prefill these too, once the client decides how they should be computed
-# (e.g. as a weighted average).
+# Ratios, the sum over the projects is meaningless. These are not prefilled and
+# are filled in by the user, unlike the other numeric indicators.
+# TODO: the client will decide how these should be computed (e.g. as a weighted
+# average), or if they are removed from the PCR.
 NOT_PREFILLED_FIELDS = {
     "cost_effectiveness_actual",
     "cost_effectiveness_co2_actual",
@@ -79,12 +86,19 @@ def _to_json_number(value, data_type):
     return float(value)
 
 
+def is_editable_indicator(indicator):
+    """Whether the user can change the value of the indicator"""
+    return (
+        indicator["data_type"] == BOOLEAN or indicator["field"] in NOT_PREFILLED_FIELDS
+    )
+
+
 def _get_prefilled_value(field, projects):
     """
-    The sum of the field over the projects, if it can be prefilled. The boolean
-    indicators are never prefilled.
+    The value of the field over the projects: the sum of the numeric fields, the
+    union of the boolean ones. None if no project has a value.
     """
-    if field.data_type == BOOLEAN or field.read_field_name in NOT_PREFILLED_FIELDS:
+    if field.read_field_name in NOT_PREFILLED_FIELDS:
         return None
     values = [
         getattr(project, field.read_field_name, None)
@@ -93,6 +107,8 @@ def _get_prefilled_value(field, projects):
     ]
     if not values:
         return None
+    if field.data_type == BOOLEAN:
+        return any(values)
     return _to_json_number(
         sum(Decimal(str(value)) for value in values), field.data_type
     )
@@ -121,12 +137,14 @@ def build_impact_indicators(projects):
 
 def represent_impact_indicators(indicators):
     """
-    The indicators as returned by the API, with the `prefilled` flag: whether
-    the value is still the one prefilled from the projects.
+    The indicators as returned by the API, with the flags:
+    - `editable`: whether the user can change the value
+    - `prefilled`: whether the value is still the one prefilled from the projects
     """
     return [
         {
             **indicator,
+            "editable": is_editable_indicator(indicator),
             "prefilled": indicator.get("prefilled_value") is not None
             and indicator.get("value") == indicator.get("prefilled_value"),
         }
@@ -161,8 +179,10 @@ def _clean_value(value, data_type):
 
 def apply_impact_indicator_values(indicators, values):
     """
-    Set the values sent by the user on the PCR indicators. Only the values can
-    change, the list of indicators and their prefilled values are kept.
+    Set the values sent by the user on the PCR indicators. Only the values of the
+    editable indicators can change, the list of indicators and their prefilled
+    values are kept. The values of the other indicators can be sent unchanged
+    (e.g. the whole list returned by the API).
 
     `values` is a list of {"field": ..., "value": ...}; the indicators that are not
     sent keep their value. Returns the new list of indicators and the errors by
@@ -183,7 +203,14 @@ def apply_impact_indicator_values(indicators, values):
             continue
         seen.add(field_name)
         try:
-            indicator["value"] = _clean_value(item.get("value"), indicator["data_type"])
+            value = _clean_value(item.get("value"), indicator["data_type"])
         except ValueError as e:
             errors[field_name] = [str(e)]
+            continue
+        if is_editable_indicator(indicator):
+            indicator["value"] = value
+        elif value != indicator.get("value"):
+            errors[field_name] = [
+                "This indicator is computed from the projects and can't be changed."
+            ]
     return indicators, errors
