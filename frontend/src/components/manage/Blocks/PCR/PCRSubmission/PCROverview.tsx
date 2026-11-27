@@ -30,6 +30,8 @@ const PCROverview = () => {
     setPCRData,
     errors,
     setErrors,
+    stashRemovedEntry,
+    retrieveRemovedEntry,
     ratingOptions,
     entityOptions,
     completionReportDoneByOptions,
@@ -52,6 +54,11 @@ const PCROverview = () => {
   ]
 
   const onAddAdditionalComment = (entity: string) => {
+    const additionalComment = retrieveRemovedEntry(`comment:${entity}`) ?? {
+      entity,
+      comment: '',
+    }
+
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const subsectionData = sectionData[additionalCommentsField] || []
@@ -60,16 +67,16 @@ const PCROverview = () => {
         ...prevData,
         [sectionIdentifier]: {
           ...sectionData,
-          [additionalCommentsField]: [
-            ...subsectionData,
-            { entity, comment: '' },
-          ],
+          [additionalCommentsField]: [...subsectionData, additionalComment],
         },
       }
     }, additionalCommentsField)
   }
 
   const onRemoveAdditionalComments = (index: number) => {
+    const additionalComment = additionalCommentsData[index]
+    stashRemovedEntry(`comment:${additionalComment.entity}`, additionalComment)
+
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const subsectionData = sectionData[additionalCommentsField] || []

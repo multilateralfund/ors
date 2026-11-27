@@ -642,9 +642,9 @@ export const getFormData = (
     'overall_assessment_highlights',
   )
 
-  const causesOfDelayData = formatAgencyData<PCRCausesOfDelayData>(
-    delay_causes,
-    cdField,
+  const causesOfDelayData = map(
+    formatAgencyData<PCRCausesOfDelayData>(delay_causes, cdField),
+    (cluster) => omit(cluster, 'uid'),
   )
 
   const projectRecommendationsData =

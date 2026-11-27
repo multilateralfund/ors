@@ -181,6 +181,23 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     [],
   )
 
+  const removedEntriesRef = useRef<Record<string, any>>({})
+
+  useEffect(() => {
+    removedEntriesRef.current = {}
+  }, [pcr_id, project_id])
+
+  const stashRemovedEntry = useCallback((key: string, entry: any) => {
+    removedEntriesRef.current[key] = entry
+  }, [])
+
+  const retrieveRemovedEntry = useCallback((key: string) => {
+    const entry = removedEntriesRef.current[key]
+    delete removedEntriesRef.current[key]
+
+    return entry
+  }, [])
+
   const formatSummaryOfKeyData = (errors: Record<string, any[]>) => {
     const summaryOfKeyData = PCRData.summary_of_key_data || []
 
@@ -620,6 +637,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       clearUpdatedSections,
       errors,
       setErrors,
+      stashRemovedEntry,
+      retrieveRemovedEntry,
       fundsByAgency,
       ratingOptions,
       entityOptions,
@@ -643,6 +662,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       clearUpdatedSections,
       errors,
       setErrors,
+      stashRemovedEntry,
+      retrieveRemovedEntry,
       fundsByAgency,
       ratingOptions,
       entityOptions,

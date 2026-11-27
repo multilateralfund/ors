@@ -215,6 +215,7 @@ type DelayCluster = {
 export type CauseOfDelay = {
   delay_cluster_id: number | null
   root_causes_of_delay: DelayCluster[]
+  uid?: string
 }
 
 export interface PCRCausesOfDelayData {

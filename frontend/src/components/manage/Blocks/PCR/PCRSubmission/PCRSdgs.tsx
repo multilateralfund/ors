@@ -70,8 +70,15 @@ const PCRSdgs = () => {
   const sectionIdentifier = 'sdgs_contribution'
 
   const { agencies } = useContext(ProjectsDataContext)
-  const { PCRData, setPCRData, sdgsOptions, errors, setErrors } =
-    useContext(PCRDataContext)
+  const {
+    PCRData,
+    setPCRData,
+    sdgsOptions,
+    errors,
+    setErrors,
+    stashRemovedEntry,
+    retrieveRemovedEntry,
+  } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
@@ -132,10 +139,16 @@ const PCRSdgs = () => {
     }, 'sdg_applying')
   }
 
+  const getSdgKey = (sdgId: number | null) => `sdg:${crtAgencyId}:${sdgId}`
+
   const onAddSdg = (sdgId: number) => {
+    const initialSdgsData = retrieveRemovedEntry(getSdgKey(sdgId)) ?? {
+      goal_id: sdgId,
+      description: '',
+    }
+
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
-      const initialSdgsData = { goal_id: sdgId, description: '' }
 
       return {
         ...prevData,
@@ -153,6 +166,7 @@ const PCRSdgs = () => {
 
   const onRemoveSdg = (sdgId: number) => {
     const goalIndex = sdgsData.findIndex((sdg) => sdg.goal_id === sdgId)
+    stashRemovedEntry(getSdgKey(sdgId), sdgsData[goalIndex])
 
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
@@ -182,6 +196,8 @@ const PCRSdgs = () => {
   }
 
   const onClearSdgs = () => {
+    sdgsData.forEach((sdg) => stashRemovedEntry(getSdgKey(sdg.goal_id), sdg))
+
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 

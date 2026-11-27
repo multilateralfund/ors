@@ -37,8 +37,15 @@ const PCRLessonsLearned = () => {
   const sectionIdentifier = 'learned_lessons'
 
   const { agencies } = useContext(ProjectsDataContext)
-  const { PCRData, setPCRData, lessonLearnedOptions, errors, setErrors } =
-    useContext(PCRDataContext)
+  const {
+    PCRData,
+    setPCRData,
+    lessonLearnedOptions,
+    errors,
+    setErrors,
+    stashRemovedEntry,
+    retrieveRemovedEntry,
+  } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
@@ -78,10 +85,15 @@ const PCRLessonsLearned = () => {
     <SubSectionTitle className="mb-5 flex-1">Lessons learned</SubSectionTitle>
   )
 
+  const getLessonLearnedKey = (llId: number) => `lesson:${crtAgencyId}:${llId}`
+
   const onAddLessonLearned = (llId: number) => {
+    const initialLessonLearned = retrieveRemovedEntry(
+      getLessonLearnedKey(llId),
+    ) ?? { lesson_id: llId, description: '' }
+
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
-      const initialLessonLearned = { lesson_id: llId, description: '' }
 
       return {
         ...prevData,
@@ -99,6 +111,8 @@ const PCRLessonsLearned = () => {
 
   const onRemoveLessonLearned = (llId: number) => {
     const llIndex = llData.findIndex((ll) => ll.lesson_id === llId)
+    stashRemovedEntry(getLessonLearnedKey(llId), llData[llIndex])
+
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 

@@ -16,6 +16,8 @@ type PCRDataContextProps = PCRFormData & {
   setErrors: (updater: any, section?: string) => void
   updatedSections: Set<string>
   clearUpdatedSections: (sections?: string[]) => void
+  stashRemovedEntry: (key: string, entry: any) => void
+  retrieveRemovedEntry: (key: string) => any
   pcrMetaproject: ReturnType<typeof useGetPCRProject>
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
   pcr: ReturnType<typeof useGetPCR>
