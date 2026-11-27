@@ -640,7 +640,9 @@ FUND_METRICS: tuple[Metric, ...] = (
             "(+EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES)"
         ),
         compute=manual(
-            "TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES", True
+            "TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES",
+            True,
+            decimals=1,
         ),
     ),
     Metric(
@@ -657,7 +659,9 @@ FUND_METRICS: tuple[Metric, ...] = (
             "TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES "
             "(+EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES)"
         ),
-        compute=manual("EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES", True),
+        compute=manual(
+            "EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES", True, decimals=1
+        ),
     ),
     Metric(
         metric_id="hfc_expected_savings_to_society",

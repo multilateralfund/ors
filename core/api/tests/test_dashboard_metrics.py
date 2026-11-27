@@ -827,6 +827,18 @@ class TestFundValues(BaseTest):
         with override_config(TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES="53.6"):
             assert self.fund(user)["ods_avoided_emissions"]["value"] == "53.6"
 
+    def test_avoided_co2eq_emissions_keep_one_decimal(self, user, ongoing_status):
+        approved_submission(status=ongoing_status)
+
+        with override_config(
+            TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES="65.4",
+            EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES="72",
+        ):
+            fund = self.fund(user)
+
+        assert fund["controlled_substances_avoided_emissions"]["value"] == "65.4"
+        assert fund["hfc_expected_avoided_emissions"]["value"] == "72"
+
     def test_pledges_are_unavailable_until_there_are_any(self, user, ongoing_status):
         approved_submission(status=ongoing_status)
 
