@@ -212,7 +212,7 @@ def get_pcr_submission_errors(pcr):
                     "pcrdelaycauserootcause_set"
                 )
             ),
-            [],
+            ["delay_cluster_id"],
             _get_delay_cause_errors,
         ),
         # The lessons are grouped in one learned lesson row per agency
@@ -242,7 +242,7 @@ def get_pcr_submission_errors(pcr):
             ),
         ),
         "supporting_evidences": _get_agencies_rows_errors(
-            agency_ids, list(pcr.supporting_evidences.all()), []
+            agency_ids, list(pcr.supporting_evidences.all()), ["section_id"]
         ),
     }
     errors.update({field: value for field, value in sections_errors.items() if value})

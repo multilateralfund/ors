@@ -27,6 +27,7 @@ import {
   SubSectionTitle,
   ProjectSummary,
 } from '../PCRView/PCRViewTabs/ViewHelperComponents'
+import { useEditPCR } from '../PCREdit/useEditPCR'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ProjectType } from '@ors/types/api_projects'
 import {
@@ -41,6 +42,9 @@ import {
   getEnterpriseAddresses,
   isProjectNotApproved,
   getNumberPasteHandler,
+  alignSummaryOfKeyDataErrors,
+  mergeSaveErrors,
+  keepFormMessages,
 } from '../utils'
 import {
   summaryOfKeyDataField,
@@ -49,13 +53,14 @@ import {
   notApprovedProjectMessage,
 } from '../constants'
 import {
+  PCRData,
+  PCRSummaryOfKeyDataType,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
-  PCRSummaryOfKeyDataType,
 } from '../interfaces'
 
-import { filter, find, map, omit } from 'lodash'
+import { filter, find, findIndex, map, omit } from 'lodash'
 import { TfiClose } from 'react-icons/tfi'
 import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
@@ -66,6 +71,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  CircularProgress,
   Divider,
   IconButton,
   Tab,
@@ -328,7 +334,9 @@ export const getSummaryTableColumnDefs = () => [
   },
 ]
 
-const PCRSummaryOfKeyData = () => {
+const disabledButtonClassname = '!bg-[#e0e0e0] !text-[#a6a6a6]'
+
+const PCRSummaryOfKeyData = ({ mode = 'add' }: { mode?: string }) => {
   const {
     PCRData,
     pcrMetaproject,
@@ -342,6 +350,10 @@ const PCRSummaryOfKeyData = () => {
   const [draftSummaryData, setDraftSummaryData] =
     useState<PCRSummaryOfKeyDataType | null>(null)
   const [draftErrors, setDraftErrors] = useState<Record<string, any>>({})
+  const [isSaving, setIsSaving] = useState(false)
+
+  const editPCR = useEditPCR(setIsSaving)
+
   const {
     data: metaproject,
     loaded: metaprojectLoaded,
@@ -444,13 +456,13 @@ const PCRSummaryOfKeyData = () => {
     [getSummaryData, projectsErrors],
   )
 
-  const saveSummaryData = () => {
+  const saveSummaryData = async () => {
     if (!editingProjectId || !draftSummaryData) {
       closeDialog()
       return
     }
 
-    setPCRData((previousData) => {
+    const applyDraftSummaryData = (previousData: PCRData) => {
       const sectionData = previousData.summary_of_key_data ?? []
       const projectDataIndex = sectionData.findIndex(
         (entry) => entry.project_id === editingProjectId,
@@ -483,13 +495,48 @@ const PCRSummaryOfKeyData = () => {
           },
         }),
       }
-    }, 'summary_of_key_data')
+    }
+
+    if (mode === 'edit') {
+      const updatedData = applyDraftSummaryData(PCRData)
+
+      const isSaved = await editPCR(true, 'summary_of_key_data', {
+        pcrData: updatedData,
+        onErrors: (saveErrors) => {
+          const projectIndex = findIndex(
+            updatedData.summary_of_key_data,
+            (entry) => entry.project_id === editingProjectId,
+          )
+
+          const projectSaveErrors = alignSummaryOfKeyDataErrors(
+            saveErrors,
+            updatedData.summary_of_key_data,
+          )[summaryOfKeyDataField]?.[projectIndex]
+
+          setDraftErrors((prevErrors) =>
+            mergeSaveErrors(prevErrors, projectSaveErrors ?? {}),
+          )
+        },
+      })
+
+      if (!isSaved) {
+        return
+      }
+    }
+
+    setPCRData(
+      applyDraftSummaryData,
+      mode === 'edit' ? undefined : 'summary_of_key_data',
+    )
 
     if (projectErrorIndex !== -1) {
+      const projectErrors =
+        mode === 'edit' ? keepFormMessages(draftErrors) : draftErrors
+
       setErrors((prevData: Record<string, any[]>) => ({
         ...prevData,
         pcr_projects: map(prevData.pcr_projects, (error, errorIndex) =>
-          errorIndex === projectErrorIndex ? draftErrors : error,
+          errorIndex === projectErrorIndex ? projectErrors : error,
         ),
       }))
     }
@@ -665,7 +712,7 @@ const PCRSummaryOfKeyData = () => {
           }}
           fullWidth={true}
           maxWidth="xl"
-          onClose={closeDialog}
+          onClose={() => !isSaving && closeDialog()}
           open={true}
           scroll="paper"
         >
@@ -1225,15 +1272,32 @@ const PCRSummaryOfKeyData = () => {
             </div>
           </DialogContent>
           <DialogActions className="px-6 py-3">
+            {isSaving && (
+              <CircularProgress
+                color="inherit"
+                size="30px"
+                className="mr-2 text-white"
+              />
+            )}
             <SubmitButton
               title="Cancel"
               onSubmit={closeDialog}
-              className="!border-white bg-white !text-primary hover:border-white hover:bg-white hover:text-primary"
+              isDisabled={isSaving}
+              className={
+                isSaving
+                  ? disabledButtonClassname
+                  : '!border-white bg-white !text-primary hover:border-white hover:bg-white hover:text-primary'
+              }
             />
             <SubmitButton
               title="Done"
               onSubmit={saveSummaryData}
-              className="hover:border-secondary hover:bg-secondary hover:text-white"
+              isDisabled={isSaving}
+              className={
+                isSaving
+                  ? disabledButtonClassname
+                  : 'hover:border-secondary hover:bg-secondary hover:text-white'
+              }
             />
           </DialogActions>
         </Dialog>

@@ -626,7 +626,11 @@ class PCRDelayCause(models.Model):
         Agency, on_delete=models.PROTECT, related_name="delay_causes"
     )
     delay_cluster = models.ForeignKey(
-        PCRDelayCluster, on_delete=models.PROTECT, related_name="delay_causes"
+        PCRDelayCluster,
+        on_delete=models.PROTECT,
+        related_name="delay_causes",
+        null=True,
+        blank=True,
     )
     root_causes_of_delay = models.ManyToManyField(
         "PCRRootCausesOfDelay",
@@ -807,6 +811,8 @@ class PCRGenderMainstreaming(models.Model):
     project_preparation = models.CharField(
         max_length=32,
         choices=ProjectPreparation.choices,
+        null=True,
+        blank=True,
         help_text="",
     )
     prefilled = models.CharField(
@@ -929,6 +935,8 @@ class PCRSupportingEvidence(models.Model):
         PCRSupportingEvidenceSection,
         on_delete=models.PROTECT,
         related_name="supporting_evidences",
+        null=True,
+        blank=True,
     )
     file = models.FileField(
         storage=get_protected_storage,

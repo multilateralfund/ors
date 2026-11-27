@@ -82,7 +82,10 @@ const PCRDocumentation = () => {
                       <span className="text-lg font-medium">{fileName}</span>
                     </a>
                     <div className="w-full md:w-[45%]">
-                      {detailItem(pcrFieldsMapping.section_id, file.section)}
+                      {detailItem(
+                        pcrFieldsMapping.section_id,
+                        file.section ?? '',
+                      )}
                     </div>
                   </div>
                   {index !== evidencesData.length - 1 && (

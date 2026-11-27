@@ -299,3 +299,52 @@ def test_partial_update_keeps_sdgs_and_supporting_evidences(client, pcr):
     assert pcr.sustainable_development_goals.exists()
     assert pcr.supporting_evidences.exists()
     assert get_pcr_submission_errors(pcr) == {}
+
+
+def test_save_without_delay_cluster_section_and_project_preparation(
+    client, pcr, lead_agency
+):
+    response = client.patch(
+        reverse("project-completion-report-detail", args=[pcr.id]),
+        {
+            "metadata": json.dumps(
+                {
+                    "delay_causes": [
+                        {"agency_id": lead_agency.id, "delay_cluster_id": None}
+                    ],
+                    "gender_mainstreamings": [
+                        {"agency_id": lead_agency.id, "project_preparation": None}
+                    ],
+                    "supporting_evidences": [
+                        {
+                            "agency_id": lead_agency.id,
+                            "section_id": None,
+                            "link": "https://example.com/evidence",
+                        }
+                    ],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
+        },
+        format="multipart",
+    )
+
+    assert response.status_code == 200, response.data
+    delay_cause = pcr.delay_causes.get()
+    gender_mainstreaming = pcr.gender_mainstreamings.get()
+    evidence = pcr.supporting_evidences.get()
+    assert delay_cause.delay_cluster is None
+    assert gender_mainstreaming.project_preparation is None
+    assert evidence.section is None
+
+    errors = get_pcr_submission_errors(pcr)
+    assert errors["delay_causes"][lead_agency.id][delay_cause.id]["delay_cluster"] == (
+        REQUIRED
+    )
+    assert errors["gender_mainstreamings"][lead_agency.id][gender_mainstreaming.id][
+        "project_preparation"
+    ] == (REQUIRED)
+    assert errors["supporting_evidences"] == {
+        lead_agency.id: {evidence.id: {"section": REQUIRED}}
+    }
