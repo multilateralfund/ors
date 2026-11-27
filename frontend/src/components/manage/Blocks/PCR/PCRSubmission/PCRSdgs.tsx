@@ -429,7 +429,7 @@ const PCRSdgs = () => {
                               <EntryIndex index={sdgIndex} />
                             </TableCell>
                             <TableCell className="NameColumn w-1/3">
-                              <div className="flex items-center">
+                              <div className="flex items-center gap-2">
                                 {crtSdgName}
                                 <FieldErrorIndicator
                                   errors={agencyErrors[sdgIndex]}

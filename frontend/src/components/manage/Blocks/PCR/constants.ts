@@ -310,3 +310,18 @@ export const pcrExportFormats = [
       'One Excel file with the selected sections of all the PCRs, one sheet per section. Legacy PCRs are only available as their original PDF files, so they are not included.',
   },
 ]
+
+export const pcrSectionPayloadKeys: Record<string, string[]> = {
+  summary_of_key_data: [summaryOfKeyDataField],
+  results_assessment: ['overall_assessment_highlights'],
+  delay_causes: [delayField],
+  learned_lessons: ['learned_lessons', 'future_project_recommendations'],
+  gender_mainstreaming: [ppField],
+  sdgs_contribution: [sdgsContributionField],
+  supporting_evidences: [supportingEvidencesField],
+}
+
+export const pcrSectionDataKeys: Record<string, string[]> = {
+  overview: ['overview', 'impact_indicators'],
+  learned_lessons: ['learned_lessons', 'future_project_recommendations'],
+}

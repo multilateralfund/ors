@@ -1,4 +1,4 @@
-import { createContext, Dispatch, SetStateAction } from 'react'
+import { createContext } from 'react'
 
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRVersions } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRVersions'
@@ -13,7 +13,9 @@ import { ApiSubstance } from '@ors/types/api_substances'
 
 type PCRDataContextProps = PCRFormData & {
   errors: Record<string, any>
-  setErrors: Dispatch<SetStateAction<(error: Record<string, any[]>) => void>>
+  setErrors: (updater: any, section?: string) => void
+  updatedSections: Set<string>
+  clearUpdatedSections: (sections?: string[]) => void
   stashRemovedEntry: (key: string, entry: any) => void
   takeRemovedEntry: (key: string) => any
   pcrMetaproject: ReturnType<typeof useGetPCRProject>

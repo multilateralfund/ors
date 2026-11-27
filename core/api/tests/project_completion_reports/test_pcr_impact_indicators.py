@@ -208,13 +208,40 @@ class TestBuildImpactIndicators:
         assert indicators["energy_savings_actual"]["prefilled_value"] == 1.25
         # no project has a value
         assert indicators["total_number_of_trainers_trained_actual"]["value"] is None
-        # the booleans and the ratios are not prefilled
-        for field in [
-            "establishment_of_technician_certification_actual",
-            "cost_effectiveness_actual",
-        ]:
-            assert indicators[field]["value"] is None
-            assert indicators[field]["prefilled_value"] is None
+        # the union of the booleans
+        certification = indicators["establishment_of_technician_certification_actual"]
+        assert certification["value"] is True
+        assert certification["prefilled_value"] is True
+        # the ratios are not prefilled
+        assert indicators["cost_effectiveness_actual"]["value"] is None
+        assert indicators["cost_effectiveness_actual"]["prefilled_value"] is None
+
+    @pytest.mark.parametrize(
+        "values, expected",
+        [
+            ([True, False], True),
+            ([False, True, None], True),
+            ([False, False], False),
+            ([False, None], False),
+            ([None, None], None),
+        ],
+    )
+    def test_boolean_union(self, fields, project_approved_status, values, expected):
+        specific_fields = ProjectSpecificFieldsFactory.create()
+        specific_fields.fields.set([fields["certification"]])
+        meta_project = MetaProjectFactory.create()
+        for value in values:
+            _project(
+                meta_project,
+                specific_fields,
+                project_approved_status,
+                establishment_of_technician_certification_actual=value,
+            )
+
+        indicators = build_impact_indicators(meta_project.projects.for_pcr())
+
+        assert indicators[0]["value"] is expected
+        assert indicators[0]["prefilled_value"] is expected
 
     def test_pending_projects_are_included(
         self, meta_project_data, project_submitted_status
@@ -248,8 +275,13 @@ class TestCreate:
         technicians = indicators["total_number_of_technicians_trained_actual"]
         assert technicians["value"] == 15
         assert technicians["prefilled"] is True
+        assert technicians["editable"] is False
         certification = indicators["establishment_of_technician_certification_actual"]
-        assert certification["prefilled"] is False
+        assert certification["prefilled"] is True
+        assert certification["editable"] is True
+        cost_effectiveness = indicators["cost_effectiveness_actual"]
+        assert cost_effectiveness["prefilled"] is False
+        assert cost_effectiveness["editable"] is True
 
     def test_create_defaults_of_existing_pcr(self, client, meta_project_data):
         meta_project, _ = meta_project_data
@@ -257,7 +289,10 @@ class TestCreate:
             client,
             meta_project,
             impact_indicators=[
-                {"field": "total_number_of_technicians_trained_actual", "value": 12}
+                {
+                    "field": "establishment_of_technician_certification_actual",
+                    "value": False,
+                }
             ],
         )
 
@@ -267,10 +302,10 @@ class TestCreate:
         )
 
         indicators = _by_field(response.data["impact_indicators"])
-        technicians = indicators["total_number_of_technicians_trained_actual"]
-        assert technicians["value"] == 12
-        assert technicians["prefilled_value"] == 15
-        assert technicians["prefilled"] is False
+        certification = indicators["establishment_of_technician_certification_actual"]
+        assert certification["value"] is False
+        assert certification["prefilled_value"] is True
+        assert certification["prefilled"] is False
 
     def test_create_builds_the_indicators(self, client, meta_project_data):
         meta_project, _ = meta_project_data
@@ -292,8 +327,9 @@ class TestCreate:
             meta_project,
             impact_indicators=[
                 {
+                    # the computed values can be sent back unchanged
                     "field": "total_number_of_technicians_trained_actual",
-                    "value": 20,
+                    "value": 15,
                     # only the value can be set by the user
                     "prefilled_value": 20,
                     "label": "Changed",
@@ -309,12 +345,12 @@ class TestCreate:
         assert response.status_code == 201
         indicators = _by_field(response.data["impact_indicators"])
         technicians = indicators["total_number_of_technicians_trained_actual"]
-        assert technicians["value"] == 20
+        assert technicians["value"] == 15
         assert technicians["prefilled_value"] == 15
         assert technicians["label"] == "total number of technicians trained actual"
-        assert technicians["prefilled"] is False
         certification = indicators["establishment_of_technician_certification_actual"]
         assert certification["value"] is False
+        assert certification["prefilled"] is False
         assert indicators["cost_effectiveness_actual"]["value"] == 3.75
         # not sent, keeps the prefilled value
         assert indicators["energy_savings_actual"]["value"] == 1.25
@@ -348,6 +384,18 @@ class TestCreate:
                 },
                 "A boolean value is required.",
             ),
+            (
+                {"field": "total_number_of_technicians_trained_actual", "value": 20},
+                "This indicator is computed from the projects and can't be changed.",
+            ),
+            (
+                {"field": "total_number_of_technicians_trained_actual", "value": None},
+                "This indicator is computed from the projects and can't be changed.",
+            ),
+            (
+                {"field": "total_number_of_trainers_trained_actual", "value": 1},
+                "This indicator is computed from the projects and can't be changed.",
+            ),
         ],
     )
     def test_create_rejects_invalid_values(
@@ -374,25 +422,37 @@ class TestUpdate:
             client,
             pcr,
             [
-                {"field": "total_number_of_trainers_trained_actual", "value": 4},
-                {"field": "energy_savings_actual", "value": None},
+                {"field": "cost_effectiveness_actual", "value": 4},
+                {
+                    "field": "establishment_of_technician_certification_actual",
+                    "value": None,
+                },
             ],
         )
 
         assert response.status_code == 200
         indicators = _by_field(response.data["impact_indicators"])
-        assert indicators["total_number_of_trainers_trained_actual"]["value"] == 4
-        assert indicators["energy_savings_actual"]["value"] is None
-        assert indicators["energy_savings_actual"]["prefilled"] is False
+        assert indicators["cost_effectiveness_actual"]["value"] == 4
+        certification = indicators["establishment_of_technician_certification_actual"]
+        assert certification["value"] is None
+        assert certification["prefilled"] is False
         # not sent, unchanged
         assert indicators["total_number_of_technicians_trained_actual"]["value"] == 15
 
         # back to the prefilled value
         response = _update_pcr(
-            client, pcr, [{"field": "energy_savings_actual", "value": 1.25}]
+            client,
+            pcr,
+            [
+                {
+                    "field": "establishment_of_technician_certification_actual",
+                    "value": True,
+                }
+            ],
         )
         indicators = _by_field(response.data["impact_indicators"])
-        assert indicators["energy_savings_actual"]["prefilled"] is True
+        certification = indicators["establishment_of_technician_certification_actual"]
+        assert certification["prefilled"] is True
 
     def test_update_without_indicators_keeps_them(self, client, pcr):
         indicators = pcr.impact_indicators
@@ -435,7 +495,7 @@ class TestUpdate:
         assert technicians["prefilled_value"] == 15
 
     def test_duplicate_indicator(self, client, pcr):
-        field = "total_number_of_trainers_trained_actual"
+        field = "cost_effectiveness_actual"
 
         response = _update_pcr(
             client,
@@ -452,7 +512,7 @@ class TestUpdate:
         _update_pcr(
             client,
             pcr,
-            [{"field": "total_number_of_trainers_trained_actual", "value": 4}],
+            [{"field": "cost_effectiveness_actual", "value": 4}],
         )
         pcr.refresh_from_db()
 
@@ -474,20 +534,24 @@ class TestSubmitValidation:
             PCRProject.objects.create(pcr=pcr, project=project)
         return pcr
 
-    def test_all_indicators_are_required(self, pcr):
+    def test_editable_indicators_are_required(self, pcr):
         fill_pcr_required_data(pcr)
         assert get_pcr_submission_errors(pcr) == {}
 
         indicators = pcr.impact_indicators
-        indicators[0]["value"] = None
-        indicators[2]["value"] = None
+        for indicator in indicators:
+            indicator["value"] = None
         PCR.objects.filter(pk=pcr.pk).update(impact_indicators=indicators)
         pcr.refresh_from_db()
 
+        # the numeric indicators are computed from the projects, they can't be
+        # filled in the PCR
         assert get_pcr_submission_errors(pcr) == {
             "impact_indicators": {
-                indicators[0]["field"]: [SUBMIT_REQUIRED_MESSAGE],
-                indicators[2]["field"]: [SUBMIT_REQUIRED_MESSAGE],
+                "establishment_of_technician_certification_actual": [
+                    SUBMIT_REQUIRED_MESSAGE
+                ],
+                "cost_effectiveness_actual": [SUBMIT_REQUIRED_MESSAGE],
             }
         }
 
@@ -508,9 +572,8 @@ class TestSubmitValidation:
         )
 
         assert response.status_code == 400
+        # the boolean is prefilled, the empty numeric indicator is not required
         assert set(response.data["errors"]["impact_indicators"]) == {
-            "total_number_of_trainers_trained_actual",
-            "establishment_of_technician_certification_actual",
             "cost_effectiveness_actual",
         }
 

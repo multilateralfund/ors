@@ -4,6 +4,7 @@ import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/u
 import {
   getProjectDuration,
   getFormattedNumericValue,
+  formatFieldLabel,
 } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import {
   cdField,
@@ -12,9 +13,11 @@ import {
   summaryOfKeyDataField,
   summaryOfKeyDataRowFields,
   sdgsContributionField,
-  requiredMessage,
+  supportingEvidencesField,
   submitRequiredMessage,
   notApprovedProjectMessage,
+  pcrSectionPayloadKeys,
+  pcrSectionDataKeys,
 } from './constants'
 import {
   PCRData,
@@ -57,9 +60,12 @@ import {
   some,
   sumBy,
   isString,
+  keys,
   mapValues,
+  omitBy,
   mergeWith,
   uniq,
+  values,
 } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
@@ -353,7 +359,10 @@ export const formatImpactIndicatorsErrors = (
 
   forEach(indicators, ({ field, label }) => {
     forEach(errors[field], (message: string) => {
-      labelsByMessage[message] = [...(labelsByMessage[message] ?? []), label]
+      labelsByMessage[message] = [
+        ...(labelsByMessage[message] ?? []),
+        formatFieldLabel(label),
+      ]
     })
   })
 
@@ -392,7 +401,7 @@ export const getErrorIndex = (
 
 const hasErrorMessage = (
   errors: Record<string, any>,
-  messages: string[] = [requiredMessage],
+  messages: string[],
 ): boolean => {
   if (typeof errors === 'string') {
     return messages.includes(errors)
@@ -457,13 +466,14 @@ export const setRequiredError = (
   errors: Record<string, any>,
   field: string,
   value: unknown,
-  message = submitRequiredMessage,
 ) => {
   if (!String(value ?? '').trim()) {
-    return { ...errors, [field]: [message] }
+    return { ...errors, [field]: [submitRequiredMessage] }
   }
 
-  return errors[field]?.includes(message) ? omit(errors, [field]) : errors
+  return errors[field]?.includes(submitRequiredMessage)
+    ? omit(errors, [field])
+    : errors
 }
 
 export const getSummaryOfKeyDataErrors = (
@@ -575,11 +585,25 @@ const buildImpactIndicatorPayload = ({
         : Number(value),
 })
 
+const nestedPayloadKeys = flatMap(values(pcrSectionPayloadKeys))
+
+export const pickSectionPayload = (
+  data: Record<string, any>,
+  section: string,
+) =>
+  section === 'overview'
+    ? omit(data, nestedPayloadKeys)
+    : pick(data, pcrSectionPayloadKeys[section] ?? [])
+
+export const getSectionDataKeys = (section: string) =>
+  pcrSectionDataKeys[section] ?? [section]
+
 export const getFormData = (
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>,
   PCRData: PCRData,
   metaProjectId: number,
   ratingOptions: OptionsType[],
+  section?: string,
 ) => {
   const {
     overview,
@@ -596,10 +620,6 @@ export const getFormData = (
     ...pick(pcrDefaultData.data, [
       'project_date_approved',
       'project_date_completion',
-      'phase_out_ods_actual',
-      'phase_out_ods_approved',
-      'phase_out_co2_eq_t_actual',
-      'phase_out_co2_eq_t_approved',
     ]),
     decision_ids: pcrDefaultData.data?.decisions,
   }
@@ -660,7 +680,7 @@ export const getFormData = (
     ...overviewPrefilledData,
     ...overviewData,
     impact_indicators: map(
-      PCRData.impact_indicators,
+      filter(PCRData.impact_indicators, 'editable'),
       buildImpactIndicatorPayload,
     ),
     pcr_projects: filteredSummaryOfKeyData,
@@ -673,11 +693,15 @@ export const getFormData = (
     supporting_evidences: supportingEvidencesData,
   }
 
+  const metadata = section ? pickSectionPayload(payload, section) : payload
   const formData = new FormData()
-  formData.append('metadata', JSON.stringify(payload))
-  formattedSupportingEvidence.forEach((evidence) => {
-    formData.append('files', evidence.file)
-  })
+  formData.append('metadata', JSON.stringify(metadata))
+
+  if (!section || section === supportingEvidencesField) {
+    formattedSupportingEvidence.forEach((evidence) => {
+      formData.append('files', evidence.file)
+    })
+  }
 
   return formData
 }
@@ -693,13 +717,9 @@ const errorSections = [
   'supporting_evidences',
 ]
 
-export const isSubmitDisabled = (errors: Record<string, any>) =>
-  some(errorSections, (section) => hasErrorMessage(errors[section]))
-
 export const isSubmitPCRDisabled = (errors: Record<string, any>) =>
   some(errorSections, (section) =>
     hasErrorMessage(errors[section], [
-      requiredMessage,
       submitRequiredMessage,
       notApprovedProjectMessage,
     ]),
@@ -782,27 +802,47 @@ export const getEnterpriseAddresses = (
 const isMessageList = (value: unknown): value is string[] =>
   Array.isArray(value) && value.length > 0 && value.every(isString)
 
-const formMessages = [requiredMessage, submitRequiredMessage]
-
 export const keepFormMessages = (errors: unknown): unknown => {
   if (Array.isArray(errors)) {
     return errors.every(isString)
-      ? errors.filter((message) => formMessages.includes(message))
+      ? errors.filter((message) => message === submitRequiredMessage)
       : errors.map(keepFormMessages)
   }
 
   return isPlainObject(errors)
-    ? mapValues(errors as Record<string, unknown>, keepFormMessages)
+    ? omitBy(
+        mapValues(errors as Record<string, unknown>, keepFormMessages),
+        (value) =>
+          Array.isArray(value) &&
+          value.every((item) => isPlainObject(item) && isEmpty(item)),
+      )
     : errors
+}
+
+export const keepSectionFormMessages = (
+  errors: Record<string, any>,
+  section?: string,
+) => {
+  if (!section) {
+    return keepFormMessages(errors) as Record<string, any>
+  }
+
+  const sectionErrors = pickSectionPayload(errors, section)
+
+  return {
+    ...omit(errors, keys(sectionErrors)),
+    ...(keepFormMessages(sectionErrors) as Record<string, any>),
+  }
 }
 
 export const mergeSaveErrors = (
   errors: Record<string, any>,
   saveErrors: Record<string, any>,
+  section?: string,
 ) =>
   mergeWith(
     {},
-    keepFormMessages(errors),
+    keepSectionFormMessages(errors, section),
     saveErrors,
     (value: unknown, saveValue: unknown) => {
       if (isMessageList(saveValue)) {

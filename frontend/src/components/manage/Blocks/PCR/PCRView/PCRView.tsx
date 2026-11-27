@@ -71,7 +71,6 @@ const PCRView = () => {
       : []),
   ]
 
-  const prevTab = tabs[currentTab - 1]
   const nextTab = tabs[currentTab + 1]
 
   return (
@@ -97,23 +96,15 @@ const PCRView = () => {
       </Tabs>
       <div className="rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {tabs[currentTab].component}
-        <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
-          {prevTab && (
-            <NavigationButton
-              type="previous"
-              className="!h-10"
-              extraText={prevTab.label}
-              setCurrentTab={setCurrentTab}
-            />
-          )}
-          {nextTab && (
+        {nextTab && (
+          <div className="mt-5 flex justify-end">
             <NavigationButton
               className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
               extraText={nextTab.label}
               setCurrentTab={setCurrentTab}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   )

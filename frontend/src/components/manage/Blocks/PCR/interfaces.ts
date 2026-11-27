@@ -35,6 +35,7 @@ export interface PCRImpactIndicatorType {
   value: number | boolean | string | null
   prefilled_value: number | boolean | null
   prefilled: boolean
+  editable: boolean
 }
 
 export interface PCRDefaultData {
@@ -116,7 +117,7 @@ export interface PCRSummaryOfKeyDataType {
   hasSavedData?: boolean
 }
 
-type PCRProjectResponse = {
+export type PCRProjectResponse = {
   project_id: number
   funds_disbursed?: string | null
   planned_date_of_completion?: string | null
@@ -151,7 +152,7 @@ export type PCRResponse = {
   delay_causes: {
     agency_id: number
     delay_cluster_id: number | null
-    delay_cluster: { name: string }
+    delay_cluster: { name: string } | null
     root_causes_of_delay: {
       root_cause_id: number | null
       root_cause?: string
@@ -177,7 +178,7 @@ export type PCRResponse = {
   }[]
   supporting_evidences: {
     agency_id: number
-    section: string
+    section: string | null
     filename: string
     file: string
     download_url: string | null
@@ -319,6 +320,11 @@ export type FieldHandler = (
 ) => void
 
 export type PCRActionButtons = { setIsLoading: (isLoading: boolean) => void }
+
+export type EditPCROptions = {
+  pcrData?: PCRData
+  onErrors?: (errors: Record<string, any>) => void
+}
 
 export type OptionsType = { id: number | string; name: string }
 

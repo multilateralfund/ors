@@ -7,6 +7,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRSummaryOfKeyData, { createSummaryData } from './PCRSummaryOfKeyData'
+import PCREditSectionButtons from '../PCREdit/PCREditSectionButtons'
 import PCRGenderMainstreaming from './PCRGenderMainstreaming'
 import PCRHistory from '../PCRView/PCRViewTabs/PCRHistory'
 import PCRResultsAssessment from './PCRResultsAssessment'
@@ -41,7 +42,6 @@ import {
   supportingEvidencesField,
   overviewRequiredFields,
   initialActivitiesData,
-  requiredMessage,
   submitRequiredMessage,
 } from '../constants'
 
@@ -122,7 +122,7 @@ const PCRForm = ({ mode }: { mode: string }) => {
       id: 'summary_of_key_data',
       label: <TabLabel field="summary_of_key_data" />,
       title: 'Summary of key data',
-      component: <PCRSummaryOfKeyData />,
+      component: <PCRSummaryOfKeyData mode={mode} />,
     },
     {
       id: 'results_assessment',
@@ -195,7 +195,7 @@ const PCRForm = ({ mode }: { mode: string }) => {
   }, [JSON.stringify(overviewRequiredData), isOtherRating])
 
   const impactIndicatorsValues = map(
-    PCRData.impact_indicators,
+    filter(PCRData.impact_indicators, 'editable'),
     ({ field, value }) => ({
       field,
       isEmpty: isNil(value) || value === '',
@@ -230,12 +230,6 @@ const PCRForm = ({ mode }: { mode: string }) => {
             const prevErrors = prev[additionalCommentsField]?.[index]
             const existingErrors = isPlainObject(prevErrors) ? prevErrors : {}
             let updatedErrors = { ...existingErrors }
-
-            if (!comment.entity) {
-              updatedErrors = { ...updatedErrors, entity: [requiredMessage] }
-            } else if (existingErrors.entity?.includes(requiredMessage)) {
-              updatedErrors = omit(updatedErrors, ['entity'])
-            }
 
             if (!comment.comment?.trim()) {
               updatedErrors = {
@@ -331,13 +325,11 @@ const PCRForm = ({ mode }: { mode: string }) => {
         const cdIdField = 'delay_cluster_id'
 
         const existingErrors = prev[delayField]?.[index] ?? {}
-        let updatedErrors = { ...existingErrors }
-
-        if (!cd[cdIdField]) {
-          updatedErrors[cdIdField] = [requiredMessage]
-        } else if (updatedErrors[cdIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [cdIdField])
-        }
+        const updatedErrors: Record<string, any> = setRequiredError(
+          existingErrors,
+          cdIdField,
+          cd[cdIdField],
+        )
 
         updatedErrors[dcField] = isEmpty(cd[dcField])
           ? [submitRequiredMessage]
@@ -413,13 +405,7 @@ const PCRForm = ({ mode }: { mode: string }) => {
             'prefilled',
             'qualitative_description',
           ] as const,
-          (acc, field) =>
-            setRequiredError(
-              acc,
-              field,
-              pp[field],
-              field === 'project_preparation' ? requiredMessage : undefined,
-            ),
+          (acc, field) => setRequiredError(acc, field, pp[field]),
           prev[ppField]?.[index] ?? {},
         )
       }),
@@ -472,15 +458,14 @@ const PCRForm = ({ mode }: { mode: string }) => {
         const evidenceIdField = 'section_id'
 
         const existingErrors = prev[supportingEvidencesField]?.[index] ?? {}
-        let updatedErrors = { ...existingErrors }
 
-        if (!evidence[evidenceIdField]) {
-          updatedErrors[evidenceIdField] = [requiredMessage]
-        } else if (updatedErrors[evidenceIdField]?.includes(requiredMessage)) {
-          updatedErrors = omit(updatedErrors, [evidenceIdField])
-        }
-
-        return normalizeErrors(updatedErrors)
+        return normalizeErrors(
+          setRequiredError(
+            existingErrors,
+            evidenceIdField,
+            evidence[evidenceIdField],
+          ),
+        )
       }),
     }))
   }, [JSON.stringify(supportingEvidencesData)])
@@ -528,6 +513,24 @@ const PCRForm = ({ mode }: { mode: string }) => {
                   ]
                 : formatErrors(crtTabErrors)
 
+            const hasNextTab = currentTab !== tabs.length - 1
+
+            const tabButtons =
+              mode === 'edit'
+                ? id !== 'history' && (
+                    <PCREditSectionButtons
+                      section={id}
+                      hasNextTab={hasNextTab}
+                      setCurrentTab={setCurrentTab}
+                    />
+                  )
+                : hasNextTab && (
+                    <NavigationButton
+                      setCurrentTab={setCurrentTab}
+                      className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
+                    />
+                  )
+
             return (
               <span key={id}>
                 {title && (
@@ -546,21 +549,11 @@ const PCRForm = ({ mode }: { mode: string }) => {
                   <ErrorsList errors={tabErrors} />
                 )}
                 {component}
-                <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
-                  {currentTab !== 0 && (
-                    <NavigationButton
-                      type="previous"
-                      setCurrentTab={setCurrentTab}
-                      className="!h-10"
-                    />
-                  )}
-                  {currentTab !== tabs.length - 1 && (
-                    <NavigationButton
-                      setCurrentTab={setCurrentTab}
-                      className="!h-10 !border-primary !bg-primary !text-mlfs-hlYellow"
-                    />
-                  )}
-                </div>
+                {tabButtons && (
+                  <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
+                    {tabButtons}
+                  </div>
+                )}
               </span>
             )
           })}

@@ -30,6 +30,7 @@ import {
 } from '@ors/components/manage/Blocks/PCR/constants'
 import {
   PCRData,
+  PCRProjectResponse,
   PCRAlternativeTechnologyType,
   PCRResultsAssessmentData,
   PCRCausesOfDelayData,
@@ -75,7 +76,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
 
   const { pcr_id, project_id } = useParams<Record<string, string>>()
-  const pcrDefaultData = useGetPCRDefaults(project_id)
+  const pcrDefaultData = useGetPCRDefaults(project_id, pcr_id)
   const pcr = useGetPCR(pcr_id)
   const pcrVersions = useGetPCRVersions(pcr_id)
 
@@ -91,7 +92,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     [metaproject],
   )
 
-  const { addUpdatedField } = useUpdatedFields()
+  const { addUpdatedField, clearUpdatedFields } = useUpdatedFields()
 
   const [PCRData, setPCRDataNoFieldTracking] = useState<PCRData>({
     overview: initialOverviewData,
@@ -108,7 +109,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const [initialErrors, setInitialErrors] = useState({})
 
   const setErrors = useCallback(
-    (updater: any) => {
+    (updater: any, section?: string) => {
       if (typeof updater === 'function') {
         setInitialErrors(updater)
         return
@@ -120,16 +121,55 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       )
 
       setInitialErrors((prevErrors: Record<string, any>) =>
-        mergeSaveErrors(prevErrors, saveErrors),
+        mergeSaveErrors(prevErrors, saveErrors, section),
       )
     },
     [PCRData.summary_of_key_data, PCRData.sdgs_contribution],
   )
 
+  const [updatedSections, setUpdatedSections] = useState<Set<string>>(new Set())
+  const isUserInputRef = useRef(false)
+  const prevPCRDataRef = useRef(PCRData)
+
+  useEffect(() => {
+    const prevData = prevPCRDataRef.current
+    prevPCRDataRef.current = PCRData
+
+    if (!isUserInputRef.current) {
+      return
+    }
+    isUserInputRef.current = false
+
+    const changedKeys = filter(
+      keys(PCRData) as (keyof PCRData)[],
+      (key) => PCRData[key] !== prevData[key],
+    )
+
+    if (changedKeys.length > 0) {
+      setUpdatedSections((prev) => new Set([...prev, ...changedKeys]))
+    }
+  }, [PCRData])
+
+  useEffect(() => {
+    if (updatedSections.size > 0) {
+      addUpdatedField('pcr')
+    } else {
+      clearUpdatedFields()
+    }
+  }, [updatedSections, addUpdatedField, clearUpdatedFields])
+
+  const clearUpdatedSections = useCallback((sections?: string[]) => {
+    setUpdatedSections((prev) =>
+      sections
+        ? new Set([...prev].filter((key) => !sections.includes(key)))
+        : new Set(),
+    )
+  }, [])
+
   const setPCRData = useCallback(
     (updater: SetStateAction<PCRData>, fieldName?: string) => {
       if (fieldName) {
-        addUpdatedField(fieldName)
+        isUserInputRef.current = true
       }
 
       setPCRDataNoFieldTracking((prevData) =>
@@ -138,7 +178,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
           : updater,
       )
     },
-    [addUpdatedField],
+    [],
   )
 
   const removedEntriesRef = useRef<Record<string, any>>({})
@@ -426,6 +466,12 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     [initialErrors, sdgsApplying, entriesCount],
   )
 
+  const summaryOfKeyData: PCRProjectResponse[] = isEmpty(
+    PCRData.summary_of_key_data,
+  )
+    ? (pcr.data?.pcr_projects ?? [])
+    : PCRData.summary_of_key_data
+
   const fundsByAgency = useMemo(() => {
     const {
       projectAgencyMap,
@@ -460,7 +506,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       total_number_of_enterprises,
       alternative_technologies,
     } = reduce(
-      PCRData.summary_of_key_data,
+      summaryOfKeyData,
       (acc, entry) => {
         const agencyId = projectAgencyMap[entry.project_id]
 
@@ -520,7 +566,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       total_number_of_enterprises,
       alternative_technologies,
     }
-  }, [projects, PCRData.summary_of_key_data])
+  }, [projects, summaryOfKeyData])
 
   const { data: ratings } = useApi({
     options: { withStoreCache: true },
@@ -587,6 +633,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pcrDefaultData,
       PCRData,
       setPCRData,
+      updatedSections,
+      clearUpdatedSections,
       errors,
       setErrors,
       stashRemovedEntry,
@@ -610,6 +658,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pcrDefaultData,
       PCRData,
       setPCRData,
+      updatedSections,
+      clearUpdatedSections,
       errors,
       setErrors,
       stashRemovedEntry,

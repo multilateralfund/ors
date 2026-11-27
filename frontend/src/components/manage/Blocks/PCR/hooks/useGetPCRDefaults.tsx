@@ -1,10 +1,10 @@
 import { PCRDefaultData } from '../interfaces'
 import useApi from '@ors/hooks/useApi'
 
-export function useGetPCRDefaults(project_id: string) {
+export function useGetPCRDefaults(project_id: string, pcr_id?: string) {
   return useApi<PCRDefaultData>({
     options: {
-      params: { meta_project_id: project_id },
+      params: { meta_project_id: project_id, ...(pcr_id && { pcr_id }) },
       withStoreCache: false,
     },
     path: '/api/project-completion-reports/create/',

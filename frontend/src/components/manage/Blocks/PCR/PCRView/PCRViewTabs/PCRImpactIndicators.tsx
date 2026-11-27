@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRImpactIndicatorInput from '../../PCRSubmission/PCRImpactIndicatorInput'
 import {
@@ -64,7 +65,9 @@ const PCRImpactIndicators = ({
                     key={indicator.field}
                     className="flex flex-col justify-between gap-1"
                   >
-                    <span className="text-[#4D4D4D]">{indicator.label}</span>
+                    <span className="text-[#4D4D4D]">
+                      {formatFieldLabel(indicator.label)}
+                    </span>
                     <div>
                       <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                         <h4 className="m-0 text-xl font-semibold text-primary">
